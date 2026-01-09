@@ -1,0 +1,168 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; }
+    .chart-container { position: relative; height: 350px; width: 100%; }
+    .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
+</style>
+
+<div class="animate-fadeIn space-y-8 pb-10 max-w-[1200px] mx-auto">
+    <div class="flex items-center gap-4 mb-2">
+        <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
+        <h2 class="text-2xl font-black uppercase tracking-tighter">Attendance Analytics</h2>
+    </div>
+
+    <section class="stat-card shadow-2xl backdrop-blur-sm border-slate-800/50">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <span class="text-blue-500">●</span> Monthly Staff Performance (<span id="txtMonth" class="text-blue-400"></span>)
+                </h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium italic">Comparison of attendance status by staff for the selected month.</p>
+            </div>
+            <div class="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700">
+                <button onclick="changeStatPeriod('month', -1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest">PREV</button>
+                <button onclick="changeStatPeriod('month', 1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest ml-1">NEXT</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </section>
+
+    <section class="stat-card">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <span class="text-purple-500">●</span> Yearly Accumulation (<span id="txtYear" class="text-purple-400"></span>)
+                </h3>
+            </div>
+            <div class="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700">
+                <button onclick="changeStatPeriod('year', -1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest">PREV YEAR</button>
+                <button onclick="changeStatPeriod('year', 1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest ml-1">NEXT YEAR</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="yearlyChart"></canvas>
+        </div>
+    </section>
+
+    <section class="stat-card">
+        <h3 class="text-lg font-black text-white mb-8 flex items-center gap-2">
+            <span class="text-emerald-500">●</span> Overall All-Time Records
+        </h3>
+        <div class="chart-container">
+            <canvas id="overallChart"></canvas>
+        </div>
+    </section>
+</div>
+
+<script>
+    (function() {
+        const db = firebase.database();
+        let monthViewDate = new Date(); 
+        let yearViewDate = new Date();
+        
+        const typeColors = {
+            'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
+            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569'
+        };
+
+        let charts = { month: null, year: null, overall: null };
+        let cachedData = null;
+
+        window.changeStatPeriod = function(type, offset) {
+            if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
+            else if(type === 'year') yearViewDate.setFullYear(yearViewDate.getFullYear() + offset);
+            processAndRender();
+        };
+
+        window.initAdminStats = async function() {
+            try {
+                const snap = await db.ref('attendance').once('value');
+                cachedData = snap.val() || {};
+                processAndRender();
+            } catch (e) {
+                console.error("Stats Load Error:", e);
+            }
+        };
+
+        function processAndRender() {
+            if (!cachedData || !document.getElementById('monthlyChart')) return;
+
+            const monthKey = monthViewDate.toISOString().substring(0, 7);
+            const yearKey = yearViewDate.getFullYear().toString();
+            
+            document.getElementById('txtMonth').innerText = monthViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            document.getElementById('txtYear').innerText = yearKey;
+
+            const stats = { month: {}, year: {}, overall: {} };
+
+            // 데이터 가공 로직
+            Object.entries(cachedData).forEach(([date, dayData]) => {
+                Object.entries(dayData).forEach(([user, record]) => {
+                    let type = "";
+                    if (typeof record === 'string') type = record;
+                    else if (record.attend) {
+                        if (record.attend.includes("ATT")) type = "ATT";
+                        else if (record.attend.includes("LATE")) type = "LATE";
+                    }
+                    if (!type || !typeColors[type]) return;
+
+                    const updateCount = (obj) => {
+                        if (!obj[user]) obj[user] = {};
+                        obj[user][type] = (obj[user][type] || 0) + 1;
+                    };
+
+                    if (date.startsWith(monthKey)) updateCount(stats.month);
+                    if (date.startsWith(yearKey)) updateCount(stats.year);
+                    updateCount(stats.overall);
+                });
+            });
+
+            renderChart('monthlyChart', 'month', stats.month);
+            renderChart('yearlyChart', 'year', stats.year);
+            renderChart('overallChart', 'overall', stats.overall);
+        }
+
+        function renderChart(canvasId, chartType, chartData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return;
+            
+            const ctx = canvas.getContext('2d');
+            const users = Object.keys(chartData).sort();
+            const types = Object.keys(typeColors);
+
+            const datasets = types.map(type => ({
+                label: type,
+                data: users.map(user => chartData[user][type] || 0),
+                backgroundColor: typeColors[type],
+                borderRadius: 6,
+                barPercentage: 0.8,
+                categoryPercentage: 0.6
+            }));
+
+            if (charts[chartType]) charts[chartType].destroy();
+
+            charts[chartType] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: users, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, weight: '900' }, padding: 20 } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#f1f5f9', font: { weight: 'bold' } } },
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#64748b' },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        }
+                    }
+                }
+            });
+        }
+    })();
+</script>

@@ -1,0 +1,365 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
+
+<style>
+    .schedule-cal th { padding: 12px 0; color: #64748b; font-size: 0.75rem; font-weight: 800; border-bottom: 1px solid #1e293b; }
+/* 날짜 칸의 위치 기준점 및 테두리 설정 */
+.schedule-cal td {
+    position: relative; 
+    height: 120px;
+    width: 14.28%; /* 7일 등분 */
+    vertical-align: top;
+    padding-top: 30px; /* 날짜 숫자 공간 확보 */
+    border: 0.5px solid #1e293b; /* 사라진 테두리 다시 추가 */
+    transition: 0.2s;
+    cursor: pointer;
+    /* 막대가 옆 칸으로 넘어가야 하므로 overflow: hidden이 있으면 안 됩니다 */
+}
+
+/* 막대가 달력 밖으로 튀어나가지 않게 테이블 본체에 설정 */
+#scheduleBody {
+    position: relative;
+}
+
+.event-item {
+    position: absolute;
+    z-index: 10;
+    height: 22px;
+    line-height: 22px;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #3b82f6;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    /* 칸을 넘어갈 때 가독성을 위해 좌측 여백 추가 */
+    margin-left: 2px; 
+}
+/* 시작/종료 시간에 따른 텍스트 강조 (선택 사항) */
+.ev-time-text { font-weight: 800; margin-right: 4px; opacity: 0.9; }
+
+    .event-item .ev-title-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .event-item .ev-author-text { opacity: 0.7; font-size: 9px; font-weight: 500; flex-shrink: 0; }
+    .event-item:active { cursor: grabbing; }
+
+    .modal-input { 
+        width: 100%; border: 1px solid #1e293b; background: #0f172a; 
+        padding: 0.75rem; color: white; font-size: 0.875rem; outline: none; border-radius: 12px;
+    }
+    .modal-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.memo-display {
+        background: rgba(168, 85, 247, 0.1); /* 보라색 계열로 관리자 느낌 강조 */
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 10px;
+    }
+
+</style>
+
+
+
+<div class="animate-fadeIn">
+    <div class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-6">
+            <h2 id="calMonthYear" class="text-2xl font-black text-white italic underline decoration-blue-500 underline-offset-8 uppercase tracking-tighter"></h2>
+            <div class="flex bg-slate-900 rounded-xl p-1 border border-slate-800">
+                <button onclick="changeCalMonth(-1)" class="px-3 py-1.5 text-slate-400 hover:text-white transition text-xs font-black">PREV</button>
+                <button onclick="goTodayCal()" class="px-3 py-1.5 text-blue-500 hover:bg-blue-500/10 transition text-xs font-black mx-1 rounded-lg">TODAY</button>
+                <button onclick="changeCalMonth(1)" class="px-3 py-1.5 text-slate-400 hover:text-white transition text-xs font-black">NEXT</button>
+            </div>
+        </div>
+        <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Company Shared Schedule</p>
+    </div>
+
+    <div class="bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
+        <table class="schedule-cal w-full border-collapse table-fixed">
+            <thead>
+                <tr class="bg-slate-900/50">
+                    <th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="eventModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2rem] p-8 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="modalTitle" class="text-xl font-black text-white uppercase tracking-tighter">Schedule Entry/Edit</h3>
+            <button onclick="closeModal()" class="text-slate-500 hover:text-white text-2xl">&times;</button>
+        </div>
+
+        <div id="modalForm" class="space-y-4">
+            <div class="modal-input-group">
+                <label class="modal-label">Title</label>
+                <input type="text" id="evTitle" class="modal-input">
+            </div>
+            <div class="modal-input-group">
+                <label class="modal-label">Description</label>
+                <textarea id="evDesc" class="modal-input min-h-[80px] resize-none"></textarea>
+            </div>
+            
+            <div id="adminMemoArea" class="hidden">
+                <label class="text-[10px] text-purple-400 font-black uppercase mb-1 block tracking-widest">Admin Memo</label>
+                <div id="evAdminMemo" class="text-sm text-slate-300 italic whitespace-pre-wrap memo-display"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="modal-input-group">
+                    <label class="modal-label">Start Date</label>
+                    <input type="text" id="evStart" class="modal-input cursor-pointer">
+                </div>
+                <div class="modal-input-group">
+                    <label class="modal-label">End Date</label>
+                    <input type="text" id="evEnd" class="modal-input cursor-pointer">
+                </div>
+            </div>
+            <label class="checkbox-container text-xs font-bold text-slate-400 flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="evAllDay" onchange="toggleTimePicker(this.checked)"> All Day Event
+            </label>
+        </div>
+
+        <div class="flex gap-3 mt-8" id="modalButtons">
+            <button id="btnDel" onclick="deleteEvent()" class="hidden flex-1 bg-rose-900/20 text-rose-500 py-4 rounded-xl font-black text-xs hover:bg-rose-900/40 transition">DELETE</button>
+            <button id="btnSave" onclick="saveEvent()" class="flex-[2] bg-blue-600 text-white py-4 rounded-xl font-black text-xs hover:bg-blue-500 shadow-lg shadow-blue-900/20 transition uppercase tracking-widest">Save Schedule</button>
+        </div>
+        <p id="noPermissionMsg" class="hidden text-center text-slate-500 text-[10px] mt-4 font-bold uppercase">View Only Mode</p>
+    </div>
+</div>
+
+
+<script>
+    (function() {
+        const db = firebase.database();
+        const user = sessionStorage.getItem('loggedInUser');
+        const userRole = sessionStorage.getItem('userRole');
+        let calViewDate = new Date();
+        let selectedId = null;
+        let currentEventData = null;
+
+        let startPicker, endPicker;
+
+        // 시간 선택 토글 함수
+        window.toggleTimePicker = (isAllDay) => {
+            const config = isAllDay ? {
+                enableTime: false,
+                dateFormat: "Y-m-d",
+                altFormat: "Y-m-d"
+            } : {
+                enableTime: true,
+                dateFormat: "Y-m-d\\TH:i",
+                altFormat: "Y-m-d h:i K"
+            };
+            
+            const startVal = startPicker.selectedDates[0];
+            const endVal = endPicker.selectedDates[0];
+            
+            startPicker.set(config);
+            endPicker.set(config);
+            
+            if(startVal) startPicker.setDate(startVal);
+            if(endVal) endPicker.setDate(endVal);
+        };
+
+        function initPickers() {
+            if (typeof flatpickr === 'undefined') { setTimeout(initPickers, 100); return; }
+            const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", time_24hr: false, locale: "en", static: true };
+            startPicker = flatpickr("#evStart", baseConfig);
+            endPicker = flatpickr("#evEnd", baseConfig);
+        }
+
+        window.closeModal = () => { 
+            document.getElementById('eventModal').classList.add('hidden'); 
+            selectedId = null; 
+            currentEventData = null;
+        };
+
+        // [수정] 일정 추가 모달: 메모 영역 숨김
+        window.openAddModal = (dateStr) => {
+            selectedId = null; 
+            currentEventData = null;
+            document.getElementById('evTitle').value = "";
+            document.getElementById('evDesc').value = "";
+            document.getElementById('evAllDay').checked = false;
+            
+            // 메모 영역 초기화 및 숨김
+            const memoArea = document.getElementById('adminMemoArea');
+            if(memoArea) memoArea.classList.add('hidden');
+            const memoDiv = document.getElementById('evAdminMemo');
+            if(memoDiv) memoDiv.innerText = "";
+
+            toggleTimePicker(false);
+            startPicker.setDate(dateStr + "T09:00");
+            endPicker.setDate(dateStr + "T10:00");
+            
+            document.getElementById('btnDel').classList.add('hidden');
+            document.getElementById('btnSave').style.display = 'block';
+            document.getElementById('eventModal').classList.replace('hidden', 'flex');
+        };
+
+        // [수정] 일정 상세/수정 모달: 메모가 있을 때만 표시 (읽기 전용)
+        window.openEditModal = (id, ev) => {
+            selectedId = id; 
+            currentEventData = ev;
+            const canEdit = (ev.author === user || userRole === 'admin');
+            
+            document.getElementById('evTitle').value = ev.title;
+            document.getElementById('evDesc').value = ev.desc || "";
+            document.getElementById('evAllDay').checked = ev.allDay || false;
+            
+            // 관리자 메모 처리 (데이터가 있을 때만 보여줌)
+            const memoArea = document.getElementById('adminMemoArea');
+            const memoDiv = document.getElementById('evAdminMemo');
+            if (memoArea && memoDiv) {
+                if (ev.adminMemo) {
+                    memoArea.classList.remove('hidden');
+                    memoDiv.innerText = ev.adminMemo;
+                } else {
+                    memoArea.classList.add('hidden');
+                    memoDiv.innerText = "";
+                }
+            }
+
+            toggleTimePicker(ev.allDay);
+            startPicker.setDate(ev.start);
+            endPicker.setDate(ev.end);
+
+            document.getElementById('btnSave').style.display = canEdit ? 'block' : 'none';
+            document.getElementById('btnDel').style.display = canEdit ? 'block' : 'none';
+            document.getElementById('eventModal').classList.replace('hidden', 'flex');
+        };
+
+        // [수정] 저장 로직: 기존 adminMemo 유실 방지
+        window.saveEvent = () => {
+            const title = document.getElementById('evTitle').value;
+            const isAllDay = document.getElementById('evAllDay').checked;
+            const startVal = document.getElementById('evStart').value;
+            const endVal = document.getElementById('evEnd').value;
+
+            if(!title || !startVal) return alert("Fill required fields.");
+
+            const data = {
+                title: title,
+                desc: document.getElementById('evDesc').value || "",
+                start: startVal,
+                end: endVal || startVal,
+                allDay: isAllDay,
+                author: selectedId ? currentEventData.author : user,
+                timestamp: Date.now()
+            };
+
+            // 수정 시 기존 데이터에 adminMemo가 있었다면 보존하여 업데이트
+            if (selectedId && currentEventData && currentEventData.adminMemo) {
+                data.adminMemo = currentEventData.adminMemo;
+            }
+
+            const ref = db.ref('shared_schedules');
+            if(selectedId) {
+                ref.child(selectedId).update(data).then(closeModal);
+            } else {
+                ref.push(data).then(closeModal);
+            }
+        };
+
+        function isDateInRange(targetDateStr, startStr, endStr) {
+            const target = new Date(targetDateStr).setHours(0,0,0,0);
+            const start = new Date(startStr.split('T')[0]).setHours(0,0,0,0);
+            const end = new Date(endStr.split('T')[0]).setHours(0,0,0,0);
+            return target >= start && target <= end;
+        }
+
+        function renderSchedule() {
+            const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('calMonthYear').innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+            db.ref('shared_schedules').off(); // 중복 리스너 방지
+            db.ref('shared_schedules').on('value', snap => {
+                const events = snap.val() || {};
+                const tbody = document.getElementById('scheduleBody');
+                tbody.innerHTML = '';
+                let dateCount = 1;
+                for (let i = 0; i < 6; i++) {
+                    let row = document.createElement('tr');
+                    for (let j = 0; j < 7; j++) {
+                        let cell = document.createElement('td');
+                        if (i === 0 && j < firstDay || dateCount > lastDate) { 
+                            row.appendChild(cell); 
+                        } else {
+                            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCount).padStart(2, '0')}`;
+                            cell.className = "cal-drop-zone";
+                            cell.onclick = (e) => { 
+                                if(e.target.tagName !== 'DIV' && e.target.tagName !== 'SPAN') openAddModal(dStr); 
+                            };
+
+                            let cellHTML = `<div class="mb-1 pointer-events-none"><span class="text-[10px] font-black ${dStr === todayStr ? 'text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded' : 'text-slate-600'}">${dateCount}</span></div><div class="space-y-1">`;
+                            
+                            let rowEventsCount = 0;
+                            Object.keys(events).forEach((id) => {
+                                const ev = events[id];
+                                const startDate = ev.start.split('T')[0];
+                                const endDate = ev.end.split('T')[0];
+                                
+                                if (dStr === startDate) {
+                                    const start = new Date(startDate);
+                                    const end = new Date(endDate);
+                                    const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+                                    
+                                    let timeLabel = "";
+                                    if (!ev.allDay) {
+                                        const timePart = ev.start.split('T')[1];
+                                        if(timePart) {
+                                            const [h, m] = timePart.split(':');
+                                            const hh = parseInt(h);
+                                            const ampm = hh >= 12 ? 'p' : 'a';
+                                            timeLabel = `<span class="ev-time-text">${hh % 12 || 12}:${m}${ampm}</span>`;
+                                        }
+                                    }
+
+                                    const widthPercent = diffDays * 100;
+                                    const topPos = 30 + (rowEventsCount * 26); 
+                                    rowEventsCount++; 
+
+                                    // JSON 직렬화 시 특수문자 에러 방지 처리
+                                    const evDataString = JSON.stringify(ev).replace(/'/g, "&apos;").replace(/"/g, '&quot;');
+
+                                    cellHTML += `
+                                        <div onclick='event.stopPropagation(); openEditModal("${id}", ${evDataString})' 
+                                             class="event-item" 
+                                             style="width: calc(${widthPercent}% - 8px); top: ${topPos}px;">
+                                            ${timeLabel} ${ev.title}
+                                        </div>`;
+                                }
+                            });
+                            cell.innerHTML = cellHTML + `</div>`;
+                            row.appendChild(cell);
+                            dateCount++;
+                        }
+                    }
+                    tbody.appendChild(row);
+                    if (dateCount > lastDate) break;
+                }
+            });
+        }
+
+        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
+        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
+        window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(closeModal); };
+
+        initPickers();
+        renderSchedule();
+    })();
+</script>

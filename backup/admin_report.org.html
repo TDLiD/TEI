@@ -1,0 +1,43 @@
+<div class="space-y-8">
+    <section class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <h3 class="text-xl font-black">Daily Reports</h3>
+            <input type="date" id="dateSearch" class="bg-slate-800 text-blue-400 p-3 rounded-xl border-none font-bold" onchange="loadAdminData(this.value)">
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-slate-500 text-xs uppercase tracking-widest border-b border-slate-800">
+                        <th class="p-4">Name</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 w-1/2">Summary</th>
+                        <th class="p-4">Time</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody" class="divide-y divide-slate-800/50"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-slate-900 p-8 rounded-[2rem] border border-slate-800">
+            <h3 class="text-lg font-black mb-4 text-emerald-500 italic">SETTING: WORK TIME</h3>
+            <input type="time" id="standardTimeInput" class="w-full bg-slate-800 p-4 rounded-xl mb-4 text-white">
+            <button onclick="saveStandardTime()" class="w-full bg-emerald-600 p-4 rounded-xl font-black uppercase">Save Standard Time</button>
+        </div>
+
+        <div class="bg-slate-900 p-8 rounded-[2rem] border border-slate-800">
+            <h3 class="text-lg font-black mb-4 text-blue-500 italic">SETTING: STAFF ACCOUNT</h3>
+            <div class="grid gap-4">
+                <input type="text" id="newUserName" placeholder="Name" class="bg-slate-800 p-4 rounded-xl text-white">
+                <input type="text" id="newUserPw" placeholder="Password" class="bg-slate-800 p-4 rounded-xl text-white">
+                <button onclick="addUser()" class="bg-blue-600 p-4 rounded-xl font-black uppercase">Add Staff Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 기존 admin.html에 있던 loadAdminData, saveStandardTime, addUser 등의 
+    // 모든 JS 함수를 이곳으로 옮겨오시면 됩니다.
+</script>

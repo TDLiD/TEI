@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Work Report</title>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        body { font-family: "Pretendard", sans-serif; background-color: #000000; color: #f1f5f9; }
+        select, textarea { background-color: #1e293b !important; color: white !important; border-color: #334155 !important; }
+        /* 읽기 전용 셀렉트 박스 스타일 */
+        select:disabled { cursor: not-allowed; opacity: 0.7; }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+
+    <div class="bg-slate-900 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-800">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-white">📝 Work Report</h2>
+            <p id="userDisplay" class="text-blue-400 text-sm mt-1"></p>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">Staff Name</label>
+                <select id="userName" class="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition" disabled>
+                    <option value="Ray">Ray</option>
+                    <option value="Eza">Eza</option>
+                    <option value="Rezi">Rezi</option>
+                    <option value="Retno">Retno</option>
+                    <option value="Alex">Alex</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">Current Status</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setStatus('In Progress')" id="btn-ing" class="status-btn border border-slate-700 p-3 rounded-xl text-sm bg-slate-800 text-slate-400 transition">In Progress</button>
+                    <button onclick="setStatus('Completed')" id="btn-done" class="status-btn border border-slate-700 p-3 rounded-xl text-sm bg-slate-800 text-slate-400 transition">Completed</button>
+                </div>
+                <input type="hidden" id="status" value="In Progress">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-300 mb-2">Work Details</label>
+                <textarea id="content" rows="6" class="w-full border p-4 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition resize-none" placeholder="Enter tasks here..."></textarea>
+            </div>
+
+            <button onclick="submitReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-500 shadow-lg transition-all active:scale-95">Submit Report</button>
+            <a href="dashboard.html" class="block text-center text-sm text-slate-500 mt-4 hover:text-slate-300">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // 로그인 세션 동기화 확인
+        const loggedInUser = sessionStorage.getItem('loggedInUser');
+        if (!loggedInUser) {
+            alert("Please login first.");
+            location.href = "index.html";
+        }
+
+        // 페이지 로드 시 로그인된 사용자 이름 자동 선택
+        window.onload = () => {
+            document.getElementById('userName').value = loggedInUser;
+            document.getElementById('userDisplay').innerText = `Reporting as ${loggedInUser}`;
+        };
+
+        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function setStatus(val) {
+            document.getElementById('status').value = val;
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.className = 'status-btn border border-slate-700 p-3 rounded-xl text-sm bg-slate-800 text-slate-400 transition';
+            });
+            const activeBtn = val === 'In Progress' ? 'btn-ing' : 'btn-done';
+            document.getElementById(activeBtn).className = 'status-btn border-2 border-blue-500 p-3 rounded-xl text-sm bg-blue-900/30 text-blue-400 font-bold';
+        }
+        setStatus('In Progress');
+
+        function submitReport() {
+            // userName 셀렉트 박스가 disabled여도 value값은 가져올 수 있습니다.
+            const name = document.getElementById('userName').value;
+            const content = document.getElementById('content').value;
+            const status = document.getElementById('status').value;
+            const today = new Date().toISOString().split('T')[0];
+            const time = new Date().toLocaleTimeString('en-US');
+
+            if(!content.trim()) return alert("Please enter the work details.");
+
+            database.ref('reports/' + today + '/' + name).set({
+                content: content,
+                status: status,
+                time: time
+            }).then(() => {
+                alert("Report submitted successfully.");
+                location.href = "dashboard.html"; // 제출 후 대시보드로 이동
+            });
+        }
+    </script>
+</body>
+</html>

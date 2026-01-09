@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin - DAILY SYSTEM</title>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+    <style>
+        body { font-family: "Pretendard", sans-serif; background-color: #000; color: #f1f5f9; overflow-x: hidden; }
+        
+        /* 탭 버튼 디자인 최적화 */
+        .tab-btn { transition: all 0.3s; position: relative; display: flex; align-items: center; gap: 0.75rem; }
+        .tab-active { color: #3b82f6; font-weight: 900; background: rgba(59, 130, 246, 0.1); border-radius: 1rem; }
+        .tab-inactive { color: #64748b; }
+        
+        /* 데스크톱 전용 인디케이터 */
+        @media (min-width: 768px) {
+            .tab-active::before { content: ''; position: absolute; left: -1rem; top: 20%; height: 60%; width: 4px; background: #3b82f6; border-radius: 0 4px 4px 0; }
+        }
+
+        /* 알림 애니메이션 */
+        @keyframes toast-in {
+            from { transform: translateX(100%) scale(0.9); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
+        }
+        .animate-toast { animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 모바일 탭 스크롤 최적화 */
+        .mobile-nav-gradient {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 40px;
+            background: linear-gradient(to left, #000, transparent);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col md:flex-row">
+
+    <div id="globalNotificationArea" class="fixed top-6 right-6 z-[10000] flex flex-col gap-3 w-[280px] md:w-[320px] pointer-events-none"></div>
+
+    <aside class="w-full md:w-72 md:h-screen bg-slate-950/50 border-b md:border-b-0 md:border-r border-slate-800 backdrop-blur-xl flex-shrink-0 z-50 sticky top-0">
+        <div class="h-full flex flex-col p-4 md:p-6">
+<div class="flex justify-between items-center mb-6 md:mb-12">
+    <div class="flex items-center gap-2">
+        <img src="images/login/login.gif" alt="Logo" class="w-14 h-14 md:w-20 md:h-20 object-contain">
+        <h1 class="text-2xl md:text-3xl font-black italic tracking-tighter">
+            ADMIN <span class="text-blue-500">SYSTEM</span>
+        </h1>
+    </div>
+    <a href="index.html" class="md:hidden text-[10px] font-bold text-slate-500 border border-slate-800 px-3 py-1.5 rounded-full uppercase">Logout</a>
+</div>
+
+            <nav class="flex md:flex-col gap-2 overflow-x-auto no-scrollbar relative pb-2 md:pb-0">
+                <button onclick="switchAdminTab('dashboard')" id="btn-dashboard" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-active uppercase tracking-tighter">
+                    <span class="hidden md:inline">📊</span> Dashboard
+                </button>
+                <button onclick="switchAdminTab('attendance')" id="btn-attendance" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-inactive uppercase tracking-tighter">
+                    <span class="hidden md:inline">👤</span> Attendance
+                </button>
+                <button onclick="switchAdminTab('statistic')" id="btn-statistic" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-inactive text-blue-400 uppercase tracking-tighter">
+                    <span class="hidden md:inline">📈</span> Statistics
+                </button>
+                <button onclick="switchAdminTab('reports')" id="btn-reports" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-inactive uppercase tracking-tighter">
+                    <span class="hidden md:inline">📝</span> Reports
+                </button>
+                <button onclick="switchAdminTab('schedule')" id="btn-schedule" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-inactive text-purple-400 uppercase tracking-tighter">
+                    <span class="hidden md:inline">📅</span> Schedule
+                </button>
+                <button onclick="switchAdminTab('settings')" id="btn-settings" class="tab-btn px-4 py-3 whitespace-nowrap text-sm tab-inactive text-amber-400 uppercase tracking-tighter">
+                    <span class="hidden md:inline">⚙️</span> Settings
+                </button>
+                <div class="md:hidden mobile-nav-gradient"></div>
+            </nav>
+
+            <div class="hidden md:mt-auto md:block pt-6 border-t border-slate-800">
+                <a href="index.html" class="flex items-center justify-center gap-2 w-full text-xs font-bold text-slate-500 hover:text-white hover:bg-slate-900 transition p-4 rounded-2xl border border-slate-800 uppercase tracking-widest">
+                    Logout System
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-grow min-w-0 h-screen overflow-y-auto overflow-x-hidden p-4 md:p-10">
+        <div class="max-w-[1200px] mx-auto">
+            <div id="adminContent" class="animate-fadeIn">
+                <div class="flex items-center justify-center h-64">
+                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="customAdminModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="window.closeAdminCustomModal()"></div>
+        <div class="relative bg-slate-900 w-full max-w-lg rounded-[24px] md:rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden animate-toast">
+            <div id="modalHeaderArea" class="p-5 md:p-6 pb-4 border-b border-slate-800/50"></div>
+            <div id="modalBodyArea" class="p-5 md:p-6 max-h-[70vh] overflow-y-auto no-scrollbar"></div>
+            <div class="p-5 md:p-6 pt-0">
+                <button onclick="window.closeAdminCustomModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /* -----------------------------------------------------------------
+       기존 코드 유지 (로직 변경 없음)
+    ----------------------------------------------------------------- */
+    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let isInitialLoad = true; 
+
+    function createNotification(type, user, period, content) {
+        const area = document.getElementById('globalNotificationArea');
+        if(!area) return;
+
+        const toast = document.createElement('div');
+        const config = {
+            'ATTENDANCE': { color: 'blue', icon: '👤' },
+            'WORK REPORT': { color: 'emerald', icon: '📝' },
+            'SCHEDULE': { color: 'purple', icon: '📅' }
+        }[type] || { color: 'slate', icon: '🔔' };
+
+        toast.className = `animate-toast pointer-events-auto bg-slate-950 border-l-4 border-${config.color}-500 shadow-2xl p-4 rounded-r-2xl border border-slate-800 flex flex-col gap-1 cursor-pointer hover:bg-slate-900 transition-all mb-3`;
+        toast.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] font-black text-${config.color}-400 tracking-tighter uppercase">${config.icon} ${type}</span>
+                <span class="text-[9px] text-slate-600 font-bold">${new Date().toLocaleTimeString()}</span>
+            </div>
+            <div class="text-xs font-black text-white">${user} <span class="text-slate-500 font-medium">새 항목 등록</span></div>
+            <div class="text-[10px] text-slate-400 font-bold italic">${period}</div>
+            <div class="text-[11px] text-slate-300 bg-black/40 p-2 rounded-lg line-clamp-2 border border-white/5 mt-1">${content}</div>
+        `;
+        toast.onclick = () => toast.remove();
+        area.appendChild(toast);
+        setTimeout(() => { if(toast.parentElement) toast.remove(); }, 8000);
+    }
+
+    function startRealtimeWatch() {
+        db.ref('attendance').on('child_added', (dateSnap) => {
+            dateSnap.ref.on('child_added', (snap) => {
+                if (isInitialLoad) return;
+                const data = snap.val();
+                const status = typeof data === 'string' ? data : (data.attend || "출근 기록");
+                createNotification('ATTENDANCE', snap.key, dateSnap.key, status);
+            });
+            dateSnap.ref.on('child_changed', (snap) => {
+                if (isInitialLoad) return;
+                const data = snap.val();
+                if(data.leave) createNotification('ATTENDANCE', snap.key, dateSnap.key, "퇴근 완료: " + data.leave);
+            });
+        });
+        db.ref('reports').on('child_added', (dateSnap) => {
+            dateSnap.ref.on('child_added', (snap) => {
+                if (isInitialLoad) return;
+                const data = snap.val();
+                createNotification('WORK REPORT', snap.key, dateSnap.key, data.content || "내용 없음");
+            });
+            dateSnap.ref.on('child_changed', (snap) => {
+                if (isInitialLoad) return;
+                const data = snap.val();
+                createNotification('WORK REPORT', snap.key + " (수정)", dateSnap.key, data.content || "수정됨");
+            });
+        });
+        db.ref('shared_schedules').on('child_added', (snap) => {
+            if (isInitialLoad) return;
+            const data = snap.val();
+            createNotification('SCHEDULE', data.author || "사용자", data.start || "No Date", data.title);
+        });
+    }
+
+    startRealtimeWatch();
+    setTimeout(() => { isInitialLoad = false; }, 3000);
+
+    window.openAdminCustomModal = function(titleHtml, bodyHtml) {
+        document.getElementById('modalHeaderArea').innerHTML = titleHtml;
+        document.getElementById('modalBodyArea').innerHTML = bodyHtml;
+        document.getElementById('customAdminModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; 
+    };
+    window.closeAdminCustomModal = function() {
+        document.getElementById('customAdminModal').classList.add('hidden');
+        document.body.style.overflow = ''; 
+    };
+
+    async function switchAdminTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('tab-active');
+            b.classList.add('tab-inactive');
+        });
+        const activeBtn = document.getElementById(`btn-${tab}`);
+        if (activeBtn) {
+            activeBtn.classList.add('tab-active');
+            activeBtn.classList.remove('tab-inactive');
+            // 모바일에서 선택된 버튼으로 자동 스크롤
+            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        const fileMap = {
+            'dashboard': 'admin_dashboard.html',
+            'attendance': 'admin_attendance.html',
+            'statistic': 'admin_statistic.html',
+            'reports': 'admin_report.html',
+            'schedule': 'admin_calendar.html',
+            'settings': 'admin_setting.html'
+        };
+        const targetFile = fileMap[tab];
+
+        try {
+            const response = await fetch(targetFile);
+            const html = await response.text();
+            const contentArea = document.getElementById('adminContent');
+            contentArea.innerHTML = html;
+
+            const scripts = contentArea.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+
+            setTimeout(() => {
+                if (tab === 'dashboard') window.initAdminDashboard?.();
+                else if (tab === 'attendance') window.renderAttendanceFull?.();
+                else if (tab === 'statistic') window.initAdminStats?.();
+                else if (tab === 'reports') window.renderWorkFull?.();
+                else if (tab === 'schedule') window.renderScheduleFull?.();
+                else if (tab === 'settings') window.initAdminSettings?.(); 
+            }, 200);
+        } catch (e) { console.error(e); }
+    }
+
+    window.onload = () => switchAdminTab('dashboard');
+</script>
+
+</body>
+</html>

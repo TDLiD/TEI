@@ -1,0 +1,281 @@
+<div class="space-y-8 animate-fadeIn">
+    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+                <span class="text-blue-500">■</span> RECENT ATTENDANCE
+            </h2>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div>
+        </div>
+        <div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+    </div>
+
+    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+                <span class="text-emerald-500">■</span> RECENT WORK REPORTS
+            </h2>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days Summary</div>
+        </div>
+        <div id="recent_work_container" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+    </div>
+
+    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+                <span class="text-purple-500">■</span> RECENT SCHEDULE
+            </h2>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Upcoming & Current</div>
+        </div>
+        <div id="recent_sch_container" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+    </div>
+</div>
+
+<div id="customAdminModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" onclick="window.closeAdminCustomModal()"></div>
+    
+    <div class="relative bg-slate-900 w-full max-w-md rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden transform transition-all animate-in zoom-in duration-200">
+        <div id="modalHeaderArea" class="p-6 pb-4 border-b border-slate-800/50 bg-gradient-to-br from-slate-800/50 to-transparent"></div>
+        
+        <div id="modalBodyArea" class="p-6 max-h-[60vh] overflow-y-auto"></div>
+        
+        <div class="p-6 pt-0">
+            <button onclick="window.closeAdminCustomModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl transition-all active:scale-95 text-sm tracking-widest uppercase border border-slate-700">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const db = firebase.database();
+    const today = new Date();
+    const last5Days = [];
+    for(let i=0; i<5; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        last5Days.push(d.toLocaleDateString('sv-SE'));
+    }
+
+    // --- 커스텀 모달 제어 함수 ---
+    window.openAdminCustomModal = function(titleHtml, bodyHtml) {
+        document.getElementById('modalHeaderArea').innerHTML = titleHtml;
+        document.getElementById('modalBodyArea').innerHTML = bodyHtml;
+        document.getElementById('customAdminModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeAdminCustomModal = function() {
+        document.getElementById('customAdminModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    // --- 개선된 상세 보기 (adminMemo 포함) ---
+    window.showWorkDetail = function(name, date, status, contentEncoded, memoEncoded) {
+        const content = decodeURIComponent(contentEncoded);
+        const memo = decodeURIComponent(memoEncoded || '');
+        
+        const statusBadge = status === 'Completed' ? 
+            `<span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[10px] border border-emerald-500/30 font-bold">COMPLETED</span>` :
+            `<span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-[10px] border border-amber-500/30 font-bold">PENDING</span>`;
+
+        const titleHtml = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div>
+                <div>
+                    <div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter">${date}</div>
+                    <div class="text-lg font-black text-white leading-tight">${name}'s Report</div>
+                </div>
+            </div>`;
+
+        let bodyHtml = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                    <span class="text-xs text-slate-400 font-bold">Status</span>
+                    ${statusBadge}
+                </div>
+                <div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[100px] shadow-inner">
+                    ${content}
+                </div>`;
+        
+        // Admin Memo 추가
+        if (memo && memo !== 'undefined') {
+            bodyHtml += `
+                <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl">
+                    <p class="text-[10px] font-black text-blue-400 uppercase mb-2 tracking-widest">Admin Memo</p>
+                    <p class="text-xs text-blue-200/80 leading-relaxed italic">${memo}</p>
+                </div>`;
+        }
+
+        bodyHtml += `</div>`;
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+    };
+
+    window.showSchDetail = function(title, start, end, author, contentEncoded, memoEncoded) {
+        const content = decodeURIComponent(contentEncoded);
+        const memo = decodeURIComponent(memoEncoded || '');
+
+        const titleHtml = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 font-black text-xs border border-purple-500/20">SCH</div>
+                <div>
+                    <div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter">Event Schedule</div>
+                    <div class="text-lg font-black text-white leading-tight">${title}</div>
+                </div>
+            </div>`;
+
+        let bodyHtml = `
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                        <div class="text-[9px] text-slate-500 font-black uppercase mb-1">Author</div>
+                        <div class="text-xs text-purple-400 font-bold">${author}</div>
+                    </div>
+                    <div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                        <div class="text-[9px] text-slate-500 font-black uppercase mb-1">Period</div>
+                        <div class="text-[10px] text-slate-300 font-bold">${start.split('T')[0]} ~ ${end.split('T')[0]}</div>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[80px]">
+                    ${content}
+                </div>`;
+
+        // Admin Memo 추가
+        if (memo && memo !== 'undefined') {
+            bodyHtml += `
+                <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
+                    <p class="text-[10px] font-black text-amber-500 uppercase mb-2 tracking-widest">Admin Memo</p>
+                    <p class="text-xs text-amber-200/80 leading-relaxed italic">${memo}</p>
+                </div>`;
+        }
+
+        bodyHtml += `</div>`;
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+    };
+
+// --- 1. 출석 렌더링 (출근 ☀️ 및 퇴근 🌙 모두 표시 수정) ---
+window.renderRecentAttendance = function() {
+    const container = document.getElementById('recent_att_container');
+    if(!container) return;
+    db.ref('attendance').off();
+    db.ref('attendance').on('value', snap => {
+        const data = snap.val() || {};
+        container.innerHTML = '';
+        last5Days.forEach(dStr => {
+            const dayData = data[dStr] || {};
+            let staffHtml = '';
+            
+            Object.entries(dayData).forEach(([name, info]) => {
+                let statusClass = "text-emerald-400";
+                let attendanceHtml = '';
+
+                if (typeof info === 'string') {
+                    // 특별 상태인 경우 (예: "WO", "SIL", "ANL")
+                    attendanceHtml = `<span class="text-amber-400 tracking-tighter">${info}</span>`;
+                } else if (info && typeof info === 'object') {
+                    // 일반 출퇴근 객체인 경우
+                    const attVal = info.attend || '';
+                    const leaVal = info.leave || '';
+                    
+                    if (attVal.includes("LATE")) statusClass = "text-red-400";
+
+                    // 출근 시간 (☀️) + 퇴근 시간 (🌙) 조합
+                    attendanceHtml = `
+                        <div class="flex flex-col items-end gap-0.5">
+                            <span class="${statusClass} tracking-tighter">☀️ ${attVal}</span>
+                            ${leaVal ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${leaVal}</span>` : ''}
+                        </div>`;
+                }
+
+                if (attendanceHtml) {
+                    staffHtml += `
+                    <div class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30">
+                        <span class="text-slate-300 mt-0.5">${name}</span>
+                        ${attendanceHtml}
+                    </div>`;
+                }
+            });
+
+            container.innerHTML += `
+                <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/30 transition-colors">
+                    <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
+                    ${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}
+                </div>`;
+        });
+    });
+};
+
+
+    // --- 2. 업무 보고 렌더링 (adminMemo 추출 포함) ---
+    window.renderRecentWork = function() {
+        const container = document.getElementById('recent_work_container');
+        if(!container) return;
+        db.ref('reports').off();
+        db.ref('reports').on('value', snap => {
+            const data = snap.val() || {};
+            container.innerHTML = '';
+            last5Days.forEach(dStr => {
+                const dayData = data[dStr] || {};
+                let reportHtml = '';
+                Object.entries(dayData).forEach(([name, report]) => {
+                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
+                                      (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
+                    
+                    const safeContent = encodeURIComponent(report.content || 'No content');
+                    const safeMemo = encodeURIComponent(report.adminMemo || '');
+                    
+                    reportHtml += `
+                        <div onclick="window.showWorkDetail('${name}', '${dStr}', '${report.status}', '${safeContent}', '${safeMemo}')" 
+                             class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">
+                            ${name}
+                        </div>`;
+                });
+                container.innerHTML += `
+                    <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-emerald-500/30 transition-colors">
+                        <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
+                        <div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div>
+                    </div>`;
+            });
+        });
+    };
+
+    // --- 3. 스케줄 렌더링 (adminMemo 추출 포함) ---
+    window.renderRecentSchedule = function() {
+        const container = document.getElementById('recent_sch_container');
+        if(!container) return;
+        db.ref('shared_schedules').off();
+        db.ref('shared_schedules').on('value', snap => {
+            const data = snap.val() || {};
+            container.innerHTML = '';
+            last5Days.forEach(dStr => {
+                let schHtml = '';
+                Object.entries(data).forEach(([id, ev]) => {
+                    const startDate = ev.start ? ev.start.split('T')[0] : "";
+                    const endDate = ev.end ? ev.end.split('T')[0] : "";
+                    if (dStr >= startDate && dStr <= endDate) {
+                        const safeDesc = encodeURIComponent(ev.desc || ev.description || 'No content');
+                        const safeMemo = encodeURIComponent(ev.adminMemo || '');
+                        const author = ev.author || 'User';
+                        schHtml += `
+                            <div onclick="window.showSchDetail('${ev.title}', '${ev.start}', '${ev.end}', '${author}', '${safeDesc}', '${safeMemo}')" 
+                                 class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">
+                                <span class="opacity-70">[${author}]</span> ${ev.title}
+                            </div>`;
+                    }
+                });
+                container.innerHTML += `
+                    <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-purple-500/30 transition-colors">
+                        <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
+                        <div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div>
+                    </div>`;
+            });
+        });
+    };
+
+    window.initAdminDashboard = function() {
+        window.renderRecentAttendance();
+        window.renderRecentWork();
+        window.renderRecentSchedule();
+    };
+})();
+</script>

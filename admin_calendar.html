@@ -1,0 +1,263 @@
+<div class="animate-fadeIn space-y-6">
+    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                <div class="w-2 h-8 bg-purple-500 rounded-full"></div>
+                STAFF SCHEDULE <span class="text-purple-500/50 font-light text-lg uppercase tracking-widest hidden md:inline">Master</span>
+            </h2>
+            
+            <div class="flex items-center gap-4 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
+                <button onclick="window.changeSchMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div id="full_sch_month" class="text-sm font-black text-white px-2 min-w-[140px] text-center tracking-tighter uppercase"></div>
+                <button onclick="window.changeSchMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/20">
+            <table class="w-full table-fixed border-collapse min-w-[700px]">
+                <thead>
+                    <tr class="text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
+                        <th class="py-4 border-b border-slate-800 text-red-400/80">Sun</th>
+                        <th class="py-4 border-b border-slate-800">Mon</th>
+                        <th class="py-4 border-b border-slate-800">Tue</th>
+                        <th class="py-4 border-b border-slate-800">Wed</th>
+                        <th class="py-4 border-b border-slate-800">Thu</th>
+                        <th class="py-4 border-b border-slate-800">Fri</th>
+                        <th class="py-4 border-b border-slate-800 text-blue-400/80">Sat</th>
+                    </tr>
+                </thead>
+                <tbody id="full_sch_calendar_body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* --- 기존 스타일 유지 --- */
+    #full_sch_calendar_body td { 
+        height: 130px; 
+        border: 0.5px solid rgba(30, 41, 59, 0.5); 
+        vertical-align: top; 
+        padding: 6px; 
+        position: relative;
+    }
+
+    .sch-item {
+        position: absolute;
+        z-index: 10;
+        font-size: 10px; 
+        font-weight: 800; 
+        padding: 0 8px; 
+        height: 22px;
+        line-height: 22px;
+        border-radius: 4px; /* 연속성을 위해 곡률을 약간 조정 */
+        cursor: pointer; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        transition: all 0.2s; 
+        border-left: 3px solid rgba(168, 85, 247, 0.8);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .sch-item:hover { filter: brightness(1.2); z-index: 50; }
+    .sch-title-text { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .sch-staff-tag { 
+        font-size: 9px; opacity: 0.7; background: rgba(0,0,0,0.3); 
+        padding: 0 5px; border-radius: 4px; font-weight: 500; flex-shrink: 0;
+    }
+
+    /* --- 연속 일정 바(Bar)를 위한 추가 스타일 --- */
+
+    /* 1. 이전 주에서 이어지는 경우: 왼쪽 라운딩과 테두리 제거 */
+    .sch-item.continued-from-prev {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left: none;
+        margin-left: 0;
+    }
+
+    /* 2. 다음 주로 이어지는 경우: 오른쪽 라운딩 제거 */
+    .sch-item.continues-to-next {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    /* 3. 시각적 가이드: 연속 일정의 텍스트가 시작점에서만 보이도록 설정 (선택 사항) */
+    .sch-item.continued-from-prev .sch-title-text {
+        visibility: hidden; /* 이전 칸에서 넘어온 바에는 제목을 숨겨 깔끔하게 유지 */
+    }
+    
+    /* 4. 배경색 강조 (원색 계열 강조 시 사용) */
+    .bg-blue-600 { background-color: #2563eb !important; color: white; }
+    .bg-purple-600 { background-color: #9333ea !important; color: white; }
+</style>
+
+
+<script>
+(function() {
+    let viewDate = new Date();
+    const db = firebase.database();
+
+    // --- 일정 상세 팝업 및 메모 저장 함수 (기존과 동일) ---
+    window.showAdminSchDetail = function(id, title, start, end, author, descEncoded, memoEncoded) {
+        const desc = decodeURIComponent(descEncoded);
+        const memo = decodeURIComponent(memoEncoded || '');
+        const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 font-black text-xs border border-purple-500/20">SCH</div><div><div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter italic">Schedule Management</div><div class="text-lg font-black text-white leading-tight">${title}</div></div></div>`;
+        const bodyHtml = `<div class="space-y-5"><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50"><div class="text-[9px] text-slate-500 font-black uppercase mb-1">Created By</div><div class="text-xs text-white font-bold">${author}</div></div><div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50"><div class="text-[9px] text-slate-500 font-black uppercase mb-1">Period</div><div class="text-[10px] text-slate-300 font-bold">${start.split('T')[0]} ~ ${end.split('T')[0]}</div></div></div><div class="space-y-1"><div class="text-[10px] text-slate-500 font-black uppercase pl-1">Description</div><div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-sm text-slate-300 leading-relaxed min-h-[60px] shadow-inner">${desc || 'No description provided.'}</div></div><div class="space-y-1"><div class="text-[10px] text-purple-400 font-black uppercase pl-1">Admin Memo</div><textarea id="admin_memo_input" placeholder="Enter private admin memo here..." class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors h-24 resize-none shadow-inner">${memo}</textarea></div><button onclick="window.saveAdminMemo('${id}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-purple-500/20 text-xs tracking-widest uppercase">Save Memo</button></div>`;
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+    };
+
+    window.saveAdminMemo = function(schId) {
+        const memoValue = document.getElementById('admin_memo_input').value;
+        db.ref('shared_schedules/' + schId).update({ adminMemo: memoValue }).then(() => {
+            alert('Memo saved successfully!');
+            window.closeAdminCustomModal();
+            window.renderScheduleFull();
+        });
+    };
+
+    // --- 핵심: 캘린더 렌더링 로직 (슬롯 중첩 해결 버전) ---
+    window.renderScheduleFull = function() {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
+
+        db.ref('shared_schedules').on('value', snap => {
+            const data = snap.val() || {};
+            const tbody = document.getElementById('full_sch_calendar_body');
+            tbody.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            // 1. 모든 일정을 기간이 긴 순서대로 정렬 (긴 일정을 먼저 배치해야 빈 공간 효율이 좋음)
+            const sortedEvents = Object.entries(data).map(([id, ev]) => ({
+                id, ...ev,
+                sDate: ev.start.split('T')[0],
+                eDate: ev.end.split('T')[0]
+            })).sort((a, b) => {
+                const lenA = new Date(a.eDate) - new Date(a.sDate);
+                const lenB = new Date(b.eDate) - new Date(b.sDate);
+                return lenB - lenA || a.sDate.localeCompare(b.sDate);
+            });
+
+            // 2. 날짜별 슬롯 점유 현황 미리 계산
+            const dailyOccupiedSlots = {}; // { '2023-10-16': [0, 1, 3] }
+            const eventFinalSlot = {};     // { 'eventId': 0 }
+
+            sortedEvents.forEach(ev => {
+                let slot = 0;
+                while (true) {
+                    let isAvailable = true;
+                    // 일정의 전체 기간 동안 이 슬롯이 비어있는지 확인
+                    let curr = new Date(ev.sDate);
+                    const end = new Date(ev.eDate);
+                    while (curr <= end) {
+                        const dStr = curr.toISOString().split('T')[0];
+                        if (dailyOccupiedSlots[dStr] && dailyOccupiedSlots[dStr].includes(slot)) {
+                            isAvailable = false;
+                            break;
+                        }
+                        curr.setDate(curr.getDate() + 1);
+                    }
+
+                    if (isAvailable) {
+                        // 슬롯 확정 및 점유 표시
+                        eventFinalSlot[ev.id] = slot;
+                        let fill = new Date(ev.sDate);
+                        while (fill <= end) {
+                            const dStr = fill.toISOString().split('T')[0];
+                            if (!dailyOccupiedSlots[dStr]) dailyOccupiedSlots[dStr] = [];
+                            dailyOccupiedSlots[dStr].push(slot);
+                            fill.setDate(fill.getDate() + 1);
+                        }
+                        break;
+                    }
+                    slot++;
+                }
+            });
+
+            // 3. 달력 구조 생성
+            let dateNum = 1;
+            const rows = [];
+            for (let i = 0; i < 6; i++) {
+                let weekDays = [];
+                for (let j = 0; j < 7; j++) {
+                    if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                        weekDays.push(null);
+                    } else {
+                        weekDays.push(new Date(year, month, dateNum).toISOString().split('T')[0]);
+                        dateNum++;
+                    }
+                }
+                rows.push(weekDays);
+                if (dateNum > lastDate) break;
+            }
+
+            // 4. 드로잉
+            rows.forEach((week) => {
+                let tr = document.createElement('tr');
+                week.forEach((dStr, j) => {
+                    let td = document.createElement('td');
+                    if (!dStr) {
+                        tr.appendChild(td); return;
+                    }
+
+                    const d = parseInt(dStr.split('-')[2]);
+                    let html = `<div class="text-[10px] font-black mb-2 ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-500')}">${d}</div>`;
+                    
+                    // 현재 날짜에 걸치는 일정들
+                    const dayEvents = sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate);
+
+                    dayEvents.forEach(ev => {
+                        const isStartOfRender = (dStr === ev.sDate) || (j === 0);
+                        const currentSlot = eventFinalSlot[ev.id];
+
+                        if (isStartOfRender) {
+                            const daysLeftInWeek = 6 - j;
+                            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (1000 * 60 * 60 * 24));
+                            const span = Math.min(diffDays + 1, daysLeftInWeek + 1);
+                            
+                            const itemWidth = `calc(${span * 100}% - 12px)`;
+                            const topPos = 28 + (currentSlot * 26);
+                            const isContinued = dStr > ev.sDate ? 'continued-from-prev' : '';
+                            const willContinue = ev.eDate > (week[j + span - 1] || dStr) ? 'continues-to-next' : '';
+                            
+                            const hasMemoClass = ev.adminMemo ? 'bg-purple-600/80' : 'bg-blue-600/80';
+
+                            html += `
+                                <div onclick="window.showAdminSchDetail('${ev.id}', '${ev.title}', '${ev.start}', '${ev.end}', '${ev.author||'User'}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
+                                     class="sch-item ${hasMemoClass} ${isContinued} ${willContinue} text-white"
+                                     style="top: ${topPos}px; width: ${itemWidth}; ${isContinued ? 'border-left:none;' : ''}">
+                                    <span class="sch-title-text">${isContinued ? '' : ev.title}</span>
+                                    <span class="sch-staff-tag">${ev.author || ''}</span>
+                                </div>`;
+                        }
+                    });
+
+                    td.innerHTML = html;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        });
+    };
+
+    window.changeSchMonth = (offset) => {
+        viewDate.setMonth(viewDate.getMonth() + offset);
+        window.renderScheduleFull();
+    };
+
+    window.renderScheduleFull();
+})();
+
+</script>
