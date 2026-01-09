@@ -96,7 +96,7 @@
                     if (!userData) return alert("User not found.");
                     if (userData.password === pw) {
                         sessionStorage.setItem('loggedInUser', name);
-                        location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "dashboard.html";
+                        location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
                     } else {
                         alert("Incorrect password.");
                     }
