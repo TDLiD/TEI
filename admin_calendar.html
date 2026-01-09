@@ -10,7 +10,13 @@
                 <button onclick="window.changeSchMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
                 </button>
+                
+                <button onclick="window.goTodaySch()" class="px-3 py-1 text-[10px] font-black bg-slate-700 hover:bg-purple-600 text-white rounded-lg transition-all active:scale-95 uppercase tracking-tighter">
+                    Today
+                </button>
+
                 <div id="full_sch_month" class="text-sm font-black text-white px-2 min-w-[140px] text-center tracking-tighter uppercase"></div>
+                
                 <button onclick="window.changeSchMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
                 </button>
@@ -37,13 +43,42 @@
 </div>
 
 <style>
-    /* --- 기존 스타일 유지 --- */
     #full_sch_calendar_body td { 
-        height: 130px; 
+        min-height: 140px; 
         border: 0.5px solid rgba(30, 41, 59, 0.5); 
         vertical-align: top; 
-        padding: 6px; 
+        padding: 0;
         position: relative;
+    }
+
+    #full_sch_calendar_body tr {
+        height: 140px; 
+    }
+
+    .date-wrapper {
+        position: relative;
+        z-index: 20;
+        padding: 8px 10px;
+        pointer-events: none;
+    }
+
+    .date-text {
+        font-size: 11px;
+        font-weight: 900;
+        background: rgba(15, 23, 42, 0.6); 
+        padding: 2px 6px;
+        border-radius: 6px;
+        display: inline-block;
+        min-width: 22px;
+        text-align: center;
+    }
+
+    /* 오늘 날짜 하이라이트 스타일: 보라색 원형 */
+    .date-text.is-today {
+        background: #a855f7 !important;
+        color: white !important;
+        border-radius: 999px;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
     }
 
     .sch-item {
@@ -54,13 +89,12 @@
         padding: 0 8px; 
         height: 22px;
         line-height: 22px;
-        border-radius: 4px; /* 연속성을 위해 곡률을 약간 조정 */
+        border-radius: 4px;
         cursor: pointer; 
         white-space: nowrap; 
         overflow: hidden; 
         text-overflow: ellipsis;
         transition: all 0.2s; 
-        border-left: 3px solid rgba(168, 85, 247, 0.8);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -75,62 +109,169 @@
         padding: 0 5px; border-radius: 4px; font-weight: 500; flex-shrink: 0;
     }
 
-    /* --- 연속 일정 바(Bar)를 위한 추가 스타일 --- */
-
-    /* 1. 이전 주에서 이어지는 경우: 왼쪽 라운딩과 테두리 제거 */
-    .sch-item.continued-from-prev {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-left: none;
-        margin-left: 0;
-    }
-
-    /* 2. 다음 주로 이어지는 경우: 오른쪽 라운딩 제거 */
-    .sch-item.continues-to-next {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-
-    /* 3. 시각적 가이드: 연속 일정의 텍스트가 시작점에서만 보이도록 설정 (선택 사항) */
-    .sch-item.continued-from-prev .sch-title-text {
-        visibility: hidden; /* 이전 칸에서 넘어온 바에는 제목을 숨겨 깔끔하게 유지 */
-    }
+    .sch-item.continued-from-prev { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
+    .sch-item.continues-to-next { border-top-right-radius: 0; border-bottom-right-radius: 0; }
     
-    /* 4. 배경색 강조 (원색 계열 강조 시 사용) */
     .bg-blue-600 { background-color: #2563eb !important; color: white; }
     .bg-purple-600 { background-color: #9333ea !important; color: white; }
 </style>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
 (function() {
     let viewDate = new Date();
     const db = firebase.database();
+    let startPicker, endPicker;
 
-    // --- 일정 상세 팝업 및 메모 저장 함수 (기존과 동일) ---
+    // 오늘 날짜 문자열 (YYYY-MM-DD 형식) 미리 생성
+    const todayObj = new Date();
+    const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
+
+    function initTimePickers(isAllDay = false) {
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            time_24hr: false,
+            static: true,
+            locale: "en"
+        };
+        if (startPicker) startPicker.destroy();
+        if (endPicker) endPicker.destroy();
+        startPicker = flatpickr("#new_sch_start", config);
+        endPicker = flatpickr("#new_sch_end", config);
+    }
+
+    window.toggleAdminTimePicker = function(checked) {
+        const startVal = document.getElementById('new_sch_start').value;
+        const endVal = document.getElementById('new_sch_end').value;
+        initTimePickers(checked);
+        if(startVal) startPicker.setDate(startVal);
+        if(endVal) endPicker.setDate(endVal);
+    };
+
+    window.addAdminSchedule = function(dateStr) {
+        const titleHtml = `<div class="text-lg font-black text-white uppercase tracking-tighter">Schedule Entry</div>`;
+        const bodyHtml = `
+            <div class="space-y-5 text-left pt-2">
+                <div class="space-y-1">
+                    <label class="text-xs text-slate-400 font-bold pl-1">Title</label>
+                    <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-slate-400 font-bold pl-1">Description</label>
+                    <textarea id="new_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-28 resize-none outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs text-slate-400 font-bold pl-1">Start Date</label>
+                        <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none cursor-pointer">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-slate-400 font-bold pl-1">End Date</label>
+                        <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none cursor-pointer">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 pl-1">
+                    <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                    <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+                </div>
+                <div class="space-y-1 pt-2">
+                    <label class="text-[10px] text-purple-400 font-black uppercase pl-1 tracking-widest">Admin Private Memo</label>
+                    <textarea id="new_admin_memo" placeholder="Internal notes..." class="w-full bg-purple-500/5 border border-purple-500/10 rounded-xl p-4 text-sm text-purple-200 h-20 resize-none outline-none focus:border-purple-500"></textarea>
+                </div>
+                <div class="pt-4">
+                    <button onclick="window.saveNewAdminSchedule()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm tracking-widest uppercase">Save Schedule</button>
+                </div>
+            </div>`;
+
+        if (window.openAdminCustomModal) {
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                initTimePickers(false);
+                startPicker.setDate(dateStr + " 09:00");
+                endPicker.setDate(dateStr + " 10:00");
+            }, 50);
+        }
+    };
+
+    window.saveNewAdminSchedule = function() {
+        const title = document.getElementById('new_sch_title').value;
+        const start = document.getElementById('new_sch_start').value;
+        const end = document.getElementById('new_sch_end').value;
+        if(!title || !start) return alert('Title and Start Date are required.');
+
+        db.ref('shared_schedules').push({
+            title, 
+            start: start.replace(' ', 'T'), 
+            end: end ? end.replace(' ', 'T') : start.replace(' ', 'T'),
+            allDay: document.getElementById('new_sch_allday').checked,
+            desc: document.getElementById('new_sch_desc').value,
+            adminMemo: document.getElementById('new_admin_memo').value,
+            author: 'admin',
+            timestamp: Date.now()
+        }).then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
+    };
+
     window.showAdminSchDetail = function(id, title, start, end, author, descEncoded, memoEncoded) {
         const desc = decodeURIComponent(descEncoded);
         const memo = decodeURIComponent(memoEncoded || '');
-        const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 font-black text-xs border border-purple-500/20">SCH</div><div><div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter italic">Schedule Management</div><div class="text-lg font-black text-white leading-tight">${title}</div></div></div>`;
-        const bodyHtml = `<div class="space-y-5"><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50"><div class="text-[9px] text-slate-500 font-black uppercase mb-1">Created By</div><div class="text-xs text-white font-bold">${author}</div></div><div class="p-3 bg-slate-800/30 rounded-xl border border-slate-700/50"><div class="text-[9px] text-slate-500 font-black uppercase mb-1">Period</div><div class="text-[10px] text-slate-300 font-bold">${start.split('T')[0]} ~ ${end.split('T')[0]}</div></div></div><div class="space-y-1"><div class="text-[10px] text-slate-500 font-black uppercase pl-1">Description</div><div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-sm text-slate-300 leading-relaxed min-h-[60px] shadow-inner">${desc || 'No description provided.'}</div></div><div class="space-y-1"><div class="text-[10px] text-purple-400 font-black uppercase pl-1">Admin Memo</div><textarea id="admin_memo_input" placeholder="Enter private admin memo here..." class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors h-24 resize-none shadow-inner">${memo}</textarea></div><button onclick="window.saveAdminMemo('${id}')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-purple-500/20 text-xs tracking-widest uppercase">Save Memo</button></div>`;
-        window.openAdminCustomModal(titleHtml, bodyHtml);
+        const titleHtml = `<div class="text-lg font-black text-white">Edit Schedule</div>`;
+        const bodyHtml = `
+            <div class="space-y-5 text-left">
+                <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Title</label>
+                <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Start</label><input type="date" id="edit_sch_start" value="${start.split('T')[0]}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white"></div>
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">End</label><input type="date" id="edit_sch_end" value="${end.split('T')[0]}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white"></div>
+                </div>
+                <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Description</label><textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none">${desc}</textarea></div>
+                <div class="space-y-1"><label class="text-[10px] text-purple-400 font-black uppercase">Admin Memo</label><textarea id="admin_memo_input" class="w-full bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 text-sm text-purple-200 h-20 resize-none outline-none">${memo}</textarea></div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="window.deleteAdminSchedule('${id}')" class="bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 font-black py-4 rounded-xl transition-all text-xs uppercase">Delete</button>
+                    <button onclick="window.updateAdminSchedule('${id}')" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-lg shadow-purple-500/20 text-xs uppercase">Save Changes</button>
+                </div>
+            </div>`;
+        if (window.openAdminCustomModal) window.openAdminCustomModal(titleHtml, bodyHtml);
     };
 
-    window.saveAdminMemo = function(schId) {
-        const memoValue = document.getElementById('admin_memo_input').value;
-        db.ref('shared_schedules/' + schId).update({ adminMemo: memoValue }).then(() => {
-            alert('Memo saved successfully!');
-            window.closeAdminCustomModal();
-            window.renderScheduleFull();
+    window.updateAdminSchedule = function(schId) {
+        const updateData = {
+            title: document.getElementById('edit_sch_title').value,
+            start: document.getElementById('edit_sch_start').value,
+            end: document.getElementById('edit_sch_end').value,
+            desc: document.getElementById('edit_sch_desc').value,
+            adminMemo: document.getElementById('admin_memo_input').value,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        db.ref('shared_schedules/' + schId).update(updateData).then(() => {
+            if(window.closeAdminCustomModal) window.closeAdminCustomModal();
         });
     };
 
-    // --- 핵심: 캘린더 렌더링 로직 (슬롯 중첩 해결 버전) ---
-    window.renderScheduleFull = function() {
-        const year = viewDate.getFullYear();
-        const month = viewDate.getMonth();
-        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
+    window.deleteAdminSchedule = function(schId) {
+        if(confirm('⚠️ Delete permanently?')) {
+            db.ref('shared_schedules/' + schId).remove().then(() => {
+                if(window.closeAdminCustomModal) window.closeAdminCustomModal();
+            });
+        }
+    };
 
+    // TODAY 기능 함수
+    window.goTodaySch = function() {
+        viewDate = new Date();
+        window.renderScheduleFull();
+    };
+
+    window.renderScheduleFull = function() {
+        const year = viewDate.getFullYear(), month = viewDate.getMonth();
+        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+
+        db.ref('shared_schedules').off();
         db.ref('shared_schedules').on('value', snap => {
             const data = snap.val() || {};
             const tbody = document.getElementById('full_sch_calendar_body');
@@ -139,125 +280,103 @@
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
             
-            // 1. 모든 일정을 기간이 긴 순서대로 정렬 (긴 일정을 먼저 배치해야 빈 공간 효율이 좋음)
             const sortedEvents = Object.entries(data).map(([id, ev]) => ({
                 id, ...ev,
                 sDate: ev.start.split('T')[0],
                 eDate: ev.end.split('T')[0]
-            })).sort((a, b) => {
-                const lenA = new Date(a.eDate) - new Date(a.sDate);
-                const lenB = new Date(b.eDate) - new Date(b.sDate);
-                return lenB - lenA || a.sDate.localeCompare(b.sDate);
-            });
+            })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)) || a.sDate.localeCompare(b.sDate));
 
-            // 2. 날짜별 슬롯 점유 현황 미리 계산
-            const dailyOccupiedSlots = {}; // { '2023-10-16': [0, 1, 3] }
-            const eventFinalSlot = {};     // { 'eventId': 0 }
-
+            const eventFinalSlot = {};
+            const daySlotUsage = {};
             sortedEvents.forEach(ev => {
                 let slot = 0;
                 while (true) {
                     let isAvailable = true;
-                    // 일정의 전체 기간 동안 이 슬롯이 비어있는지 확인
-                    let curr = new Date(ev.sDate);
-                    const end = new Date(ev.eDate);
-                    while (curr <= end) {
-                        const dStr = curr.toISOString().split('T')[0];
-                        if (dailyOccupiedSlots[dStr] && dailyOccupiedSlots[dStr].includes(slot)) {
-                            isAvailable = false;
-                            break;
-                        }
-                        curr.setDate(curr.getDate() + 1);
+                    for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                        const dStr = d.toISOString().split('T')[0];
+                        if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
                     }
-
                     if (isAvailable) {
-                        // 슬롯 확정 및 점유 표시
-                        eventFinalSlot[ev.id] = slot;
-                        let fill = new Date(ev.sDate);
-                        while (fill <= end) {
-                            const dStr = fill.toISOString().split('T')[0];
-                            if (!dailyOccupiedSlots[dStr]) dailyOccupiedSlots[dStr] = [];
-                            dailyOccupiedSlots[dStr].push(slot);
-                            fill.setDate(fill.getDate() + 1);
+                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                            const dStr = d.toISOString().split('T')[0];
+                            if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
+                            daySlotUsage[dStr].add(slot);
                         }
+                        eventFinalSlot[ev.id] = slot;
                         break;
                     }
                     slot++;
                 }
             });
 
-            // 3. 달력 구조 생성
             let dateNum = 1;
-            const rows = [];
             for (let i = 0; i < 6; i++) {
-                let weekDays = [];
+                const tr = document.createElement('tr');
+                let hasDate = false;
+                let maxSlotsInWeek = 0;
+                const weekTds = [];
+
                 for (let j = 0; j < 7; j++) {
+                    const td = document.createElement('td');
                     if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                        weekDays.push(null);
-                    } else {
-                        weekDays.push(new Date(year, month, dateNum).toISOString().split('T')[0]);
-                        dateNum++;
+                        weekTds.push(td);
+                        continue;
                     }
-                }
-                rows.push(weekDays);
-                if (dateNum > lastDate) break;
-            }
-
-            // 4. 드로잉
-            rows.forEach((week) => {
-                let tr = document.createElement('tr');
-                week.forEach((dStr, j) => {
-                    let td = document.createElement('td');
-                    if (!dStr) {
-                        tr.appendChild(td); return;
-                    }
-
-                    const d = parseInt(dStr.split('-')[2]);
-                    let html = `<div class="text-[10px] font-black mb-2 ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-500')}">${d}</div>`;
                     
-                    // 현재 날짜에 걸치는 일정들
-                    const dayEvents = sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate);
+                    hasDate = true;
+                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+                    
+                    // 오늘 날짜인지 확인
+                    const isToday = (dStr === todayStr);
 
-                    dayEvents.forEach(ev => {
-                        const isStartOfRender = (dStr === ev.sDate) || (j === 0);
-                        const currentSlot = eventFinalSlot[ev.id];
+                    if (daySlotUsage[dStr]) {
+                        const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1;
+                        if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
+                    }
 
-                        if (isStartOfRender) {
-                            const daysLeftInWeek = 6 - j;
-                            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (1000 * 60 * 60 * 24));
-                            const span = Math.min(diffDays + 1, daysLeftInWeek + 1);
-                            
-                            const itemWidth = `calc(${span * 100}% - 12px)`;
-                            const topPos = 28 + (currentSlot * 26);
+                    td.className = "cursor-pointer hover:bg-slate-800/20 transition-colors";
+                    td.onclick = (e) => { if(e.target.tagName === 'TD') window.addAdminSchedule(dStr); };
+
+                    // 오늘 날짜면 'is-today' 클래스를 추가
+                    let html = `<div class="date-wrapper">
+                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-red-500':(j===6?'text-blue-500':'text-slate-400')}">
+                            ${dateNum}
+                        </span>
+                    </div>`;
+                    
+                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                        const isStartPoint = (dStr === ev.sDate) || (j === 0);
+                        if (isStartPoint) {
+                            const currentSlot = eventFinalSlot[ev.id];
+                            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
+                            const span = Math.min(diffDays + 1, 7 - j);
                             const isContinued = dStr > ev.sDate ? 'continued-from-prev' : '';
-                            const willContinue = ev.eDate > (week[j + span - 1] || dStr) ? 'continues-to-next' : '';
                             
-                            const hasMemoClass = ev.adminMemo ? 'bg-purple-600/80' : 'bg-blue-600/80';
-
-                            html += `
-                                <div onclick="window.showAdminSchDetail('${ev.id}', '${ev.title}', '${ev.start}', '${ev.end}', '${ev.author||'User'}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
-                                     class="sch-item ${hasMemoClass} ${isContinued} ${willContinue} text-white"
-                                     style="top: ${topPos}px; width: ${itemWidth}; ${isContinued ? 'border-left:none;' : ''}">
-                                    <span class="sch-title-text">${isContinued ? '' : ev.title}</span>
-                                    <span class="sch-staff-tag">${ev.author || ''}</span>
-                                </div>`;
+                            html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
+                                class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
+                                style="top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);">
+                                <span class="sch-title-text">${isContinued ? '' : ev.title}</span>
+                                <span class="sch-staff-tag">${ev.author||''}</span>
+                            </div>`;
                         }
                     });
-
                     td.innerHTML = html;
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
+                    weekTds.push(td);
+                    dateNum++;
+                }
+
+                if (hasDate) {
+                    const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
+                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
+                    weekTds.forEach(td => tr.appendChild(td));
+                    tbody.appendChild(tr);
+                }
+                if (dateNum > lastDate) break;
+            }
         });
     };
 
-    window.changeSchMonth = (offset) => {
-        viewDate.setMonth(viewDate.getMonth() + offset);
-        window.renderScheduleFull();
-    };
-
+    window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
     window.renderScheduleFull();
 })();
-
 </script>

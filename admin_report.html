@@ -73,41 +73,55 @@
         let viewDate = new Date();
         const db = firebase.database();
 
-        // 관리자 메모 저장 함수
-        window.saveAdminMemo = function(date, name) {
-            const memoValue = document.getElementById('adminMemoInput').value;
+        // [추가] 통합 저장 함수 (상태, 내용, 메모 모두 업데이트)
+        window.updateAdminReport = function(date, name) {
+            const newContent = document.getElementById('editContentInput').value;
+            const newStatus = document.getElementById('editStatusSelect').value;
+            const newMemo = document.getElementById('adminMemoInput').value;
+
+            if(!confirm(`${name}님의 리포트 내용을 수정하시겠습니까?`)) return;
+
             db.ref(`reports/${date}/${name}`).update({
-                adminMemo: memoValue
+                content: newContent,
+                status: newStatus,
+                adminMemo: newMemo,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
-                alert('Admin memo saved successfully!');
+                alert('Changes saved successfully!');
+                if(window.closeAdminCustomModal) window.closeAdminCustomModal();
             }).catch(err => {
                 console.error(err);
-                alert('Save failed.');
+                alert('Update failed.');
             });
         };
 
-        // [수정] 팝업창(모달) 상세 디자인 함수 - 메모 필드 추가
+        // [추가] 리포트 삭제 함수
+        window.deleteAdminReport = function(date, name) {
+            if(!confirm(`⚠️ 경고: ${name}님의 리포트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+
+            db.ref(`reports/${date}/${name}`).remove()
+                .then(() => {
+                    alert('Report deleted.');
+                    if(window.closeAdminCustomModal) window.closeAdminCustomModal();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Delete failed.');
+                });
+        };
+
+        // [수정] 팝업창 상세 디자인 - 수정/삭제 기능 UI 통합
         window.showWorkDetail = function(name, date, status, contentEncoded, memoEncoded) {
             const content = decodeURIComponent(contentEncoded);
             const memo = decodeURIComponent(memoEncoded || '');
             
-            let statusBadge = "";
-            if(status === 'Completed') {
-                statusBadge = `<span class="bg-emerald-500 text-slate-900 px-3 py-1 rounded-full text-[10px] font-black border border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]">COMPLETED</span>`;
-            } else if(status === 'Pending') {
-                statusBadge = `<span class="bg-amber-500 text-slate-900 px-3 py-1 rounded-full text-[10px] font-black border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]">PENDING</span>`;
-            } else {
-                statusBadge = `<span class="bg-blue-500 text-slate-900 px-3 py-1 rounded-full text-[10px] font-black border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">IN PROGRESS</span>`;
-            }
-
             const titleHtml = `
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-slate-900 font-black text-lg shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-slate-900 font-black text-lg shadow-lg">
                         ${name.charAt(0)}
                     </div>
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            ${statusBadge}
                             <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${date}</span>
                         </div>
                         <div class="text-xl font-black text-white tracking-tight">${name}'s Report</div>
@@ -115,12 +129,26 @@
                 </div>`;
 
             const bodyHtml = `
-                <div class="space-y-5 animate-fadeIn">
-                    <div class="relative">
-                        <div class="absolute -top-3 left-4 bg-slate-900 px-2 text-[10px] font-black text-emerald-500 tracking-widest uppercase">Content Summary</div>
-                        <div class="p-5 bg-slate-950/80 rounded-[24px] border border-slate-800 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[100px] shadow-inner">
-                            ${content || '<span class="text-slate-600 italic">No content provided.</span>'}
+                <div class="space-y-6 animate-fadeIn pb-4">
+                    <div class="flex justify-between items-end gap-4">
+                        <div class="flex-1">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 block ml-1">Current Status</label>
+                            <select id="editStatusSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-emerald-500 transition-all">
+                                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>🔵 IN PROGRESS</option>
+                                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>🟡 PENDING</option>
+                                <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>🟢 COMPLETED</option>
+                            </select>
                         </div>
+                        <button onclick="window.deleteAdminReport('${date}', '${name}')" 
+                            class="bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2.5 rounded-xl border border-red-900/50 transition-all text-[10px] font-black uppercase tracking-tighter shadow-lg">
+                            Delete
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute -top-3 left-4 bg-slate-900 px-2 text-[10px] font-black text-emerald-500 tracking-widest uppercase">Report Content</div>
+                        <textarea id="editContentInput" 
+                            class="w-full bg-slate-950 border border-slate-700 rounded-[20px] p-5 text-sm text-slate-300 leading-relaxed min-h-[120px] outline-none focus:border-emerald-500 shadow-inner resize-none transition-all">${content}</textarea>
                     </div>
 
                     <div class="relative">
@@ -128,30 +156,18 @@
                         <div class="p-4 bg-slate-950/40 rounded-[24px] border border-slate-700/50 space-y-3">
                             <textarea id="adminMemoInput" 
                                 class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 transition-all min-h-[80px] resize-none" 
-                                placeholder="Enter admin notes here...">${memo}</textarea>
-                            <button onclick="window.saveAdminMemo('${date}', '${name}')" 
-                                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] py-2.5 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-blue-900/20 active:scale-95">
-                                Save Admin Memo
-                            </button>
+                                placeholder="관리자 메모를 입력하세요...">${memo}</textarea>
                         </div>
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-3 bg-slate-800/30 rounded-2xl border border-slate-700/50 flex flex-col items-center">
-                            <span class="text-[9px] text-slate-500 font-black uppercase mb-1">Reporter</span>
-                            <span class="text-xs text-white font-bold">${name}</span>
-                        </div>
-                        <div class="p-3 bg-slate-800/30 rounded-2xl border border-slate-700/50 flex flex-col items-center">
-                            <span class="text-[9px] text-slate-500 font-black uppercase mb-1">Last Update</span>
-                            <span class="text-xs text-white font-bold">${date.split('-')[1]}/${date.split('-')[2]}</span>
-                        </div>
-                    </div>
+
+                    <button onclick="window.updateAdminReport('${date}', '${name}')" 
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-4 rounded-2xl transition-all uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 active:scale-95">
+                        Save Changes
+                    </button>
                 </div>`;
 
             if (typeof window.openAdminCustomModal === 'function') {
                 window.openAdminCustomModal(titleHtml, bodyHtml);
-            } else {
-                alert(`${name} Report: ${content}`);
             }
         };
 
