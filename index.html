@@ -52,9 +52,15 @@
             <div>
                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Password</label>
                 <input type="password" id="password" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-xl" placeholder="••••••••">
+                
+                <div class="flex justify-end px-1 mt-2">
+                    <button onclick="findPassword()" class="text-[10px] text-slate-500 hover:text-blue-400 transition font-bold uppercase tracking-wider">
+                        Forgot Password?
+                    </button>
+                </div>
             </div>
 
-            <div class="pt-4">
+            <div class="pt-2">
                 <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 shadow-xl shadow-blue-900/30 transition-all active:scale-95 text-base uppercase tracking-widest">
                     Sign In
                 </button>
@@ -86,6 +92,7 @@
                 }
             });
 
+            // 로그인 로직
             window.handleLogin = function() {
                 const name = document.getElementById('userName').value;
                 const pw = document.getElementById('password').value;
@@ -96,11 +103,35 @@
                     if (!userData) return alert("User not found.");
                     if (userData.password === pw) {
                         sessionStorage.setItem('loggedInUser', name);
+                        sessionStorage.setItem('userRole', userData.role); // 역할 정보 추가 저장
                         location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
                     } else {
                         alert("Incorrect password.");
                     }
                 });
+            };
+
+            // 방법 2 응용: 패스워드 힌트 제공 로직
+            window.findPassword = function() {
+                const name = document.getElementById('userName').value;
+                if (!name) {
+                    return alert("Please select your name from the list first.");
+                }
+
+                if (confirm(`Do you want to see a password hint for '${name}'?`)) {
+                    database.ref('users/' + name).once('value', (snapshot) => {
+                        const userData = snapshot.val();
+                        if (userData && userData.password) {
+                            // 보안을 위해 앞 2글자만 노출하고 나머지는 * 처리
+                            const pw = userData.password;
+                            const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
+                            
+                            alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
+                        } else {
+                            alert("User information or password not found.");
+                        }
+                    });
+                }
             };
         })();
     </script>

@@ -1,27 +1,27 @@
 <div class="animate-fadeIn space-y-6">
-    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-black text-white flex items-center gap-3">
-                <div class="w-2 h-8 bg-emerald-500 rounded-full"></div>
-                WORK REPORTS <span class="text-emerald-500/50 font-light text-lg uppercase tracking-widest hidden md:inline">Calendar</span>
+    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
+            <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-3">
+                <div class="w-1.5 h-7 md:w-2 md:h-8 bg-emerald-500 rounded-full"></div>
+                WORK REPORTS <span class="text-emerald-500/50 font-light text-sm md:text-lg uppercase tracking-widest hidden sm:inline">Calendar</span>
             </h2>
             
-            <div class="flex items-center gap-4 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
+            <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
                 <button onclick="window.changeWorkMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <div id="full_work_month" class="text-sm font-black text-white px-2 min-w-[140px] text-center tracking-tighter"></div>
+                <div id="full_work_month" class="text-xs md:text-sm font-black text-white px-2 min-w-[120px] md:min-w-[140px] text-center tracking-tighter italic uppercase"></div>
                 <button onclick="window.changeWorkMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
                 </button>
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-2xl border border-slate-800 shadow-inner bg-slate-950/20">
-            <table class="w-full table-fixed border-collapse min-w-[700px]">
+        <div class="overflow-x-visible md:overflow-x-auto rounded-2xl md:border md:border-slate-800 shadow-inner bg-transparent md:bg-slate-950/20">
+            <table class="w-full table-fixed border-collapse">
                 <thead>
-                    <tr class="text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
-                        <th class="py-4 border-b border-slate-800 text-red-400/80 font-black">Sun</th>
+                    <tr class="hidden md:table-row text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
+                        <th class="py-4 border-b border-slate-800 text-red-400/80">Sun</th>
                         <th class="py-4 border-b border-slate-800">Mon</th>
                         <th class="py-4 border-b border-slate-800">Tue</th>
                         <th class="py-4 border-b border-slate-800">Wed</th>
@@ -30,42 +30,79 @@
                         <th class="py-4 border-b border-slate-800 text-blue-400/80">Sat</th>
                     </tr>
                 </thead>
-                <tbody id="full_work_calendar_body"></tbody>
+                <tbody id="full_work_calendar_body" class="flex flex-col gap-4 md:table-row-group">
+                    </tbody>
             </table>
         </div>
     </div>
 </div>
 
 <style>
-    #full_work_calendar_body td { 
-        height: 140px; 
-        border: 1px solid rgba(30, 41, 59, 0.5); 
-        vertical-align: top; 
-        padding: 8px;
-        transition: background-color 0.2s;
+    /* 데스크톱 전용 스타일 */
+    @media (min-width: 768px) {
+        #full_work_calendar_body { display: table-row-group; }
+        #full_work_calendar_body tr { display: table-row; }
+        #full_work_calendar_body td { 
+            height: 140px; 
+            border: 1px solid rgba(30, 41, 59, 0.5); 
+            vertical-align: top; 
+            padding: 10px;
+            transition: background-color 0.2s;
+        }
+        #full_work_calendar_body td:hover { background-color: rgba(30, 41, 59, 0.3); }
     }
-    #full_work_calendar_body td:hover {
-        background-color: rgba(30, 41, 59, 0.2);
+
+    /* 모바일 전용 스타일 (768px 미만) */
+    @media (max-width: 767px) {
+        #full_work_calendar_body td {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+            padding: 0;
+            border: none !important;
+        }
+        /* 날짜가 없는 빈 칸 숨기기 */
+        #full_work_calendar_body td:empty { display: none; }
+        
+        .mobile-day-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+        .mobile-day-card.today-active {
+            border: 1px solid #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
     }
+
+    /* 리포트 아이템 스타일 공통 */
     .work-item {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 800;
-        padding: 4px 6px;
-        border-radius: 8px;
-        margin-bottom: 3px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        margin-bottom: 4px;
         cursor: pointer;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    @media (max-width: 767px) {
+        .work-item { font-size: 13px; padding: 12px; margin-bottom: 8px; }
     }
     .work-item:hover { 
         filter: brightness(1.2); 
-        transform: translateY(-1px) scale(1.02);
+        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .work-item:active { transform: scale(0.98); }
+    .work-item:active { transform: scale(0.96); }
 </style>
 
 <script>
@@ -73,7 +110,7 @@
         let viewDate = new Date();
         const db = firebase.database();
 
-        // [추가] 통합 저장 함수 (상태, 내용, 메모 모두 업데이트)
+        // 통합 저장 함수
         window.updateAdminReport = function(date, name) {
             const newContent = document.getElementById('editContentInput').value;
             const newStatus = document.getElementById('editStatusSelect').value;
@@ -87,81 +124,73 @@
                 adminMemo: newMemo,
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
-                alert('Changes saved successfully!');
                 if(window.closeAdminCustomModal) window.closeAdminCustomModal();
             }).catch(err => {
-                console.error(err);
                 alert('Update failed.');
             });
         };
 
-        // [추가] 리포트 삭제 함수
+        // 리포트 삭제 함수
         window.deleteAdminReport = function(date, name) {
-            if(!confirm(`⚠️ 경고: ${name}님의 리포트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+            if(!confirm(`⚠️ 경고: ${name}님의 리포트를 영구 삭제하시겠습니까?`)) return;
 
             db.ref(`reports/${date}/${name}`).remove()
                 .then(() => {
-                    alert('Report deleted.');
                     if(window.closeAdminCustomModal) window.closeAdminCustomModal();
                 })
                 .catch(err => {
-                    console.error(err);
                     alert('Delete failed.');
                 });
         };
 
-        // [수정] 팝업창 상세 디자인 - 수정/삭제 기능 UI 통합
+        // 상세 팝업창 (반응형 최적화)
         window.showWorkDetail = function(name, date, status, contentEncoded, memoEncoded) {
             const content = decodeURIComponent(contentEncoded);
             const memo = decodeURIComponent(memoEncoded || '');
             
             const titleHtml = `
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-slate-900 font-black text-lg shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-900 font-black shadow-lg">
                         ${name.charAt(0)}
                     </div>
                     <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${date}</span>
-                        </div>
-                        <div class="text-xl font-black text-white tracking-tight">${name}'s Report</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">${date}</div>
+                        <div class="text-lg font-black text-white leading-none">${name}'s Report</div>
                     </div>
                 </div>`;
 
             const bodyHtml = `
-                <div class="space-y-6 animate-fadeIn pb-4">
-                    <div class="flex justify-between items-end gap-4">
-                        <div class="flex-1">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 block ml-1">Current Status</label>
-                            <select id="editStatusSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-emerald-500 transition-all">
+                <div class="space-y-5 animate-fadeIn pb-2">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+                        <div class="w-full sm:flex-1">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">Current Status</label>
+                            <select id="editStatusSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 appearance-none">
                                 <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>🔵 IN PROGRESS</option>
                                 <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>🟡 PENDING</option>
                                 <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>🟢 COMPLETED</option>
                             </select>
                         </div>
                         <button onclick="window.deleteAdminReport('${date}', '${name}')" 
-                            class="bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white px-4 py-2.5 rounded-xl border border-red-900/50 transition-all text-[10px] font-black uppercase tracking-tighter shadow-lg">
+                            class="w-full sm:w-auto bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white px-5 py-3 rounded-xl border border-rose-900/50 transition-all text-[10px] font-black uppercase tracking-tighter">
                             Delete
                         </button>
                     </div>
 
                     <div class="relative">
-                        <div class="absolute -top-3 left-4 bg-slate-900 px-2 text-[10px] font-black text-emerald-500 tracking-widest uppercase">Report Content</div>
+                        <div class="absolute -top-2.5 left-4 bg-slate-900 px-2 text-[9px] font-black text-emerald-500 tracking-widest uppercase z-10">Report Content</div>
                         <textarea id="editContentInput" 
-                            class="w-full bg-slate-950 border border-slate-700 rounded-[20px] p-5 text-sm text-slate-300 leading-relaxed min-h-[120px] outline-none focus:border-emerald-500 shadow-inner resize-none transition-all">${content}</textarea>
+                            class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 text-sm text-slate-300 leading-relaxed min-h-[140px] outline-none focus:border-emerald-500 shadow-inner resize-none">${content}</textarea>
                     </div>
 
                     <div class="relative">
-                        <div class="absolute -top-3 left-4 bg-slate-900 px-2 text-[10px] font-black text-blue-400 tracking-widest uppercase">Admin Management Memo</div>
-                        <div class="p-4 bg-slate-950/40 rounded-[24px] border border-slate-700/50 space-y-3">
-                            <textarea id="adminMemoInput" 
-                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-blue-500 transition-all min-h-[80px] resize-none" 
-                                placeholder="관리자 메모를 입력하세요...">${memo}</textarea>
-                        </div>
+                        <div class="absolute -top-2.5 left-4 bg-slate-900 px-2 text-[9px] font-black text-blue-400 tracking-widest uppercase z-10">Admin Memo</div>
+                        <textarea id="adminMemoInput" 
+                            class="w-full bg-slate-950/40 border border-slate-700/50 rounded-2xl p-4 text-sm text-white outline-none focus:border-blue-500 min-h-[80px] resize-none" 
+                            placeholder="Add private manager notes...">${memo}</textarea>
                     </div>
 
                     <button onclick="window.updateAdminReport('${date}', '${name}')" 
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-4 rounded-2xl transition-all uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 active:scale-95">
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-4 rounded-2xl transition-all uppercase tracking-widest shadow-xl active:scale-95">
                         Save Changes
                     </button>
                 </div>`;
@@ -174,8 +203,9 @@
         window.renderWorkFull = function() {
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
+            const isMobile = window.innerWidth < 768;
             
-            document.getElementById('full_work_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+            document.getElementById('full_work_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
 
             db.ref('reports').off();
             db.ref('reports').on('value', snap => {
@@ -185,50 +215,66 @@
 
                 const firstDay = new Date(year, month, 1).getDay();
                 const lastDate = new Date(year, month + 1, 0).getDate();
+                const todayStr = new Date().toLocaleDateString('sv-SE');
                 
                 let dateNum = 1;
                 for (let i = 0; i < 6; i++) {
                     let tr = document.createElement('tr');
-                    let hasCells = false;
+                    let hasCellsInRow = false;
 
                     for (let j = 0; j < 7; j++) {
                         let td = document.createElement('td');
                         if (i === 0 && j < firstDay || dateNum > lastDate) {
-                            td.innerHTML = "";
-                            td.classList.add('bg-slate-900/10');
+                            if (!isMobile) tr.appendChild(td);
                         } else {
-                            hasCells = true;
+                            hasCellsInRow = true;
                             const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
-                            const isToday = new Date().toLocaleDateString('sv-SE') === dStr;
+                            const isToday = todayStr === dStr;
                             
-                            let html = `<div class="flex justify-between items-center mb-2">
-                                <span class="text-[11px] font-black ${isToday ? 'bg-emerald-500 text-slate-900 w-5 h-5 flex items-center justify-center rounded-full' : (j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-400' : 'text-slate-500'))}">${dateNum}</span>
-                            </div>`;
+                            // 날짜 헤더 디자인
+                            let dayHeader = `
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-[11px] font-black ${isToday ? 'bg-emerald-500 text-slate-900 w-6 h-6 flex items-center justify-center rounded-lg shadow-lg shadow-emerald-500/20' : (j === 0 ? 'text-rose-500' : (j === 6 ? 'text-blue-400' : 'text-slate-500'))}">${dateNum}</span>
+                                    ${isToday && isMobile ? '<span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Today</span>' : ''}
+                                </div>`;
                             
                             const dayReports = data[dStr] || {};
                             let reportHtml = '<div class="space-y-1.5">';
-                            Object.entries(dayReports).forEach(([name, report]) => {
-                                const statusColor = report.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                                                  (report.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20');
-                                
-                                const safeContent = encodeURIComponent(report.content || '');
-                                const safeMemo = encodeURIComponent(report.adminMemo || '');
-                                
-                                reportHtml += `
-                                    <div onclick="window.showWorkDetail('${name}', '${dStr}', '${report.status}', '${safeContent}', '${safeMemo}')" 
-                                         class="work-item border ${statusColor}">
-                                        ${name}
-                                    </div>`;
-                            });
+                            
+                            const reportEntries = Object.entries(dayReports);
+                            if (reportEntries.length > 0) {
+                                reportEntries.forEach(([name, report]) => {
+                                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                                                      (report.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20');
+                                    
+                                    const safeContent = encodeURIComponent(report.content || '');
+                                    const safeMemo = encodeURIComponent(report.adminMemo || '');
+                                    
+                                    reportHtml += `
+                                        <div onclick="window.showWorkDetail('${name}', '${dStr}', '${report.status}', '${safeContent}', '${safeMemo}')" 
+                                             class="work-item border ${statusColor}">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>
+                                            ${name}
+                                        </div>`;
+                                });
+                            } else if(isMobile) {
+                                reportHtml += `<div class="text-[10px] text-slate-700 italic py-1">No reports today</div>`;
+                            }
                             reportHtml += '</div>';
                             
-                            td.innerHTML = html + reportHtml;
+                            if (isMobile) {
+                                td.className = `mobile-day-card ${isToday ? 'today-active' : ''}`;
+                                td.innerHTML = dayHeader + reportHtml;
+                            } else {
+                                td.innerHTML = dayHeader + reportHtml;
+                            }
+
+                            tr.appendChild(td);
                             dateNum++;
                         }
-                        tr.appendChild(td);
                     }
-                    if (!hasCells) break;
-                    tbody.appendChild(tr);
+                    if (hasCellsInRow) tbody.appendChild(tr);
+                    if (dateNum > lastDate) break;
                 }
             });
         };
@@ -237,6 +283,13 @@
             viewDate.setMonth(viewDate.getMonth() + offset);
             window.renderWorkFull();
         };
+
+        // 반응형 대응 리렌더링
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(window.renderWorkFull, 250);
+        });
 
         window.renderWorkFull();
     })();

@@ -1,21 +1,20 @@
-<div class="animate-fadeIn space-y-6">
-    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-black text-white flex items-center gap-3">
-                <div class="w-2 h-8 bg-purple-500 rounded-full"></div>
-                STAFF SCHEDULE <span class="text-purple-500/50 font-light text-lg uppercase tracking-widest hidden md:inline">Master</span>
+<div class="animate-fadeIn space-y-4 md:space-y-6">
+    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
+            <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-3 w-full md:w-auto">
+                <div class="w-1.5 h-7 md:w-2 md:h-8 bg-purple-500 rounded-full"></div>
+                STAFF SCHEDULE <span class="text-purple-500/50 font-light text-sm md:text-lg uppercase tracking-widest hidden sm:inline">Master</span>
             </h2>
             
-            <div class="flex items-center gap-4 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
-                <button onclick="window.changeSchMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                
-                <button onclick="window.goTodaySch()" class="px-3 py-1 text-[10px] font-black bg-slate-700 hover:bg-purple-600 text-white rounded-lg transition-all active:scale-95 uppercase tracking-tighter">
-                    Today
-                </button>
+            <div class="flex items-center gap-2 md:gap-4 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-1">
+                    <button onclick="window.changeSchMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button onclick="window.goTodaySch()" class="px-3 py-2 text-[10px] font-black bg-slate-700 hover:bg-purple-600 text-white rounded-lg transition-all active:scale-95 uppercase">Today</button>
+                </div>
 
-                <div id="full_sch_month" class="text-sm font-black text-white px-2 min-w-[140px] text-center tracking-tighter uppercase"></div>
+                <div id="full_sch_month" class="text-xs md:text-sm font-black text-white px-2 min-w-[100px] md:min-w-[140px] text-center tracking-tighter uppercase italic"></div>
                 
                 <button onclick="window.changeSchMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
@@ -23,10 +22,10 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/20">
-            <table class="w-full table-fixed border-collapse min-w-[700px]">
+        <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/20">
+            <table class="w-full table-fixed border-collapse">
                 <thead>
-                    <tr class="text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
+                    <tr class="hidden md:table-row text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
                         <th class="py-4 border-b border-slate-800 text-red-400/80">Sun</th>
                         <th class="py-4 border-b border-slate-800">Mon</th>
                         <th class="py-4 border-b border-slate-800">Tue</th>
@@ -36,32 +35,55 @@
                         <th class="py-4 border-b border-slate-800 text-blue-400/80">Sat</th>
                     </tr>
                 </thead>
-                <tbody id="full_sch_calendar_body"></tbody>
+                <tbody id="full_sch_calendar_body" class="flex flex-col md:table-row-group"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <style>
-    #full_sch_calendar_body td { 
-        min-height: 140px; 
-        border: 0.5px solid rgba(30, 41, 59, 0.5); 
-        vertical-align: top; 
-        padding: 0;
-        position: relative;
+    /* 데스크톱 테이블 스타일 */
+    @media (min-width: 768px) {
+        #full_sch_calendar_body tr { display: table-row; height: 140px; }
+        #full_sch_calendar_body td { 
+            display: table-cell;
+            min-height: 140px; 
+            border: 0.5px solid rgba(30, 41, 59, 0.5); 
+            vertical-align: top; 
+            padding: 0;
+            position: relative;
+        }
+        .date-wrapper { padding: 8px 10px; pointer-events: none; }
     }
 
-    #full_sch_calendar_body tr {
-        height: 140px; 
+    /* 모바일 리스트 스타일 */
+    @media (max-width: 767px) {
+        #full_sch_calendar_body { gap: 12px; padding: 12px; }
+        #full_sch_calendar_body tr { display: contents; }
+        #full_sch_calendar_body td {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 4px;
+        }
+        #full_sch_calendar_body td:empty { display: none; }
+        .date-wrapper { margin-bottom: 10px; pointer-events: none; }
+        .sch-item { 
+            position: relative !important; 
+            top: 0 !important; 
+            width: 100% !important; 
+            margin-bottom: 6px;
+            height: 36px !important;
+            border-radius: 10px !important;
+            font-size: 12px !important;
+        }
     }
 
-    .date-wrapper {
-        position: relative;
-        z-index: 20;
-        padding: 8px 10px;
-        pointer-events: none;
-    }
-
+    /* 공통 스타일 유지 */
     .date-text {
         font-size: 11px;
         font-weight: 900;
@@ -72,15 +94,12 @@
         min-width: 22px;
         text-align: center;
     }
-
-    /* 오늘 날짜 하이라이트 스타일: 보라색 원형 */
     .date-text.is-today {
         background: #a855f7 !important;
         color: white !important;
         border-radius: 999px;
         box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
     }
-
     .sch-item {
         position: absolute;
         z-index: 10;
@@ -101,19 +120,14 @@
         gap: 6px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-
-    .sch-item:hover { filter: brightness(1.2); z-index: 50; }
-    .sch-title-text { overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .sch-staff-tag { 
-        font-size: 9px; opacity: 0.7; background: rgba(0,0,0,0.3); 
-        padding: 0 5px; border-radius: 4px; font-weight: 500; flex-shrink: 0;
-    }
-
-    .sch-item.continued-from-prev { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
-    .sch-item.continues-to-next { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .sch-item:hover { filter: brightness(1.1); z-index: 50; transform: scale(1.01); }
+    .sch-staff-tag { font-size: 9px; opacity: 0.7; background: rgba(0,0,0,0.3); padding: 0 5px; border-radius: 4px; }
     
-    .bg-blue-600 { background-color: #2563eb !important; color: white; }
-    .bg-purple-600 { background-color: #9333ea !important; color: white; }
+    /* 타임라인 연결 스타일 (데스크톱 전용) */
+    @media (min-width: 768px) {
+        .sch-item.continued-from-prev { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
+        .sch-item.continues-to-next { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    }
 </style>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -125,10 +139,7 @@
     let viewDate = new Date();
     const db = firebase.database();
     let startPicker, endPicker;
-
-    // 오늘 날짜 문자열 (YYYY-MM-DD 형식) 미리 생성
-    const todayObj = new Date();
-    const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
+    const todayStr = new Date().toLocaleDateString('sv-SE');
 
     function initTimePickers(isAllDay = false) {
         const config = {
@@ -136,7 +147,6 @@
             dateFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
             altInput: true,
             altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-            time_24hr: false,
             static: true,
             locale: "en"
         };
@@ -146,47 +156,34 @@
         endPicker = flatpickr("#new_sch_end", config);
     }
 
-    window.toggleAdminTimePicker = function(checked) {
-        const startVal = document.getElementById('new_sch_start').value;
-        const endVal = document.getElementById('new_sch_end').value;
-        initTimePickers(checked);
-        if(startVal) startPicker.setDate(startVal);
-        if(endVal) endPicker.setDate(endVal);
-    };
-
     window.addAdminSchedule = function(dateStr) {
-        const titleHtml = `<div class="text-lg font-black text-white uppercase tracking-tighter">Schedule Entry</div>`;
+        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
         const bodyHtml = `
-            <div class="space-y-5 text-left pt-2">
+            <div class="space-y-4 pt-2 text-left">
                 <div class="space-y-1">
-                    <label class="text-xs text-slate-400 font-bold pl-1">Title</label>
-                    <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                    <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
                 </div>
-                <div class="space-y-1">
-                    <label class="text-xs text-slate-400 font-bold pl-1">Description</label>
-                    <textarea id="new_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-28 resize-none outline-none focus:border-blue-500"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
-                        <label class="text-xs text-slate-400 font-bold pl-1">Start Date</label>
-                        <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none cursor-pointer">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                        <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-xs text-slate-400 font-bold pl-1">End Date</label>
-                        <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none cursor-pointer">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                        <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                     </div>
                 </div>
-                <div class="flex items-center gap-2 pl-1">
+                <div class="flex items-center gap-2 ml-1">
                     <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
                     <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
                 </div>
-                <div class="space-y-1 pt-2">
-                    <label class="text-[10px] text-purple-400 font-black uppercase pl-1 tracking-widest">Admin Private Memo</label>
-                    <textarea id="new_admin_memo" placeholder="Internal notes..." class="w-full bg-purple-500/5 border border-purple-500/10 rounded-xl p-4 text-sm text-purple-200 h-20 resize-none outline-none focus:border-purple-500"></textarea>
+                <textarea id="new_sch_desc" placeholder="Description..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500"></textarea>
+                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                    <textarea id="new_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes..."></textarea>
                 </div>
-                <div class="pt-4">
-                    <button onclick="window.saveNewAdminSchedule()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-sm tracking-widest uppercase">Save Schedule</button>
-                </div>
+                <button onclick="window.saveNewAdminSchedule()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-purple-900/20 text-sm tracking-widest uppercase active:scale-95">Save Schedule</button>
             </div>`;
 
         if (window.openAdminCustomModal) {
@@ -217,59 +214,10 @@
         }).then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
     };
 
-    window.showAdminSchDetail = function(id, title, start, end, author, descEncoded, memoEncoded) {
-        const desc = decodeURIComponent(descEncoded);
-        const memo = decodeURIComponent(memoEncoded || '');
-        const titleHtml = `<div class="text-lg font-black text-white">Edit Schedule</div>`;
-        const bodyHtml = `
-            <div class="space-y-5 text-left">
-                <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Title</label>
-                <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500"></div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Start</label><input type="date" id="edit_sch_start" value="${start.split('T')[0]}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white"></div>
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">End</label><input type="date" id="edit_sch_end" value="${end.split('T')[0]}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white"></div>
-                </div>
-                <div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase">Description</label><textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none">${desc}</textarea></div>
-                <div class="space-y-1"><label class="text-[10px] text-purple-400 font-black uppercase">Admin Memo</label><textarea id="admin_memo_input" class="w-full bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 text-sm text-purple-200 h-20 resize-none outline-none">${memo}</textarea></div>
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="window.deleteAdminSchedule('${id}')" class="bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 font-black py-4 rounded-xl transition-all text-xs uppercase">Delete</button>
-                    <button onclick="window.updateAdminSchedule('${id}')" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-lg shadow-purple-500/20 text-xs uppercase">Save Changes</button>
-                </div>
-            </div>`;
-        if (window.openAdminCustomModal) window.openAdminCustomModal(titleHtml, bodyHtml);
-    };
-
-    window.updateAdminSchedule = function(schId) {
-        const updateData = {
-            title: document.getElementById('edit_sch_title').value,
-            start: document.getElementById('edit_sch_start').value,
-            end: document.getElementById('edit_sch_end').value,
-            desc: document.getElementById('edit_sch_desc').value,
-            adminMemo: document.getElementById('admin_memo_input').value,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP
-        };
-        db.ref('shared_schedules/' + schId).update(updateData).then(() => {
-            if(window.closeAdminCustomModal) window.closeAdminCustomModal();
-        });
-    };
-
-    window.deleteAdminSchedule = function(schId) {
-        if(confirm('⚠️ Delete permanently?')) {
-            db.ref('shared_schedules/' + schId).remove().then(() => {
-                if(window.closeAdminCustomModal) window.closeAdminCustomModal();
-            });
-        }
-    };
-
-    // TODAY 기능 함수
-    window.goTodaySch = function() {
-        viewDate = new Date();
-        window.renderScheduleFull();
-    };
-
     window.renderScheduleFull = function() {
         const year = viewDate.getFullYear(), month = viewDate.getMonth();
-        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+        const isMobile = window.innerWidth < 768;
+        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
 
         db.ref('shared_schedules').off();
         db.ref('shared_schedules').on('value', snap => {
@@ -312,21 +260,18 @@
             let dateNum = 1;
             for (let i = 0; i < 6; i++) {
                 const tr = document.createElement('tr');
-                let hasDate = false;
+                let hasDateInRow = false;
                 let maxSlotsInWeek = 0;
-                const weekTds = [];
 
                 for (let j = 0; j < 7; j++) {
                     const td = document.createElement('td');
                     if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                        weekTds.push(td);
+                        if (!isMobile) tr.appendChild(td);
                         continue;
                     }
                     
-                    hasDate = true;
+                    hasDateInRow = true;
                     const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                    
-                    // 오늘 날짜인지 확인
                     const isToday = (dStr === todayStr);
 
                     if (daySlotUsage[dStr]) {
@@ -334,41 +279,43 @@
                         if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
                     }
 
-                    td.className = "cursor-pointer hover:bg-slate-800/20 transition-colors";
-                    td.onclick = (e) => { if(e.target.tagName === 'TD') window.addAdminSchedule(dStr); };
+                    td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
 
-                    // 오늘 날짜면 'is-today' 클래스를 추가
-                    let html = `<div class="date-wrapper">
-                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-red-500':(j===6?'text-blue-500':'text-slate-400')}">
+                    let html = `<div class="date-wrapper flex justify-between items-center">
+                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
                             ${dateNum}
                         </span>
+                        ${isMobile && isToday ? '<span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Today</span>' : ''}
                     </div>`;
                     
                     sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                        const isStartPoint = (dStr === ev.sDate) || (j === 0);
-                        if (isStartPoint) {
+                        // 모바일은 모든 날짜에 항목 표시, 데스크톱은 시작점/주단위 시작점에만 표시
+                        const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
+                        if (shouldShow) {
                             const currentSlot = eventFinalSlot[ev.id];
                             const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
                             const span = Math.min(diffDays + 1, 7 - j);
-                            const isContinued = dStr > ev.sDate ? 'continued-from-prev' : '';
+                            const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
                             
                             html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
                                 class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
-                                style="top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);">
-                                <span class="sch-title-text">${isContinued ? '' : ev.title}</span>
+                                style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
+                                <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
                                 <span class="sch-staff-tag">${ev.author||''}</span>
                             </div>`;
                         }
                     });
+
                     td.innerHTML = html;
-                    weekTds.push(td);
+                    tr.appendChild(td);
                     dateNum++;
                 }
 
-                if (hasDate) {
-                    const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
-                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
-                    weekTds.forEach(td => tr.appendChild(td));
+                if (hasDateInRow) {
+                    if (!isMobile) {
+                        const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
+                        tr.style.height = Math.max(140, calculatedHeight) + 'px';
+                    }
                     tbody.appendChild(tr);
                 }
                 if (dateNum > lastDate) break;
@@ -377,6 +324,15 @@
     };
 
     window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
+    window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
+
+    // 윈도우 리사이즈 대응
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(window.renderScheduleFull, 250);
+    });
+
     window.renderScheduleFull();
 })();
 </script>

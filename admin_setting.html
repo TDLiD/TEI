@@ -1,67 +1,67 @@
-<div class="animate-fadeIn space-y-6 max-w-4xl mx-auto pb-20">
+<div class="animate-fadeIn space-y-4 md:space-y-6 max-w-4xl mx-auto pb-20 px-4 md:px-0">
 
-    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm mt-6">
-        <h2 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm mt-4 md:mt-6">
+        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
             <div class="w-1.5 h-6 bg-emerald-500 rounded-full"></div>
             DATABASE BACKUP / RESTORE
         </h2>
-        <div class="flex flex-wrap gap-4">
-            <button onclick="window.exportFullData()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 uppercase text-xs tracking-widest">
+        <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
+            <button onclick="window.exportFullData()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 uppercase text-[11px] tracking-widest">
                 Export JSON (Backup)
             </button>
             
-            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-2xl transition-all active:scale-95 uppercase text-xs tracking-widest">
+            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-2xl transition-all active:scale-95 uppercase text-[11px] tracking-widest">
                 Import JSON (Restore)
             </button>
             <input type="file" id="importFile" class="hidden" accept=".json" onchange="window.importFullData(event)">
         </div>
-        <p class="mt-4 text-[10px] text-slate-500 font-medium">* WARNING: Restoring will overwrite all current database records with the file content. Use with caution.</p>
+        <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">* WARNING: Restoring will overwrite all current database records. Use with caution.</p>
     </div>
 
-    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <h2 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
             <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>
             SYSTEM CONFIGURATION
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-end">
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Standard Attendance Time</label>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Attendance Time</label>
                 <input type="time" id="std_attendance_time" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:ring-2 focus:ring-amber-500 transition">
             </div>
-            <button onclick="window.saveSystemConfig()" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-xs tracking-widest">
+            <button onclick="window.saveSystemConfig()" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">
                 Save Configuration
             </button>
         </div>
     </div>
 
-    <div class="bg-slate-900/50 p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <h2 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
             <div class="w-1.5 h-6 bg-blue-500 rounded-full"></div>
             STAFF MANAGEMENT
         </h2>
 
-        <div class="mb-8 p-6 bg-slate-950/40 rounded-2xl border border-white/5">
+        <div class="mb-6 md:mb-8 p-5 md:p-6 bg-slate-950/40 rounded-2xl border border-white/5">
             <h3 class="text-[10px] font-black text-blue-400 uppercase tracking-tighter mb-4 flex items-center gap-2">
                 <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span> Add New Staff Member
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div class="md:col-span-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                <div class="sm:col-span-1">
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Staff Name (ID)</label>
-                    <input type="text" id="add_staff_name" placeholder="Name" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
+                    <input type="text" id="add_staff_name" placeholder="Name" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Password</label>
-                    <input type="text" id="add_staff_pw" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
+                    <input type="text" id="add_staff_pw" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Role</label>
-                    <select id="add_staff_role" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
+                    <select id="add_staff_role" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
                         <option value="Staff">Staff</option>
                         <option value="Manager">Manager</option>
                         <option value="Designer">Designer</option>
                     </select>
                 </div>
-                <button onclick="window.addNewStaff()" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest">
+                <button onclick="window.addNewStaff()" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl transition-all active:scale-95 uppercase text-[11px] tracking-widest sm:col-span-2 md:col-span-1">
                     Add Staff
                 </button>
             </div>
@@ -70,20 +70,65 @@
         <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/20">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                    <tr class="hidden md:table-row bg-slate-800/50 text-[10px] uppercase tracking-widest text-slate-500 font-black">
                         <th class="p-4 border-b border-slate-800">Staff Name</th>
                         <th class="p-4 border-b border-slate-800">Role</th>
                         <th class="p-4 border-b border-slate-800">Password</th>
                         <th class="p-4 border-b border-slate-800 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="staff_list_body" class="text-sm">
+                <tbody id="staff_list_body" class="text-sm divide-y divide-slate-800/50 md:divide-none block md:table-row-group">
                     <tr><td colspan="4" class="p-10 text-center text-slate-600 font-bold italic">Fetching staff records...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<style>
+    /* Mobile-specific table to card conversion */
+    @media (max-width: 767px) {
+        #staff_list_body blockquote, 
+        #staff_list_body tr {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            position: relative;
+        }
+
+        #staff_list_body td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border: none;
+        }
+
+        #staff_list_body td:first-child {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        /* Label injection for mobile cards */
+        #staff_list_body td:nth-child(2)::before { content: "Role"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        #staff_list_body td:nth-child(3)::before { content: "Password"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        
+        #staff_list_body td:last-child {
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        #staff_list_body select, 
+        #staff_list_body input {
+            max-width: 160px !important;
+        }
+    }
+</style>
 
 <script>
 (function() {
@@ -94,7 +139,6 @@
         loadStaffList();
     };
 
-    // 1. Export Data (Backup)
     window.exportFullData = function() {
         if(!confirm("Do you want to export the entire database to a JSON file for backup?")) return;
         db.ref('/').once('value', snap => {
@@ -110,7 +154,6 @@
         });
     };
 
-    // 2. Import Data (Restore)
     window.importFullData = function(event) {
         const file = event.target.files[0];
         if(!file) return;
@@ -131,7 +174,6 @@
         reader.readAsText(file);
     };
 
-    // 3. System Config
     function loadSystemConfig() {
         db.ref('settings/config').once('value', snap => {
             const data = snap.val() || {};
@@ -148,12 +190,10 @@
         }).then(() => alert("System configuration updated!"));
     };
 
-    // 4. Add Staff (비밀번호 입력 연동)
     window.addNewStaff = function() {
         const nameInput = document.getElementById('add_staff_name');
         const pwInput = document.getElementById('add_staff_pw');
         const roleSelect = document.getElementById('add_staff_role');
-        
         const staffName = nameInput.value.trim();
         const staffPw = pwInput.value.trim();
 
@@ -173,7 +213,6 @@
         });
     };
 
-    // 5. Load List (비밀번호 수정 필드 추가)
     function loadStaffList() {
         db.ref('users').on('value', snap => {
             const users = snap.val() || {};
@@ -182,20 +221,20 @@
             Object.entries(users).forEach(([uid, user]) => {
                 if(uid === 'admin') return;
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-800/50 hover:bg-white/5 transition-colors";
+                tr.className = "border-b border-slate-800/50 hover:bg-white/5 transition-colors block md:table-row";
                 tr.innerHTML = `
-                    <td class="p-4 font-bold text-white">${uid}</td>
-                    <td class="p-4">
-                        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[120px] focus:border-blue-500 outline-none">
+                    <td class="p-4 font-bold text-white block md:table-cell">${uid}</td>
+                    <td class="p-4 block md:table-cell">
+                        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px] focus:border-blue-500 outline-none">
                             <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
                             <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
                             <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
                         </select>
                     </td>
-                    <td class="p-4">
-                        <input type="text" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[120px] focus:border-blue-500 outline-none">
+                    <td class="p-4 block md:table-cell">
+                        <input type="text" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px] focus:border-blue-500 outline-none">
                     </td>
-                    <td class="p-4 text-right space-x-2 whitespace-nowrap">
+                    <td class="p-4 text-right space-x-2 whitespace-nowrap block md:table-cell">
                         <button onclick="window.updateStaff('${uid}')" class="text-[10px] font-black bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
                         <button onclick="window.deleteStaff('${uid}')" class="text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">DEL</button>
                     </td>
@@ -205,43 +244,21 @@
         });
     }
 
-    // 6. Update Staff (비밀번호 업데이트 추가)
     window.updateStaff = function(uid) {
         const role = document.getElementById(`role_${uid}`).value;
         const password = document.getElementById(`pw_${uid}`).value.trim();
-        
         if(!password) return alert("Password cannot be empty.");
-
-        db.ref('users/' + uid).update({ 
-            role: role,
-            password: password 
-        }).then(() => alert("Updated!"));
+        db.ref('users/' + uid).update({ role, password }).then(() => alert("Updated!"));
     };
 
-    // 7. Delete Staff
     window.deleteStaff = function(uid) {
-        const warningMsg = `DANGER: You are about to delete staff member [${uid}].\n\n` +
-                          `Are you absolutely sure you want to PERMANENTLY delete this staff?`;
-
-        if(!confirm(warningMsg)) return;
-
-        const adminPwInput = prompt("ADMIN VERIFICATION REQUIRED\n\nPlease enter your ADMIN password to confirm deletion:");
-        if (adminPwInput === null) return; 
-
-        const MASTER_PW = "1"; 
-
-        if (adminPwInput.toString().trim() === MASTER_PW) {
-            db.ref('users/' + uid).remove()
-                .then(() => {
-                    alert(`CONFIRMED: Staff [${uid}] has been deleted.`);
-                })
-                .catch(err => {
-                    alert("삭제 실패: DB 쓰기 권한이 없습니다.");
-                });
-        } else {
-            alert("VERIFICATION FAILED: Incorrect admin password.");
+        if(!confirm(`DANGER: Permanently delete staff [${uid}]?`)) return;
+        const adminPwInput = prompt("ADMIN VERIFICATION REQUIRED:");
+        if (adminPwInput === "1") {
+            db.ref('users/' + uid).remove().then(() => alert(`Deleted.`));
+        } else if (adminPwInput !== null) {
+            alert("Verification failed.");
         }
     };
-
 })();
 </script>
