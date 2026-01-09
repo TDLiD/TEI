@@ -7,6 +7,11 @@
             </h2>
             
             <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
+                <button onclick="window.goWorkToday()" class="px-3 py-1.5 bg-slate-700 hover:bg-emerald-600 text-white text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">
+                    Today
+                </button>
+                <div class="w-[1px] h-4 bg-slate-700 mx-1"></div>
+
                 <button onclick="window.changeWorkMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
                 </button>
@@ -33,6 +38,24 @@
                 <tbody id="full_work_calendar_body" class="flex flex-col gap-4 md:table-row-group">
                     </tbody>
             </table>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-center sm:text-left">
+                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Export Work Reports</h3>
+                <p class="text-slate-500 text-[10px]">PDF files are grouped by staff and period.</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="window.exportWorkPDF('monthly')" class="px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
+                    Monthly PDF
+                </button>
+                <button onclick="window.exportWorkPDF('yearly')" class="px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
+                    Yearly PDF
+                </button>
+                <button onclick="window.exportWorkPDF('overall')" class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
+                    Overall PDF
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -105,10 +128,97 @@
     .work-item:active { transform: scale(0.96); }
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
 <script>
     (function() {
         let viewDate = new Date();
         const db = firebase.database();
+
+        // [추가] 오늘 날짜 이동 함수
+        window.goWorkToday = function() {
+            viewDate = new Date();
+            window.renderWorkFull();
+        };
+
+        // [추가] PDF 내보내기 핵심 로직
+    window.exportWorkPDF = async function(type) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    try {
+        const snap = await db.ref('reports').once('value');
+        const data = snap.val() || {};
+        
+        const year = viewDate.getFullYear();
+        const month = String(viewDate.getMonth() + 1).padStart(2, '0');
+        
+        let filteredData = {};
+        
+        Object.entries(data).forEach(([dateStr, staffObj]) => {
+            const [dYear, dMonth] = dateStr.split('-');
+            let isMatch = false;
+            
+            if (type === 'monthly' && dYear == year && dMonth == month) isMatch = true;
+            else if (type === 'yearly' && dYear == year) isMatch = true;
+            else if (type === 'overall') isMatch = true;
+            
+            if (isMatch) {
+                Object.entries(staffObj).forEach(([staffName, report]) => {
+                    if (!filteredData[staffName]) filteredData[staffName] = [];
+                    
+                    // [수정] 상태값 영어 변환 매핑
+                    let englishStatus = report.status;
+                    if(report.status === '완료' || report.status === 'Completed') englishStatus = 'COMPLETED';
+                    else if(report.status === '진행중' || report.status === 'In Progress') englishStatus = 'IN PROGRESS';
+                    else if(report.status === '대기' || report.status === 'Pending') englishStatus = 'PENDING';
+
+                    filteredData[staffName].push({
+                        date: dateStr,
+                        status: englishStatus,
+                        content: report.content, // 내용은 사용자가 입력한 것이라 영어가 아닐 수 있음
+                        memo: report.adminMemo || '-'
+                    });
+                });
+            }
+        });
+
+        const staffNames = Object.keys(filteredData).sort();
+        if (staffNames.length === 0) return alert("No data found.");
+
+        staffNames.forEach((staff, index) => {
+            if (index > 0) doc.addPage();
+            
+            doc.setFontSize(18);
+            doc.text(`WORK REPORT: ${staff}`, 14, 20);
+            doc.setFontSize(10);
+            
+            // [수정] 날짜 포맷 및 헤더 영어로 변경
+            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            doc.text(`Export Type: ${type.toUpperCase()} | Generated: ${timestamp}`, 14, 28);
+
+            const rows = filteredData[staff]
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .map(item => [item.date, item.status, item.content, item.memo]);
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Date', 'Status', 'Content', 'Admin Memo']], // 헤더 영어
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59] },
+                styles: { fontSize: 8, font: 'helvetica' } // 영어 전용 폰트 설정
+            });
+        });
+
+        doc.save(`Report_${type}_${year}_${month}.pdf`);
+    } catch (err) {
+        console.error(err);
+        alert("Export failed.");
+    }
+};
+
 
         // 통합 저장 함수
         window.updateAdminReport = function(date, name) {

@@ -317,113 +317,130 @@
     };
 
     // 렌더링 로직 (기존과 동일)
-    window.renderScheduleFull = function() {
-        const year = viewDate.getFullYear(), month = viewDate.getMonth();
-        const isMobile = window.innerWidth < 768;
-        document.getElementById('full_sch_month').innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
+window.renderScheduleFull = function() {
+    const year = viewDate.getFullYear(), month = viewDate.getMonth();
+    const isMobile = window.innerWidth < 768;
+    
+    // [추가] 요소 존재 여부 확인 (에러 방지 핵심 코드)
+    const monthEl = document.getElementById('full_sch_month');
+    const tbody = document.getElementById('full_sch_calendar_body');
+    
+    // 화면에 렌더링할 준비가 안 되었다면 함수 종료
+    if (!monthEl || !tbody) {
+        console.warn("Schedule components not yet loaded in DOM.");
+        return;
+    }
 
-        db.ref('shared_schedules').off();
-        db.ref('shared_schedules').on('value', snap => {
-            const data = snap.val() || {};
-            const tbody = document.getElementById('full_sch_calendar_body');
-            tbody.innerHTML = '';
+    // 날짜 텍스트 업데이트
+    monthEl.innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            
-            const sortedEvents = Object.entries(data).map(([id, ev]) => ({
-                id, ...ev,
-                sDate: ev.start.split('T')[0],
-                eDate: ev.end.split('T')[0]
-            })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)) || a.sDate.localeCompare(b.sDate));
+    db.ref('shared_schedules').off();
+    db.ref('shared_schedules').on('value', snap => {
+        const data = snap.val() || {};
+        
+        // [추가] Firebase 응답 시점에 요소가 사라졌을 경우를 대비한 2차 확인
+        const currentTbody = document.getElementById('full_sch_calendar_body');
+        if (!currentTbody) return;
 
-            const eventFinalSlot = {};
-            const daySlotUsage = {};
-            sortedEvents.forEach(ev => {
-                let slot = 0;
-                while (true) {
-                    let isAvailable = true;
+        currentTbody.innerHTML = '';
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        
+        const sortedEvents = Object.entries(data).map(([id, ev]) => ({
+            id, ...ev,
+            sDate: ev.start.split('T')[0],
+            eDate: ev.end.split('T')[0]
+        })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)) || a.sDate.localeCompare(b.sDate));
+
+        const eventFinalSlot = {};
+        const daySlotUsage = {};
+        sortedEvents.forEach(ev => {
+            let slot = 0;
+            while (true) {
+                let isAvailable = true;
+                for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                    const dStr = d.toISOString().split('T')[0];
+                    if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
+                }
+                if (isAvailable) {
                     for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
                         const dStr = d.toISOString().split('T')[0];
-                        if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
+                        if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
+                        daySlotUsage[dStr].add(slot);
                     }
-                    if (isAvailable) {
-                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                            const dStr = d.toISOString().split('T')[0];
-                            if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
-                            daySlotUsage[dStr].add(slot);
-                        }
-                        eventFinalSlot[ev.id] = slot;
-                        break;
-                    }
-                    slot++;
+                    eventFinalSlot[ev.id] = slot;
+                    break;
                 }
-            });
-
-            let dateNum = 1;
-            for (let i = 0; i < 6; i++) {
-                const tr = document.createElement('tr');
-                let hasDateInRow = false;
-                let maxSlotsInWeek = 0;
-
-                for (let j = 0; j < 7; j++) {
-                    const td = document.createElement('td');
-                    if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                        if (!isMobile) tr.appendChild(td);
-                        continue;
-                    }
-                    
-                    hasDateInRow = true;
-                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                    const isToday = (dStr === todayStr);
-
-                    if (daySlotUsage[dStr]) {
-                        const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1;
-                        if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
-                    }
-
-                    td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
-
-                    let html = `<div class="date-wrapper flex justify-between items-center">
-                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
-                            ${dateNum}
-                        </span>
-                        ${isMobile && isToday ? '<span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Today</span>' : ''}
-                    </div>`;
-                    
-                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                        const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
-                        if (shouldShow) {
-                            const currentSlot = eventFinalSlot[ev.id];
-                            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
-                            const span = Math.min(diffDays + 1, 7 - j);
-                            const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
-                            
-                            html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
-                                class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
-                                style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
-                                <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
-                                <span class="sch-staff-tag">${ev.author||''}</span>
-                            </div>`;
-                        }
-                    });
-
-                    td.innerHTML = html;
-                    tr.appendChild(td);
-                    dateNum++;
-                }
-
-                if (hasDateInRow) {
-                    if (!isMobile) {
-                        const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
-                        tr.style.height = Math.max(140, calculatedHeight) + 'px';
-                    }
-                    tbody.appendChild(tr);
-                }
-                if (dateNum > lastDate) break;
+                slot++;
             }
         });
-    };
+
+        let dateNum = 1;
+        for (let i = 0; i < 6; i++) {
+            const tr = document.createElement('tr');
+            let hasDateInRow = false;
+            let maxSlotsInWeek = 0;
+
+            for (let j = 0; j < 7; j++) {
+                const td = document.createElement('td');
+                if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                    if (!isMobile) tr.appendChild(td);
+                    continue;
+                }
+                
+                hasDateInRow = true;
+                const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+                const isToday = (dStr === todayStr);
+
+                if (daySlotUsage[dStr]) {
+                    const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1;
+                    if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
+                }
+
+                td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
+
+                let html = `<div class="date-wrapper flex justify-between items-center">
+                    <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
+                        ${dateNum}
+                    </span>
+                    ${isMobile && isToday ? '<span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Today</span>' : ''}
+                </div>`;
+                
+                sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                    const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
+                    if (shouldShow) {
+                        const currentSlot = eventFinalSlot[ev.id];
+                        const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
+                        const span = Math.min(diffDays + 1, 7 - j);
+                        const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
+                        
+                        html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
+                            class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
+                            style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
+                            <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
+                            <span class="sch-staff-tag">${ev.author||''}</span>
+                        </div>`;
+                    }
+                });
+
+                td.innerHTML = html;
+                tr.appendChild(td);
+                dateNum++;
+            }
+
+            if (hasDateInRow) {
+                if (!isMobile) {
+                    const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
+                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
+                }
+                currentTbody.appendChild(tr);
+            }
+            if (dateNum > lastDate) break;
+        }
+    });
+};
+
 
     window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
     window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
