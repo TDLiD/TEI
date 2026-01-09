@@ -138,13 +138,14 @@
 (function() {
     let viewDate = new Date();
     const db = firebase.database();
-    let startPicker, endPicker;
+    let startPicker, endPicker, editStartPicker, editEndPicker;
     const todayStr = new Date().toLocaleDateString('sv-SE');
 
+    // 시간 선택기 초기화 (신규 등록용)
     function initTimePickers(isAllDay = false) {
         const config = {
             enableTime: !isAllDay,
-            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
             altInput: true,
             altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
             static: true,
@@ -156,6 +157,26 @@
         endPicker = flatpickr("#new_sch_end", config);
     }
 
+    // 시간 선택기 초기화 (수정용)
+    function initEditTimePickers(isAllDay = false) {
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            static: true,
+            locale: "en"
+        };
+        if (editStartPicker) editStartPicker.destroy();
+        if (editEndPicker) editEndPicker.destroy();
+        editStartPicker = flatpickr("#edit_sch_start", config);
+        editEndPicker = flatpickr("#edit_sch_end", config);
+    }
+
+    window.toggleAdminTimePicker = function(isAllDay) { initTimePickers(isAllDay); };
+    window.toggleEditTimePicker = function(isAllDay) { initEditTimePickers(isAllDay); };
+
+    // 1. 신규 일정 추가 팝업
     window.addAdminSchedule = function(dateStr) {
         const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
         const bodyHtml = `
@@ -214,6 +235,88 @@
         }).then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
     };
 
+    // 2. 일정 상세 및 수정 팝업 (수정됨)
+    window.showAdminSchDetail = function(id, title, start, end, author, desc, adminMemo) {
+        const decodedDesc = decodeURIComponent(desc || '');
+        const decodedMemo = decodeURIComponent(adminMemo || '');
+        const isAllDay = !start.includes(':') || !end.includes(':');
+        
+        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
+        const bodyHtml = `
+            <div class="space-y-4 pt-2 text-left">
+                <div class="space-y-1">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                    <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                        <input type="text" id="edit_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                        <input type="text" id="edit_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 ml-1">
+                    <input type="checkbox" id="edit_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                    <label for="edit_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
+                    <textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
+                </div>
+
+                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                    <textarea id="edit_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="window.updateAdminSchedule('${id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Update</button>
+                    <button onclick="window.deleteAdminSchedule('${id}')" class="px-6 bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Delete</button>
+                </div>
+            </div>`;
+
+        if (window.openAdminCustomModal) {
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                initEditTimePickers(isAllDay);
+                editStartPicker.setDate(start.replace('T', ' '));
+                editEndPicker.setDate(end.replace('T', ' '));
+            }, 50);
+        }
+    };
+
+    // 3. 일정 업데이트 함수 (신규 추가)
+    window.updateAdminSchedule = function(id) {
+        const title = document.getElementById('edit_sch_title').value;
+        const start = document.getElementById('edit_sch_start').value;
+        const end = document.getElementById('edit_sch_end').value;
+        if(!title || !start) return alert('Title and Start Date are required.');
+
+        db.ref('shared_schedules').child(id).update({
+            title,
+            start: start.replace(' ', 'T'),
+            end: end ? end.replace(' ', 'T') : start.replace(' ', 'T'),
+            allDay: document.getElementById('edit_sch_allday').checked,
+            desc: document.getElementById('edit_sch_desc').value,
+            adminMemo: document.getElementById('edit_admin_memo').value,
+            lastModified: Date.now()
+        }).then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
+    };
+
+    window.deleteAdminSchedule = function(id) {
+        if(!confirm('Are you sure you want to delete this schedule?')) return;
+        db.ref('shared_schedules').child(id).remove()
+            .then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); })
+            .catch(err => alert('Error: ' + err.message));
+    };
+
+    // 렌더링 로직 (기존과 동일)
     window.renderScheduleFull = function() {
         const year = viewDate.getFullYear(), month = viewDate.getMonth();
         const isMobile = window.innerWidth < 768;
@@ -289,7 +392,6 @@
                     </div>`;
                     
                     sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                        // 모바일은 모든 날짜에 항목 표시, 데스크톱은 시작점/주단위 시작점에만 표시
                         const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
                         if (shouldShow) {
                             const currentSlot = eventFinalSlot[ev.id];
@@ -326,7 +428,6 @@
     window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
     window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
 
-    // 윈도우 리사이즈 대응
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
