@@ -190,9 +190,19 @@
 
 // --- 1. 출석 렌더링 (출근 ☀️ 및 퇴근 🌙 모두 표시 수정) ---
 // --- 1. 출석 렌더링 (클릭 시 수정 기능 추가) ---
+// --- 1. 출석 렌더링 (시간 형식 HH:mm으로 수정) ---
 window.renderRecentAttendance = function() {
     const container = document.getElementById('recent_att_container');
     if(!container) return;
+
+    // 시간을 HH:mm 형식으로 자르는 헬퍼 함수
+    const formatTime = (timeStr) => {
+        if(!timeStr) return "";
+        // "ATT(08:30:15)" 또는 "17:05:22" 등에서 숫자:숫자 부분만 추출
+        const match = timeStr.match(/\d{1,2}:\d{2}/);
+        return match ? match[0] : timeStr;
+    };
+
     db.ref('attendance').off();
     db.ref('attendance').on('value', snap => {
         const data = snap.val() || {};
@@ -204,15 +214,16 @@ window.renderRecentAttendance = function() {
             Object.entries(dayData).forEach(([name, info]) => {
                 let statusClass = "text-emerald-400";
                 let attendanceHtml = '';
-                // 데이터 전달을 위한 인코딩
                 const safeInfo = encodeURIComponent(JSON.stringify(info));
 
                 if (typeof info === 'string') {
                     attendanceHtml = `<span class="text-amber-400 tracking-tighter">${info}</span>`;
                 } else if (info && typeof info === 'object') {
-                    const attVal = info.attend || '';
-                    const leaVal = info.leave || '';
-                    if (attVal.includes("LATE")) statusClass = "text-red-400";
+                    // 시간 포맷팅 적용
+                    const attVal = info.attend ? (info.attend.includes("LATE") ? "LATE " : "ATT ") + formatTime(info.attend) : "";
+                    const leaVal = info.leave ? formatTime(info.leave) : "";
+                    
+                    if (info.attend && info.attend.includes("LATE")) statusClass = "text-red-400";
 
                     attendanceHtml = `
                         <div class="flex flex-col items-end gap-0.5">
@@ -222,7 +233,6 @@ window.renderRecentAttendance = function() {
                 }
 
                 if (attendanceHtml) {
-                    // onclick="window.openEditAttendance(...)" 추가
                     staffHtml += `
                     <div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" 
                          class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-95">
