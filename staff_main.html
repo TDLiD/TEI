@@ -1,69 +1,61 @@
 <style>
-    /* 기본 스타일 유지 및 모바일 최적화 추가 */
-    .calendar-table th { padding: 8px 0; color: #64748b; font-size: 0.65rem; text-align: center; font-weight: 800; }
-    
-    /* 데스크톱 기준 */
+    /* 테이블 헤더 및 셀 기본 스타일 */
+    .calendar-table th { padding: 6px 0; color: #64748b; font-size: 0.6rem; text-align: center; font-weight: 800; }
     .calendar-table td { 
         height: 70px; width: 14.28%; border: 1px solid #1e293b; vertical-align: top; padding: 2px; position: relative; transition: background 0.2s;
     }
 
-    /* 모바일 전용 스타일 (미디어 쿼리) */
+    /* 모바일 전용 최적화 */
     @media (max-width: 640px) {
-        .calendar-table td { height: 60px; padding: 1px; }
-        .time-label { font-size: 0.5rem !important; padding: 0px 1px !important; margin-top: 1px !important; letter-spacing: -0.05em; }
-        #currentMonthYear { font-size: 1rem; }
-        .nav-btn { padding: 4px 6px !important; font-size: 0.7rem !important; }
+        .calendar-table td { height: 55px !important; padding: 1px; }
+        .time-label { font-size: 0.45rem !important; padding: 1px !important; margin-top: 1px !important; line-height: 1; letter-spacing: -0.05em; }
+        #currentMonthYear { font-size: 0.9rem; }
+        .nav-btn { padding: 3px 5px !important; font-size: 0.65rem !important; }
+        h2#mainWelcomeMsg { font-size: 1.25rem !important; line-height: 1.2; }
+        section { padding: 1rem !important; border-radius: 1.5rem !important; }
     }
 
     .calendar-table td:hover { background-color: #0f172a; }
     .today-highlight { background-color: rgba(37, 99, 235, 0.1); border: 2px solid #3b82f6 !important; z-index: 10; }
     
     .time-label {
-        display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 800;
+        display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 800;
         padding: 1px 2px; margin-top: 1px; border-radius: 3px; text-align: center;
     }
     
     .att-color { background-color: rgba(16, 185, 129, 0.15); color: #10b981; } 
     .late-color { background-color: rgba(244, 63, 94, 0.15); color: #f43f5e; } 
     .other-color { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; } 
-    
     .out-time { background-color: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
-    .status-time { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-    
-    .btn-special { animation: slideUp 0.3s ease-out; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<div class="flex flex-col lg:flex-row gap-6 md:gap-8 animate-fadeIn">
+<div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
     
-    <div class="w-full lg:w-1/3 space-y-4 md:space-y-6">
-        <div class="px-2 md:px-0">
-            <p class="text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-1">Authenticated as</p>
-            <h2 id="mainWelcomeMsg" class="text-2xl md:text-3xl font-black text-white"></h2>
+    <div class="w-full lg:w-1/3 space-y-3 md:space-y-6">
+        <div class="px-1">
+            <p class="text-slate-500 text-[9px] uppercase font-black tracking-widest mb-0.5">Authenticated as</p>
+            <h2 id="mainWelcomeMsg" class="text-xl md:text-3xl font-black text-white"></h2>
         </div>
 
-        <section class="bg-slate-900 p-5 md:p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest">Attendance Panel</p>
-                <p id="liveDate" class="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-1 rounded"></p>
+        <section class="bg-slate-900 p-4 md:p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 md:mb-6">
+                <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Attendance Panel</p>
+                <p id="liveDate" class="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded"></p>
             </div>
             
-            <div class="space-y-4">
-                <div id="timeInputWrapper" class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 transition-opacity">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Time Selection (24H)</label>
+            <div class="space-y-3 md:space-y-4">
+                <div id="timeInputWrapper" class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50 transition-opacity">
+                    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1 md:mb-2">Time (24H)</label>
                     <input type="text" id="manualTime" 
-                           placeholder="00:00:00"
-                           maxlength="8"
-                           class="w-full bg-slate-800 text-white text-xl md:text-2xl font-black p-3 rounded-xl border border-slate-600 outline-none text-center">
+                           placeholder="00:00:00" maxlength="8"
+                           class="w-full bg-slate-800 text-white text-xl md:text-2xl font-black p-2 md:p-3 rounded-lg border border-slate-600 outline-none text-center">
                 </div>
 
-                <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Special Status</label>
-                    <select id="specialStatus" onchange="toggleInputMode()" class="w-full bg-slate-800 text-white font-bold p-3 rounded-xl border border-slate-600 outline-none cursor-pointer text-sm">
+                <div class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50">
+                    <select id="specialStatus" onchange="toggleInputMode()" class="w-full bg-slate-800 text-white font-bold p-2 md:p-3 rounded-lg border border-slate-600 outline-none cursor-pointer text-xs">
                         <option value="">--- REGULAR (IN/OUT) ---</option>
                         <option value="WO">WO (Work Out)</option>
                         <option value="PEL">PEL (Personal Leave)</option>
@@ -74,61 +66,54 @@
                     </select>
                 </div>
 
-                <div id="buttonArea" class="grid grid-cols-2 gap-3">
-                    <button id="btnIn" onclick="handleAttendance('attend')" class="bg-emerald-600 text-white py-4 rounded-xl text-sm font-black transition active:scale-95">SET IN</button>
-                    <button id="btnOut" onclick="handleAttendance('leave')" class="bg-rose-600 text-white py-4 rounded-xl text-sm font-black transition active:scale-95">SET OUT</button>
+                <div id="buttonArea" class="grid grid-cols-2 gap-2 md:gap-3">
+                    <button id="btnIn" onclick="handleAttendance('attend')" class="bg-emerald-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET IN</button>
+                    <button id="btnOut" onclick="handleAttendance('leave')" class="bg-rose-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET OUT</button>
                 </div>
                 
                 <div id="specialButtonArea" class="hidden">
-                    <button onclick="handleSpecialStatus()" class="btn-special w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black transition active:scale-95 shadow-lg shadow-blue-900/20">SAVE SPECIAL STATUS</button>
+                    <button onclick="handleSpecialStatus()" class="w-full bg-blue-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SAVE STATUS</button>
                 </div>
             </div>
 
-            <div id="attendanceLog" class="mt-4 p-3 bg-black/30 rounded-xl text-center text-[10px] font-bold text-slate-400 italic">No records</div>
+            <div id="attendanceLog" class="mt-3 p-2 bg-black/30 rounded-lg text-center text-[9px] font-bold text-slate-400 italic">No records</div>
         </section>
     </div>
 
     <div class="flex-1">
-        <section class="bg-slate-900 p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-800 shadow-2xl h-full">
+        <section class="bg-slate-900 p-3 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl h-full">
             
-            <div class="mb-6 flex justify-center sm:justify-start">
+            <div class="mb-4 flex justify-center sm:justify-start">
                 <button onclick="switchTab('allatt')" 
-                        class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start">
-                    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
-                    <span class="uppercase tracking-widest">All Staff Record</span>
-                    <span class="opacity-50 group-hover:translate-x-1 transition-transform">❯</span>
+                        class="group relative flex items-center justify-center bg-black hover:bg-slate-900 text-white px-3 py-1 rounded-xl transition-all active:scale-95 shadow-lg border border-slate-800 w-fit h-fit">
+                    <img src="images/gif/click.gif" alt="click" class="w-10 h-10 md:w-12 md:h-12 object-contain group-hover:scale-110 transition-transform">
                 </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 px-1 gap-4">
-                <div class="flex items-center justify-between w-full sm:w-auto gap-4">
-                    <div id="currentMonthYear" class="text-base md:text-lg font-black text-white italic underline decoration-blue-500 underline-offset-8"></div>
-                    <div class="flex bg-slate-800 rounded-lg p-1 scale-90 sm:scale-100">
-                        <button onclick="changeMonth(-1)" class="nav-btn px-2 py-1 text-slate-400 transition rounded-md text-[10px] font-black">&lt; PREV</button>
-                        <button onclick="goToday()" class="nav-btn px-2 py-1 text-blue-400 transition rounded-md text-[10px] font-black mx-1">TODAY</button>
-                        <button onclick="changeMonth(1)" class="nav-btn px-2 py-1 text-slate-400 transition rounded-md text-[10px] font-black">NEXT &gt;</button>
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 px-1 gap-3">
+                <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+                    <div id="currentMonthYear" class="text-sm md:text-lg font-black text-white italic underline decoration-blue-500 underline-offset-4"></div>
+                    <div class="flex bg-slate-800 rounded-lg p-0.5">
+                        <button onclick="changeMonth(-1)" class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">PREV</button>
+                        <button onclick="goToday()" class="nav-btn px-2 py-1 text-blue-400 text-[10px] font-black mx-0.5">TODAY</button>
+                        <button onclick="changeMonth(1)" class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">NEXT</button>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end border-t sm:border-t-0 border-slate-800 pt-3 sm:pt-0">
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Std: <span id="displayStdTime" class="text-slate-300">--:--</span></span>
-                        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                    </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end sm:border-l sm:border-slate-800 sm:pl-4">
+                    <span class="text-[9px] text-slate-500 font-bold uppercase">Std: <span id="displayStdTime" class="text-slate-300">--:--</span></span>
+                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
                 </div>
             </div>
 
-            <div class="overflow-x-auto no-scrollbar rounded-xl border border-slate-800 -mx-1 sm:mx-0">
-                <table class="calendar-table min-w-[320px] w-full border-collapse bg-slate-900/50 text-xs">
+            <div class="overflow-x-auto no-scrollbar rounded-xl border border-slate-800">
+                <table class="calendar-table min-w-[300px] w-full border-collapse bg-slate-900/50">
                     <thead>
                         <tr class="bg-slate-800/30">
-                            <th class="text-rose-500">SUN</th>
-                            <th>MON</th>
-                            <th>TUE</th>
-                            <th>WED</th>
-                            <th>THU</th>
-                            <th>FRI</th>
-                            <th class="text-blue-500">SAT</th>
+                            <th class="text-rose-500 uppercase">Sun</th>
+                            <th class="uppercase">Mon</th><th class="uppercase">Tue</th><th class="uppercase">Wed</th>
+                            <th class="uppercase">Thu</th><th class="uppercase">Fri</th>
+                            <th class="text-blue-500 uppercase">Sat</th>
                         </tr>
                     </thead>
                     <tbody id="calendarBody"></tbody>
