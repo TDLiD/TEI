@@ -28,7 +28,17 @@
             .mobile-header { display: flex !important; }
             .mobile-nav { display: grid !important; } /* flex에서 grid로 변경하여 간격 최적화 */
         }
+
+@media (max-width: 767px) {
+        aside { display: none !important; } /* 확실하게 숨김 처리 */
+        main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
+        .mobile-header { display: flex !important; }
+        .mobile-nav { display: grid !important; }
+    }
+
     </style>
+
+
 </head>
 
 <body class="flex min-h-screen">
@@ -44,7 +54,7 @@
     </div>
 </header>
 
-<aside class="w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex flex-col">
+<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
     <div class="flex items-center gap-3 mb-10">
         <h1 class="text-2xl font-black italic">
             ADMIN <span class="text-blue-500">SYSTEM</span>
