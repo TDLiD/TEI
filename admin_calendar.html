@@ -142,36 +142,41 @@
     const todayStr = new Date().toLocaleDateString('sv-SE');
 
     // 시간 선택기 초기화 (신규 등록용)
-    function initTimePickers(isAllDay = false) {
-        const config = {
-            enableTime: !isAllDay,
-            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-            altInput: true,
-            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-            static: true,
-            locale: "en"
-        };
-        if (startPicker) startPicker.destroy();
-        if (endPicker) endPicker.destroy();
-        startPicker = flatpickr("#new_sch_start", config);
-        endPicker = flatpickr("#new_sch_end", config);
-    }
+  // 시간 선택기 초기화 (신규 등록용)
+function initTimePickers(isAllDay = false) {
+    const config = {
+        enableTime: !isAllDay,
+        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+        altInput: true,
+        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+        // static: true,  <-- 이 줄을 삭제하거나 false로 변경
+        monthSelectorType: "static", // 달력 내부 디자인용
+        locale: "en"
+    };
+    if (startPicker) startPicker.destroy();
+    if (endPicker) endPicker.destroy();
+    startPicker = flatpickr("#new_sch_start", config);
+    endPicker = flatpickr("#new_sch_end", config);
+}
 
-    // 시간 선택기 초기화 (수정용)
-    function initEditTimePickers(isAllDay = false) {
-        const config = {
-            enableTime: !isAllDay,
-            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-            altInput: true,
-            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-            static: true,
-            locale: "en"
-        };
-        if (editStartPicker) editStartPicker.destroy();
-        if (editEndPicker) editEndPicker.destroy();
-        editStartPicker = flatpickr("#edit_sch_start", config);
-        editEndPicker = flatpickr("#edit_sch_end", config);
-    }
+// 시간 선택기 초기화 (수정용)
+function initEditTimePickers(isAllDay = false) {
+    const config = {
+        enableTime: !isAllDay,
+        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+        altInput: true,
+        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+        // static: true,  <-- 이 줄을 삭제하거나 false로 변경
+        monthSelectorType: "static", // 달력 내부 디자인용
+        locale: "en"
+    };
+    if (editStartPicker) editStartPicker.destroy();
+    if (editEndPicker) editEndPicker.destroy();
+    editStartPicker = flatpickr("#edit_sch_start", config);
+    editEndPicker = flatpickr("#edit_sch_end", config);
+}
+
+
 
     window.toggleAdminTimePicker = function(isAllDay) { initTimePickers(isAllDay); };
     window.toggleEditTimePicker = function(isAllDay) { initEditTimePickers(isAllDay); };

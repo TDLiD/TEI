@@ -190,11 +190,18 @@
         const todayObj = new Date();
         const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
 
-        window.toggleTimePicker = (isAllDay) => {
-            const config = isAllDay ? { enableTime: false, dateFormat: "Y-m-d" } : { enableTime: true, dateFormat: "Y-m-d\\TH:i", altFormat: "Y-m-d h:i K" };
-            startPicker.set(config);
-            endPicker.set(config);
-        };
+/* 수정된 toggleTimePicker 함수 */
+window.toggleTimePicker = (isAllDay) => {
+    const config = {
+        enableTime: !isAllDay,
+        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
+        altInput: true, // UI 업데이트를 위해 필수
+        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", // 날짜만 보이거나 시간까지 보이게 설정
+        static: true
+    };
+    startPicker.set(config);
+    endPicker.set(config);
+};
 
         function initPickers() {
             const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true };
@@ -204,18 +211,25 @@
 
         window.closeModal = () => { document.getElementById('eventModal').classList.add('hidden'); };
 
-        window.openAddModal = (dateStr) => {
-            selectedId = null; currentEventData = null;
-            document.getElementById('evTitle').value = "";
-            document.getElementById('evDesc').value = "";
-            document.getElementById('adminMemoArea').classList.add('hidden');
-            toggleTimePicker(false);
-            startPicker.setDate(dateStr + "T09:00");
-            endPicker.setDate(dateStr + "T10:00");
-            document.getElementById('btnDel').classList.add('hidden');
-            document.getElementById('btnSave').classList.remove('hidden');
-            document.getElementById('eventModal').classList.replace('hidden', 'flex');
-        };
+window.openAddModal = (dateStr) => {
+    selectedId = null; 
+    currentEventData = null;
+    
+    document.getElementById('evTitle').value = "";
+    document.getElementById('evDesc').value = "";
+    document.getElementById('adminMemoArea').classList.add('hidden');
+    
+    // [수정] 체크박스 상태를 먼저 허위(false)로 초기화하여 시간 모드로 설정
+    document.getElementById('evAllDay').checked = false; 
+    toggleTimePicker(false);
+    
+    startPicker.setDate(dateStr + "T09:00");
+    endPicker.setDate(dateStr + "T10:00");
+    
+    document.getElementById('btnDel').classList.add('hidden');
+    document.getElementById('btnSave').classList.remove('hidden');
+    document.getElementById('eventModal').classList.replace('hidden', 'flex');
+};
 
         window.openEditModal = (id, ev) => {
             selectedId = id; currentEventData = ev;
