@@ -158,68 +158,106 @@
         };
 
         // [수정] 리포트 조회: To-Do와 Summary 구분하여 노출
-        window.loadReport = function(dateStr) {
-            selectedDateStr = dateStr;
-            renderMiniCalendar();
+// [수정] 리포트 조회: 데이터가 없으면 바로 showEditor()를 실행하여 입력창 노출
+window.loadReport = function(dateStr) {
+    selectedDateStr = dateStr;
+    renderMiniCalendar();
 
-            const actionBtn = document.getElementById('actionButtons');
-            actionBtn.innerHTML = ''; 
+    const actionBtn = document.getElementById('actionButtons');
+    actionBtn.innerHTML = ''; 
 
-            database.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
-                const report = snapshot.val();
-                currentReportData = report;
-                const container = document.getElementById('workCardContainer');
-                
-                if (!report) {
-                    actionBtn.innerHTML = `<button onclick="window.showEditor()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-500 transition">+ Write</button>`;
-                    container.innerHTML = `
-                        <div class="bg-slate-900/50 p-10 rounded-2xl border border-dashed border-slate-800 text-center">
-                            <p class="text-slate-500 text-sm italic">No report for this date.</p>
-                        </div>`;
-                } else {
-                    actionBtn.innerHTML = `
-                        <button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button>
-                        <button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600 transition">Edit</button>
-                    `;
+    database.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
+        const report = snapshot.val();
+        currentReportData = report;
+        const container = document.getElementById('workCardContainer');
+        
+        if (!report) {
+            // 데이터가 없으면 즉시 에디터 모드 실행
+            window.showEditor(); 
+        } else {
+            // 데이터가 있을 때만 기존 조회 화면 노출
+            actionBtn.innerHTML = `
+                <button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button>
+                <button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600 transition">Edit</button>
+            `;
+            
+            let adminMemoHtml = "";
+            if (report.adminMemo) {
+                adminMemoHtml = `
+                    <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                        <p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p>
+                        <p class="text-xs text-blue-200 italic leading-relaxed">${report.adminMemo}</p>
+                    </div>`;
+            }
+
+            container.innerHTML = `
+                <div class="bg-slate-900 p-6 rounded-2xl border ${report.status === 'Completed' ? 'border-green-900/50' : 'border-slate-800'} shadow-lg animate-fadeIn">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-blue-400 text-sm font-black font-mono">${dateStr}</span>
+                        <span class="px-2 py-1 rounded-full text-[9px] font-bold ${report.status === 'Completed' ? 'bg-green-900/30 text-green-400' : 'bg-amber-900/30 text-amber-400'}">
+                            ${report.status.toUpperCase()}
+                        </span>
+                    </div>
                     
-                    let adminMemoHtml = "";
-                    if (report.adminMemo) {
-                        adminMemoHtml = `
-                            <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                                <p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p>
-                                <p class="text-xs text-blue-200 italic leading-relaxed">${report.adminMemo}</p>
-                            </div>`;
-                    }
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4>
+                            <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${report.todo || '-'}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-2">Work Summary</h4>
+                            <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${report.summary || report.content || '-'}</p>
+                        </div>
+                    </div>
 
-                    // 조회 화면 HTML 구성
-                    container.innerHTML = `
-                        <div class="bg-slate-900 p-6 rounded-2xl border ${report.status === 'Completed' ? 'border-green-900/50' : 'border-slate-800'} shadow-lg animate-fadeIn">
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="text-blue-400 text-sm font-black font-mono">${dateStr}</span>
-                                <span class="px-2 py-1 rounded-full text-[9px] font-bold ${report.status === 'Completed' ? 'bg-green-900/30 text-green-400' : 'bg-amber-900/30 text-amber-400'}">
-                                    ${report.status.toUpperCase()}
-                                </span>
-                            </div>
-                            
-                            <div class="space-y-6">
-                                <div>
-                                    <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4>
-                                    <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${report.todo || '-'}</p>
-                                </div>
-                                <div>
-                                    <h4 class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-2">Work Summary</h4>
-                                    <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${report.summary || report.content || '-'}</p>
-                                </div>
-                            </div>
+                    ${adminMemoHtml}
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-right">
+                        <span class="text-[10px] text-slate-500 italic">Last Update: ${report.time || 'N/A'}</span>
+                    </div>
+                </div>`;
+        }
+    });
+};
 
-                            ${adminMemoHtml}
-                            <div class="mt-6 pt-4 border-t border-slate-800 text-right">
-                                <span class="text-[10px] text-slate-500 italic">Last Update: ${report.time || 'N/A'}</span>
-                            </div>
-                        </div>`;
-                }
-            });
-        };
+// [수정] 에디터 화면 구성: 신규 작성 시 "Cancel" 버튼 대신 "날짜 안내" 표시
+window.showEditor = function() {
+    document.getElementById('actionButtons').innerHTML = '';
+    const container = document.getElementById('workCardContainer');
+    
+    const report = currentReportData || { todo: "", summary: "", status: "In Progress", content: "" };
+    const initialSummary = report.summary || report.content || "";
+    const isNew = !currentReportData; // 신규 작성 여부
+    
+    container.innerHTML = `
+        <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
+            <div class="flex justify-between items-center mb-5">
+                <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New Report' : 'Edit Report'}</span>
+                <span class="text-slate-500 text-[10px] font-mono">${selectedDateStr}</span>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label>
+                <select id="editStatus" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 outline-none text-sm">
+                    <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Completed" ${report.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">Today's To-Do</label>
+                <textarea id="editTodo" placeholder="Enter planned tasks..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[100px] resize-none focus:border-blue-500 transition">${report.todo || ''}</textarea>
+            </div>
+            <div class="mb-5">
+                <label class="block text-[10px] font-bold text-emerald-500 uppercase mb-2">Work Summary</label>
+                <textarea id="editSummary" placeholder="Enter work results..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${initialSummary}</textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Report</button>
+                ${!isNew ? `<button onclick="window.loadReport('${selectedDateStr}')" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-700 transition">Discard Changes</button>` : ''}
+            </div>
+        </div>`;
+};
+
 
         function renderMiniCalendar() {
             const year = viewDate.getFullYear();
