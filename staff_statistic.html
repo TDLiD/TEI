@@ -106,7 +106,7 @@
             }
         }
 
-        function processAndRender() {
+   function processAndRender() {
             if (!cachedData || !document.getElementById('monthlyChart')) return;
 
             const monthKey = monthViewDate.toISOString().substring(0, 7);
@@ -117,34 +117,35 @@
 
             const stats = { month: {}, year: {}, overall: {} };
 
+            // [수정] Leave 탭일 때 시간 데이터를 저장하기 위한 구조 변경
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
-                    let type = "";
-
                     if (currentTab === 'att') {
-                        // Attendance 탭 로직
-                        if (typeof record === 'string') type = record;
-                        else if (record.attend) {
-                            if (record.attend.includes("ATT")) type = "ATT";
-                            else if (record.attend.includes("LATE")) type = "LATE";
-                        }
+                        let type = (typeof record === 'string') ? record : (record.attend ? (record.attend.includes("ATT") ? "ATT" : (record.attend.includes("LATE") ? "LATE" : "")) : "");
+                        if (!type || !typeColors[type]) return;
+
+                        const updateCount = (obj) => {
+                            if (!obj[user]) obj[user] = {};
+                            obj[user][type] = (obj[user][type] || 0) + 1;
+                        };
+                        if (date.startsWith(monthKey)) updateCount(stats.month);
+                        if (date.startsWith(yearKey)) updateCount(stats.year);
+                        updateCount(stats.overall);
                     } else {
-                        // Leave 탭 로직 (퇴근 기록이 있는 경우만)
+                        // [수정] Leave 탭: 날짜별 시간 값을 숫자로 저장
                         if (typeof record !== 'string' && record.leave) {
-                            type = "LEAVE_DONE";
+                            const timeParts = record.leave.split(':');
+                            const decimalTime = parseInt(timeParts[0]) + (parseInt(timeParts[1]) / 60);
+                            
+                            const updateTimeData = (obj) => {
+                                if (!obj[user]) obj[user] = [];
+                                obj[user].push({ x: date, y: decimalTime });
+                            };
+                            if (date.startsWith(monthKey)) updateTimeData(stats.month);
+                            if (date.startsWith(yearKey)) updateTimeData(stats.year);
+                            updateTimeData(stats.overall);
                         }
                     }
-
-                    if (!type || !typeColors[type]) return;
-
-                    const updateCount = (obj) => {
-                        if (!obj[user]) obj[user] = {};
-                        obj[user][type] = (obj[user][type] || 0) + 1;
-                    };
-
-                    if (date.startsWith(monthKey)) updateCount(stats.month);
-                    if (date.startsWith(yearKey)) updateCount(stats.year);
-                    updateCount(stats.overall);
                 });
             });
 
@@ -153,56 +154,113 @@
             renderChart('overallChart', 'overall', stats.overall);
         }
 
-        function renderChart(canvasId, chartType, chartData) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || typeof Chart === 'undefined') return;
-            
-            const ctx = canvas.getContext('2d');
-            const users = Object.keys(chartData).sort();
-            
-            // 현재 탭에 맞는 데이터셋 필터링
-            const relevantTypes = currentTab === 'att' 
-                ? Object.keys(typeColors).filter(t => t !== 'LEAVE_DONE')
-                : ['LEAVE_DONE'];
+function renderChart(canvasId, chartType, chartData) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === 'undefined') return;
+    const ctx = canvas.getContext('2d');
+    if (charts[chartType]) charts[chartType].destroy();
 
-            const datasets = relevantTypes.map(type => {
-                const dataPoints = users.map(user => chartData[user][type] || 0);
-                // 데이터가 전부 0인 데이터셋은 표시하지 않음 (그래프 깔끔하게 유지)
-                if (dataPoints.every(v => v === 0)) return null;
+    if (currentTab === 'att') {
+        // [기존] Attendance 막대 그래프 로직 (유지)
+        const users = Object.keys(chartData).sort();
+        const relevantTypes = Object.keys(typeColors).filter(t => t !== 'LEAVE_DONE');
+        const datasets = relevantTypes.map(type => {
+            const dataPoints = users.map(user => chartData[user][type] || 0);
+            if (dataPoints.every(v => v === 0)) return null;
+            return { 
+                label: type, 
+                data: dataPoints, 
+                backgroundColor: typeColors[type], 
+                borderRadius: 4 
+            };
+        }).filter(d => d !== null);
 
-                return {
-                    label: type === 'LEAVE_DONE' ? 'Check-out' : type,
-                    data: dataPoints,
-                    backgroundColor: typeColors[type],
-                    borderRadius: 4
-                };
-            }).filter(d => d !== null);
+        charts[chartType] = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: users, datasets: datasets },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: { 
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#64748b' } } 
+                }
+            }
+        });
+    } else {
+        // [수정] Leave 시간 점-선 그래프 로직 (가변 간격: 17:30~19:30 10분, 19:30~23:00 20분)
+        const datasets = Object.entries(chartData).map(([user, points], idx) => {
+            // 날짜순 정렬
+            points.sort((a, b) => a.x.localeCompare(b.x));
+            const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`; // Staff별 고유색상
+            return {
+                label: user,
+                data: points,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.3,
+                fill: false
+            };
+        });
 
-            if (charts[chartType]) charts[chartType].destroy();
-
-            charts[chartType] = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: users, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#94a3b8', font: { weight: 'bold' } } }
+        charts[chartType] = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'category',
+                        grid: { color: 'rgba(30, 41, 59, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
                     },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            ticks: { stepSize: 1, color: '#64748b' },
-                            grid: { color: 'rgba(30, 41, 59, 0.5)' }
+                    y: {
+                        min: 17.5, // 17:30 시작
+                        max: 23.0, // 23:00 종료 (밤 11시)
+                        afterBuildTicks: function(axis) {
+                            const ticks = [];
+                            // 1. 17:30 ~ 19:30 (10분 단위 = 1/6시간)
+                            for (let time = 17.5; time <= 19.5; time += (1/6)) {
+                                ticks.push({ value: time });
+                            }
+                            // 2. 19:30 ~ 23:00 (20분 단위 = 1/3시간)
+                            // 19.5는 이미 추가되었으므로 19.5 + 1/3부터 시작
+                            for (let time = 19.5 + (1/3); time <= 23.0; time += (1/3)) {
+                                ticks.push({ value: time });
+                            }
+                            axis.ticks = ticks;
                         },
-                        x: {
-                            ticks: { color: '#64748b', font: { size: 10 } },
-                            grid: { display: false }
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 10 },
+                            callback: function(value) {
+                                // 부동 소수점 오차 방지 (+0.0001)
+                                const h = Math.floor(value + 0.0001);
+                                const m = Math.round((value - h) * 60);
+                                return `${h}:${m === 0 ? '00' : m}`;
+                            }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const h = Math.floor(ctx.parsed.y + 0.0001);
+                                const m = Math.round((ctx.parsed.y - h) * 60);
+                                return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
+                            }
                         }
                     }
                 }
-            });
-        }
+            }
+        });
+    }
+}
 
         setTimeout(() => {
             initStats();

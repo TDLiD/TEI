@@ -1,7 +1,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-    /* 통계 카드 디자인 최적화 */
+    /* 통계 카드 디자인 최적화 (기존 유지) */
     .stat-card { 
         background: #0f172a; 
         border: 1px solid #1e293b; 
@@ -13,7 +14,7 @@
         .stat-card { padding: 2rem; margin-bottom: 2rem; }
     }
 
-    /* 차트 컨테이너 */
+    /* 차트 컨테이너 (기존 유지) */
     .chart-container { 
         position: relative; 
         height: 500px; 
@@ -27,7 +28,20 @@
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     .nav-btn:active { scale: 0.95; }
 
-    /* 탭 스타일 */
+    /* [추가] 내보내기 버튼 스타일 */
+    .export-btn {
+        background: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        transition: all 0.2s;
+    }
+    .export-btn:hover { background: #059669; transform: translateY(-1px); }
+
+    /* 탭 스타일 (기존 유지) */
     .admin-stat-tab { transition: all 0.3s; position: relative; opacity: 0.5; }
     .admin-stat-tab.active { opacity: 1; color: #3b82f6; }
     .admin-stat-tab.active::after { 
@@ -56,9 +70,12 @@
                     <span class="text-blue-500">●</span> <span id="labelMonth">Monthly Performance</span> (<span id="txtMonth" class="text-blue-400"></span>)
                 </h3>
             </div>
-            <div class="flex w-full md:w-auto bg-slate-800/50 rounded-xl p-1 border border-slate-700">
-                <button onclick="changeStatPeriod('month', -1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest uppercase">Prev</button>
-                <button onclick="changeStatPeriod('month', 1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest ml-1 uppercase">Next</button>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="exportToExcel('month')" class="export-btn">Export Excel</button>
+                <div class="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700">
+                    <button onclick="changeStatPeriod('month', -1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest uppercase">Prev</button>
+                    <button onclick="changeStatPeriod('month', 1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest ml-1 uppercase">Next</button>
+                </div>
             </div>
         </div>
         <div class="chart-container">
@@ -73,9 +90,12 @@
                     <span class="text-purple-500">●</span> <span id="labelYear">Yearly Accumulation</span> (<span id="txtYear" class="text-purple-400"></span>)
                 </h3>
             </div>
-            <div class="flex w-full md:w-auto bg-slate-800/50 rounded-xl p-1 border border-slate-700">
-                <button onclick="changeStatPeriod('year', -1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest uppercase">Prev Year</button>
-                <button onclick="changeStatPeriod('year', 1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest ml-1 uppercase">Next Year</button>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="exportToExcel('year')" class="export-btn">Export Excel</button>
+                <div class="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700">
+                    <button onclick="changeStatPeriod('year', -1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest uppercase">Prev Year</button>
+                    <button onclick="changeStatPeriod('year', 1)" class="nav-btn flex-1 md:flex-none px-4 py-2.5 text-slate-400 rounded-lg text-[10px] font-black tracking-widest ml-1 uppercase">Next Year</button>
+                </div>
             </div>
         </div>
         <div class="chart-container">
@@ -84,9 +104,12 @@
     </section>
 
     <section class="stat-card">
-        <h3 class="text-base md:text-lg font-black text-white mb-6 md:mb-8 flex items-center gap-2">
-            <span class="text-emerald-500">●</span> Overall All-Time <span id="labelOverall">Records</span>
-        </h3>
+        <div class="flex justify-between items-center mb-6 md:mb-8">
+            <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2">
+                <span class="text-emerald-500">●</span> Overall All-Time <span id="labelOverall">Records</span>
+            </h3>
+            <button onclick="exportToExcel('overall')" class="export-btn">Export Excel</button>
+        </div>
         <div class="chart-container">
             <canvas id="overallChart"></canvas>
         </div>
@@ -98,29 +121,153 @@
         const db = firebase.database();
         let monthViewDate = new Date(); 
         let yearViewDate = new Date();
-        let currentMode = 'att'; // 'att' or 'leave'
+        let currentMode = 'att'; 
         
         const typeColors = {
             'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
             'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
-            'LEAVE': '#6366f1' // 퇴근 통계용 색상
+            'LEAVE': '#6366f1'
         };
 
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
 
-        // 탭 전환
+        // [기존 엑셀 내보내기 유지]
+window.exportToExcel = function(periodType) {
+    if (!cachedData) return alert("No data loaded.");
+
+    let filterKey = "";
+    let fileNameSuffix = "";
+    if (periodType === 'month') {
+        filterKey = monthViewDate.toISOString().substring(0, 7);
+        fileNameSuffix = filterKey;
+    } else if (periodType === 'year') {
+        filterKey = yearViewDate.getFullYear().toString();
+        fileNameSuffix = filterKey;
+    } else {
+        fileNameSuffix = "Overall";
+    }
+
+    const fileName = `Performance_Report_${fileNameSuffix}.xlsx`;
+    
+    // 1. 데이터 가공 구조
+    let targetStats = {};
+    const attendanceTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+
+    Object.entries(cachedData).forEach(([date, dayData]) => {
+        if (filterKey && !date.startsWith(filterKey)) return;
+
+        Object.entries(dayData).forEach(([user, record]) => {
+            if (!targetStats[user]) {
+                targetStats[user] = { totalCount: 0, leaveTimes: [] };
+                attendanceTypes.forEach(t => targetStats[user][t] = 0);
+            }
+
+            let type = "";
+            if (typeof record === 'string') type = record;
+            else if (record.attend) {
+                if (record.attend.includes("ATT")) type = "ATT";
+                else if (record.attend.includes("LATE")) type = "LATE";
+                // 기타 다른 타입이 있다면 추가
+                else type = record.attend; 
+            }
+
+            if (type && attendanceTypes.includes(type)) {
+                targetStats[user][type]++;
+                targetStats[user].totalCount++;
+            }
+
+            if (typeof record !== 'string' && record.leave) {
+                const [h, m] = record.leave.split(':').map(Number);
+                targetStats[user].leaveTimes.push(h * 60 + m);
+            }
+        });
+    });
+
+    // 2. 엑셀 데이터 배열 생성
+    const rows = [];
+    
+    // 섹션 1: 개별 직원 통계 (Individual Staff Performance)
+    rows.push(["INDIVIDUAL PERFORMANCE REPORT"]);
+    const header = ["Staff Name", ...attendanceTypes.map(t => `${t} (Qty)`), ...attendanceTypes.map(t => `${t} (%)`), "Avg. Leave Time"];
+    rows.push(header);
+
+    const sortedStaffs = Object.keys(targetStats).sort();
+    sortedStaffs.forEach(staff => {
+        const s = targetStats[staff];
+        const row = [staff];
+
+        // 수량
+        attendanceTypes.forEach(t => row.push(s[t]));
+        // 퍼센트
+        attendanceTypes.forEach(t => {
+            const percent = s.totalCount > 0 ? ((s[t] / s.totalCount) * 100).toFixed(1) + "%" : "0%";
+            row.push(percent);
+        });
+        // 평균 퇴근 시간
+        if (s.leaveTimes.length > 0) {
+            const avgMinutes = s.leaveTimes.reduce((a, b) => a + b, 0) / s.leaveTimes.length;
+            const avgH = Math.floor(avgMinutes / 60);
+            const avgM = Math.round(avgMinutes % 60);
+            row.push(`${avgH}:${avgM < 10 ? '0' + avgM : avgM}`);
+        } else { row.push("-"); }
+
+        rows.push(row);
+    });
+
+    // 섹션 2: 전체 요약 (Total Summary - 그래프 역할 대체)
+    rows.push([]); // 빈 줄
+    rows.push([]);
+    rows.push(["TOTAL TEAM SUMMARY"]);
+    rows.push(["Status Type", "Total Qty", "Team Average (%)"]);
+
+    let teamTotalCount = 0;
+    attendanceTypes.forEach(t => {
+        let typeQty = 0;
+        sortedStaffs.forEach(staff => typeQty += targetStats[staff][t]);
+        teamTotalCount += typeQty;
+    });
+
+    attendanceTypes.forEach(t => {
+        let typeQty = 0;
+        sortedStaffs.forEach(staff => typeQty += targetStats[staff][t]);
+        const teamPercent = teamTotalCount > 0 ? ((typeQty / teamTotalCount) * 100).toFixed(1) + "%" : "0%";
+        rows.push([t, typeQty, teamPercent]);
+    });
+
+    // 섹션 3: 평균 퇴근 시간 요약
+    rows.push([]);
+    let allLeaveTimes = [];
+    sortedStaffs.forEach(staff => { allLeaveTimes = allLeaveTimes.concat(targetStats[staff].leaveTimes); });
+    if (allLeaveTimes.length > 0) {
+        const teamAvgMin = allLeaveTimes.reduce((a,b) => a+b, 0) / allLeaveTimes.length;
+        const th = Math.floor(teamAvgMin / 60);
+        const tm = Math.round(teamAvgMin % 60);
+        rows.push(["Team Avg. Leave Time", "", `${th}:${tm < 10 ? '0' + tm : tm}`]);
+    }
+
+    // 3. 파일 생성
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    
+    // 스타일링 (열 너비)
+    const wscols = [{wch: 20}, ...header.slice(1).map(() => ({wch: 12}))];
+    ws['!cols'] = wscols;
+
+    XLSX.utils.book_append_sheet(wb, ws, "Performance Report");
+    XLSX.writeFile(wb, fileName);
+};
+
+
+
         window.switchAdminStatTab = function(mode) {
             currentMode = mode;
             document.getElementById('tabAtt').classList.toggle('active', mode === 'att');
             document.getElementById('tabLeave').classList.toggle('active', mode === 'leave');
-            
-            // 라벨 업데이트
             const isAtt = mode === 'att';
-            document.getElementById('labelMonth').innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Count';
-            document.getElementById('labelYear').innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Accumulation';
+            document.getElementById('labelMonth').innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Times';
+            document.getElementById('labelYear').innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Times';
             document.getElementById('labelOverall').innerText = isAtt ? 'Records' : 'Leave Records';
-
             processAndRender();
         };
 
@@ -140,10 +287,8 @@
 
         function processAndRender() {
             if (!cachedData || !document.getElementById('monthlyChart')) return;
-
             const monthKey = monthViewDate.toISOString().substring(0, 7);
             const yearKey = yearViewDate.getFullYear().toString();
-            
             document.getElementById('txtMonth').innerText = monthViewDate.toLocaleString('en-US', { month: 'short', year: 'numeric' });
             document.getElementById('txtYear').innerText = yearKey;
 
@@ -151,34 +296,38 @@
 
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
-                    let type = "";
-                    
                     if (currentMode === 'att') {
+                        // Attendance 카운트 로직
+                        let type = "";
                         if (typeof record === 'string') type = record;
                         else if (record.attend) {
                             if (record.attend.includes("ATT")) type = "ATT";
                             else if (record.attend.includes("LATE")) type = "LATE";
                         }
+                        if (!type || !typeColors[type]) return;
+                        const updateCount = (obj) => {
+                            if (!obj[user]) obj[user] = {};
+                            obj[user][type] = (obj[user][type] || 0) + 1;
+                        };
+                        if (date.startsWith(monthKey)) updateCount(stats.month);
+                        if (date.startsWith(yearKey)) updateCount(stats.year);
+                        updateCount(stats.overall);
                     } else {
-                        // Leave 모드: record 내에 leave 데이터가 존재할 때만 카운트
+                        // [수정] Leave 시간 데이터 로직
                         if (typeof record !== 'string' && record.leave) {
-                            type = "LEAVE";
+                            const [hh, mm] = record.leave.split(':').map(Number);
+                            const decimalTime = hh + (mm / 60);
+                            const updateTime = (obj) => {
+                                if (!obj[user]) obj[user] = [];
+                                obj[user].push({ x: date, y: decimalTime });
+                            };
+                            if (date.startsWith(monthKey)) updateTime(stats.month);
+                            if (date.startsWith(yearKey)) updateTime(stats.year);
+                            updateTime(stats.overall);
                         }
                     }
-
-                    if (!type || !typeColors[type]) return;
-
-                    const updateCount = (obj) => {
-                        if (!obj[user]) obj[user] = {};
-                        obj[user][type] = (obj[user][type] || 0) + 1;
-                    };
-
-                    if (date.startsWith(monthKey)) updateCount(stats.month);
-                    if (date.startsWith(yearKey)) updateCount(stats.year);
-                    updateCount(stats.overall);
                 });
             });
-
             renderChart('monthlyChart', 'month', stats.month);
             renderChart('yearlyChart', 'year', stats.year);
             renderChart('overallChart', 'overall', stats.overall);
@@ -187,76 +336,88 @@
         function renderChart(canvasId, chartType, chartData) {
             const canvas = document.getElementById(canvasId);
             if (!canvas || typeof Chart === 'undefined') return;
-            
             const ctx = canvas.getContext('2d');
-            const users = Object.keys(chartData).sort();
-            
-            // 현재 모드에 따라 표시할 데이터셋 결정
-            const targetTypes = currentMode === 'att' 
-                ? Object.keys(typeColors).filter(k => k !== 'LEAVE')
-                : ['LEAVE'];
+            if (charts[chartType]) charts[chartType].destroy();
 
             const isMobile = window.innerWidth < 768;
 
-            const datasets = targetTypes.map(type => {
-                const dataValues = users.map(user => chartData[user][type] || 0);
-                // 모든 값이 0이면 생성 안 함
-                if (dataValues.every(v => v === 0)) return null;
+            if (currentMode === 'att') {
+                const users = Object.keys(chartData).sort();
+                const targetTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+                const datasets = targetTypes.map(type => {
+                    const dataValues = users.map(user => chartData[user][type] || 0);
+                    if (dataValues.every(v => v === 0)) return null;
+                    return {
+                        label: type, data: dataValues, backgroundColor: typeColors[type], borderRadius: 4
+                    };
+                }).filter(d => d !== null);
 
-                return {
-                    label: type === 'LEAVE' ? 'Check-out' : type,
-                    data: dataValues,
-                    backgroundColor: typeColors[type],
-                    borderRadius: 4,
-                    barPercentage: 0.9, 
-                    categoryPercentage: 0.8
-                };
-            }).filter(d => d !== null);
-
-            if (charts[chartType]) charts[chartType].destroy();
-
-            charts[chartType] = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: users, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: isMobile ? 'y' : 'x',
-                    plugins: {
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { 
-                                color: '#94a3b8', 
-                                font: { size: isMobile ? 9 : 10, weight: '900' },
-                                boxWidth: 8,
-                                padding: 15
-                            } 
-                        }
-                    },
-                    scales: {
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { color: '#f1f5f9', font: { size: isMobile ? 10 : 12, weight: 'bold' } } 
-                        },
-                        y: { 
-                            beginAtZero: true, 
-                            ticks: { 
-                                stepSize: 1, 
-                                color: '#64748b',
-                                font: { size: isMobile ? 10 : 11 }
-                            },
-                            grid: { color: 'rgba(255,255,255,0.05)' }
+                charts[chartType] = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: users, datasets: datasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        indexAxis: isMobile ? 'y' : 'x',
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1, color: '#64748b' } },
+                            x: { ticks: { color: '#94a3b8' } }
                         }
                     }
-                }
-            });
+                });
+            } else {
+                // [수정] Leave 시간 점-선 그래프 (가변 간격 적용)
+                const datasets = Object.entries(chartData).map(([user, points], idx) => {
+                    points.sort((a, b) => a.x.localeCompare(b.x));
+                    const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`;
+                    return {
+                        label: user, data: points, borderColor: color, backgroundColor: color,
+                        borderWidth: 2, pointRadius: 4, tension: 0.3, fill: false
+                    };
+                });
+
+                charts[chartType] = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: datasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } },
+                            y: {
+                                min: 17.5, max: 23.0,
+                                afterBuildTicks: function(axis) {
+                                    const ticks = [];
+                                    for (let t = 17.5; t <= 19.5; t += (1/6)) ticks.push({ value: t });
+                                    for (let t = 19.5 + (1/3); t <= 23.0; t += (1/3)) ticks.push({ value: t });
+                                    axis.ticks = ticks;
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: (val) => {
+                                        const h = Math.floor(val + 0.0001);
+                                        const m = Math.round((val - h) * 60);
+                                        return `${h}:${m === 0 ? '00' : m}`;
+                                    }
+                                },
+                                grid: { color: 'rgba(255,255,255,0.05)' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const h = Math.floor(ctx.parsed.y + 0.0001);
+                                        const m = Math.round((ctx.parsed.y - h) * 60);
+                                        return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         }
 
-        window.addEventListener('resize', () => {
-            if (cachedData) processAndRender();
-        });
-
-        // 초기 실행
+        window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
         setTimeout(initAdminStats, 300);
     })();
 </script>
