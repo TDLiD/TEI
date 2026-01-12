@@ -9,8 +9,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        body { font-family: "Pretendard", sans-serif; background-color: #000000; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        select, input { background-color: #1e293b !important; color: white !important; border-color: #334155 !important; font-size: 16px !important; }
+        body { 
+            font-family: "Pretendard", sans-serif; 
+            /* 배경 이미지 설정 */
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('images/gif/1.gif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #f1f5f9; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        /* 입력창 투명도 조절로 배경과 어울리게 설정 */
+        select, input { 
+            background-color: rgba(30, 41, 59, 0.8) !important; 
+            backdrop-filter: blur(10px);
+            color: white !important; 
+            border-color: rgba(51, 65, 85, 0.5) !important; 
+            font-size: 16px !important; 
+        }
+
+        /* 로그인 박스 반투명 효과 */
+        .login-card {
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
     </style>
@@ -21,25 +47,25 @@
         <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
             <img src="images/login/login.gif" alt="Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain">
             <div class="text-center md:text-left">
-                <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight">
+                <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl">
                     TDLiD<br class="hidden md:block"> Staff Login
                 </h2>
-                <p class="text-slate-500 text-xs md:text-sm font-medium tracking-[0.2em] uppercase mt-2">
+                <p class="text-slate-300 text-xs md:text-sm font-medium tracking-[0.2em] uppercase mt-2 drop-shadow-lg">
                     Daily Report System
                 </p>
             </div>
         </div>
     </div>
 
-    <div class="bg-slate-900 p-6 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-[440px] border border-slate-800 animate-fadeIn" style="animation-delay: 0.2s;">
+    <div class="login-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-[440px] animate-fadeIn" style="animation-delay: 0.2s;">
         <div class="mb-8 text-center md:text-left">
             <p class="text-slate-200 text-xl md:text-2xl font-bold">Welcome back</p>
-            <p class="text-slate-500 text-sm mt-1">Select your name to continue</p>
+            <p class="text-slate-400 text-sm mt-1">Select your name to continue</p>
         </div>
 
         <div class="space-y-6">
             <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Staff Member</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Staff Member</label>
                 <div class="relative">
                     <select id="userName" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none cursor-pointer shadow-xl">
                         <option value="" disabled selected>Loading staff list...</option>
@@ -49,11 +75,11 @@
             </div>
             
             <div>
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Password</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
                 <input type="password" id="password" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-xl" placeholder="••••••••">
                 
                 <div class="flex justify-end px-1 mt-2">
-                    <button onclick="findPassword()" class="text-[10px] text-slate-500 hover:text-blue-400 transition font-bold uppercase tracking-wider">
+                    <button onclick="findPassword()" class="text-[10px] text-slate-400 hover:text-blue-400 transition font-bold uppercase tracking-wider">
                         Forgot Password?
                     </button>
                 </div>
@@ -68,6 +94,7 @@
     </div>
 
     <script>
+        // 기존 스크립트 내용과 동일 (변동 없음)
         (function() {
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -75,15 +102,13 @@
             const userSelect = document.getElementById('userName');
             const passwordInput = document.getElementById('password');
 
-            // 1. 엔터키 이벤트 감지 추가
             passwordInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // 기본 동작 방지
-                    handleLogin(); // 로그인 함수 호출
+                    e.preventDefault();
+                    handleLogin();
                 }
             });
 
-            // 사용자 목록 실시간 로드
             database.ref('users').once('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!userSelect) return;
@@ -100,7 +125,6 @@
                 }
             });
 
-            // 로그인 로직
             window.handleLogin = function() {
                 const name = document.getElementById('userName').value;
                 const pw = document.getElementById('password').value;
@@ -119,13 +143,9 @@
                 });
             };
 
-            // 패스워드 힌트 로직
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;
-                if (!name) {
-                    return alert("Please select your name from the list first.");
-                }
-
+                if (!name) return alert("Please select your name from the list first.");
                 if (confirm(`Do you want to see a password hint for '${name}'?`)) {
                     database.ref('users/' + name).once('value', (snapshot) => {
                         const userData = snapshot.val();
