@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - DAILY SYSTEM</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
@@ -11,16 +11,34 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 
     <style>
-        body { font-family: Pretendard, sans-serif; background:#000; color:#f1f5f9; }
-        .tab-btn{transition:.25s; cursor: pointer;}
-        .tab-active{color:#3b82f6;font-weight:900;background:rgba(59,130,246,.1);border-radius:1rem}
-        .tab-inactive{color:#64748b}
+        body { font-family: Pretendard, sans-serif; background:#000; color:#f1f5f9; margin: 0; padding: 0; }
+        .tab-btn { transition:.25s; cursor: pointer; }
+        .tab-active { color:#3b82f6; font-weight:900; background:rgba(59,130,246,.1); border-radius:1rem; }
+        .tab-inactive { color:#64748b; }
+
+        /* 모바일 하단 탭바 전용 스타일 */
+        .mobile-tab-active { color: #3b82f6 !important; font-weight: 900; }
+        
+        /* 스크롤바 숨기기 (선택 사항) */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        @media (max-width: 767px) {
+            aside { display: none; } /* 모바일에서 사이드바 숨김 */
+            main { padding: 1rem !important; padding-bottom: 80px !important; padding-top: 60px !important; }
+            .mobile-header { display: flex !important; }
+            .mobile-nav { display: flex !important; }
+        }
     </style>
 </head>
 
 <body class="flex min-h-screen">
 
-<aside class="w-72 bg-slate-950/60 border-r border-slate-800 p-6">
+<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-5 justify-between">
+    <h1 class="text-lg font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+    <div class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full font-bold uppercase tracking-tighter">Master</div>
+</header>
+
+<aside class="w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen">
     <div class="flex items-center gap-3 mb-10">
         <h1 class="text-2xl font-black italic">
             ADMIN <span class="text-blue-500">SYSTEM</span>
@@ -40,6 +58,29 @@
     <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
 </main>
 
+<nav class="mobile-nav fixed bottom-0 left-0 right-0 h-16 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-5 items-center px-2">
+    <button onclick="switchAdminTab('dashboard')" class="m-btn-dashboard flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-xl">📊</span>
+        <span class="text-[9px] font-bold uppercase">Dash</span>
+    </button>
+    <button onclick="switchAdminTab('attendance')" class="m-btn-attendance flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-xl">👤</span>
+        <span class="text-[9px] font-bold uppercase">Att</span>
+    </button>
+    <button onclick="switchAdminTab('reports')" class="m-btn-reports flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-xl">📝</span>
+        <span class="text-[9px] font-bold uppercase">Repo</span>
+    </button>
+    <button onclick="switchAdminTab('schedule')" class="m-btn-schedule flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-xl">📅</span>
+        <span class="text-[9px] font-bold uppercase">Sch</span>
+    </button>
+    <button onclick="switchAdminTab('settings')" class="m-btn-settings flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-xl">⚙️</span>
+        <span class="text-[9px] font-bold uppercase">Set</span>
+    </button>
+</nav>
+
 <div id="adminCustomModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAdminCustomModal()"></div>
     <div class="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -52,48 +93,35 @@
 
 <script>
 /* =========================================================
-   1. Firebase 초기화 (🔥 단 한 번만)
+   1. Firebase 초기화
    ========================================================= */
 (function () {
-
     if (!window.firebase) return;
-
     const firebaseConfig = {
         databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com"
     };
-
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
-
-    /* 🔒 db 전역 단일 인스턴스 */
     if (!window.db) {
         window.db = firebase.database();
     }
-
 })();
 
 /* =========================================================
-   2. ADMIN 공용 모달 (🔥 단 한 번만 정의)
+   2. ADMIN 공용 모달
    ========================================================= */
 if (!window.openAdminCustomModal) {
-
     window.openAdminCustomModal = function (titleHtml, bodyHtml) {
         const modal = document.getElementById('adminCustomModal');
         const tBox  = document.getElementById('modalTitle');
         const bBox  = document.getElementById('modalBody');
-
-        if (!modal || !tBox || !bBox) {
-            console.error('[ADMIN MODAL] DOM not found');
-            return;
-        }
-
+        if (!modal || !tBox || !bBox) return;
         tBox.innerHTML = titleHtml;
         bBox.innerHTML = bodyHtml;
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     };
-
     window.closeAdminCustomModal = function () {
         const modal = document.getElementById('adminCustomModal');
         if (modal) {
@@ -101,28 +129,26 @@ if (!window.openAdminCustomModal) {
             document.body.style.overflow = '';
         }
     };
-
-    /* 🔒 절대 덮어쓰기 방지 */
-    Object.defineProperty(window, 'openAdminCustomModal', {
-        writable: false,
-        configurable: false
-    });
-    Object.defineProperty(window, 'closeAdminCustomModal', {
-        writable: false,
-        configurable: false
-    });
+    Object.defineProperty(window, 'openAdminCustomModal', { writable: false, configurable: false });
+    Object.defineProperty(window, 'closeAdminCustomModal', { writable: false, configurable: false });
 }
 
 /* =========================================================
-   3. 탭 전환 (SPA Loader - 충돌 방지 버전)
+   3. 탭 전환 (SPA Loader - 모바일 대응 추가)
    ========================================================= */
 async function switchAdminTab(tab) {
-
+    // 데스크톱 사이드바 UI 업데이트
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('tab-active');
         b.classList.add('tab-inactive');
     });
     document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+
+    // 모바일 하단 탭바 UI 업데이트
+    document.querySelectorAll('.mobile-nav button').forEach(b => {
+        b.classList.remove('mobile-tab-active');
+    });
+    document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
 
     const map = {
         dashboard:  'admin_dashboard.html',
@@ -137,28 +163,19 @@ async function switchAdminTab(tab) {
         const html = await res.text();
         const area = document.getElementById('adminContent');
 
-        /* 기존 내용 제거 */
         area.innerHTML = html;
 
-        /* ⚠️ 핵심 수정
-           - IIFE로 감싸지 않음
-           - const / let 재선언 방지
-           - window 전역 함수만 살아있게 함
-        */
         area.querySelectorAll('script').forEach(oldScript => {
             const s = document.createElement('script');
-
             if (oldScript.src) {
                 s.src = oldScript.src;
             } else {
                 s.textContent = oldScript.textContent;
             }
-
             document.body.appendChild(s);
             document.body.removeChild(s);
         });
 
-        /* 탭별 초기화 */
         setTimeout(() => {
             if (tab === 'dashboard')  window.initAdminDashboard?.();
             if (tab === 'attendance') window.renderAttendanceFull?.();
@@ -166,6 +183,9 @@ async function switchAdminTab(tab) {
             if (tab === 'schedule')   window.renderScheduleFull?.();
             if (tab === 'settings')   window.initAdminSettings?.();
         }, 150);
+
+        // 모바일에서 탭 클릭 시 상단으로 스크롤 이동
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (e) {
         console.error('[ADMIN TAB LOAD ERROR]', e);
@@ -179,9 +199,6 @@ window.addEventListener('DOMContentLoaded', () => {
     switchAdminTab('dashboard');
 });
 </script>
-
-
-
 
 </body>
 </html>
