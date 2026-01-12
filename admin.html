@@ -19,14 +19,14 @@
         /* 모바일 하단 탭바 전용 스타일 */
         .mobile-tab-active { color: #3b82f6 !important; font-weight: 900; }
         
-        /* 스크롤바 숨기기 (선택 사항) */
+        /* 스크롤바 숨기기 */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         @media (max-width: 767px) {
-            aside { display: none; } /* 모바일에서 사이드바 숨김 */
-            main { padding: 1rem !important; padding-bottom: 80px !important; padding-top: 60px !important; }
+            aside { display: none; }
+            main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
             .mobile-header { display: flex !important; }
-            .mobile-nav { display: flex !important; }
+            .mobile-nav { display: grid !important; } /* flex에서 grid로 변경하여 간격 최적화 */
         }
     </style>
 </head>
@@ -50,7 +50,7 @@
         <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 Attendance</button>
         <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 Reports</button>
         <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 Schedule</button>
-        <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ Settings</button>
+        <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 Statistics</button> <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ Settings</button>
     </nav>
 </aside>
 
@@ -58,26 +58,30 @@
     <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
 </main>
 
-<nav class="mobile-nav fixed bottom-0 left-0 right-0 h-16 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-5 items-center px-2">
+<nav class="mobile-nav fixed bottom-0 left-0 right-0 h-16 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-6 items-center px-1">
     <button onclick="switchAdminTab('dashboard')" class="m-btn-dashboard flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-xl">📊</span>
-        <span class="text-[9px] font-bold uppercase">Dash</span>
+        <span class="text-lg">📊</span>
+        <span class="text-[8px] font-bold uppercase">Dash</span>
     </button>
     <button onclick="switchAdminTab('attendance')" class="m-btn-attendance flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-xl">👤</span>
-        <span class="text-[9px] font-bold uppercase">Att</span>
+        <span class="text-lg">👤</span>
+        <span class="text-[8px] font-bold uppercase">Att</span>
     </button>
     <button onclick="switchAdminTab('reports')" class="m-btn-reports flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-xl">📝</span>
-        <span class="text-[9px] font-bold uppercase">Repo</span>
+        <span class="text-lg">📝</span>
+        <span class="text-[8px] font-bold uppercase">Repo</span>
     </button>
     <button onclick="switchAdminTab('schedule')" class="m-btn-schedule flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-xl">📅</span>
-        <span class="text-[9px] font-bold uppercase">Sch</span>
+        <span class="text-lg">📅</span>
+        <span class="text-[8px] font-bold uppercase">Sch</span>
+    </button>
+    <button onclick="switchAdminTab('statistic')" class="m-btn-statistic flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-lg">📈</span>
+        <span class="text-[8px] font-bold uppercase">Stat</span>
     </button>
     <button onclick="switchAdminTab('settings')" class="m-btn-settings flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-xl">⚙️</span>
-        <span class="text-[9px] font-bold uppercase">Set</span>
+        <span class="text-lg">⚙️</span>
+        <span class="text-[8px] font-bold uppercase">Set</span>
     </button>
 </nav>
 
@@ -134,17 +138,16 @@ if (!window.openAdminCustomModal) {
 }
 
 /* =========================================================
-   3. 탭 전환 (SPA Loader - 모바일 대응 추가)
+   3. 탭 전환 (SPA Loader)
    ========================================================= */
 async function switchAdminTab(tab) {
-    // 데스크톱 사이드바 UI 업데이트
+    // UI 업데이트
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('tab-active');
         b.classList.add('tab-inactive');
     });
     document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
 
-    // 모바일 하단 탭바 UI 업데이트
     document.querySelectorAll('.mobile-nav button').forEach(b => {
         b.classList.remove('mobile-tab-active');
     });
@@ -155,6 +158,7 @@ async function switchAdminTab(tab) {
         attendance: 'admin_attendance.html',
         reports:    'admin_report.html',
         schedule:   'admin_calendar.html',
+        statistic:  'admin_statistic.html', // 추가됨
         settings:   'admin_setting.html'
     };
 
@@ -181,10 +185,10 @@ async function switchAdminTab(tab) {
             if (tab === 'attendance') window.renderAttendanceFull?.();
             if (tab === 'reports')    window.renderWorkFull?.();
             if (tab === 'schedule')   window.renderScheduleFull?.();
+            if (tab === 'statistic')  window.initAdminStatistic?.(); // 통계 초기화 함수 호출 가칭
             if (tab === 'settings')   window.initAdminSettings?.();
         }, 150);
 
-        // 모바일에서 탭 클릭 시 상단으로 스크롤 이동
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (e) {
