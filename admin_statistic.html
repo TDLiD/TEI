@@ -333,11 +333,22 @@ window.exportToExcel = function(periodType) {
             renderChart('overallChart', 'overall', stats.overall);
         }
 
-        function renderChart(canvasId, chartType, chartData) {
+ function renderChart(canvasId, chartType, chartData) {
             const canvas = document.getElementById(canvasId);
             if (!canvas || typeof Chart === 'undefined') return;
             const ctx = canvas.getContext('2d');
-            if (charts[chartType]) charts[chartType].destroy();
+
+            // [추가된 해결 코드] Chart.js 공식 인스턴스 검색 및 제거
+            const existingChart = Chart.getChart(canvas); 
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            // 기존 charts 객체 기반 제거 로직도 유지 (이중 안전장치)
+            if (charts[chartType]) {
+                charts[chartType].destroy();
+                charts[chartType] = null;
+            }
 
             const isMobile = window.innerWidth < 768;
 
@@ -365,7 +376,6 @@ window.exportToExcel = function(periodType) {
                     }
                 });
             } else {
-                // [수정] Leave 시간 점-선 그래프 (가변 간격 적용)
                 const datasets = Object.entries(chartData).map(([user, points], idx) => {
                     points.sort((a, b) => a.x.localeCompare(b.x));
                     const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`;
@@ -416,6 +426,8 @@ window.exportToExcel = function(periodType) {
                 });
             }
         }
+
+
 
         window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
         setTimeout(initAdminStats, 300);
