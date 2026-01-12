@@ -1,11 +1,10 @@
 <style>
-    /* 테이블 헤더 및 셀 기본 스타일 */
+    /* (기존 스타일 유지) */
     .calendar-table th { padding: 6px 0; color: #64748b; font-size: 0.6rem; text-align: center; font-weight: 800; }
     .calendar-table td { 
         height: 70px; width: 14.28%; border: 1px solid #1e293b; vertical-align: top; padding: 2px; position: relative; transition: background 0.2s;
     }
 
-    /* 모바일 전용 최적화 */
     @media (max-width: 640px) {
         .calendar-table td { height: 55px !important; padding: 1px; }
         .time-label { font-size: 0.45rem !important; padding: 1px !important; margin-top: 1px !important; line-height: 1; letter-spacing: -0.05em; }
@@ -30,6 +29,14 @@
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* [추가] 주간 경고 바 애니메이션 */
+    .warning-pulse { animation: pulse-red 2s infinite; }
+    @keyframes pulse-red {
+        0% { border-color: rgba(244, 63, 94, 0.3); }
+        50% { border-color: rgba(244, 63, 94, 1); box-shadow: 0 0 10px rgba(244, 63, 94, 0.2); }
+        100% { border-color: rgba(244, 63, 94, 0.3); }
+    }
 </style>
 
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
@@ -38,6 +45,20 @@
         <div class="px-1">
             <p class="text-slate-500 text-[9px] uppercase font-black tracking-widest mb-0.5">Authenticated as</p>
             <h2 id="mainWelcomeMsg" class="text-xl md:text-3xl font-black text-white"></h2>
+
+            <div id="weeklySummaryCard" class="mt-4 p-4 rounded-2xl border border-slate-800 bg-slate-900/50 transition-all duration-500">
+                <div class="flex items-center justify-between mb-1">
+                    <span id="warningIcon" class="text-lg opacity-0 transition-opacity">⚠️</span>
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Weekly Late Ratio</span>
+                </div>
+                <div class="flex items-end gap-2">
+                    <span id="lateRatioPercent" class="text-3xl font-black text-white">0%</span>
+                    <span id="lateRatioStatus" class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Checking...</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div id="lateRatioBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
 
         <section class="bg-slate-900 p-4 md:p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
@@ -82,19 +103,14 @@
 
     <div class="flex-1">
         <section class="bg-slate-900 p-3 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl h-full">
-            
-<div class="mb-6 flex justify-center sm:justify-start">
-    <button onclick="switchTab('allatt')" 
-            /* py-2로 세로 여백을 줄여 세로 길이를 최적화했습니다. */
-            class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
-        
-        <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
-        
-        <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
-        
-        <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
-    </button>
-</div>
+            <div class="mb-6 flex justify-center sm:justify-start">
+                <button onclick="switchTab('allatt')" 
+                        class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
+                    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
+                    <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
+                    <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
+                </button>
+            </div>
 
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 px-1 gap-3">
                 <div class="flex items-center justify-between w-full sm:w-auto gap-3">
@@ -130,7 +146,7 @@
 </div>
 
 <script>
-// (기존 스크립트 내용과 동일)
+// (기존 스크립트 내용 유지)
 function getJakartaDate() {
     const now = new Date();
     const jakartaStr = now.toLocaleString("en-US", {timeZone: "Asia/Jakarta"});
@@ -153,6 +169,58 @@ function getJakartaDate() {
 
     const btnIn = document.getElementById('btnIn');
     const timeInput = document.getElementById('manualTime');
+
+    // [추가] 주간 지각률 계산 로직
+    function updateWeeklyLateRatio(data) {
+        const current = getJakartaDate();
+        const day = current.getDay(); // 0(일) ~ 6(토)
+        // 월요일 시작 기준 계산
+        const diffToMonday = current.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(current.setDate(diffToMonday));
+        
+        let totalRecords = 0;
+        let lateCount = 0;
+
+        for (let i = 0; i < 7; i++) {
+            let dObj = new Date(monday);
+            dObj.setDate(monday.getDate() + i);
+            const dStr = `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}-${String(dObj.getDate()).padStart(2, '0')}`;
+            
+            const rec = data[dStr] ? data[dStr][user] : null;
+            if (rec && typeof rec !== 'string' && rec.attend) {
+                totalRecords++;
+                if (rec.attend.includes("LATE")) lateCount++;
+            }
+        }
+
+        const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
+        
+        // UI 업데이트
+        const card = document.getElementById('weeklySummaryCard');
+        const ratioText = document.getElementById('lateRatioPercent');
+        const statusText = document.getElementById('lateRatioStatus');
+        const bar = document.getElementById('lateRatioBar');
+        const icon = document.getElementById('warningIcon');
+
+        ratioText.innerText = `${ratio}%`;
+        bar.style.width = `${ratio}%`;
+
+        if (ratio >= 50) {
+            card.classList.add('bg-rose-950/30', 'border-rose-500', 'warning-pulse');
+            ratioText.classList.replace('text-white', 'text-rose-500');
+            statusText.innerText = "Warning: High Lateness";
+            statusText.classList.replace('text-slate-500', 'text-rose-500');
+            bar.classList.replace('bg-blue-500', 'bg-rose-500');
+            icon.classList.replace('opacity-0', 'opacity-100');
+        } else {
+            card.classList.remove('bg-rose-950/30', 'border-rose-500', 'warning-pulse');
+            ratioText.classList.replace('text-rose-500', 'text-white');
+            statusText.innerText = totalRecords > 0 ? "Weekly Condition: Good" : "No records this week";
+            statusText.classList.replace('text-rose-500', 'text-slate-500');
+            bar.classList.replace('bg-rose-500', 'bg-blue-500');
+            icon.classList.replace('opacity-100', 'opacity-0');
+        }
+    }
 
     function updateLiveTime() {
         if (document.activeElement === timeInput) return;
@@ -281,6 +349,10 @@ function getJakartaDate() {
         db.ref('attendance').off();
         db.ref('attendance').on('value', (snap) => {
             const data = snap.val() || {};
+            
+            // [추가] 데이터 변경 시마다 주간 지각률 업데이트
+            updateWeeklyLateRatio(data);
+
             const tbody = document.getElementById('calendarBody');
             tbody.innerHTML = '';
             
