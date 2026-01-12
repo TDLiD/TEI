@@ -1,8 +1,39 @@
 <style>
-    /* 캘린더 테이블 가로 스크롤 방지 및 모바일 대응 */
+    /* 캘린더 컨테이너 최적화: 데스크톱 축소 시 깨짐 방지 */
+    .calendar-wrapper {
+        width: 100%;
+        overflow-x: auto; /* 작은 화면에서 가로 스크롤 허용 */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+        /* table-fixed를 제거하여 내부 콘텐츠(이름 등)가 잘리지 않게 함 */
+        table-layout: auto; 
+    }
+
+    /* 데스크톱 모드에서 최소 가로 너비 보장 */
+    @media (min-width: 769px) {
+        .calendar-table {
+            min-width: 750px; 
+        }
+    }
+
+    /* 캘린더 셀 내 텍스트 반응형 폰트 조절 */
+    .attendance-record-item {
+        font-size: clamp(8px, 0.8vw, 10px);
+    }
+
+    /* 모바일 대응 (768px 이하) */
     @media (max-width: 768px) {
-        .calendar-table thead { display: none; } /* 모바일에서 요일 헤더 숨김 */
-        #full_att_calendar_body { display: flex; flex-direction: column; gap: 12px; }
+        .calendar-table thead { display: none; }
+        #full_att_calendar_body { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            padding: 4px;
+        }
         #full_att_calendar_body tr { display: contents; }
         #full_att_calendar_body td { 
             display: block; 
@@ -11,10 +42,10 @@
             border: none !important; 
             padding: 0 !important;
         }
-        /* 날짜가 있는 셀만 표시하고 빈 셀은 숨김 */
+        /* 날짜가 없는 빈 셀은 숨김 */
         #full_att_calendar_body td:empty { display: none; }
         
-        /* 모바일 날짜 카드 스타일 */
+        /* 모바일 전용 카드 스타일 */
         .mobile-date-card {
             background: rgba(30, 41, 59, 0.5);
             border-radius: 20px;
@@ -46,8 +77,8 @@
         </div>
     </div>
 
-    <div class="overflow-x-visible">
-        <table class="calendar-table w-full table-fixed md:min-w-[800px]">
+    <div class="calendar-wrapper no-scrollbar">
+        <table class="calendar-table">
             <thead>
                 <tr class="text-slate-500 text-[10px] uppercase tracking-widest">
                     <th class="py-4">Sun</th><th class="py-4">Mon</th><th class="py-4">Tue</th>
@@ -64,63 +95,68 @@
         const db = firebase.database();
         let viewDate = new Date();
 
-        window.openEditAttendance = function(name, date, infoEncoded) {
-            const info = JSON.parse(decodeURIComponent(infoEncoded));
-            const isSpecial = typeof info === 'string';
-            
-            const currentAttend = isSpecial ? "" : (info.attend || "");
-            const currentLeave = isSpecial ? "" : (info.leave || "");
-            const currentSpecial = isSpecial ? info : "";
+window.openEditAttendance = function(name, date, infoEncoded) {
+    const info = JSON.parse(decodeURIComponent(infoEncoded));
+    const isSpecial = typeof info === 'string';
+    
+    const currentAttend = isSpecial ? "" : (info.attend || "");
+    const currentLeave = isSpecial ? "" : (info.leave || "");
+    const currentSpecial = isSpecial ? info : "";
 
-            const titleHtml = `
-                <div class="flex flex-col">
-                    <span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span>
-                    <span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm">(${date})</span></span>
-                </div>`;
+    const titleHtml = `
+        <div class="flex flex-col">
+            <span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span>
+            <span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm">(${date})</span></span>
+        </div>`;
 
-            const bodyHtml = `
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Status</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In</span>
-                                <input type="text" id="editAttend" placeholder="ATT(8:00)" value="${currentAttend}" 
-                                       class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/50">
-                            </div>
-                            <div class="space-y-1">
-                                <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out</span>
-                                <input type="text" id="editLeave" placeholder="17:00:00" value="${currentLeave}" 
-                                       class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50">
-                            </div>
-                        </div>
+    const bodyHtml = `
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Status</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In</span>
+                        <input type="text" id="editAttend" placeholder="ATT(8:00)" value="${currentAttend}" 
+                               class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/50">
                     </div>
-                    <div class="relative py-4">
-                        <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div>
-                        <div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div>
+                    <div class="space-y-1">
+                        <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out</span>
+                        <input type="text" id="editLeave" placeholder="17:00:00" value="${currentLeave}" 
+                               class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50">
                     </div>
-                    <div>
-                        <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none">
-                            <option value="" ${currentSpecial === "" ? "selected" : ""}>--- NO SPECIAL STATUS ---</option>
-                            <option value="WO" ${currentSpecial === "WO" ? "selected" : ""}>WO (Work Out)</option>
-                            <option value="PEL" ${currentSpecial === "PEL" ? "selected" : ""}>PEL (Personal Leave)</option>
-                            <option value="ANL" ${currentSpecial === "ANL" ? "selected" : ""}>ANL (Annual Leave)</option>
-                            <option value="SIL" ${currentSpecial === "SIL" ? "selected" : ""}>SIL (Sick Leave)</option>
-                            <option value="OFF" ${currentSpecial === "OFF" ? "selected" : ""}>OFF (Day Off)</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-2 pt-4">
-                        <button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button>
-                        <button onclick="window.deleteAttendance('${name}', '${date}')" class="w-full text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/10 transition-all uppercase tracking-widest">Delete Record</button>
-                    </div>
-                </div>`;
+                </div>
+            </div>
+            <div class="relative py-4">
+                <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div>
+                <div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div>
+            </div>
+            <div>
+                <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none">
+                    <option value="" ${currentSpecial === "" ? "selected" : ""}>--- NO SPECIAL STATUS ---</option>
+                    <option value="WO" ${currentSpecial === "WO" ? "selected" : ""}>WO (Work Out)</option>
+                    <option value="PEL" ${currentSpecial === "PEL" ? "selected" : ""}>PEL (Personal Leave)</option>
+                    <option value="ANL" ${currentSpecial === "ANL" ? "selected" : ""}>ANL (Annual Leave)</option>
+                    <option value="SIL" ${currentSpecial === "SIL" ? "selected" : ""}>SIL (Sick Leave)</option>
+                    <option value="OFF" ${currentSpecial === "OFF" ? "selected" : ""}>OFF (Day Off)</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-2 pt-4">
+                <button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="window.deleteAttendance('${name}', '${date}')" class="text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/10 transition-all uppercase tracking-widest">Delete</button>
+                    <button onclick="window.closeAdminCustomModal()" class="text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
+                </div>
+            </div>
+        </div>`;
 
-            if(window.openAdminCustomModal) {
-                window.openAdminCustomModal(titleHtml, bodyHtml);
-            } else {
-                alert("Modal function not found.");
-            }
-        };
+    if(window.openAdminCustomModal) {
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+    } else {
+        alert("Modal function not found.");
+    }
+};
+
 
         window.saveAttendanceEdit = function(name, date) {
             const attend = document.getElementById('editAttend').value.trim();
@@ -144,11 +180,23 @@
         };
 
         window.renderAttendanceFull = function() {
-            document.getElementById('full_att_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
+            // [추가된 안전장치] 요소가 로드되지 않았으면 중단하고 재시도
+            const monthLabel = document.getElementById('full_att_month');
+            const tbody = document.getElementById('full_att_calendar_body');
+            
+            if (!monthLabel || !tbody) {
+                setTimeout(window.renderAttendanceFull, 100);
+                return;
+            }
+
+            monthLabel.innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
+            
             db.ref('attendance').on('value', snap => {
                 const data = snap.val() || {};
-                const tbody = document.getElementById('full_att_calendar_body');
-                tbody.innerHTML = '';
+                const currentTbody = document.getElementById('full_att_calendar_body'); // 리스너 내부에서 재확인
+                if (!currentTbody) return;
+                
+                currentTbody.innerHTML = '';
                 
                 const year = viewDate.getFullYear(), month = viewDate.getMonth();
                 const firstDay = new Date(year, month, 1).getDay();
@@ -168,10 +216,10 @@
                             const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
                             const isToday = dStr === todayStr;
                             
-                            // 기본 디자인 및 모바일 전용 클래스 결합
-                            cell.className = `border border-slate-800 md:h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''} ${isMobile ? 'mobile-date-card' : ''}`;
+                            cell.className = isMobile 
+                                ? `mobile-date-card ${isToday ? 'today-highlight' : ''}`
+                                : `border border-slate-800 md:h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''}`;
                             
-                            // 날짜 헤더 디자인
                             let content = `
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-[11px] font-black ${isToday ? 'text-blue-400' : 'text-slate-500'}">${dateNum}</span>
@@ -202,8 +250,8 @@
 
                                     content += `
                                         <div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" 
-                                             class="flex justify-between items-center text-[10px] mb-1.5 bg-slate-800/80 md:bg-slate-800/40 p-2 md:p-1.5 rounded-xl border border-slate-700/50 gap-2 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-95 shadow-sm">
-                                            <span class="truncate font-black text-slate-200">${name}</span>
+                                             class="attendance-record-item flex justify-between items-center text-[10px] mb-1.5 bg-slate-800/80 md:bg-slate-800/40 p-2 md:p-1.5 rounded-xl border border-slate-700/50 gap-2 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-95 shadow-sm">
+                                            <span class="truncate font-black text-slate-200" style="max-width: 50%">${name}</span>
                                             ${attHtml}
                                         </div>`;
                                 });
@@ -216,22 +264,26 @@
                             dateNum++;
                         }
                     }
-                    tbody.appendChild(row);
+                    currentTbody.appendChild(row);
                     if (dateNum > lastDate) break;
                 }
             });
         };
 
-        window.changeFullMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); renderAttendanceFull(); };
-        window.goTodayFull = () => { viewDate = new Date(); renderAttendanceFull(); };
+        window.changeFullMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderAttendanceFull(); };
+        window.goTodayFull = () => { viewDate = new Date(); window.renderAttendanceFull(); };
         
-        // 화면 크기 변경 시 리렌더링 (모바일/데스크톱 전환 대응)
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(renderAttendanceFull, 250);
+            resizeTimer = setTimeout(window.renderAttendanceFull, 250);
         });
 
-        renderAttendanceFull();
+        // [개선] 페이지 로드가 완료되었는지 확인 후 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.renderAttendanceFull);
+        } else {
+            window.renderAttendanceFull();
+        }
     })();
 </script>

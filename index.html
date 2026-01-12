@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         body { font-family: "Pretendard", sans-serif; background-color: #000000; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        /* 입력창 포커스 시 모바일 줌 방지를 위해 16px 유지 */
         select, input { background-color: #1e293b !important; color: white !important; border-color: #334155 !important; font-size: 16px !important; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
@@ -61,7 +60,7 @@
             </div>
 
             <div class="pt-2">
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 shadow-xl shadow-blue-900/30 transition-all active:scale-95 text-base uppercase tracking-widest">
+                <button id="loginBtn" onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 shadow-xl shadow-blue-900/30 transition-all active:scale-95 text-base uppercase tracking-widest">
                     Sign In
                 </button>
             </div>
@@ -74,6 +73,15 @@
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
             const userSelect = document.getElementById('userName');
+            const passwordInput = document.getElementById('password');
+
+            // 1. 엔터키 이벤트 감지 추가
+            passwordInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 기본 동작 방지
+                    handleLogin(); // 로그인 함수 호출
+                }
+            });
 
             // 사용자 목록 실시간 로드
             database.ref('users').once('value', (snapshot) => {
@@ -103,7 +111,7 @@
                     if (!userData) return alert("User not found.");
                     if (userData.password === pw) {
                         sessionStorage.setItem('loggedInUser', name);
-                        sessionStorage.setItem('userRole', userData.role); // 역할 정보 추가 저장
+                        sessionStorage.setItem('userRole', userData.role);
                         location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
                     } else {
                         alert("Incorrect password.");
@@ -111,7 +119,7 @@
                 });
             };
 
-            // 방법 2 응용: 패스워드 힌트 제공 로직
+            // 패스워드 힌트 로직
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;
                 if (!name) {
@@ -122,10 +130,8 @@
                     database.ref('users/' + name).once('value', (snapshot) => {
                         const userData = snapshot.val();
                         if (userData && userData.password) {
-                            // 보안을 위해 앞 2글자만 노출하고 나머지는 * 처리
                             const pw = userData.password;
                             const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
-                            
                             alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
                         } else {
                             alert("User information or password not found.");

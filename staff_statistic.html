@@ -3,14 +3,23 @@
     .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; }
     .chart-container { position: relative; height: 300px; width: 100%; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
+    /* 탭 스타일 */
+    .stat-tab-btn { transition: all 0.3s; position: relative; }
+    .stat-tab-btn.active { color: #facc15; }
+    .stat-tab-btn.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #facc15; border-radius: 2px; }
 </style>
 
 <div class="animate-fadeIn space-y-8 pb-10">
+    <div class="flex gap-6 border-b border-slate-800 px-2">
+        <button onclick="switchStatTab('att')" id="tabBtnAtt" class="stat-tab-btn active pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Attendance Stats</button>
+        <button onclick="switchStatTab('leave')" id="tabBtnLeave" class="stat-tab-btn pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Leave Stats</button>
+    </div>
+
     <section class="stat-card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h3 class="text-xl font-black text-yellow-400 flex items-center gap-2">
-                    📊 Monthly Statistics (<span id="txtMonth"></span>)
+                    📊 <span id="statTitleMonth">Attendance</span> - Monthly (<span id="txtMonth"></span>)
                 </h3>
             </div>
             <div class="flex bg-slate-800 rounded-lg p-1">
@@ -27,7 +36,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h3 class="text-xl font-black text-yellow-400 flex items-center gap-2">
-                    📊 Yearly Statistics (<span id="txtYear"></span>)
+                    📊 <span id="statTitleYear">Attendance</span> - Yearly (<span id="txtYear"></span>)
                 </h3>
             </div>
             <div class="flex bg-slate-800 rounded-lg p-1">
@@ -42,7 +51,7 @@
 
     <section class="stat-card">
         <h3 class="text-xl font-black text-yellow-400 mb-6 flex items-center gap-2">
-            🌍 Overall Statistics
+            🌍 Overall <span id="statTitleOverall">Attendance</span> Statistics
         </h3>
         <div class="chart-container">
             <canvas id="overallChart"></canvas>
@@ -55,14 +64,29 @@
         const db = firebase.database();
         let monthViewDate = new Date(); 
         let yearViewDate = new Date();
+        let currentTab = 'att'; // 'att' or 'leave'
         
         const typeColors = {
             'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
-            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569'
+            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
+            'LEAVE_DONE': '#6366f1' // 퇴근용 전용 색상
         };
 
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
+
+        // 탭 전환 함수
+        window.switchStatTab = function(tab) {
+            currentTab = tab;
+            document.getElementById('tabBtnAtt').classList.toggle('active', tab === 'att');
+            document.getElementById('tabBtnLeave').classList.toggle('active', tab === 'leave');
+            
+            const titles = ['statTitleMonth', 'statTitleYear', 'statTitleOverall'];
+            const label = tab === 'att' ? 'Attendance' : 'Leave';
+            titles.forEach(id => document.getElementById(id).innerText = label);
+
+            processAndRender();
+        };
 
         window.changeStatPeriod = function(type, offset) {
             if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
@@ -70,13 +94,10 @@
             processAndRender();
         };
 
-        // 핵심 수정: 데이터가 로드되었는지 확인하고 렌더링
         async function initStats() {
             try {
                 const snap = await db.ref('attendance').once('value');
                 cachedData = snap.val() || {};
-                
-                // 데이터는 가져왔으나, 화면에 차트 영역이 보일 때까지 대기 후 렌더링
                 if (document.getElementById('monthlyChart')) {
                     processAndRender();
                 }
@@ -86,10 +107,7 @@
         }
 
         function processAndRender() {
-            if (!cachedData) return;
-
-            // 렌더링 시점에 요소가 없으면(탭이 아직 생성 안됨) 중단
-            if (!document.getElementById('monthlyChart')) return;
+            if (!cachedData || !document.getElementById('monthlyChart')) return;
 
             const monthKey = monthViewDate.toISOString().substring(0, 7);
             const yearKey = yearViewDate.getFullYear().toString();
@@ -102,11 +120,21 @@
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
                     let type = "";
-                    if (typeof record === 'string') type = record;
-                    else if (record.attend) {
-                        if (record.attend.includes("ATT")) type = "ATT";
-                        else if (record.attend.includes("LATE")) type = "LATE";
+
+                    if (currentTab === 'att') {
+                        // Attendance 탭 로직
+                        if (typeof record === 'string') type = record;
+                        else if (record.attend) {
+                            if (record.attend.includes("ATT")) type = "ATT";
+                            else if (record.attend.includes("LATE")) type = "LATE";
+                        }
+                    } else {
+                        // Leave 탭 로직 (퇴근 기록이 있는 경우만)
+                        if (typeof record !== 'string' && record.leave) {
+                            type = "LEAVE_DONE";
+                        }
                     }
+
                     if (!type || !typeColors[type]) return;
 
                     const updateCount = (obj) => {
@@ -127,23 +155,30 @@
 
         function renderChart(canvasId, chartType, chartData) {
             const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
+            if (!canvas || typeof Chart === 'undefined') return;
             
             const ctx = canvas.getContext('2d');
             const users = Object.keys(chartData).sort();
-            const types = Object.keys(typeColors);
+            
+            // 현재 탭에 맞는 데이터셋 필터링
+            const relevantTypes = currentTab === 'att' 
+                ? Object.keys(typeColors).filter(t => t !== 'LEAVE_DONE')
+                : ['LEAVE_DONE'];
 
-            const datasets = types.map(type => ({
-                label: type,
-                data: users.map(user => chartData[user][type] || 0),
-                backgroundColor: typeColors[type],
-                borderRadius: 4
-            }));
+            const datasets = relevantTypes.map(type => {
+                const dataPoints = users.map(user => chartData[user][type] || 0);
+                // 데이터가 전부 0인 데이터셋은 표시하지 않음 (그래프 깔끔하게 유지)
+                if (dataPoints.every(v => v === 0)) return null;
+
+                return {
+                    label: type === 'LEAVE_DONE' ? 'Check-out' : type,
+                    data: dataPoints,
+                    backgroundColor: typeColors[type],
+                    borderRadius: 4
+                };
+            }).filter(d => d !== null);
 
             if (charts[chartType]) charts[chartType].destroy();
-
-            // Chart 라이브러리가 로드되었는지 최종 확인
-            if (typeof Chart === 'undefined') return;
 
             charts[chartType] = new Chart(ctx, {
                 type: 'bar',
@@ -151,31 +186,28 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { weight: 'bold' } } }
+                    },
                     scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { stepSize: 1, color: '#64748b' },
+                            grid: { color: 'rgba(30, 41, 59, 0.5)' }
+                        },
+                        x: {
+                            ticks: { color: '#64748b', font: { size: 10 } },
+                            grid: { display: false }
+                        }
                     }
                 }
             });
         }
 
-        // --- 자동 감지 로직 추가 ---
-        // 탭이 숨겨져 있다가 나타날 때(class에 'hidden'이 빠질 때 등)를 감지
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'class' || mutation.attributeName === 'style') {
-                    processAndRender();
-                }
-            });
-        });
-
-        // 초기 실행 및 관찰 시작
         setTimeout(() => {
             initStats();
-            const container = document.querySelector('.animate-fadeIn');
-            if (container) observer.observe(container, { attributes: true });
         }, 300);
 
-        // 전역 접근 허용
         window.refreshStatistics = processAndRender;
     })();
 </script>

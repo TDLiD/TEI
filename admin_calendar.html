@@ -177,45 +177,51 @@
     window.toggleEditTimePicker = function(isAllDay) { initEditTimePickers(isAllDay); };
 
     // 1. 신규 일정 추가 팝업
-    window.addAdminSchedule = function(dateStr) {
-        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
-        const bodyHtml = `
-            <div class="space-y-4 pt-2 text-left">
+ window.addAdminSchedule = function(dateStr) {
+    const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
+    const bodyHtml = `
+        <div class="space-y-4 pt-2 text-left">
+            <div class="space-y-1">
+                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
-                    <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                    <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
-                        <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
-                        <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                    </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                    <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                 </div>
-                <div class="flex items-center gap-2 ml-1">
-                    <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
-                    <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
-                </div>
-                <textarea id="new_sch_desc" placeholder="Description..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500"></textarea>
-                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
-                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
-                    <textarea id="new_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes..."></textarea>
-                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-1">
+                <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+            </div>
+            <textarea id="new_sch_desc" placeholder="Description..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500"></textarea>
+            <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                <textarea id="new_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes..."></textarea>
+            </div>
+            
+            <div class="flex flex-col gap-2">
                 <button onclick="window.saveNewAdminSchedule()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-purple-900/20 text-sm tracking-widest uppercase active:scale-95">Save Schedule</button>
-            </div>`;
+                <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
+            </div>
+        </div>`;
 
-        if (window.openAdminCustomModal) {
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-            setTimeout(() => {
-                initTimePickers(false);
-                startPicker.setDate(dateStr + " 09:00");
-                endPicker.setDate(dateStr + " 10:00");
-            }, 50);
-        }
-    };
+    if (window.openAdminCustomModal) {
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+        setTimeout(() => {
+            initTimePickers(false);
+            startPicker.setDate(dateStr + " 09:00");
+            endPicker.setDate(dateStr + " 10:00");
+        }, 50);
+    }
+};
+
+
 
     window.saveNewAdminSchedule = function() {
         const title = document.getElementById('new_sch_title').value;
@@ -236,60 +242,60 @@
     };
 
     // 2. 일정 상세 및 수정 팝업 (수정됨)
-    window.showAdminSchDetail = function(id, title, start, end, author, desc, adminMemo) {
-        const decodedDesc = decodeURIComponent(desc || '');
-        const decodedMemo = decodeURIComponent(adminMemo || '');
-        const isAllDay = !start.includes(':') || !end.includes(':');
-        
-        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
-        const bodyHtml = `
-            <div class="space-y-4 pt-2 text-left">
+window.showAdminSchDetail = function(id, title, start, end, author, desc, adminMemo) {
+    const decodedDesc = decodeURIComponent(desc || '');
+    const decodedMemo = decodeURIComponent(adminMemo || '');
+    const isAllDay = !start.includes(':') || !end.includes(':');
+    
+    const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
+    const bodyHtml = `
+        <div class="space-y-4 pt-2 text-left">
+            <div class="space-y-1">
+                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
-                    <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                    <input type="text" id="edit_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
-                        <input type="text" id="edit_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
-                        <input type="text" id="edit_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 ml-1">
-                    <input type="checkbox" id="edit_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
-                    <label for="edit_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
-                </div>
-
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
-                    <textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                    <input type="text" id="edit_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
                 </div>
+            </div>
+            <div class="flex items-center gap-2 ml-1">
+                <input type="checkbox" id="edit_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                <label for="edit_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
+                <textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
+            </div>
+            <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                <textarea id="edit_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
+            </div>
 
-                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
-                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
-                    <textarea id="edit_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
-                </div>
-
+            <div class="flex flex-col gap-2">
                 <div class="flex gap-2">
                     <button onclick="window.updateAdminSchedule('${id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Update</button>
                     <button onclick="window.deleteAdminSchedule('${id}')" class="px-6 bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Delete</button>
                 </div>
-            </div>`;
+                <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel / Close</button>
+            </div>
+        </div>`;
 
-        if (window.openAdminCustomModal) {
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-            setTimeout(() => {
-                initEditTimePickers(isAllDay);
-                editStartPicker.setDate(start.replace('T', ' '));
-                editEndPicker.setDate(end.replace('T', ' '));
-            }, 50);
-        }
-    };
+    if (window.openAdminCustomModal) {
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+        setTimeout(() => {
+            initEditTimePickers(isAllDay);
+            editStartPicker.setDate(start.replace('T', ' '));
+            editEndPicker.setDate(end.replace('T', ' '));
+        }, 50);
+    }
+};
+
 
     // 3. 일정 업데이트 함수 (신규 추가)
     window.updateAdminSchedule = function(id) {

@@ -1,0 +1,215 @@
+<style>
+    /* 캘린더 컨테이너 최적화: 데스크톱 축소 시 깨짐 방지 */
+    .calendar-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto; 
+    }
+
+    /* 데스크톱 모드에서 최소 가로 너비 보장 */
+    @media (min-width: 769px) {
+        .calendar-table {
+            min-width: 750px; 
+        }
+    }
+
+    /* 캘린더 셀 내 텍스트 반응형 폰트 조절 */
+    .attendance-record-item {
+        font-size: clamp(8px, 0.8vw, 10px);
+    }
+
+    /* 모바일 대응 (768px 이하) */
+    @media (max-width: 768px) {
+        .calendar-table thead { display: none; }
+        #allStaffCalendarBody { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            padding: 4px;
+        }
+        #allStaffCalendarBody tr { display: contents; }
+        #allStaffCalendarBody td { 
+            display: block; 
+            width: 100% !important; 
+            height: auto !important; 
+            border: none !important; 
+            padding: 0 !important;
+        }
+        #allStaffCalendarBody td:empty { display: none; }
+        
+        .mobile-date-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .today-highlight {
+            border: 2px solid #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.1) !important;
+        }
+    }
+</style>
+
+<div class="animate-fadeIn space-y-6">
+    <div class="flex justify-between items-center px-2">
+        <div>
+            <p class="text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-1">Organization View</p>
+            <h2 class="text-3xl font-black text-white uppercase italic">All Staff <span class="text-blue-500">Records</span></h2>
+        </div>
+        <button onclick="switchTab('dash')" class="bg-slate-800 text-slate-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-700 transition border border-slate-700">
+            BACK TO MY DASHBOARD
+        </button>
+    </div>
+
+    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] md:rounded-3xl border border-slate-800 shadow-2xl">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
+                <button onclick="changeAllMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div id="allMonthYear" class="text-sm md:text-base font-black text-white min-w-[120px] text-center uppercase tracking-tighter italic"></div>
+                <button onclick="changeAllMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+                <button onclick="goTodayAll()" class="ml-1 px-3 py-1.5 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded-lg hover:bg-blue-600 hover:text-white transition-all">TODAY</button>
+            </div>
+            
+            <div class="text-[10px] font-bold text-slate-500 bg-black/30 px-4 py-2 rounded-full border border-white/5 uppercase tracking-widest">
+                Viewing All Staff Attendance
+            </div>
+        </div>
+
+        <div class="calendar-wrapper no-scrollbar">
+            <table class="calendar-table">
+                <thead>
+                    <tr class="text-slate-500 text-[10px] uppercase tracking-widest">
+                        <th class="py-4 text-rose-500">Sun</th><th class="py-4">Mon</th><th class="py-4">Tue</th>
+                        <th class="py-4">Wed</th><th class="py-4">Thu</th><th class="py-4">Fri</th><th class="py-4 text-blue-500">Sat</th>
+                    </tr>
+                </thead>
+                <tbody id="allStaffCalendarBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const db = firebase.database();
+        let viewDate = new Date();
+
+        // 초 단위 제거 함수 (HH:mm:ss -> HH:mm)
+        function formatTime(timeStr) {
+            if (!timeStr) return "";
+            const parts = timeStr.split(':');
+            if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+            return timeStr;
+        }
+
+        window.changeAllMonth = function(offset) {
+            viewDate.setMonth(viewDate.getMonth() + offset);
+            renderAllStaffCalendar();
+        };
+
+        window.goTodayAll = function() {
+            viewDate = new Date();
+            renderAllStaffCalendar();
+        };
+
+        window.renderAllStaffCalendar = function() {
+            const monthLabel = document.getElementById('allMonthYear');
+            const tbody = document.getElementById('allStaffCalendarBody');
+            if (!monthLabel || !tbody) return;
+
+            monthLabel.innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+            
+            // 데이터 로드
+            Promise.all([
+                db.ref('users').once('value'),
+                db.ref('attendance').once('value')
+            ]).then(([userSnap, attSnap]) => {
+                const users = userSnap.val() || {};
+                const attData = attSnap.val() || {};
+                tbody.innerHTML = '';
+
+                const year = viewDate.getFullYear(), month = viewDate.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const lastDate = new Date(year, month + 1, 0).getDate();
+                const todayStr = new Date().toISOString().split('T')[0];
+                const isMobile = window.innerWidth <= 768;
+                let dateNum = 1;
+
+                for (let i = 0; i < 6; i++) {
+                    let row = document.createElement('tr');
+                    for (let j = 0; j < 7; j++) {
+                        let cell = document.createElement('td');
+                        
+                        if (i === 0 && j < firstDay || dateNum > lastDate) { 
+                            row.appendChild(cell); 
+                        } else {
+                            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+                            const isToday = dStr === todayStr;
+                            
+                            cell.className = isMobile 
+                                ? `mobile-date-card ${isToday ? 'today-highlight' : ''}`
+                                : `border border-slate-800 md:min-h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''}`;
+                            
+                            let content = `
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[11px] font-black ${isToday ? 'text-blue-400' : (j===0?'text-rose-500':j===6?'text-blue-500':'text-slate-500')}">${dateNum}</span>
+                                    ${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">TODAY</span>' : ''}
+                                </div>`;
+                            
+                            const dayRecords = attData[dStr] || {};
+                            
+                            // 모든 유저 루프 (관리자 제외)
+                            Object.keys(users).forEach(uid => {
+                                if (users[uid].role === 'admin' || uid.toLowerCase() === 'admin') return;
+
+                                const info = dayRecords[uid];
+                                if(info) {
+                                    let attHtml = '';
+                                    if (typeof info === 'string') {
+                                        attHtml = `<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-black text-[9px] border border-amber-500/20">${info}</span>`;
+                                    } else {
+                                        const attend = info.attend || "";
+                                        const leave = info.leave || "";
+                                        const sClass = attend.includes("LATE") ? "text-rose-500" : (attend.includes("ATT") ? "text-emerald-500" : "text-slate-500");
+                                        
+                                        // 초 단위 제거 로직 적용 및 2라인 표시
+                                        attHtml = `
+                                            <div class="flex flex-col items-end gap-0">
+                                                <span class="${sClass} font-black tracking-tighter scale-90 origin-right">☀️ ${formatTime(attend)}</span>
+                                                <span class="text-slate-400 font-black tracking-tighter scale-90 origin-right">🌙 ${formatTime(leave) || '--:--'}</span>
+                                            </div>`;
+                                    }
+
+                                    content += `
+                                        <div class="attendance-record-item flex justify-between items-center text-[10px] mb-1 bg-slate-800/40 p-1.5 rounded-xl border border-slate-700/30 gap-2">
+                                            <span class="truncate font-black text-slate-300" style="max-width: 45%">${uid}</span>
+                                            ${attHtml}
+                                        </div>`;
+                                }
+                            });
+
+                            cell.innerHTML = content;
+                            row.appendChild(cell);
+                            dateNum++;
+                        }
+                    }
+                    tbody.appendChild(row);
+                    if (dateNum > lastDate) break;
+                }
+            });
+        };
+
+        window.renderAllStaffCalendar();
+        window.addEventListener('resize', window.renderAllStaffCalendar);
+    })();
+</script>

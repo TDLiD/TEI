@@ -13,7 +13,7 @@
         .stat-card { padding: 2rem; margin-bottom: 2rem; }
     }
 
-    /* 막대가 나란히 배치될 때 공간 확보를 위해 높이 증가 */
+    /* 차트 컨테이너 */
     .chart-container { 
         position: relative; 
         height: 500px; 
@@ -26,19 +26,34 @@
     .nav-btn { transition: all 0.2s ease; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     .nav-btn:active { scale: 0.95; }
+
+    /* 탭 스타일 */
+    .admin-stat-tab { transition: all 0.3s; position: relative; opacity: 0.5; }
+    .admin-stat-tab.active { opacity: 1; color: #3b82f6; }
+    .admin-stat-tab.active::after { 
+        content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 3px; 
+        background: #3b82f6; border-radius: 10px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
 </style>
 
 <div class="animate-fadeIn space-y-6 md:space-y-8 pb-10 max-w-[1200px] mx-auto px-4">
-    <div class="flex items-center gap-3 mb-2">
-        <div class="w-1.5 h-7 md:w-2 md:h-8 bg-blue-500 rounded-full"></div>
-        <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Attendance Analytics</h2>
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
+        <div class="flex items-center gap-3">
+            <div class="w-1.5 h-7 md:w-2 md:h-8 bg-blue-500 rounded-full"></div>
+            <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Analytics</h2>
+        </div>
+        
+        <div class="flex gap-8 border-b border-slate-800 pb-2 px-2">
+            <button onclick="switchAdminStatTab('att')" id="tabAtt" class="admin-stat-tab active text-sm font-black tracking-widest uppercase">Attendance</button>
+            <button onclick="switchAdminStatTab('leave')" id="tabLeave" class="admin-stat-tab text-sm font-black tracking-widest uppercase">Leave (Out)</button>
+        </div>
     </div>
 
     <section class="stat-card shadow-2xl backdrop-blur-sm border-slate-800/50">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
                 <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2">
-                    <span class="text-blue-500">●</span> Monthly Performance (<span id="txtMonth" class="text-blue-400"></span>)
+                    <span class="text-blue-500">●</span> <span id="labelMonth">Monthly Performance</span> (<span id="txtMonth" class="text-blue-400"></span>)
                 </h3>
             </div>
             <div class="flex w-full md:w-auto bg-slate-800/50 rounded-xl p-1 border border-slate-700">
@@ -55,7 +70,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
                 <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2">
-                    <span class="text-purple-500">●</span> Yearly Accumulation (<span id="txtYear" class="text-purple-400"></span>)
+                    <span class="text-purple-500">●</span> <span id="labelYear">Yearly Accumulation</span> (<span id="txtYear" class="text-purple-400"></span>)
                 </h3>
             </div>
             <div class="flex w-full md:w-auto bg-slate-800/50 rounded-xl p-1 border border-slate-700">
@@ -70,7 +85,7 @@
 
     <section class="stat-card">
         <h3 class="text-base md:text-lg font-black text-white mb-6 md:mb-8 flex items-center gap-2">
-            <span class="text-emerald-500">●</span> Overall All-Time Records
+            <span class="text-emerald-500">●</span> Overall All-Time <span id="labelOverall">Records</span>
         </h3>
         <div class="chart-container">
             <canvas id="overallChart"></canvas>
@@ -83,14 +98,31 @@
         const db = firebase.database();
         let monthViewDate = new Date(); 
         let yearViewDate = new Date();
+        let currentMode = 'att'; // 'att' or 'leave'
         
         const typeColors = {
             'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
-            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569'
+            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
+            'LEAVE': '#6366f1' // 퇴근 통계용 색상
         };
 
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
+
+        // 탭 전환
+        window.switchAdminStatTab = function(mode) {
+            currentMode = mode;
+            document.getElementById('tabAtt').classList.toggle('active', mode === 'att');
+            document.getElementById('tabLeave').classList.toggle('active', mode === 'leave');
+            
+            // 라벨 업데이트
+            const isAtt = mode === 'att';
+            document.getElementById('labelMonth').innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Count';
+            document.getElementById('labelYear').innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Accumulation';
+            document.getElementById('labelOverall').innerText = isAtt ? 'Records' : 'Leave Records';
+
+            processAndRender();
+        };
 
         window.changeStatPeriod = function(type, offset) {
             if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
@@ -120,11 +152,20 @@
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
                     let type = "";
-                    if (typeof record === 'string') type = record;
-                    else if (record.attend) {
-                        if (record.attend.includes("ATT")) type = "ATT";
-                        else if (record.attend.includes("LATE")) type = "LATE";
+                    
+                    if (currentMode === 'att') {
+                        if (typeof record === 'string') type = record;
+                        else if (record.attend) {
+                            if (record.attend.includes("ATT")) type = "ATT";
+                            else if (record.attend.includes("LATE")) type = "LATE";
+                        }
+                    } else {
+                        // Leave 모드: record 내에 leave 데이터가 존재할 때만 카운트
+                        if (typeof record !== 'string' && record.leave) {
+                            type = "LEAVE";
+                        }
                     }
+
                     if (!type || !typeColors[type]) return;
 
                     const updateCount = (obj) => {
@@ -149,19 +190,28 @@
             
             const ctx = canvas.getContext('2d');
             const users = Object.keys(chartData).sort();
-            const types = Object.keys(typeColors);
+            
+            // 현재 모드에 따라 표시할 데이터셋 결정
+            const targetTypes = currentMode === 'att' 
+                ? Object.keys(typeColors).filter(k => k !== 'LEAVE')
+                : ['LEAVE'];
+
             const isMobile = window.innerWidth < 768;
 
-            // 1:1 비교를 위해 0인 데이터도 포함하여 데이터셋 생성
-            const datasets = types.map(type => ({
-                label: type,
-                data: users.map(user => chartData[user][type] || 0),
-                backgroundColor: typeColors[type],
-                borderRadius: 4,
-                // barPercentage와 categoryPercentage 조절로 막대 간격 최적화
-                barPercentage: 0.9, 
-                categoryPercentage: 0.8
-            }));
+            const datasets = targetTypes.map(type => {
+                const dataValues = users.map(user => chartData[user][type] || 0);
+                // 모든 값이 0이면 생성 안 함
+                if (dataValues.every(v => v === 0)) return null;
+
+                return {
+                    label: type === 'LEAVE' ? 'Check-out' : type,
+                    data: dataValues,
+                    backgroundColor: typeColors[type],
+                    borderRadius: 4,
+                    barPercentage: 0.9, 
+                    categoryPercentage: 0.8
+                };
+            }).filter(d => d !== null);
 
             if (charts[chartType]) charts[chartType].destroy();
 
@@ -171,7 +221,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: isMobile ? 'y' : 'x', // 모바일 가로 막대, 데스크톱 세로 막대
+                    indexAxis: isMobile ? 'y' : 'x',
                     plugins: {
                         legend: { 
                             position: 'bottom', 
@@ -185,12 +235,10 @@
                     },
                     scales: {
                         x: { 
-                            stacked: false, // 겹치지 않게 설정
                             grid: { display: false }, 
                             ticks: { color: '#f1f5f9', font: { size: isMobile ? 10 : 12, weight: 'bold' } } 
                         },
                         y: { 
-                            stacked: false, // 겹치지 않게 설정
                             beginAtZero: true, 
                             ticks: { 
                                 stepSize: 1, 
@@ -207,5 +255,8 @@
         window.addEventListener('resize', () => {
             if (cachedData) processAndRender();
         });
+
+        // 초기 실행
+        setTimeout(initAdminStats, 300);
     })();
 </script>

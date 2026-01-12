@@ -1,406 +1,269 @@
-<div class="animate-fadeIn space-y-6">
-    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
-            <h2 class="text-xl md:text-2xl font-black text-white flex items-center gap-3">
-                <div class="w-1.5 h-7 md:w-2 md:h-8 bg-emerald-500 rounded-full"></div>
-                WORK REPORTS <span class="text-emerald-500/50 font-light text-sm md:text-lg uppercase tracking-widest hidden sm:inline">Calendar</span>
-            </h2>
-            
-            <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
-                <button onclick="window.goWorkToday()" class="px-3 py-1.5 bg-slate-700 hover:bg-emerald-600 text-white text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">
-                    Today
-                </button>
-                <div class="w-[1px] h-4 bg-slate-700 mx-1"></div>
-
-                <button onclick="window.changeWorkMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <div id="full_work_month" class="text-xs md:text-sm font-black text-white px-2 min-w-[120px] md:min-w-[140px] text-center tracking-tighter italic uppercase"></div>
-                <button onclick="window.changeWorkMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-                </button>
-            </div>
-        </div>
-
-        <div class="overflow-x-visible md:overflow-x-auto rounded-2xl md:border md:border-slate-800 shadow-inner bg-transparent md:bg-slate-950/20">
-            <table class="w-full table-fixed border-collapse">
-                <thead>
-                    <tr class="hidden md:table-row text-slate-500 text-[11px] font-black uppercase tracking-widest bg-slate-800/30">
-                        <th class="py-4 border-b border-slate-800 text-red-400/80">Sun</th>
-                        <th class="py-4 border-b border-slate-800">Mon</th>
-                        <th class="py-4 border-b border-slate-800">Tue</th>
-                        <th class="py-4 border-b border-slate-800">Wed</th>
-                        <th class="py-4 border-b border-slate-800">Thu</th>
-                        <th class="py-4 border-b border-slate-800">Fri</th>
-                        <th class="py-4 border-b border-slate-800 text-blue-400/80">Sat</th>
-                    </tr>
-                </thead>
-                <tbody id="full_work_calendar_body" class="flex flex-col gap-4 md:table-row-group">
-                    </tbody>
-            </table>
-        </div>
-
-        <div class="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-center sm:text-left">
-                <h3 class="text-white font-black text-sm uppercase tracking-widest mb-1">Export Work Reports</h3>
-                <p class="text-slate-500 text-[10px]">PDF files are grouped by staff and period.</p>
-            </div>
-            <div class="flex flex-wrap justify-center gap-2">
-                <button onclick="window.exportWorkPDF('monthly')" class="px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
-                    Monthly PDF
-                </button>
-                <button onclick="window.exportWorkPDF('yearly')" class="px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
-                    Yearly PDF
-                </button>
-                <button onclick="window.exportWorkPDF('overall')" class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 rounded-xl text-[11px] font-black transition-all uppercase tracking-widest">
-                    Overall PDF
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
-    /* 데스크톱 전용 스타일 */
-    @media (min-width: 768px) {
-        #full_work_calendar_body { display: table-row-group; }
-        #full_work_calendar_body tr { display: table-row; }
-        #full_work_calendar_body td { 
-            height: 140px; 
-            border: 1px solid rgba(30, 41, 59, 0.5); 
-            vertical-align: top; 
-            padding: 10px;
-            transition: background-color 0.2s;
-        }
-        #full_work_calendar_body td:hover { background-color: rgba(30, 41, 59, 0.3); }
+    /* attendance 스타일과 통일 */
+    .report-calendar-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* 모바일 전용 스타일 (768px 미만) */
-    @media (max-width: 767px) {
-        #full_work_calendar_body td {
-            display: block;
-            width: 100% !important;
-            height: auto !important;
-            padding: 0;
-            border: none !important;
-        }
-        /* 날짜가 없는 빈 칸 숨기기 */
-        #full_work_calendar_body td:empty { display: none; }
-        
-        .mobile-day-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(51, 65, 85, 0.5);
-            border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 8px;
-        }
-        .mobile-day-card.today-active {
-            border: 1px solid #10b981;
-            background: rgba(16, 185, 129, 0.05);
-        }
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed; /* 셀 크기 고정 */
     }
 
-    /* 리포트 아이템 스타일 공통 */
-    .work-item {
-        font-size: 11px;
+    .report-table th { 
+        padding: 12px 0; 
+        color: #64748b; 
+        font-size: 0.75rem; 
+        text-align: center; 
+        font-weight: 800; 
+        text-transform: uppercase;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .report-table td { 
+        height: 100px; 
+        border: 1px solid #1e293b; 
+        vertical-align: top; 
+        padding: 8px; 
+        position: relative; 
+        transition: background 0.2s;
+    }
+
+    .report-table td:hover { 
+        background-color: #0f172a; 
+        cursor: pointer; 
+    }
+
+    /* 리포트 배지 스타일 (attendance의 시간 라벨 스타일 적용) */
+    .report-item-badge {
+        display: block;
+        font-size: 0.65rem;
         font-weight: 800;
-        padding: 6px 10px;
-        border-radius: 10px;
-        margin-bottom: 4px;
-        cursor: pointer;
+        padding: 2px 6px;
+        margin-top: 3px;
+        border-radius: 4px;
+        background-color: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-left: 2px solid #3b82f6;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 상세 패널 디자인 개선 */
+    .detail-panel {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-input {
+        background: #1e293b;
+        color: #f1f5f9;
+        padding: 12px;
+        border-radius: 12px;
+        width: 100%;
         border: 1px solid transparent;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        transition: border 0.2s;
+        font-size: 0.875rem;
     }
-    @media (max-width: 767px) {
-        .work-item { font-size: 13px; padding: 12px; margin-bottom: 8px; }
+
+    .custom-input:focus {
+        border-color: #3b82f6;
+        outline: none;
     }
-    .work-item:hover { 
-        filter: brightness(1.2); 
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+
+    label {
+        font-weight: 800;
+        letter-spacing: -0.025em;
     }
-    .work-item:active { transform: scale(0.96); }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<div class="flex flex-col lg:flex-row gap-8 animate-fadeIn">
+
+    <div class="flex-1 min-w-0">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-black italic text-white">
+                WORK <span class="text-emerald-500">REPORTS</span>
+            </h2>
+            <div class="text-slate-500 text-sm font-bold bg-slate-900 px-4 py-2 rounded-full border border-slate-800">
+                Monthly Overview
+            </div>
+        </div>
+
+        <div class="report-calendar-wrapper bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden">
+            <table class="report-table">
+                <thead>
+                    <tr class="bg-slate-900/50">
+                        <th class="text-rose-500">Sun</th>
+                        <th>Mon</th><th>Tue</th><th>Wed</th>
+                        <th>Thu</th><th>Fri</th>
+                        <th class="text-blue-500">Sat</th>
+                    </tr>
+                </thead>
+                <tbody id="reportCalendarBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="reportDetail" class="w-full lg:w-[420px] hidden shrink-0">
+        </div>
+
+</div>
 
 <script>
-    (function() {
-        let viewDate = new Date();
-        const db = firebase.database();
+/** * 중복 선언 방지를 위해 즉시 실행 함수(IIFE)로 감쌉니다.
+ * 이 안에서 선언된 변수는 이 페이지 안에서만 유효합니다.
+ */
+(function() {
+    // 부모 창에 이미 정의된 db를 가져오거나, 없으면 새로 초기화합니다.
+    const reportDb = window.db || firebase.database();
+    let reportViewDate = new Date();
 
-        // [추가] 오늘 날짜 이동 함수
-        window.goWorkToday = function() {
-            viewDate = new Date();
-            window.renderWorkFull();
-        };
+    // 부모 창에서 호출할 수 있도록 함수 등록
+    window.renderWorkFull = function(){
+        drawReportCalendar();
+    };
 
-        // [추가] PDF 내보내기 핵심 로직
-    window.exportWorkPDF = async function(type) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    try {
-        const snap = await db.ref('reports').once('value');
-        const data = snap.val() || {};
-        
-        const year = viewDate.getFullYear();
-        const month = String(viewDate.getMonth() + 1).padStart(2, '0');
-        
-        let filteredData = {};
-        
-        Object.entries(data).forEach(([dateStr, staffObj]) => {
-            const [dYear, dMonth] = dateStr.split('-');
-            let isMatch = false;
-            
-            if (type === 'monthly' && dYear == year && dMonth == month) isMatch = true;
-            else if (type === 'yearly' && dYear == year) isMatch = true;
-            else if (type === 'overall') isMatch = true;
-            
-            if (isMatch) {
-                Object.entries(staffObj).forEach(([staffName, report]) => {
-                    if (!filteredData[staffName]) filteredData[staffName] = [];
+    function drawReportCalendar(){
+        const y = reportViewDate.getFullYear();
+        const m = reportViewDate.getMonth();
+        const first = new Date(y, m, 1).getDay();
+        const last = new Date(y, m + 1, 0).getDate();
+
+        reportDb.ref("reports").once("value", snap => {
+            const data = snap.val() || {};
+            const body = document.getElementById("reportCalendarBody");
+            if(!body) return;
+            body.innerHTML = "";
+            let d = 1;
+
+            for(let i = 0; i < 6; i++){
+                const tr = document.createElement("tr");
+                for(let j = 0; j < 7; j++){
+                    const td = document.createElement("td");
+                    if(i === 0 && j < first || d > last){
+                        tr.appendChild(td); continue;
+                    }
+
+                    const date = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const reports = data[date] || {};
+                    const isToday = new Date().toISOString().split('T')[0] === date;
+                    if(isToday) td.style.backgroundColor = "rgba(59, 130, 246, 0.05)";
+
+                    let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
+                    html += `<div class="flex flex-col gap-1">`;
+                    html += Object.keys(reports).map(n => `
+                        <div class="report-item-badge">${n}</div>
+                    `).join('');
+                    html += `</div>`;
                     
-                    // [수정] 상태값 영어 변환 매핑
-                    let englishStatus = report.status;
-                    if(report.status === '완료' || report.status === 'Completed') englishStatus = 'COMPLETED';
-                    else if(report.status === '진행중' || report.status === 'In Progress') englishStatus = 'IN PROGRESS';
-                    else if(report.status === '대기' || report.status === 'Pending') englishStatus = 'PENDING';
-
-                    filteredData[staffName].push({
-                        date: dateStr,
-                        status: englishStatus,
-                        content: report.content, // 내용은 사용자가 입력한 것이라 영어가 아닐 수 있음
-                        memo: report.adminMemo || '-'
-                    });
-                });
+                    td.innerHTML = html;
+                    td.onclick = () => openReportDetail(date, reports);
+                    tr.appendChild(td);
+                    d++;
+                }
+                body.appendChild(tr);
+                if(d > last) break;
             }
         });
-
-        const staffNames = Object.keys(filteredData).sort();
-        if (staffNames.length === 0) return alert("No data found.");
-
-        staffNames.forEach((staff, index) => {
-            if (index > 0) doc.addPage();
-            
-            doc.setFontSize(18);
-            doc.text(`WORK REPORT: ${staff}`, 14, 20);
-            doc.setFontSize(10);
-            
-            // [수정] 날짜 포맷 및 헤더 영어로 변경
-            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-            doc.text(`Export Type: ${type.toUpperCase()} | Generated: ${timestamp}`, 14, 28);
-
-            const rows = filteredData[staff]
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .map(item => [item.date, item.status, item.content, item.memo]);
-
-            doc.autoTable({
-                startY: 35,
-                head: [['Date', 'Status', 'Content', 'Admin Memo']], // 헤더 영어
-                body: rows,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59] },
-                styles: { fontSize: 8, font: 'helvetica' } // 영어 전용 폰트 설정
-            });
-        });
-
-        doc.save(`Report_${type}_${year}_${month}.pdf`);
-    } catch (err) {
-        console.error(err);
-        alert("Export failed.");
     }
-};
 
+    function openReportDetail(date, reports){
+        const staff = Object.keys(reports)[0];
+        if(!staff) return;
 
-        // 통합 저장 함수
-        window.updateAdminReport = function(date, name) {
-            const newContent = document.getElementById('editContentInput').value;
-            const newStatus = document.getElementById('editStatusSelect').value;
-            const newMemo = document.getElementById('adminMemoInput').value;
+        reportDb.ref(`reports/${date}/${staff}`).once("value", snap => {
+            const r = snap.val() || {};
+            const box = document.getElementById("reportDetail");
+            if(!box) return;
+            box.classList.remove("hidden");
 
-            if(!confirm(`${name}님의 리포트 내용을 수정하시겠습니까?`)) return;
+            box.innerHTML = `
+            <div class="detail-panel p-6 sticky top-0">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-2xl font-black text-white">Report Detail</h3>
+                        <p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p>
+                    </div>
+                    <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-            db.ref(`reports/${date}/${name}`).update({
-                content: newContent,
-                status: newStatus,
-                adminMemo: newMemo,
-                updatedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                if(window.closeAdminCustomModal) window.closeAdminCustomModal();
-            }).catch(err => {
-                alert('Update failed.');
-            });
-        };
-
-        // 리포트 삭제 함수
-        window.deleteAdminReport = function(date, name) {
-            if(!confirm(`⚠️ 경고: ${name}님의 리포트를 영구 삭제하시겠습니까?`)) return;
-
-            db.ref(`reports/${date}/${name}`).remove()
-                .then(() => {
-                    if(window.closeAdminCustomModal) window.closeAdminCustomModal();
-                })
-                .catch(err => {
-                    alert('Delete failed.');
-                });
-        };
-
-        // 상세 팝업창 (반응형 최적화)
-        window.showWorkDetail = function(name, date, status, contentEncoded, memoEncoded) {
-            const content = decodeURIComponent(contentEncoded);
-            const memo = decodeURIComponent(memoEncoded || '');
-            
-            const titleHtml = `
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-900 font-black shadow-lg">
-                        ${name.charAt(0)}
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label>
+                        <select id="rp_status" class="custom-input font-bold text-blue-400">
+                            <option ${r.status==='In Progress'?'selected':''}>In Progress</option>
+                            <option ${r.status==='Completed'?'selected':''}>Completed</option>
+                            <option ${r.status==='Pending'?'selected':''}>Pending</option>
+                        </select>
                     </div>
                     <div>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">${date}</div>
-                        <div class="text-lg font-black text-white leading-none">${name}'s Report</div>
+                        <label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label>
+                        <textarea id="rp_todo" class="custom-input h-24 resize-none" placeholder="Enter task list...">${r.todo||''}</textarea>
                     </div>
-                </div>`;
-
-            const bodyHtml = `
-                <div class="space-y-5 animate-fadeIn pb-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
-                        <div class="w-full sm:flex-1">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">Current Status</label>
-                            <select id="editStatusSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-emerald-500 appearance-none">
-                                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>🔵 IN PROGRESS</option>
-                                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>🟡 PENDING</option>
-                                <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>🟢 COMPLETED</option>
-                            </select>
-                        </div>
-                        <button onclick="window.deleteAdminReport('${date}', '${name}')" 
-                            class="w-full sm:w-auto bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white px-5 py-3 rounded-xl border border-rose-900/50 transition-all text-[10px] font-black uppercase tracking-tighter">
-                            Delete
-                        </button>
+                    <div>
+                        <label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label>
+                        <textarea id="rp_summary" class="custom-input h-32 resize-none" placeholder="Describe work results...">${r.summary||''}</textarea>
                     </div>
-
-                    <div class="relative">
-                        <div class="absolute -top-2.5 left-4 bg-slate-900 px-2 text-[9px] font-black text-emerald-500 tracking-widest uppercase z-10">Report Content</div>
-                        <textarea id="editContentInput" 
-                            class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 text-sm text-slate-300 leading-relaxed min-h-[140px] outline-none focus:border-emerald-500 shadow-inner resize-none">${content}</textarea>
+                    <div>
+                        <label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label>
+                        <textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20" placeholder="Private notes...">${r.adminMemo||''}</textarea>
                     </div>
+                </div>
 
-                    <div class="relative">
-                        <div class="absolute -top-2.5 left-4 bg-slate-900 px-2 text-[9px] font-black text-blue-400 tracking-widest uppercase z-10">Admin Memo</div>
-                        <textarea id="adminMemoInput" 
-                            class="w-full bg-slate-950/40 border border-slate-700/50 rounded-2xl p-4 text-sm text-white outline-none focus:border-blue-500 min-h-[80px] resize-none" 
-                            placeholder="Add private manager notes...">${memo}</textarea>
-                    </div>
-
-                    <button onclick="window.updateAdminReport('${date}', '${name}')" 
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-sm py-4 rounded-2xl transition-all uppercase tracking-widest shadow-xl active:scale-95">
-                        Save Changes
+                <div class="grid grid-cols-2 gap-3 mt-8">
+                    <button onclick="saveReport('${date}','${staff}')"
+                        class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">
+                        SAVE CHANGES
                     </button>
-                </div>`;
-
-            if (typeof window.openAdminCustomModal === 'function') {
-                window.openAdminCustomModal(titleHtml, bodyHtml);
-            }
-        };
-
-        window.renderWorkFull = function() {
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            const isMobile = window.innerWidth < 768;
-            
-            document.getElementById('full_work_month').innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
-
-            db.ref('reports').off();
-            db.ref('reports').on('value', snap => {
-                const data = snap.val() || {};
-                const tbody = document.getElementById('full_work_calendar_body');
-                tbody.innerHTML = '';
-
-                const firstDay = new Date(year, month, 1).getDay();
-                const lastDate = new Date(year, month + 1, 0).getDate();
-                const todayStr = new Date().toLocaleDateString('sv-SE');
-                
-                let dateNum = 1;
-                for (let i = 0; i < 6; i++) {
-                    let tr = document.createElement('tr');
-                    let hasCellsInRow = false;
-
-                    for (let j = 0; j < 7; j++) {
-                        let td = document.createElement('td');
-                        if (i === 0 && j < firstDay || dateNum > lastDate) {
-                            if (!isMobile) tr.appendChild(td);
-                        } else {
-                            hasCellsInRow = true;
-                            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
-                            const isToday = todayStr === dStr;
-                            
-                            // 날짜 헤더 디자인
-                            let dayHeader = `
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="text-[11px] font-black ${isToday ? 'bg-emerald-500 text-slate-900 w-6 h-6 flex items-center justify-center rounded-lg shadow-lg shadow-emerald-500/20' : (j === 0 ? 'text-rose-500' : (j === 6 ? 'text-blue-400' : 'text-slate-500'))}">${dateNum}</span>
-                                    ${isToday && isMobile ? '<span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Today</span>' : ''}
-                                </div>`;
-                            
-                            const dayReports = data[dStr] || {};
-                            let reportHtml = '<div class="space-y-1.5">';
-                            
-                            const reportEntries = Object.entries(dayReports);
-                            if (reportEntries.length > 0) {
-                                reportEntries.forEach(([name, report]) => {
-                                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                                                      (report.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20');
-                                    
-                                    const safeContent = encodeURIComponent(report.content || '');
-                                    const safeMemo = encodeURIComponent(report.adminMemo || '');
-                                    
-                                    reportHtml += `
-                                        <div onclick="window.showWorkDetail('${name}', '${dStr}', '${report.status}', '${safeContent}', '${safeMemo}')" 
-                                             class="work-item border ${statusColor}">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>
-                                            ${name}
-                                        </div>`;
-                                });
-                            } else if(isMobile) {
-                                reportHtml += `<div class="text-[10px] text-slate-700 italic py-1">No reports today</div>`;
-                            }
-                            reportHtml += '</div>';
-                            
-                            if (isMobile) {
-                                td.className = `mobile-day-card ${isToday ? 'today-active' : ''}`;
-                                td.innerHTML = dayHeader + reportHtml;
-                            } else {
-                                td.innerHTML = dayHeader + reportHtml;
-                            }
-
-                            tr.appendChild(td);
-                            dateNum++;
-                        }
-                    }
-                    if (hasCellsInRow) tbody.appendChild(tr);
-                    if (dateNum > lastDate) break;
-                }
-            });
-        };
-
-        window.changeWorkMonth = (offset) => {
-            viewDate.setMonth(viewDate.getMonth() + offset);
-            window.renderWorkFull();
-        };
-
-        // 반응형 대응 리렌더링
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(window.renderWorkFull, 250);
+                    <button onclick="closeReportDetail()"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button onclick="deleteReport('${date}','${staff}')"
+                        class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">
+                        Delete
+                    </button>
+                </div>
+            </div>`;
         });
+    }
 
-        window.renderWorkFull();
-    })();
+    // HTML 요소의 onclick에서 접근할 수 있도록 전역으로 등록
+    window.closeReportDetail = function() {
+        document.getElementById("reportDetail").classList.add("hidden");
+    };
+
+    window.saveReport = function(date, staff){
+        reportDb.ref(`reports/${date}/${staff}`).update({
+            status: document.getElementById('rp_status').value,
+            todo: document.getElementById('rp_todo').value,
+            summary: document.getElementById('rp_summary').value,
+            adminMemo: document.getElementById('rp_memo').value,
+            lastModified: new Date().toISOString()
+        }).then(() => {
+            alert("Saved successfully");
+            drawReportCalendar();
+        });
+    };
+
+    window.deleteReport = function(date, staff){
+        if(!confirm("Are you sure you want to delete this report?")) return;
+        reportDb.ref(`reports/${date}/${staff}`).remove().then(() => {
+            window.closeReportDetail();
+            drawReportCalendar();
+        });
+    };
+
+    // 최초 로드 시 실행
+    drawReportCalendar();
+})();
 </script>
