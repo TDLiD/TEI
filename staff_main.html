@@ -1,4 +1,4 @@
-<style> 
+<style>
     /* (기존 스타일 유지) */
     .calendar-table th { padding: 6px 0; color: #64748b; font-size: 0.6rem; text-align: center; font-weight: 800; }
     .calendar-table td { 
@@ -37,7 +37,38 @@
         50% { box-shadow: 0 0 15px rgba(244, 63, 94, 0.4); }
         100% { box-shadow: 0 0 0px rgba(244, 63, 94, 0); }
     }
+
+/* 미입력 알림 모달 스타일 */
+    .missing-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .missing-modal {
+        background: #0f172a; border: 1px solid #334155; border-radius: 1.5rem;
+        width: 90%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+/* 수정 모달 스타일 */
+.edit-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; z-index: 10000;
+}
+.edit-modal {
+    background: #0f172a; border: 1px solid #334155; border-radius: 1.5rem;
+    width: 90%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.edit-modal input[readonly] {
+    background-color: #1e293b; color: #64748b; cursor: not-allowed;
+}
+.edit-modal input[type="time"] {
+    color-scheme: dark; /* 브라우저 시간 선택기 다크모드 대응 */
+}
+
 </style>
+
+
 
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
     <div class="w-full lg:w-1/3 space-y-3 md:space-y-6">
@@ -172,6 +203,7 @@ function getJakartaDate() {
     const d = String(now.getDate()).padStart(2, '0');
     const todayStr = `${y}-${m}-${d}`;
     let standardTime = "";
+    let hasCheckedMissing = false; // [추가] 팝업 중복 실행 방지 플래그
 
     const btnIn = document.getElementById('btnIn');
     const timeInput = document.getElementById('manualTime');
@@ -238,7 +270,6 @@ function getJakartaDate() {
         });
     };
 
-    // 지각 통계 업데이트 함수 (수정됨)
     function updateAttendanceStats(data) {
         const viewYear = viewDate.getFullYear();
         const viewMonth = viewDate.getMonth() + 1;
@@ -348,55 +379,217 @@ function getJakartaDate() {
     window.goToday = function() { viewDate = getJakartaDate(); renderCalendar(); };
     window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
-    function renderCalendar() {
-        const year = viewDate.getFullYear(), month = viewDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        document.getElementById('currentMonthYear').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+function renderCalendar() {
+    const year = viewDate.getFullYear(), month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    document.getElementById('currentMonthYear').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    
+    db.ref('attendance').off();
+    db.ref('attendance').on('value', (snap) => {
+        const data = snap.val() || {};
         
-        db.ref('attendance').off();
-        db.ref('attendance').on('value', (snap) => {
-            const data = snap.val() || {};
-            
-            // [오류 수정] 바뀐 함수 이름을 정확히 호출
-            updateAttendanceStats(data);
+        updateAttendanceStats(data);
 
-            const tbody = document.getElementById('calendarBody');
-            tbody.innerHTML = '';
-            let dateCounter = 1;
-            for (let i = 0; i < 6; i++) {
-                let row = document.createElement('tr');
-                for (let j = 0; j < 7; j++) {
-                    let cell = document.createElement('td');
-                    if (i === 0 && j < firstDay || dateCounter > lastDate) {
-                        row.appendChild(cell);
-                    } else {
-                        const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
-                        const rec = data[dStr] ? data[dStr][user] : null;
-                        if (dStr === todayStr) cell.classList.add('today-highlight');
-                        let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
-                        if (rec) {
-                            if (typeof rec === 'string') {
-                                content += `<span class="time-label other-color mt-2">${rec}</span>`;
-                            } else {
-                                let attendText = rec.attend || "";
-                                let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
-                                content += `<span class="time-label ${attendColor}">☀️ ${attendText}</span>`;
-                                let leaveText = rec.leave || "";
-                                content += `<span class="time-label out-time">🌙 ${leaveText}</span>`;
-                            }
+        if (!hasCheckedMissing) {
+            checkMissingRecords(data);
+            hasCheckedMissing = true;
+        }
+
+        const tbody = document.getElementById('calendarBody');
+        tbody.innerHTML = '';
+        let dateCounter = 1;
+        for (let i = 0; i < 6; i++) {
+            let row = document.createElement('tr');
+            for (let j = 0; j < 7; j++) {
+                let cell = document.createElement('td');
+                if (i === 0 && j < firstDay || dateCounter > lastDate) {
+                    row.appendChild(cell);
+                } else {
+                    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
+                    const rec = data[dStr] ? data[dStr][user] : null;
+                    
+                    if (dStr === todayStr) cell.classList.add('today-highlight');
+                    
+                    // [기능 추가] 클릭 이벤트 및 스타일 설정
+                    cell.style.cursor = 'pointer';
+                    cell.onclick = () => openEditPopup(dStr, rec);
+
+                    let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
+                    if (rec) {
+                        if (typeof rec === 'string') {
+                            content += `<span class="time-label other-color mt-2">${rec}</span>`;
+                        } else {
+                            let attendText = rec.attend || "";
+                            let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
+                            content += `<span class="time-label ${attendColor}">☀️ ${attendText}</span>`;
+                            let leaveText = rec.leave || "";
+                            content += `<span class="time-label out-time">🌙 ${leaveText}</span>`;
                         }
-                        cell.innerHTML = content;
-                        row.appendChild(cell); 
-                        dateCounter++;
+                    }
+                    cell.innerHTML = content;
+                    row.appendChild(cell); 
+                    dateCounter++;
+                }
+            }
+            tbody.appendChild(row);
+            if (dateCounter > lastDate) break; 
+        }
+    });
+}
+
+
+// [추가] Leave 정보 수정 팝업 기능
+    window.openEditPopup = function(dateStr, currentRec) {
+        if (document.getElementById('editPopup')) return;
+
+        // 기존 데이터 파싱
+        let attVal = "No Record";
+        let leaveVal = "";
+        
+        if (currentRec) {
+            if (typeof currentRec === 'string') {
+                attVal = currentRec; // WO, PEL 등 특수 상태인 경우
+            } else {
+                attVal = currentRec.attend || "No Record";
+                // LATE(09:15) 등의 포맷에서 시간만 추출
+                const leaveMatch = (currentRec.leave || "").match(/(\d{2}:\d{2})/);
+                leaveVal = leaveMatch ? leaveMatch[1] : "";
+            }
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'editPopup';
+        overlay.className = 'edit-modal-overlay animate-fadeIn';
+        
+        overlay.innerHTML = `
+            <div class="edit-modal">
+                <div class="mb-4">
+                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest text-center mb-1">⚠️ Attendance cannot be modified!</p>
+                    <h3 class="text-white font-black text-center text-lg">${dateStr}</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance (Read Only)</label>
+                        <input type="text" value="${attVal}" readonly 
+                               class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none font-bold">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time (Select Time)</label>
+                        <input type="time" id="editLeaveTime" value="${leaveVal}"
+                               class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <button onclick="document.getElementById('editPopup').remove()" 
+                                class="bg-slate-800 text-slate-400 font-black py-3 rounded-xl hover:bg-slate-700 transition">CANCEL</button>
+                        <button onclick="saveEditRecord('${dateStr}')" 
+                                class="bg-blue-600 text-white font-black py-3 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">SAVE LEAVE</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    };
+
+    window.saveEditRecord = function(dateStr) {
+        const newLeave = document.getElementById('editLeaveTime').value;
+        if (!newLeave) {
+            alert("Please select a leave time.");
+            return;
+        }
+
+        if (confirm(`Update Leave record for ${dateStr} to ${newLeave}?`)) {
+            // 퇴근 시간 업데이트 (기존 attend 정보는 유지됨)
+            db.ref('attendance/' + dateStr + '/' + user).update({
+                leave: newLeave
+            }).then(() => {
+                alert("Leave record updated successfully.");
+                document.getElementById('editPopup').remove();
+            }).catch(err => {
+                alert("Error: " + err.message);
+            });
+        }
+    };
+
+
+    // [수정] 미입력 기록 체크 로직 강화
+// [수정된 로직] 미입력 기록 체크
+    function checkMissingRecords(data) {
+        if (!user) return;
+
+        const today = getJakartaDate();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const todayDate = today.getDate();
+        
+        let missingDates = [];
+
+        // 1일부터 어제까지 루프
+        for (let day = 1; day < todayDate; day++) {
+            const checkDate = new Date(currentYear, currentMonth, day);
+            const dayOfWeek = checkDate.getDay(); 
+            
+            // 조건 1: 토요일(6)과 일요일(0)은 무조건 제외
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayData = data[dStr]; // 해당 날짜의 전체 직원 데이터
+                
+                if (dayData) {
+                    // 조건 2: 해당 날짜에 최소 한 명 이상의 기록(어떤 직원이든)이 있는지 확인
+                    const hasAnyStaffRecord = Object.keys(dayData).length > 0;
+
+                    if (hasAnyStaffRecord) {
+                        const myRec = dayData[user]; // 로그인한 당사자의 기록
+
+                        // 당사자의 기록이 아예 없거나, 객체 형태인데 attend/leave 중 하나라도 누락된 경우
+                        if (!myRec || (typeof myRec === 'object' && (!myRec.attend || !myRec.leave))) {
+                            const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+                            missingDates.push(`${dStr} (${dayName})`);
+                        }
                     }
                 }
-                tbody.appendChild(row);
-                if (dateCounter > lastDate) break; 
             }
-        });
+        }
+
+        if (missingDates.length > 0) {
+            showMissingPopup(missingDates);
+        }
     }
+
+
+    function showMissingPopup(dates) {
+        if (document.getElementById('missingPopup')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'missingPopup';
+        overlay.className = 'missing-modal-overlay animate-fadeIn';
+        
+        let datesHtml = dates.map(d => `<div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-rose-400 mb-2 font-mono text-sm">${d}</div>`).join('');
+
+        overlay.innerHTML = `
+            <div class="missing-modal text-center">
+                <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                    <span class="text-2xl">⚠️</span>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Missing Records</h3>
+                <p class="text-slate-400 text-xs mb-6 font-medium">The following dates have incomplete attendance or leave logs:</p>
+                <div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6">
+                    ${datesHtml}
+                </div>
+                <button onclick="document.getElementById('missingPopup').remove()" 
+                    class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-rose-900/20">
+                    I UNDERSTAND
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
     renderCalendar();
+
 })();
 </script>
-
