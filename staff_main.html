@@ -66,6 +66,15 @@
     color-scheme: dark; /* 브라우저 시간 선택기 다크모드 대응 */
 }
 
+/* [추가] 스타일 섹션 */
+.calendar-table {
+    table-layout: fixed; /* 셀 너비 고정 */
+    user-select: none;   /* 캘린더 숫자 드래그 방지 */
+}
+.time-label {
+    pointer-events: none; /* 라벨 클릭 시 부모 td의 onclick 방해 금지 */
+}
+
 </style>
 
 
@@ -192,6 +201,12 @@ function getJakartaDate() {
 
 (function() {
     const user = sessionStorage.getItem('loggedInUser');
+if (!user) {
+        alert("Session expired. Please login again.");
+        window.location.href = "index.html"; // 로그인 페이지로 리다이렉트
+        return;
+    }
+
     document.getElementById('mainWelcomeMsg').innerText = user;
     const db = firebase.database();
     
@@ -385,7 +400,9 @@ function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
-    document.getElementById('currentMonthYear').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    
+    document.getElementById('currentMonthYear').innerText = 
+        viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
     
     db.ref('attendance').off();
     db.ref('attendance').on('value', (snap) => {
@@ -401,13 +418,19 @@ function renderCalendar() {
         const tbody = document.getElementById('calendarBody');
         tbody.innerHTML = '';
         let dateCounter = 1;
+
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
+            let hasDateInRow = false; // 해당 행에 날짜가 하나라도 있는지 확인
+
             for (let j = 0; j < 7; j++) {
                 let cell = document.createElement('td');
-                if (i === 0 && j < firstDay || dateCounter > lastDate) {
+                
+                // 날짜가 시작되기 전 빈 칸이거나, 마지막 날짜를 넘어간 빈 칸 처리
+                if ((i === 0 && j < firstDay) || dateCounter > lastDate) {
                     row.appendChild(cell);
                 } else {
+                    hasDateInRow = true;
                     const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
                     const rec = data[dStr] ? data[dStr][user] : null;
                     
@@ -417,39 +440,38 @@ function renderCalendar() {
                     cell.onclick = () => openEditPopup(dStr, rec);
 
                     let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
+                    
                     if (rec) {
                         if (typeof rec === 'string') {
                             content += `<span class="time-label other-color mt-2">${rec}</span>`;
                         } else {
-                            // [수정] 출근 시간 표시 (초 단위 제외)
-                            let attendText = rec.attend || "";
-                            let displayAttend = "";
-                            if (attendText) {
-                                const attMatch = attendText.match(/(\d{1,2}:\d{2})/);
-                                const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
-                                displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
+                            // 출근 시간 표시
+                            if (rec.attend) {
+                                const attMatch = rec.attend.match(/(\d{1,2}:\d{2})/);
+                                const prefix = rec.attend.includes("LATE") ? "LATE" : "ATT";
+                                const displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : rec.attend;
+                                const attendColor = rec.attend.includes("ATT") ? "att-color" : (rec.attend.includes("LATE") ? "late-color" : "other-color");
+                                content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
                             }
                             
-                            let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
-                            if(displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
-                            
-                            // [수정] 퇴근 시간 표시 (초 단위 제외)
-                            let leaveText = rec.leave || "";
-                            let displayLeave = "";
-                            if (leaveText) {
-                                const leaveMatch = leaveText.match(/(\d{1,2}:\d{2})/);
-                                displayLeave = leaveMatch ? leaveMatch[1] : leaveText;
+                            // 퇴근 시간 표시
+                            if (rec.leave) {
+                                const leaveMatch = rec.leave.match(/(\d{1,2}:\d{2})/);
+                                const displayLeave = leaveMatch ? leaveMatch[1] : rec.leave;
+                                content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                             }
-                            if(displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                         }
                     }
                     cell.innerHTML = content;
-                    row.appendChild(cell); 
+                    row.appendChild(cell);
                     dateCounter++;
                 }
             }
-            tbody.appendChild(row);
-            if (dateCounter > lastDate) break; 
+            // 날짜가 하나라도 들어있는 행만 추가 (6주차 공백 방지)
+            if (hasDateInRow) {
+                tbody.appendChild(row);
+            }
+            if (dateCounter > lastDate) break;
         }
     });
 }
