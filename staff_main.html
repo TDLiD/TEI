@@ -379,6 +379,8 @@ function getJakartaDate() {
     window.goToday = function() { viewDate = getJakartaDate(); renderCalendar(); };
     window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
+// ... (기존 코드 생략) ...
+
 function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
@@ -411,7 +413,6 @@ function renderCalendar() {
                     
                     if (dStr === todayStr) cell.classList.add('today-highlight');
                     
-                    // [기능 추가] 클릭 이벤트 및 스타일 설정
                     cell.style.cursor = 'pointer';
                     cell.onclick = () => openEditPopup(dStr, rec);
 
@@ -420,11 +421,26 @@ function renderCalendar() {
                         if (typeof rec === 'string') {
                             content += `<span class="time-label other-color mt-2">${rec}</span>`;
                         } else {
+                            // [수정] 출근 시간 표시 (초 단위 제외)
                             let attendText = rec.attend || "";
+                            let displayAttend = "";
+                            if (attendText) {
+                                const attMatch = attendText.match(/(\d{1,2}:\d{2})/);
+                                const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
+                                displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
+                            }
+                            
                             let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
-                            content += `<span class="time-label ${attendColor}">☀️ ${attendText}</span>`;
+                            if(displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
+                            
+                            // [수정] 퇴근 시간 표시 (초 단위 제외)
                             let leaveText = rec.leave || "";
-                            content += `<span class="time-label out-time">🌙 ${leaveText}</span>`;
+                            let displayLeave = "";
+                            if (leaveText) {
+                                const leaveMatch = leaveText.match(/(\d{1,2}:\d{2})/);
+                                displayLeave = leaveMatch ? leaveMatch[1] : leaveText;
+                            }
+                            if(displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                         }
                     }
                     cell.innerHTML = content;
@@ -438,156 +454,227 @@ function renderCalendar() {
     });
 }
 
+// ... (이하 동일) ...
 
-// [추가] Leave 정보 수정 팝업 기능
-    window.openEditPopup = function(dateStr, currentRec) {
-        if (document.getElementById('editPopup')) return;
+// [수정] 출근/퇴근 통합 수정 팝업 기능
+window.openEditPopup = function(dateStr, currentRec) {
+    if (document.getElementById('editPopup')) return;
 
-        // 기존 데이터 파싱
-        let attVal = "No Record";
-        let leaveVal = "";
-        
-        if (currentRec) {
-            if (typeof currentRec === 'string') {
-                attVal = currentRec; // WO, PEL 등 특수 상태인 경우
+    let attVal = "";
+    let leaveVal = "";
+    let isAttReadOnly = false;
+
+// [수정된 로직] openEditPopup 내부 시간 추출 부분
+if (currentRec) {
+    if (typeof currentRec === 'string') {
+        attVal = currentRec;
+        isAttReadOnly = true;
+    } else {
+        // 출근 시간 추출: 시(Hour)가 1자리(8:23) 또는 2자리(08:23) 모두 대응
+        if (currentRec.attend) {
+            // \d{1,2}를 사용하여 1~2자리 숫자 모두 매칭
+            const timeMatch = currentRec.attend.match(/(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                // 입력 필드(type="time")는 HH:mm (2자리) 형식을 요구하므로 padStart 추가
+                const [hh, mm] = timeMatch[1].split(':');
+                attVal = `${hh.padStart(2, '0')}:${mm}`;
             } else {
-                attVal = currentRec.attend || "No Record";
-                // LATE(09:15) 등의 포맷에서 시간만 추출
-                const leaveMatch = (currentRec.leave || "").match(/(\d{2}:\d{2})/);
-                leaveVal = leaveMatch ? leaveMatch[1] : "";
+                attVal = currentRec.attend;
+            }
+            isAttReadOnly = true; 
+        }
+        
+        // 퇴근 시간 추출: 동일하게 1~2자리 대응 및 포맷 보정
+        if (currentRec.leave) {
+            const leaveMatch = currentRec.leave.match(/(\d{1,2}:\d{2})/);
+            if (leaveMatch) {
+                const [hh, mm] = leaveMatch[1].split(':');
+                leaveVal = `${hh.padStart(2, '0')}:${mm}`;
+            } else {
+                leaveVal = currentRec.leave;
             }
         }
+    }
+}
 
-        const overlay = document.createElement('div');
-        overlay.id = 'editPopup';
-        overlay.className = 'edit-modal-overlay animate-fadeIn';
-        
-        overlay.innerHTML = `
-            <div class="edit-modal">
-                <div class="mb-4">
-                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest text-center mb-1">⚠️ Attendance cannot be modified!</p>
-                    <h3 class="text-white font-black text-center text-lg">${dateStr}</h3>
+    const overlay = document.createElement('div');
+    overlay.id = 'editPopup';
+    overlay.className = 'edit-modal-overlay animate-fadeIn';
+    
+    overlay.innerHTML = `
+        <div class="edit-modal">
+            <div class="mb-4">
+                <p class="text-[10px] font-black ${isAttReadOnly ? 'text-rose-500' : 'text-emerald-500'} uppercase tracking-widest text-center mb-1">
+                    ${isAttReadOnly ? '⚠️ Attendance Locked' : '✍️ Attendance Missing'}
+                </p>
+                <h3 class="text-white font-black text-center text-lg">${dateStr}</h3>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance Time</label>
+                    <input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly ? 'readonly' : ''} 
+                           class="w-full ${isAttReadOnly ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">
                 </div>
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance (Read Only)</label>
-                        <input type="text" value="${attVal}" readonly 
-                               class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none font-bold">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time (Select Time)</label>
-                        <input type="time" id="editLeaveTime" value="${leaveVal}"
-                               class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
-                    </div>
+                <div>
+                    <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
+                    <input type="time" id="editLeaveTime" value="${leaveVal}"
+                           class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
+                </div>
 
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <button onclick="document.getElementById('editPopup').remove()" 
-                                class="bg-slate-800 text-slate-400 font-black py-3 rounded-xl hover:bg-slate-700 transition">CANCEL</button>
-                        <button onclick="saveEditRecord('${dateStr}')" 
-                                class="bg-blue-600 text-white font-black py-3 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">SAVE LEAVE</button>
-                    </div>
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button onclick="document.getElementById('editPopup').remove()" 
+                            class="bg-slate-800 text-slate-400 font-black py-3 rounded-xl hover:bg-slate-700 transition">CANCEL</button>
+                    <button onclick="saveEditRecord('${dateStr}', ${isAttReadOnly})" 
+                            class="bg-blue-600 text-white font-black py-3 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">SAVE RECORD</button>
                 </div>
             </div>
-        `;
-        document.body.appendChild(overlay);
-    };
-
-    window.saveEditRecord = function(dateStr) {
-        const newLeave = document.getElementById('editLeaveTime').value;
-        if (!newLeave) {
-            alert("Please select a leave time.");
-            return;
-        }
-
-        if (confirm(`Update Leave record for ${dateStr} to ${newLeave}?`)) {
-            // 퇴근 시간 업데이트 (기존 attend 정보는 유지됨)
-            db.ref('attendance/' + dateStr + '/' + user).update({
-                leave: newLeave
-            }).then(() => {
-                alert("Leave record updated successfully.");
-                document.getElementById('editPopup').remove();
-            }).catch(err => {
-                alert("Error: " + err.message);
-            });
-        }
-    };
+        </div>
+    `;
+    document.body.appendChild(overlay);
+};
 
 
-    // [수정] 미입력 기록 체크 로직 강화
-// [수정된 로직] 미입력 기록 체크
-    function checkMissingRecords(data) {
-        if (!user) return;
+// [수정] 저장 로직: 출근 기록 여부에 따른 조건부 업데이트
+window.saveEditRecord = function(dateStr, isAttReadOnly) {
+    const newAtt = document.getElementById('editAttTime').value;
+    const newLeave = document.getElementById('editLeaveTime').value;
+    const updateData = {};
 
-        const today = getJakartaDate();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-        const todayDate = today.getDate();
+    // 1. 출근 시간 처리 (이미 있는 경우는 업데이트 제외)
+    if (!isAttReadOnly && newAtt) {
+        if (!standardTime) { alert("Standard time loading..."); return; }
         
-        let missingDates = [];
+        const [iHH, iMM] = newAtt.split(':').map(Number);
+        const [sHH, sMM] = standardTime.split(':').map(Number);
+        const stdMinutes = sHH * 60 + sMM;
+        const inputMinutes = iHH * 60 + iMM;
+        
+        updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
+    }
 
-        // 1일부터 어제까지 루프
-        for (let day = 1; day < todayDate; day++) {
-            const checkDate = new Date(currentYear, currentMonth, day);
-            const dayOfWeek = checkDate.getDay(); 
+    // 2. 퇴근 시간 처리
+    if (newLeave) {
+        updateData.leave = newLeave;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+        alert("No changes to save.");
+        return;
+    }
+
+    if (confirm(`Save changes for ${dateStr}?`)) {
+        db.ref('attendance/' + dateStr + '/' + user).update(updateData)
+        .then(() => {
+            alert("Record updated successfully.");
+            document.getElementById('editPopup').remove();
+        }).catch(err => {
+            alert("Error: " + err.message);
+        });
+    }
+};
+
+
+  // [수정] 미입력 기록 체크 로직 - Attendance/Leave 개별 표시 추가
+function checkMissingRecords(data) {
+    if (!user) return;
+
+    const today = getJakartaDate();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    const todayDate = today.getDate();
+    
+    let missingInfo = []; // 날짜와 누락 정보를 담을 배열
+
+    // 1일부터 어제까지 루프
+    for (let day = 1; day < todayDate; day++) {
+        const checkDate = new Date(currentYear, currentMonth, day);
+        const dayOfWeek = checkDate.getDay(); 
+        
+        // 주말 제외
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayData = data[dStr]; 
             
-            // 조건 1: 토요일(6)과 일요일(0)은 무조건 제외
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                
-                const dayData = data[dStr]; // 해당 날짜의 전체 직원 데이터
-                
-                if (dayData) {
-                    // 조건 2: 해당 날짜에 최소 한 명 이상의 기록(어떤 직원이든)이 있는지 확인
-                    const hasAnyStaffRecord = Object.keys(dayData).length > 0;
+            if (dayData) {
+                const hasAnyStaffRecord = Object.keys(dayData).length > 0;
 
-                    if (hasAnyStaffRecord) {
-                        const myRec = dayData[user]; // 로그인한 당사자의 기록
+                if (hasAnyStaffRecord) {
+                    const myRec = dayData[user]; // 로그인한 사용자의 기록
+                    let missingStatus = [];
 
-                        // 당사자의 기록이 아예 없거나, 객체 형태인데 attend/leave 중 하나라도 누락된 경우
-                        if (!myRec || (typeof myRec === 'object' && (!myRec.attend || !myRec.leave))) {
-                            const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
-                            missingDates.push(`${dStr} (${dayName})`);
-                        }
+                    if (!myRec) {
+                        // 기록이 아예 없는 경우
+                        missingStatus.push("Attendance", "Leave");
+                    } else if (typeof myRec === 'object') {
+                        // 객체는 있지만 필드가 누락된 경우
+                        if (!myRec.attend) missingStatus.push("Attendance");
+                        if (!myRec.leave) missingStatus.push("Leave");
+                    } else if (typeof myRec === 'string') {
+                        // WO, ANL 등 문자열 상태인 경우는 누락이 없는 것으로 간주
+                        continue;
+                    }
+
+                    if (missingStatus.length > 0) {
+                        const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+                        missingInfo.push({
+                            date: `${dStr} (${dayName})`,
+                            status: missingStatus.join(' & ')
+                        });
                     }
                 }
             }
         }
-
-        if (missingDates.length > 0) {
-            showMissingPopup(missingDates);
-        }
     }
 
+    if (missingInfo.length > 0) {
+        showMissingPopup(missingInfo);
+    }
+}
 
-    function showMissingPopup(dates) {
-        if (document.getElementById('missingPopup')) return;
 
-        const overlay = document.createElement('div');
-        overlay.id = 'missingPopup';
-        overlay.className = 'missing-modal-overlay animate-fadeIn';
-        
-        let datesHtml = dates.map(d => `<div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-rose-400 mb-2 font-mono text-sm">${d}</div>`).join('');
 
-        overlay.innerHTML = `
-            <div class="missing-modal text-center">
-                <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                    <span class="text-2xl">⚠️</span>
-                </div>
-                <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Missing Records</h3>
-                <p class="text-slate-400 text-xs mb-6 font-medium">The following dates have incomplete attendance or leave logs:</p>
-                <div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6">
-                    ${datesHtml}
-                </div>
-                <button onclick="document.getElementById('missingPopup').remove()" 
-                    class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-rose-900/20">
-                    I UNDERSTAND
-                </button>
+function showMissingPopup(missingInfo) {
+    if (document.getElementById('missingPopup')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'missingPopup';
+    overlay.className = 'missing-modal-overlay animate-fadeIn';
+    
+    // [수정] 객체에서 속성(date, status)을 추출하여 HTML 생성
+    let listHtml = missingInfo.map(info => `
+        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
+            <div class="text-left">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
+                <p class="text-rose-400 font-mono text-xs font-black uppercase">
+                    Missing: <span class="text-white">${info.status}</span>
+                </p>
             </div>
-        `;
-        document.body.appendChild(overlay);
-    }
+            <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+        </div>
+    `).join('');
+
+    overlay.innerHTML = `
+        <div class="missing-modal text-center">
+            <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                <span class="text-2xl">⚠️</span>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
+            <p class="text-slate-400 text-[10px] mb-6 font-bold leading-tight uppercase">
+                The following dates have incomplete logs:
+            </p>
+            <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">
+                ${listHtml}
+            </div>
+            <button onclick="document.getElementById('missingPopup').remove()" 
+                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">
+                I UNDERSTAND
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
 
     renderCalendar();
 
