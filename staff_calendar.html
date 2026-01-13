@@ -105,6 +105,27 @@
     border-radius: 12px;
     outline: none;
 }
+
+/* 드래그 중인 요소 스타일 */
+.event-item.dragging {
+    opacity: 0.4;
+    transform: scale(0.98);
+    cursor: grabbing;
+}
+
+/* 드래그 대상이 된 날짜 칸 하이라이트 */
+.schedule-cal td.drag-over {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    outline: 2px dashed #3b82f6;
+    outline-offset: -2px;
+}
+
+/* 모바일 롱프레스 피드백 */
+.event-item.touch-ready {
+    filter: brightness(1.5);
+    box-shadow: 0 0 20px rgba(255,255,255,0.6);
+    transform: scale(1.05);
+}
 </style>
 
 <div class="animate-fadeIn">
@@ -187,65 +208,53 @@
         let currentEventData = null;
         let startPicker, endPicker;
 
+        let draggedId = null;
+        let touchTimer = null;
+
         const todayObj = new Date();
         const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
 
-/* 수정된 toggleTimePicker 함수 */
-window.toggleTimePicker = (isAllDay) => {
-    const config = {
-        enableTime: !isAllDay,
-        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
-        altInput: true, // UI 업데이트를 위해 필수
-        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", // 날짜만 보이거나 시간까지 보이게 설정
-        static: true
-    };
-    startPicker.set(config);
-    endPicker.set(config);
-};
-
-        function initPickers() {
-            const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true };
-            startPicker = flatpickr("#evStart", baseConfig);
-            endPicker = flatpickr("#evEnd", baseConfig);
-        }
-
+        /* --- 1. 전역 노출 함수 --- */
         window.closeModal = () => { document.getElementById('eventModal').classList.add('hidden'); };
 
-window.openAddModal = (dateStr) => {
-    selectedId = null; 
-    currentEventData = null;
-    
-    document.getElementById('evTitle').value = "";
-    document.getElementById('evDesc').value = "";
-    document.getElementById('adminMemoArea').classList.add('hidden');
-    
-    // [수정] 체크박스 상태를 먼저 허위(false)로 초기화하여 시간 모드로 설정
-    document.getElementById('evAllDay').checked = false; 
-    toggleTimePicker(false);
-    
-    startPicker.setDate(dateStr + "T09:00");
-    endPicker.setDate(dateStr + "T10:00");
-    
-    document.getElementById('btnDel').classList.add('hidden');
-    document.getElementById('btnSave').classList.remove('hidden');
-    document.getElementById('eventModal').classList.replace('hidden', 'flex');
-};
+        window.toggleTimePicker = (isAllDay) => {
+            const config = {
+                enableTime: !isAllDay,
+                dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
+                altInput: true,
+                altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+                static: true
+            };
+            startPicker.set(config);
+            endPicker.set(config);
+        };
+
+        window.openAddModal = (dateStr) => {
+            selectedId = null; currentEventData = null;
+            document.getElementById('evTitle').value = "";
+            document.getElementById('evDesc').value = "";
+            document.getElementById('adminMemoArea').classList.add('hidden');
+            document.getElementById('evAllDay').checked = false; 
+            window.toggleTimePicker(false);
+            startPicker.setDate(dateStr + "T09:00");
+            endPicker.setDate(dateStr + "T10:00");
+            document.getElementById('btnDel').classList.add('hidden');
+            document.getElementById('btnSave').classList.remove('hidden');
+            document.getElementById('eventModal').classList.replace('hidden', 'flex');
+        };
 
         window.openEditModal = (id, ev) => {
             selectedId = id; currentEventData = ev;
             const canEdit = (ev.author === user || userRole === 'admin');
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evDesc').value = ev.desc || "";
-            
             const memoArea = document.getElementById('adminMemoArea');
             if (ev.adminMemo) {
                 memoArea.classList.remove('hidden');
                 document.getElementById('evAdminMemo').innerText = ev.adminMemo;
-            } else {
-                memoArea.classList.add('hidden');
-            }
-
-            toggleTimePicker(ev.allDay);
+            } else { memoArea.classList.add('hidden'); }
+            window.toggleTimePicker(ev.allDay);
+            document.getElementById('evAllDay').checked = ev.allDay;
             startPicker.setDate(ev.start);
             endPicker.setDate(ev.end);
             document.getElementById('btnSave').classList.toggle('hidden', !canEdit);
@@ -265,19 +274,116 @@ window.openAddModal = (dateStr) => {
                 timestamp: Date.now()
             };
             if (selectedId && currentEventData.adminMemo) data.adminMemo = currentEventData.adminMemo;
-            
             const ref = db.ref('shared_schedules');
             const promise = selectedId ? ref.child(selectedId).update(data) : ref.push(data);
-            promise.then(closeModal);
+            promise.then(window.closeModal);
         };
 
+        window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(window.closeModal); };
+        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
+        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
+
+        /* --- 2. 드래그 & 드롭 핸들러 --- */
+        window.handleDragStart = (e, id) => {
+            draggedId = id;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', id);
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        window.handleDragEnd = (e) => {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        };
+
+        window.handleDragOver = (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        };
+
+        window.handleDragLeave = (e) => {
+            e.currentTarget.classList.remove('drag-over');
+        };
+
+        window.handleDrop = (e, targetDate) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = draggedId || e.dataTransfer.getData('text/plain');
+            if (id) moveEvent(id, targetDate);
+        };
+
+        window.handleTouchStart = (e, id) => {
+            const el = e.currentTarget;
+            touchTimer = setTimeout(() => {
+                draggedId = id;
+                el.classList.add('touch-ready');
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 600);
+        };
+
+        window.handleTouchEnd = (e, id, dateStr) => {
+            clearTimeout(touchTimer);
+            const el = e.currentTarget;
+            if (el.classList.contains('touch-ready')) {
+                const touch = e.changedTouches[0];
+                const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetTd = targetEl ? targetEl.closest('td') : null;
+                if (targetTd && targetTd.dataset.date && targetTd.dataset.date !== dateStr) {
+                    moveEvent(id, targetTd.dataset.date);
+                }
+            }
+            el.classList.remove('touch-ready');
+            draggedId = null;
+        };
+
+        /* --- 3. [핵심 수정] 일정 기간 유지 이동 로직 --- */
+        function moveEvent(id, newStartDateStr) {
+            const ref = db.ref('shared_schedules/' + id);
+            ref.once('value').then(snap => {
+                const ev = snap.val();
+                if (!ev || (ev.author !== user && userRole !== 'admin')) return;
+
+                // 1. 기존 일정의 기간(Duration) 계산
+                const oldStart = new Date(ev.start);
+                const oldEnd = new Date(ev.end);
+                const durationMs = oldEnd.getTime() - oldStart.getTime();
+
+                // 2. 새로운 시작/종료 시간 설정
+                let nextStart, nextEnd;
+
+                if (ev.allDay) {
+                    // 종일 일정일 경우: 시간 없이 날짜만 계산
+                    nextStart = new Date(newStartDateStr);
+                    nextEnd = new Date(nextStart.getTime() + durationMs);
+                    
+                    const formatYMD = (d) => d.toISOString().split('T')[0];
+                    ref.update({
+                        start: formatYMD(nextStart),
+                        end: formatYMD(nextEnd)
+                    });
+                } else {
+                    // 시간 포함 일정일 경우: 기존 시간대(HH:mm)를 유지하며 날짜 이동
+                    const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
+                    nextStart = new Date(newStartDateStr + 'T' + timePart);
+                    nextEnd = new Date(nextStart.getTime() + durationMs);
+
+                    const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
+                    ref.update({
+                        start: formatFull(nextStart),
+                        end: formatFull(nextEnd)
+                    });
+                }
+            });
+        }
+
+        /* --- 4. 렌더링 함수 --- */
         function renderSchedule() {
             const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
             document.getElementById('calMonthYear').innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-            db.ref('shared_schedules').off(); // 중복 리스너 방지
+            db.ref('shared_schedules').off();
             db.ref('shared_schedules').on('value', snap => {
                 const events = snap.val() || {};
                 const tbody = document.getElementById('scheduleBody');
@@ -291,7 +397,6 @@ window.openAddModal = (dateStr) => {
 
                 const eventSlots = {};
                 const dayOccupancy = {};
-
                 sortedEvents.forEach(ev => {
                     let slot = 0;
                     while (true) {
@@ -315,45 +420,41 @@ window.openAddModal = (dateStr) => {
                 let dateNum = 1;
                 for (let i = 0; i < 6; i++) {
                     const tr = document.createElement('tr');
-                    let maxSlotsInWeek = 0;
-                    const weekDates = [];
-
+                    let weekDates = [];
                     for (let j = 0; j < 7; j++) {
-                        if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                            weekDates.push(null);
-                        } else {
-                            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                            weekDates.push(dStr);
-                            if (dayOccupancy[dStr]) maxSlotsInWeek = Math.max(maxSlotsInWeek, dayOccupancy[dStr].size);
+                        if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); } 
+                        else {
+                            weekDates.push(`${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`);
                             dateNum++;
                         }
                     }
 
-                    tr.style.height = Math.max(140, 40 + (maxSlotsInWeek * 28) + 20) + 'px';
-
                     weekDates.forEach((dStr, j) => {
                         const td = document.createElement('td');
                         if (dStr) {
-                            const isToday = (dStr === todayStr);
-                            td.onclick = (e) => { if(e.target.tagName === 'TD') openAddModal(dStr); };
+                            td.dataset.date = dStr;
+                            td.ondragover = window.handleDragOver;
+                            td.ondragleave = window.handleDragLeave;
+                            td.ondrop = (e) => window.handleDrop(e, dStr);
+                            td.onclick = (e) => { if(e.target.tagName === 'TD') window.openAddModal(dStr); };
                             
-                            // 날짜 표시 (isToday 조건에 따른 클래스 추가)
-                            let html = `
-                                <div class="date-wrapper">
-                                    <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-red-500':(j===6?'text-blue-500':'text-slate-600')}">
-                                        ${parseInt(dStr.split('-')[2])}
-                                    </span>
-                                </div>`;
+                            const isToday = (dStr === todayStr);
+                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-red-500':(j===6?'text-blue-500':'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
                             
                             sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
                                 if (dStr === ev.sDate || j === 0) {
                                     const slot = eventSlots[ev.id];
                                     const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr))/(86400000)) + 1, 7 - j);
                                     const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                                    const willCont = ev.eDate > weekDates[j + span - 1] ? 'continues-to-next' : '';
+                                    const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
                                     const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
                                     
-                                    html += `<div onclick="event.stopPropagation(); openEditModal('${ev.id}', ${evData})" 
+                                    html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
+                                        draggable="true"
+                                        ondragstart="window.handleDragStart(event, '${ev.id}')"
+                                        ondragend="window.handleDragEnd(event)"
+                                        ontouchstart="window.handleTouchStart(event, '${ev.id}')"
+                                        ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
                                         class="event-item ${isCont} ${willCont} ${ev.adminMemo?'bg-purple-600':'bg-blue-600'}" 
                                         style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
                                         <span class="ev-title-text">${isCont ? '' : ev.title}</span>
@@ -371,11 +472,9 @@ window.openAddModal = (dateStr) => {
             });
         }
 
-        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
-        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
-        window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(closeModal); };
-
-        initPickers();
+        const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true };
+        startPicker = flatpickr("#evStart", baseConfig);
+        endPicker = flatpickr("#evEnd", baseConfig);
         renderSchedule();
     })();
 </script>

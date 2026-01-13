@@ -141,92 +141,142 @@
     let startPicker, endPicker, editStartPicker, editEndPicker;
     const todayStr = new Date().toLocaleDateString('sv-SE');
 
-    // 시간 선택기 초기화 (신규 등록용)
-  // 시간 선택기 초기화 (신규 등록용)
-function initTimePickers(isAllDay = false) {
-    const config = {
-        enableTime: !isAllDay,
-        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-        altInput: true,
-        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-        // static: true,  <-- 이 줄을 삭제하거나 false로 변경
-        monthSelectorType: "static", // 달력 내부 디자인용
-        locale: "en"
-    };
-    if (startPicker) startPicker.destroy();
-    if (endPicker) endPicker.destroy();
-    startPicker = flatpickr("#new_sch_start", config);
-    endPicker = flatpickr("#new_sch_end", config);
-}
+    // 드래그 상태 관리 변수
+    let draggedSchId = null;
 
-// 시간 선택기 초기화 (수정용)
-function initEditTimePickers(isAllDay = false) {
-    const config = {
-        enableTime: !isAllDay,
-        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-        altInput: true,
-        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-        // static: true,  <-- 이 줄을 삭제하거나 false로 변경
-        monthSelectorType: "static", // 달력 내부 디자인용
-        locale: "en"
-    };
-    if (editStartPicker) editStartPicker.destroy();
-    if (editEndPicker) editEndPicker.destroy();
-    editStartPicker = flatpickr("#edit_sch_start", config);
-    editEndPicker = flatpickr("#edit_sch_end", config);
-}
+    /* --- 1. 시간 선택기 초기화 --- */
+    function initTimePickers(isAllDay = false) {
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            monthSelectorType: "static",
+            locale: "en"
+        };
+        if (startPicker) startPicker.destroy();
+        if (endPicker) endPicker.destroy();
+        startPicker = flatpickr("#new_sch_start", config);
+        endPicker = flatpickr("#new_sch_end", config);
+    }
 
-
+    function initEditTimePickers(isAllDay = false) {
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            monthSelectorType: "static",
+            locale: "en"
+        };
+        if (editStartPicker) editStartPicker.destroy();
+        if (editEndPicker) editEndPicker.destroy();
+        editStartPicker = flatpickr("#edit_sch_start", config);
+        editEndPicker = flatpickr("#edit_sch_end", config);
+    }
 
     window.toggleAdminTimePicker = function(isAllDay) { initTimePickers(isAllDay); };
     window.toggleEditTimePicker = function(isAllDay) { initEditTimePickers(isAllDay); };
 
-    // 1. 신규 일정 추가 팝업
- window.addAdminSchedule = function(dateStr) {
-    const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
-    const bodyHtml = `
-        <div class="space-y-4 pt-2 text-left">
-            <div class="space-y-1">
-                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
-                <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
-                    <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
-                    <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                </div>
-            </div>
-            <div class="flex items-center gap-2 ml-1">
-                <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
-                <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
-            </div>
-            <textarea id="new_sch_desc" placeholder="Description..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500"></textarea>
-            <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
-                <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
-                <textarea id="new_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes..."></textarea>
-            </div>
-            
-            <div class="flex flex-col gap-2">
-                <button onclick="window.saveNewAdminSchedule()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-purple-900/20 text-sm tracking-widest uppercase active:scale-95">Save Schedule</button>
-                <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
-            </div>
-        </div>`;
+    /* --- 2. [신규 추가] 드래그 앤 드롭 핸들러 --- */
+    window.handleAdminDragStart = (e, id) => {
+        draggedSchId = id;
+        e.target.classList.add('opacity-40');
+        e.dataTransfer.setData('text/plain', id);
+        e.dataTransfer.effectAllowed = 'move';
+    };
 
-    if (window.openAdminCustomModal) {
-        window.openAdminCustomModal(titleHtml, bodyHtml);
-        setTimeout(() => {
-            initTimePickers(false);
-            startPicker.setDate(dateStr + " 09:00");
-            endPicker.setDate(dateStr + " 10:00");
-        }, 50);
+    window.handleAdminDragEnd = (e) => {
+        e.target.classList.remove('opacity-40');
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    };
+
+    window.handleAdminDragOver = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('bg-purple-500/10');
+    };
+
+    window.handleAdminDragLeave = (e) => {
+        e.currentTarget.classList.remove('bg-purple-500/10');
+    };
+
+    window.handleAdminDrop = (e, targetDate) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('bg-purple-500/10');
+        const id = draggedSchId || e.dataTransfer.getData('text/plain');
+        if (id) moveAdminEvent(id, targetDate);
+    };
+
+    // [핵심] 기간 유지 이동 함수
+    function moveAdminEvent(id, newStartDateStr) {
+        const ref = db.ref('shared_schedules/' + id);
+        ref.once('value').then(snap => {
+            const ev = snap.val();
+            if (!ev) return;
+
+            const oldStart = new Date(ev.start);
+            const oldEnd = new Date(ev.end);
+            const durationMs = oldEnd.getTime() - oldStart.getTime();
+
+            let nextStart, nextEnd;
+            if (ev.allDay) {
+                nextStart = new Date(newStartDateStr);
+                nextEnd = new Date(nextStart.getTime() + durationMs);
+                const formatYMD = (d) => d.toISOString().split('T')[0];
+                ref.update({ start: formatYMD(nextStart), end: formatYMD(nextEnd) });
+            } else {
+                const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
+                nextStart = new Date(newStartDateStr + 'T' + timePart);
+                nextEnd = new Date(nextStart.getTime() + durationMs);
+                const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
+                ref.update({ start: formatFull(nextStart), end: formatFull(nextEnd) });
+            }
+        });
     }
-};
 
+    /* --- 3. 기존 CRUD 함수들 --- */
+    window.addAdminSchedule = function(dateStr) {
+        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Schedule Entry</div>`;
+        const bodyHtml = `
+            <div class="space-y-4 pt-2 text-left">
+                <div class="space-y-1">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                    <input type="text" id="new_sch_title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                        <input type="text" id="new_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                        <input type="text" id="new_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 ml-1">
+                    <input type="checkbox" id="new_sch_allday" onchange="window.toggleAdminTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                    <label for="new_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+                </div>
+                <textarea id="new_sch_desc" placeholder="Description..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500"></textarea>
+                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                    <textarea id="new_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes..."></textarea>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button onclick="window.saveNewAdminSchedule()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-purple-900/20 text-sm tracking-widest uppercase active:scale-95">Save Schedule</button>
+                    <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
+                </div>
+            </div>`;
 
+        if (window.openAdminCustomModal) {
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                initTimePickers(false);
+                startPicker.setDate(dateStr + " 09:00");
+                endPicker.setDate(dateStr + " 10:00");
+            }, 50);
+        }
+    };
 
     window.saveNewAdminSchedule = function() {
         const title = document.getElementById('new_sch_title').value;
@@ -246,63 +296,60 @@ function initEditTimePickers(isAllDay = false) {
         }).then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
     };
 
-    // 2. 일정 상세 및 수정 팝업 (수정됨)
-window.showAdminSchDetail = function(id, title, start, end, author, desc, adminMemo) {
-    const decodedDesc = decodeURIComponent(desc || '');
-    const decodedMemo = decodeURIComponent(adminMemo || '');
-    const isAllDay = !start.includes(':') || !end.includes(':');
-    
-    const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
-    const bodyHtml = `
-        <div class="space-y-4 pt-2 text-left">
-            <div class="space-y-1">
-                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
-                <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
+    window.showAdminSchDetail = function(id, title, start, end, author, desc, adminMemo) {
+        const decodedDesc = decodeURIComponent(desc || '');
+        const decodedMemo = decodeURIComponent(adminMemo || '');
+        const isAllDay = !start.includes(':') || !end.includes(':');
+        
+        const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
+        const bodyHtml = `
+            <div class="space-y-4 pt-2 text-left">
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
-                    <input type="text" id="edit_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                    <input type="text" id="edit_sch_title" value="${title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                        <input type="text" id="edit_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                        <input type="text" id="edit_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 ml-1">
+                    <input type="checkbox" id="edit_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                    <label for="edit_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
-                    <input type="text" id="edit_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                    <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
+                    <textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
                 </div>
-            </div>
-            <div class="flex items-center gap-2 ml-1">
-                <input type="checkbox" id="edit_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
-                <label for="edit_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
-            </div>
-            <div class="space-y-1">
-                <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
-                <textarea id="edit_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
-            </div>
-            <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
-                <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
-                <textarea id="edit_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
-            </div>
-
-            <div class="flex flex-col gap-2">
-                <div class="flex gap-2">
-                    <button onclick="window.updateAdminSchedule('${id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Update</button>
-                    <button onclick="window.deleteAdminSchedule('${id}')" class="px-6 bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Delete</button>
+                <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                    <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                    <textarea id="edit_admin_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
                 </div>
-                <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel / Close</button>
-            </div>
-        </div>`;
 
-    if (window.openAdminCustomModal) {
-        window.openAdminCustomModal(titleHtml, bodyHtml);
-        setTimeout(() => {
-            initEditTimePickers(isAllDay);
-            editStartPicker.setDate(start.replace('T', ' '));
-            editEndPicker.setDate(end.replace('T', ' '));
-        }, 50);
-    }
-};
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2">
+                        <button onclick="window.updateAdminSchedule('${id}')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Update</button>
+                        <button onclick="window.deleteAdminSchedule('${id}')" class="px-6 bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95">Delete</button>
+                    </div>
+                    <button onclick="window.closeAdminCustomModal()" class="w-full text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel / Close</button>
+                </div>
+            </div>`;
 
+        if (window.openAdminCustomModal) {
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                initEditTimePickers(isAllDay);
+                editStartPicker.setDate(start.replace('T', ' '));
+                editEndPicker.setDate(end.replace('T', ' '));
+            }, 50);
+        }
+    };
 
-    // 3. 일정 업데이트 함수 (신규 추가)
     window.updateAdminSchedule = function(id) {
         const title = document.getElementById('edit_sch_title').value;
         const start = document.getElementById('edit_sch_start').value;
@@ -323,145 +370,132 @@ window.showAdminSchDetail = function(id, title, start, end, author, desc, adminM
     window.deleteAdminSchedule = function(id) {
         if(!confirm('Are you sure you want to delete this schedule?')) return;
         db.ref('shared_schedules').child(id).remove()
-            .then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); })
-            .catch(err => alert('Error: ' + err.message));
+            .then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
     };
 
-    // 렌더링 로직 (기존과 동일)
-window.renderScheduleFull = function() {
-    const year = viewDate.getFullYear(), month = viewDate.getMonth();
-    const isMobile = window.innerWidth < 768;
-    
-    // [추가] 요소 존재 여부 확인 (에러 방지 핵심 코드)
-    const monthEl = document.getElementById('full_sch_month');
-    const tbody = document.getElementById('full_sch_calendar_body');
-    
-    // 화면에 렌더링할 준비가 안 되었다면 함수 종료
-    if (!monthEl || !tbody) {
-        console.warn("Schedule components not yet loaded in DOM.");
-        return;
-    }
-
-    // 날짜 텍스트 업데이트
-    monthEl.innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
-
-    db.ref('shared_schedules').off();
-    db.ref('shared_schedules').on('value', snap => {
-        const data = snap.val() || {};
+    /* --- 4. 렌더링 로직 (드래그 속성 추가) --- */
+    window.renderScheduleFull = function() {
+        const year = viewDate.getFullYear(), month = viewDate.getMonth();
+        const isMobile = window.innerWidth < 768;
+        const monthEl = document.getElementById('full_sch_month');
+        const tbody = document.getElementById('full_sch_calendar_body');
         
-        // [추가] Firebase 응답 시점에 요소가 사라졌을 경우를 대비한 2차 확인
-        const currentTbody = document.getElementById('full_sch_calendar_body');
-        if (!currentTbody) return;
+        if (!monthEl || !tbody) return;
 
-        currentTbody.innerHTML = '';
+        monthEl.innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
 
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        
-        const sortedEvents = Object.entries(data).map(([id, ev]) => ({
-            id, ...ev,
-            sDate: ev.start.split('T')[0],
-            eDate: ev.end.split('T')[0]
-        })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)) || a.sDate.localeCompare(b.sDate));
+        db.ref('shared_schedules').off();
+        db.ref('shared_schedules').on('value', snap => {
+            const data = snap.val() || {};
+            tbody.innerHTML = '';
 
-        const eventFinalSlot = {};
-        const daySlotUsage = {};
-        sortedEvents.forEach(ev => {
-            let slot = 0;
-            while (true) {
-                let isAvailable = true;
-                for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                    const dStr = d.toISOString().split('T')[0];
-                    if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
-                }
-                if (isAvailable) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            const sortedEvents = Object.entries(data).map(([id, ev]) => ({
+                id, ...ev,
+                sDate: ev.start.split('T')[0],
+                eDate: ev.end.split('T')[0]
+            })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)) || a.sDate.localeCompare(b.sDate));
+
+            const eventFinalSlot = {};
+            const daySlotUsage = {};
+            sortedEvents.forEach(ev => {
+                let slot = 0;
+                while (true) {
+                    let isAvailable = true;
                     for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
                         const dStr = d.toISOString().split('T')[0];
-                        if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
-                        daySlotUsage[dStr].add(slot);
+                        if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
                     }
-                    eventFinalSlot[ev.id] = slot;
-                    break;
+                    if (isAvailable) {
+                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                            const dStr = d.toISOString().split('T')[0];
+                            if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
+                            daySlotUsage[dStr].add(slot);
+                        }
+                        eventFinalSlot[ev.id] = slot;
+                        break;
+                    }
+                    slot++;
                 }
-                slot++;
+            });
+
+            let dateNum = 1;
+            for (let i = 0; i < 6; i++) {
+                const tr = document.createElement('tr');
+                let hasDateInRow = false;
+                let maxSlotsInWeek = 0;
+
+                for (let j = 0; j < 7; j++) {
+                    const td = document.createElement('td');
+                    if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                        if (!isMobile) tr.appendChild(td);
+                        continue;
+                    }
+                    
+                    hasDateInRow = true;
+                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+                    const isToday = (dStr === todayStr);
+
+                    // 드롭 타겟 설정
+                    td.dataset.date = dStr;
+                    td.ondragover = window.handleAdminDragOver;
+                    td.ondragleave = window.handleAdminDragLeave;
+                    td.ondrop = (e) => window.handleAdminDrop(e, dStr);
+
+                    if (daySlotUsage[dStr]) {
+                        const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1;
+                        if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
+                    }
+
+                    td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
+
+                    let html = `<div class="date-wrapper flex justify-between items-center">
+                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
+                            ${dateNum}
+                        </span>
+                    </div>`;
+                    
+                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                        const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
+                        if (shouldShow) {
+                            const currentSlot = eventFinalSlot[ev.id];
+                            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
+                            const span = Math.min(diffDays + 1, 7 - j);
+                            const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
+                            
+                            html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
+                                draggable="true"
+                                ondragstart="window.handleAdminDragStart(event, '${ev.id}')"
+                                ondragend="window.handleAdminDragEnd(event)"
+                                class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
+                                style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
+                                <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
+                                <span class="sch-staff-tag">${ev.author||''}</span>
+                            </div>`;
+                        }
+                    });
+
+                    td.innerHTML = html;
+                    tr.appendChild(td);
+                    dateNum++;
+                }
+
+                if (hasDateInRow) {
+                    if (!isMobile) {
+                        const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
+                        tr.style.height = Math.max(140, calculatedHeight) + 'px';
+                    }
+                    tbody.appendChild(tr);
+                }
+                if (dateNum > lastDate) break;
             }
         });
-
-        let dateNum = 1;
-        for (let i = 0; i < 6; i++) {
-            const tr = document.createElement('tr');
-            let hasDateInRow = false;
-            let maxSlotsInWeek = 0;
-
-            for (let j = 0; j < 7; j++) {
-                const td = document.createElement('td');
-                if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                    if (!isMobile) tr.appendChild(td);
-                    continue;
-                }
-                
-                hasDateInRow = true;
-                const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                const isToday = (dStr === todayStr);
-
-                if (daySlotUsage[dStr]) {
-                    const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1;
-                    if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
-                }
-
-                td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
-
-                let html = `<div class="date-wrapper flex justify-between items-center">
-                    <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
-                        ${dateNum}
-                    </span>
-                    ${isMobile && isToday ? '<span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Today</span>' : ''}
-                </div>`;
-                
-                sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                    const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
-                    if (shouldShow) {
-                        const currentSlot = eventFinalSlot[ev.id];
-                        const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
-                        const span = Math.min(diffDays + 1, 7 - j);
-                        const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
-                        
-                        html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
-                            class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
-                            style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
-                            <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
-                            <span class="sch-staff-tag">${ev.author||''}</span>
-                        </div>`;
-                    }
-                });
-
-                td.innerHTML = html;
-                tr.appendChild(td);
-                dateNum++;
-            }
-
-            if (hasDateInRow) {
-                if (!isMobile) {
-                    const calculatedHeight = 40 + (maxSlotsInWeek * 26) + 20; 
-                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
-                }
-                currentTbody.appendChild(tr);
-            }
-            if (dateNum > lastDate) break;
-        }
-    });
-};
-
+    };
 
     window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
     window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
 
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(window.renderScheduleFull, 250);
-    });
-
     window.renderScheduleFull();
-})();
-</script>
+})();</script>
