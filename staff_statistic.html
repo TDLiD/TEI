@@ -165,11 +165,58 @@ function renderChart(canvasId, chartType, chartData) {
     if (existingChart) { existingChart.destroy(); }
 
     if (currentTab === 'att') {
-        // [Attendance 로직 생략 - 기존 유지]
-        // ... (작성하신 기존 ATT 막대 그래프 코드 그대로 유지)
+        // --- [Attendance: 막대 그래프 로직] ---
+        const users = Object.keys(chartData).sort();
+        // 표시할 근태 타입들
+        const relevantTypes = ['ATT', 'LATE', 'WO', 'PEL', 'ANL', 'HAL', 'SIL', 'SPL', 'EVL'];
+        
+        const datasets = relevantTypes.map(type => {
+            const dataPoints = users.map(user => chartData[user][type] || 0);
+            // 해당 타입의 데이터가 하나도 없으면 데이터셋 제외
+            if (dataPoints.every(v => v === 0)) return null;
+            
+            return {
+                label: type,
+                data: dataPoints,
+                backgroundColor: typeColors[type],
+                borderRadius: 4
+            };
+        }).filter(d => d !== null);
+
+        charts[chartType] = new Chart(ctx, {
+            type: 'bar',
+            data: { 
+                labels: users, 
+                datasets: datasets 
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { 
+                        stacked: false, // 사용자별로 옆으로 나열
+                        ticks: { color: '#94a3b8', font: { size: 10 } } 
+                    },
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { 
+                            stepSize: 1, 
+                            color: '#94a3b8',
+                            callback: (value) => value + 'd' // '일수' 표시
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } }
+                }
+            }
+        });
+
     } else {
-        // [Leave 시간 점-선 그래프 로직 수정]
+        // --- [Leave: 점-선 그래프 로직] ---
         const datasets = Object.entries(chartData).map(([user, points], idx) => {
+            // 날짜순 정렬
             points.sort((a, b) => a.x.localeCompare(b.x));
             const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`; 
             return {
@@ -196,41 +243,36 @@ function renderChart(canvasId, chartType, chartData) {
                         ticks: { color: '#64748b', font: { size: 10 } } 
                     },
                     y: {
-                        min: 17.5, // 17:30
-                        max: 22.0, // 22:00 (필요시 23.0으로 조정 가능)
+                        min: 17.5,
+                        max: 22.0,
                         afterBuildTicks: function(axis) {
                             const ticks = [];
-                            
-                            // 1. 17:30 ~ 18:30 (5분 단위: 1시간 / 12)
-                            for (let time = 17.5; time <= 18.5; time += (5/60)) {
+                            for (let time = 17.5; time <= 18.5 + 0.0001; time += (5/60)) {
                                 ticks.push({ value: time });
                             }
-                            
-                            // 2. 18:30 ~ 22:00 (20분 단위: 1시간 / 3)
-                            // 18.5(18:30) 다음 눈금부터 시작
-                            for (let time = 18.5 + (20/60); time <= 22.0; time += (20/60)) {
+                            for (let time = 18.5 + (20/60); time <= 22.0 + 0.0001; time += (20/60)) {
                                 ticks.push({ value: time });
                             }
-                            
                             axis.ticks = ticks;
                         },
                         ticks: {
                             color: '#94a3b8',
                             font: { size: 9 },
+                            autoSkip: false,
                             callback: function(value) {
-                                // 소수점 오차 방지를 위해 미세값(0.0001) 추가 후 계산
                                 const h = Math.floor(value + 0.0001);
                                 const m = Math.round((value - h) * 60);
                                 return `${h}:${m === 0 ? '00' : (m < 10 ? '0' + m : m)}`;
                             }
                         },
                         grid: { 
-                            color: 'rgba(255, 255, 255, 0.08)',
-                            lineWidth: (context) => (context.tick && context.tick.value % 1 === 0 ? 2 : 1) // 정각 라인 강조
+                            color: (context) => (context.tick && context.tick.value % 1 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
+                            lineWidth: (context) => (context.tick && context.tick.value % 1 === 0 ? 1.5 : 1)
                         }
                     }
                 },
                 plugins: {
+                    legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } },
                     tooltip: {
                         callbacks: {
                             label: (ctx) => {
@@ -245,7 +287,7 @@ function renderChart(canvasId, chartType, chartData) {
         });
     }
 }
-// ... (이하 동일)
+
 
         setTimeout(() => {
             initStats();
