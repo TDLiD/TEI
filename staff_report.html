@@ -1,27 +1,61 @@
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <style>
-    /* 상하단 달력 크기를 맞추기 위한 스타일 통일 */
+    /* 기존 스타일 유지 및 추가 */
     .mini-cal th { padding: 10px 0; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
     .mini-cal td { 
         height: 70px; width: 14.28%; border: 1px solid #1e293b; vertical-align: top; padding: 6px; cursor: pointer; transition: all 0.2s; position: relative;
     }
     .mini-cal td:hover { background-color: #1e293b; }
-    
     .selected-date { background-color: rgba(59, 130, 246, 0.15) !important; border: 2px solid #3b82f6 !important; }
     .selected-date .date-num { color: #3b82f6; font-weight: 900; }
-
     .report-card-fixed { max-width: 400px; width: 100%; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
 
-    /* 상태 표시 공통 스타일 */
     .status-tag {
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
         font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 4px;
         white-space: nowrap; pointer-events: none;
     }
-    
     .status-progress { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
     .status-completed { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+/* 기존 스타일 유지 및 드롭다운 버튼 스타일 추가 */
+    .export-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .export-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #0f172a;
+        min-width: 140px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+        z-index: 50;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .export-content button {
+        width: 100%;
+        padding: 10px 15px;
+        text-align: left;
+        font-size: 10px;
+        font-weight: 800;
+        color: #94a3b8;
+        transition: all 0.2s;
+        text-transform: uppercase;
+    }
+    .export-content button:hover {
+        background-color: #1e293b;
+        color: #3b82f6;
+    }
+    .export-dropdown:hover .export-content {
+        display: block;
+    }
+
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -30,7 +64,6 @@
             <h3 class="text-xl font-bold text-white">Work Report Detail</h3>
             <div id="actionButtons"></div>
         </div>
-
         <div id="workCardContainer">
             <div class="text-slate-500 animate-pulse text-sm">Loading...</div>
         </div>
@@ -38,7 +71,7 @@
 
     <div class="flex-1 w-full"> 
         <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 shadow-xl">
-            <div class="flex justify-between items-center mb-4 px-1">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-4 px-1">
                 <div class="flex items-center gap-4">
                     <div id="miniCalMonth" class="text-lg font-black text-white italic"></div>
                     <div class="flex bg-slate-800 rounded-lg p-1">
@@ -47,8 +80,22 @@
                         <button onclick="window.changeViewMonth(1)" class="nav-btn px-2 py-1 text-slate-400 transition rounded-md text-[10px] font-black">NEXT</button>
                     </div>
                 </div>
-                <span class="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Select Date</span>
+                
+                <div class="flex items-center gap-2">
+                    <div class="export-dropdown">
+                        <button class="bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-600 hover:text-white transition uppercase tracking-widest flex items-center gap-1">
+                            Excel Export ▾
+                        </button>
+                        <div class="export-content">
+                            <button onclick="window.exportStaffReport('monthly')">Monthly Report</button>
+                            <button onclick="window.exportStaffReport('yearly')">Yearly Report</button>
+                            <button onclick="window.exportStaffReport('all')">All-Time Overall</button>
+                        </div>
+                    </div>
+                    <span class="hidden sm:inline text-[10px] text-blue-500 font-bold uppercase tracking-widest">Select Date</span>
+                </div>
             </div>
+            
             <table class="mini-cal w-full border-collapse">
                 <thead>
                     <tr class="text-slate-500">
@@ -68,16 +115,76 @@
         let viewDate = new Date();
         const todayStr = new Date().toISOString().split('T')[0];
         let selectedDateStr = todayStr;
-        let currentReportData = null;
 
-        // --- 임시 저장 관련 헬퍼 함수 ---
+        // --- 통합 엑셀 내보내기 함수 (Admin 기능 이식) ---
+        window.exportStaffReport = function(mode) {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth() + 1;
+            let fileName = "";
+            
+            database.ref('reports').once('value', (snapshot) => {
+                const allData = snapshot.val() || {};
+                const exportRows = [];
+
+                // 모든 날짜 키를 가져와서 정렬
+                const sortedDates = Object.keys(allData).sort();
+
+                sortedDates.forEach(dateKey => {
+                    const report = (allData[dateKey] && allData[dateKey][user]) ? allData[dateKey][user] : null;
+                    if (!report) return;
+
+                    const [rYear, rMonth] = dateKey.split('-').map(Number);
+                    let shouldInclude = false;
+
+                    if (mode === 'monthly') {
+                        if (rYear === year && rMonth === month) shouldInclude = true;
+                        fileName = `WorkReport_${user}_${year}-${String(month).padStart(2,'0')}.xlsx`;
+                    } else if (mode === 'yearly') {
+                        if (rYear === year) shouldInclude = true;
+                        fileName = `WorkReport_${user}_Year_${year}.xlsx`;
+                    } else if (mode === 'all') {
+                        shouldInclude = true;
+                        fileName = `WorkReport_${user}_AllTime.xlsx`;
+                    }
+
+                    if (shouldInclude) {
+                        exportRows.push({
+                            "Date": dateKey,
+                            "Status": report.status || "In Progress",
+                            "To-Do": report.todo || "",
+                            "Summary": report.summary || report.content || "",
+                            "Admin Memo": report.adminMemo || "",
+                            "Update Time": report.time || ""
+                        });
+                    }
+                });
+
+                if (exportRows.length === 0) {
+                    alert("No report data found for the selected period.");
+                    return;
+                }
+
+                // 엑셀 변환 로직
+                const worksheet = XLSX.utils.json_to_sheet(exportRows);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+                // 열 너비 자동 조정
+                worksheet['!cols'] = [
+                    { wch: 15 }, { wch: 12 }, { wch: 40 }, { wch: 40 }, { wch: 30 }, { wch: 12 }
+                ];
+
+                XLSX.writeFile(workbook, fileName);
+            });
+        };
+
+        // --- 기존 기능 유지 ---
         const getTempKey = (date) => `temp_report_${user}_${date}`;
         
         window.saveToTemp = function() {
             const todo = document.getElementById('editTodo')?.value;
             const summary = document.getElementById('editSummary')?.value;
             const status = document.getElementById('editStatus')?.value;
-            
             const tempData = { todo, summary, status, timestamp: new Date().getTime() };
             localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify(tempData));
         };
@@ -85,7 +192,6 @@
         window.clearTemp = function(date) {
             localStorage.removeItem(getTempKey(date));
         };
-        // ------------------------------
 
         window.changeViewMonth = function(offset) {
             viewDate.setMonth(viewDate.getMonth() + offset);
@@ -123,28 +229,24 @@
 
             database.ref('reports/' + selectedDateStr + '/' + user).set(saveData).then(() => {
                 alert("Saved successfully.");
-                window.clearTemp(selectedDateStr); // 저장 성공 시 임시 저장 삭제
+                window.clearTemp(selectedDateStr);
                 loadReport(selectedDateStr);
-            }).catch((error) => {
-                alert("Failed to save.");
-            });
+            }).catch(() => alert("Failed to save."));
         };
 
         window.deleteReport = function() {
             if (!confirm("Are you sure you want to delete this report?")) return;
-            database.ref('reports/' + selectedDateStr + '/' + user).remove()
-                .then(() => {
-                    alert("Deleted successfully.");
-                    window.clearTemp(selectedDateStr); // 삭제 시 임시 저장도 함께 삭제
-                    currentReportData = null;
-                    loadReport(selectedDateStr);
-                });
+            database.ref('reports/' + selectedDateStr + '/' + user).remove().then(() => {
+                alert("Deleted successfully.");
+                window.clearTemp(selectedDateStr);
+                currentReportData = null;
+                loadReport(selectedDateStr);
+            });
         };
 
-   window.loadReport = function(dateStr) {
+        window.loadReport = function(dateStr) {
             selectedDateStr = dateStr;
             renderMiniCalendar();
-
             const actionBtn = document.getElementById('actionButtons');
             actionBtn.innerHTML = ''; 
 
@@ -154,42 +256,31 @@
                 const container = document.getElementById('workCardContainer');
                 
                 if (!report) {
-                    // 보고서가 없으면 에디터 모드로 전환
                     window.showEditor(); 
                 } else {
-                    // 보고서가 있으면 상세 보기 모드 출력
                     actionBtn.innerHTML = `
                         <button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button>
                         <button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600 transition">Edit</button>
                     `;
                     
-                    let adminMemoHtml = "";
-                    if (report.adminMemo) {
-                        adminMemoHtml = `
-                            <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                                <p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p>
-                                <p class="text-xs text-blue-200 italic leading-relaxed">${report.adminMemo}</p>
-                            </div>`;
-                    }
+                    let adminMemoHtml = report.adminMemo ? `
+                        <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                            <p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p>
+                            <p class="text-xs text-blue-200 italic leading-relaxed">${report.adminMemo}</p>
+                        </div>` : "";
 
-                    // --- 오류 수정 구간: 상세보기 모드에서는 isNew, hasTemp 체크를 제거하거나 단순화 ---
                     container.innerHTML = `
                         <div class="bg-slate-900 p-6 rounded-2xl border ${report.status === 'Completed' ? 'border-green-900/50' : 'border-slate-800'} shadow-lg animate-fadeIn">
                             <div class="flex justify-between items-center mb-6">
                                 <div class="flex items-center gap-3">
-                                    <span class="text-blue-400 text-xs font-black uppercase tracking-widest">
-                                        Work Report
-                                    </span>
+                                    <span class="text-blue-400 text-xs font-black uppercase tracking-widest">Work Report</span>
                                     <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                                         report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-500' : 
                                         report.status === 'Pending' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'
-                                    }">
-                                        ${report.status || 'In Progress'}
-                                    </span>
+                                    }">${report.status || 'In Progress'}</span>
                                 </div>
                                 <span class="text-slate-500 text-[10px] font-mono">${selectedDateStr}</span>
                             </div>
-                            
                             <div class="space-y-6">
                                 <div>
                                     <h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4>
@@ -200,7 +291,6 @@
                                     <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${report.summary || report.content || '-'}</p>
                                 </div>
                             </div>
-
                             ${adminMemoHtml}
                             <div class="mt-6 pt-4 border-t border-slate-800 text-right">
                                 <span class="text-[10px] text-slate-500 italic">Last Update: ${report.time || 'N/A'}</span>
@@ -210,37 +300,27 @@
             });
         };
 
-
-// --- 복사 기능 관련 함수 (openCopyFromPicker) ---
         let copyPicker = null;
         window.openCopyFromPicker = function() {
-            // 보이지 않는 input을 생성하여 flatpickr(달력 팝업)를 연결
             if (!document.getElementById('hiddenCopyInput')) {
                 const input = document.createElement('input');
                 input.id = 'hiddenCopyInput';
                 input.style.display = 'none';
                 document.body.appendChild(input);
             }
-
-            // 기존에 생성된 달력이 있다면 제거 후 새로 생성
             if (copyPicker) copyPicker.destroy();
-
             copyPicker = flatpickr("#hiddenCopyInput", {
                 theme: "dark",
-                maxDate: "today", // 오늘 날짜 이후는 선택 불가
+                maxDate: "today",
                 onChange: function(selectedDates, dateStr) {
-if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
+                    if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
                         database.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
                             const data = snapshot.val();
                             if (data) {
-                                // Inject values into current editor fields (textarea)
                                 const todoEl = document.getElementById('editTodo');
                                 const summaryEl = document.getElementById('editSummary');
-                                
                                 if(todoEl) todoEl.value = data.todo || "";
                                 if(summaryEl) summaryEl.value = data.summary || data.content || "";
-                                
-                                // Reflect to temporary storage immediately to prevent data loss
                                 window.saveToTemp();
                                 alert("Data copied successfully.");
                             } else {
@@ -250,53 +330,36 @@ if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
                     }
                 }
             });
-            copyPicker.open(); // 날짜 선택창 열기
+            copyPicker.open();
         };
 
-        // --- 수정된 showEditor 함수 ---
         window.showEditor = function() {
             document.getElementById('actionButtons').innerHTML = '';
             const container = document.getElementById('workCardContainer');
-            
-            // 기본 데이터 설정
             const serverReport = currentReportData || { todo: "", summary: "", status: "In Progress", content: "" };
-            
-            // LocalStorage에서 임시 저장된 데이터 확인
             const tempRaw = localStorage.getItem(getTempKey(selectedDateStr));
             let report = serverReport;
             let hasTemp = false;
 
             if (tempRaw) {
                 const tempData = JSON.parse(tempRaw);
-                report = {
-                    ...serverReport,
-                    todo: tempData.todo || serverReport.todo,
-                    summary: tempData.summary || serverReport.summary || serverReport.content,
-                    status: tempData.status || serverReport.status
-                };
+                report = { ...serverReport, todo: tempData.todo || serverReport.todo, summary: tempData.summary || serverReport.summary || serverReport.content, status: tempData.status || serverReport.status };
                 hasTemp = true;
             }
 
-            const initialSummary = report.summary || report.content || "";
             const isNew = !currentReportData; 
-            
             container.innerHTML = `
                 <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex flex-col">
-                            <span class="text-blue-400 text-xs font-black uppercase tracking-widest">
-                                ${isNew ? 'New Report' : 'Edit Report'} 
-                            </span>
+                            <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New Report' : 'Edit Report'}</span>
                             ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
                         </div>
                         <div class="flex items-center gap-3">
-                            <button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
-                                📋 Copy from date
-                            </button>
+                            <button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">📋 Copy from date</button>
                             <span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span>
                         </div>
                     </div>
-
                     <div class="mb-4">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label>
                         <select id="editStatus" onchange="window.saveToTemp()" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 outline-none text-sm">
@@ -311,7 +374,7 @@ if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
                     </div>
                     <div class="mb-5">
                         <label class="block text-[10px] font-bold text-emerald-500 uppercase mb-2">Work Summary</label>
-                        <textarea id="editSummary" oninput="window.saveToTemp()" placeholder="Enter work results..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${initialSummary}</textarea>
+                        <textarea id="editSummary" oninput="window.saveToTemp()" placeholder="Enter work results..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${report.summary || report.content || ''}</textarea>
                     </div>
                     <div class="flex flex-col gap-2">
                         <button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Report</button>
@@ -319,7 +382,6 @@ if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
                     </div>
                 </div>`;
         };
-
 
         function renderMiniCalendar() {
             const year = viewDate.getFullYear();
@@ -344,19 +406,12 @@ if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
                         } else {
                             const curDate = date;
                             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
-                            let cellHTML = `<div class="date-num text-xs font-bold text-slate-500">${curDate}</div>`;
+                            let cellHTML = `<div class="date-num text-xs font-bold ${dateStr === todayStr ? 'text-blue-500' : 'text-slate-500'}">${curDate}</div>`;
                             const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
 
                             if (userReport) {
-                                let statusClass = "status-progress";
-                                let statusText = "PROGRESS";
-                                if (userReport.status === 'Completed') {
-                                    statusClass = "status-completed";
-                                    statusText = "COMPLETED";
-                                } else if (userReport.status === 'Pending') {
-                                    statusClass = "status-pending";
-                                    statusText = "PENDING";
-                                }
+                                let statusClass = userReport.status === 'Completed' ? "status-completed" : (userReport.status === 'Pending' ? "status-pending" : "status-progress");
+                                let statusText = userReport.status === 'Completed' ? "COMPLETED" : (userReport.status === 'Pending' ? "PENDING" : "PROGRESS");
                                 cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
                             }
                             cell.innerHTML = cellHTML;
