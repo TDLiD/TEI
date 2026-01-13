@@ -1,4 +1,26 @@
 <div class="space-y-8 animate-fadeIn">
+    <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div>
+            <div class="flex items-end gap-2">
+                <div id="stat_attendance" class="text-2xl font-black text-white">0/0</div>
+                <div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div>
+            </div>
+        </div>
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Pending Reports</div>
+            <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
+        </div>
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div>
+            <div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div>
+        </div>
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div>
+            <div id="stat_late" class="text-2xl font-black text-rose-500">0</div>
+        </div>
+    </div>
+
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-black text-white flex items-center gap-2">
@@ -7,38 +29,16 @@
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div>
         </div>
         <div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
-    </div>
-
-<div class="mt-6 pt-4 border-t border-slate-800/50">
+        <div class="mt-6 pt-4 border-t border-slate-800/50">
             <div class="flex flex-wrap gap-y-2 gap-x-4">
-                <div class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">ATT: Normal</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">LATE: Late Arrival</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-400/80">WO: Work Out</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded">PEL: Personal</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded">ANL: Annual</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded">HAL: Half Day</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded">SIL: Sick</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500">
-                    <span class="bg-slate-800 px-1.5 py-0.5 rounded">SPL: Special</span>
-                </div>
+                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">ATT: Normal</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">LATE: Late Arrival</span></div>
+                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-400/80">WO: Work Out</span></div>
+                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">PEL: Personal</span></div>
+                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">ANL: Annual</span></div>
             </div>
         </div>
+    </div>
 
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
@@ -63,24 +63,30 @@
 
 <div id="customAdminModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" onclick="window.closeAdminCustomModal()"></div>
-    
-    <div class="relative bg-slate-900 w-full max-w-md rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden transform transition-all animate-in zoom-in duration-200">
-        <div id="modalHeaderArea" class="p-6 pb-4 border-b border-slate-800/50 bg-gradient-to-br from-slate-800/50 to-transparent"></div>
+    <div class="relative bg-slate-900 w-full max-w-md max-h-[90vh] rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden transform transition-all flex flex-col animate-in zoom-in duration-200">
+        <div id="modalHeaderArea" class="p-6 pb-4 border-b border-slate-800/50 bg-gradient-to-br from-slate-800/50 to-transparent flex-shrink-0"></div>
         
-        <div id="modalBodyArea" class="p-6 max-h-[60vh] overflow-y-auto"></div>
+        <div id="modalBodyArea" class="p-6 overflow-y-auto text-white flex-grow custom-scrollbar"></div>
         
-        <div class="p-6 pt-0">
-            <button onclick="window.closeAdminCustomModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-2xl transition-all active:scale-95 text-sm tracking-widest uppercase border border-slate-700">
-                Close
-            </button>
-        </div>
+        <div id="modalFooterArea" class="p-6 pt-0 flex-shrink-0"></div>
     </div>
 </div>
+
+
+<style>
+/* 부드러운 스크롤바 디자인 (선택 사항) */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+</style>
+
 
 <script>
 (function() {
     const db = firebase.database();
+let editStartPicker, editEndPicker; // 추가: 시간 선택기 변수
     const today = new Date();
+    const todayStr = today.toLocaleDateString('sv-SE');
     const last5Days = [];
     for(let i=0; i<5; i++) {
         const d = new Date();
@@ -88,7 +94,34 @@
         last5Days.push(d.toLocaleDateString('sv-SE'));
     }
 
-    // --- 커스텀 모달 제어 함수 ---
+function initEditTimePickers(isAllDay = false) {
+    const config = {
+        enableTime: !isAllDay,
+        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+        altInput: true,
+        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+        monthSelectorType: "static",
+        locale: "ko", // 'en'에서 'ko'로 변경 가능
+        static: true,  // 모달 안에서 위치가 어긋나지 않게 고정
+        theme: "dark"  // 어두운 테마 적용
+    };
+    
+    if (editStartPicker) editStartPicker.destroy();
+    if (editEndPicker) editEndPicker.destroy();
+    
+    // 이 부분이 실행될 때 라이브러리가 로드되어 있어야 에러가 나지 않습니다.
+    editStartPicker = flatpickr("#db_sch_start", config);
+    editEndPicker = flatpickr("#db_sch_end", config);
+}
+
+
+
+    window.toggleEditTimePicker = function(isAllDay) {
+        initEditTimePickers(isAllDay);
+    };
+
+
+    // --- [1] 모달 제어 시스템 ---
     window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         document.getElementById('modalHeaderArea').innerHTML = titleHtml;
         document.getElementById('modalBodyArea').innerHTML = bodyHtml;
@@ -101,64 +134,224 @@
         document.body.style.overflow = '';
     };
 
-    // --- 개선된 상세 보기 (adminMemo 포함) ---
-  // --- 개선된 상세 보기 (admin_report.html과 동일한 관리/수정 기능 연결) ---
-  // --- 개선된 상세 보기 (CANCEL 버튼 포함) ---
-    window.showWorkDetail = function(name, date, status, contentEncoded, memoEncoded) {
+    // --- [2] 실시간 통계 엔진 ---
+    window.updateQuickStats = function() {
+        db.ref('users').on('value', userSnap => {
+            const usersData = userSnap.val() || {};
+            const totalStaffCount = Object.keys(usersData).filter(name => name.toLowerCase() !== 'admin').length;
+            db.ref(`attendance/${todayStr}`).on('value', attSnap => {
+                const todayAtt = attSnap.val() || {};
+                let presentCount = 0, lateCount = 0;
+                Object.entries(todayAtt).forEach(([name, info]) => {
+                    if (name.toLowerCase() === 'admin') return;
+                    if (typeof info === 'string') {
+                        if (!['OFF', 'ANL', 'PEL'].includes(info)) presentCount++;
+                    } else if (info && info.attend) {
+                        presentCount++;
+                        if (info.attend.includes("LATE")) lateCount++;
+                    }
+                });
+                if (document.getElementById('stat_attendance')) document.getElementById('stat_attendance').innerText = `${presentCount}/${totalStaffCount}`;
+                if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount;
+            });
+        });
+
+        db.ref(`reports/${todayStr}`).on('value', snap => {
+            const data = snap.val() || {};
+            const pendingCount = Object.values(data).filter(r => r.status === 'Pending').length;
+            if (document.getElementById('stat_pending')) document.getElementById('stat_pending').innerText = pendingCount;
+        });
+
+        db.ref('shared_schedules').on('value', snap => {
+            const data = snap.val() || {};
+            let ongoingCount = 0;
+            Object.values(data).forEach(ev => {
+                const s = ev.start ? ev.start.split('T')[0] : (ev.startDate || "");
+                const e = ev.end ? ev.end.split('T')[0] : (ev.endDate || s);
+                if (s && e && todayStr >= s && todayStr <= e) ongoingCount++;
+            });
+            const el = document.getElementById('stat_schedules');
+            if (el) {
+                el.innerText = ongoingCount;
+                el.className = ongoingCount > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600";
+            }
+        });
+    };
+
+    // --- [3] 데이터 렌더링 엔진 ---
+    window.renderRecentAttendance = function() {
+        const container = document.getElementById('recent_att_container');
+        if(!container) return;
+        const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
+        db.ref('attendance').on('value', snap => {
+            const data = snap.val() || {};
+            container.innerHTML = '';
+            last5Days.forEach(dStr => {
+                const dayData = data[dStr] || {};
+                let staffHtml = '';
+                Object.entries(dayData).forEach(([name, info]) => {
+                    const safeInfo = encodeURIComponent(JSON.stringify(info));
+                    let content = '';
+                    if (typeof info === 'string') content = `<span class="text-amber-400">${info}</span>`;
+                    else {
+                        const att = info.attend ? (info.attend.includes("LATE") ? "LATE " : "ATT ") + formatTime(info.attend) : "";
+                        const lea = formatTime(info.leave);
+                        content = `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${att}</span>${lea ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${lea}</span>`:''}</div>`;
+                    }
+                    staffHtml += `<div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
+                });
+                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`;
+            });
+        });
+    };
+
+    window.renderRecentWork = function() {
+        const container = document.getElementById('recent_work_container');
+        if(!container) return;
+        db.ref('reports').on('value', snap => {
+            const data = snap.val() || {};
+            container.innerHTML = '';
+            last5Days.forEach(dStr => {
+                const dayData = data[dStr] || {};
+                let reportHtml = '';
+                Object.entries(dayData).forEach(([name, report]) => {
+                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
+                    reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">${name}</div>`;
+                });
+                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
+            });
+        });
+    };
+
+    window.renderRecentSchedule = function() {
+        const container = document.getElementById('recent_sch_container');
+        if(!container) return;
+        db.ref('shared_schedules').on('value', snap => {
+            const data = snap.val() || {};
+            container.innerHTML = '';
+            last5Days.forEach(dStr => {
+                let schHtml = '';
+                Object.entries(data).forEach(([id, ev]) => {
+                    const s = ev.start ? ev.start.split('T')[0] : "";
+                    const e = ev.end ? ev.end.split('T')[0] : s;
+                    if (dStr >= s && dStr <= e) {
+                        schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`;
+                    }
+                });
+                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div></div>`;
+            });
+        });
+    };
+
+    // --- [4] 상세 수정/삭제 핸들러 (Cancel 버튼 추가됨) ---
+    window.showWorkDetail = function(name, date) {
         db.ref(`reports/${date}/${name}`).once("value", snap => {
             const r = snap.val() || {};
-            
-            const titleHtml = `
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div>
-                    <div>
-                        <div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter">${date}</div>
-                        <div class="text-lg font-black text-white leading-tight">${name}'s Report</div>
+            const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`;
+            const bodyHtml = `<div class="space-y-4 text-left">
+                <div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label>
+                <select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm">
+                    <option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option>
+                </select></div>
+                <div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div>
+                <div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div>
+                <div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div>
+                <div class="flex flex-col gap-3 mt-4">
+                    <button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
+                        <button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button>
                     </div>
-                </div>`;
-
-            const bodyHtml = `
-                <div class="space-y-4 text-left">
-                    <div>
-                        <label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label>
-                        <select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm focus:outline-none focus:border-blue-500">
-                            <option ${r.status==='In Progress'?'selected':''}>In Progress</option>
-                            <option ${r.status==='Completed'?'selected':''}>Completed</option>
-                            <option ${r.status==='Pending'?'selected':''}>Pending</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label>
-                        <textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-24 resize-none focus:outline-none focus:border-slate-600">${r.todo || r.content || ''}</textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label>
-                        <textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-24 resize-none focus:outline-none focus:border-emerald-900">${r.summary || ''}</textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label>
-                        <textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-20 resize-none focus:outline-none focus:border-amber-700" placeholder="Private notes...">${r.adminMemo || ''}</textarea>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <button onclick="saveDashboardReport('${date}','${name}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg text-sm tracking-widest uppercase active:scale-95">
-                            SAVE CHANGES
-                        </button>
-                        
-                        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all text-xs uppercase tracking-widest border border-slate-700 active:scale-95">
-                            Cancel
-                        </button>
-                        <button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20 text-xs uppercase tracking-widest active:scale-95">
-                            Delete
-                        </button>
-                    </div>
-                </div>`;
-
+                </div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
         });
     };
 
-    // --- 대시보드 전용 저장/삭제 핸들러 ---
+    window.openEditAttendance = function(name, date, infoEncoded) {
+        const info = JSON.parse(decodeURIComponent(infoEncoded));
+        const isSpecial = typeof info === 'string';
+        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span><span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm font-normal">(${date})</span></span></div>`;
+        const bodyHtml = `<div class="space-y-4 text-left">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors"></div>
+                <div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors"></div>
+            </div>
+            <div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div>
+            <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500 transition-colors">
+                <option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option>
+                <option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option>
+            </select>
+            <div class="flex flex-col gap-3 pt-4">
+                <button onclick="saveAttendanceEdit('${name}', '${date}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
+                    <button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>
+                </div>
+            </div></div>`;
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+    };
+
+window.showSchDetail = function(id) {
+        db.ref(`shared_schedules/${id}`).once("value", snap => {
+            const ev = snap.val(); 
+            if(!ev) return;
+            
+            const isAllDay = ev.allDay || (!ev.start.includes(':'));
+            const decodedDesc = decodeURIComponent(ev.desc || '');
+            const decodedMemo = decodeURIComponent(ev.adminMemo || '');
+
+            const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
+            const bodyHtml = `
+                <div class="space-y-4 pt-2 text-left">
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
+                        <input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
+                            <input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
+                            <input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 ml-1">
+                        <input type="checkbox" id="db_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
+                        <label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
+                        <textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
+                    </div>
+                    <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
+                        <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
+                        <textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
+                    </div>
+
+<div class="flex flex-col gap-2">
+    <button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button>
+    <div class="grid grid-cols-2 gap-3">
+        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
+        <button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button>
+    </div>
+</div>
+                </div>`;
+
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            
+            // Modal 오픈 후 Flatpickr 초기화 (setTimeout으로 DOM 렌더링 보장)
+            setTimeout(() => {
+                initEditTimePickers(isAllDay);
+                editStartPicker.setDate(ev.start.replace('T', ' '));
+                editEndPicker.setDate(ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' '));
+            }, 50);
+        });
+    };
+
+
+    // --- 기타 기능 (Save/Delete)는 기존과 동일하게 유지 ---
     window.saveDashboardReport = function(date, staff) {
         const updateData = {
             status: document.getElementById('db_rp_status').value,
@@ -167,326 +360,59 @@
             adminMemo: document.getElementById('db_rp_memo').value,
             lastModified: new Date().toISOString()
         };
-
-        db.ref(`reports/${date}/${staff}`).update(updateData).then(() => {
-            alert("Saved successfully");
-            window.closeAdminCustomModal();
-            // 대시보드 데이터 리로드
-            if(window.renderRecentWork) window.renderRecentWork();
-        });
+        db.ref(`reports/${date}/${staff}`).update(updateData).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
     };
-
     window.deleteDashboardReport = function(date, staff) {
-        if(confirm(`Are you sure you want to delete ${staff}'s report?`)) {
-            db.ref(`reports/${date}/${staff}`).remove().then(() => {
-                alert("Deleted successfully");
-                window.closeAdminCustomModal();
-                if(window.renderRecentWork) window.renderRecentWork();
-            });
-        }
+        if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
-
-
-
-// --- 1. 출석 렌더링 (출근 ☀️ 및 퇴근 🌙 모두 표시 수정) ---
-// --- 1. 출석 렌더링 (클릭 시 수정 기능 추가) ---
-// --- 1. 출석 렌더링 (시간 형식 HH:mm으로 수정) ---
-window.renderRecentAttendance = function() {
-    const container = document.getElementById('recent_att_container');
-    if(!container) return;
-
-    // 시간을 HH:mm 형식으로 자르는 헬퍼 함수
-    const formatTime = (timeStr) => {
-        if(!timeStr) return "";
-        // "ATT(08:30:15)" 또는 "17:05:22" 등에서 숫자:숫자 부분만 추출
-        const match = timeStr.match(/\d{1,2}:\d{2}/);
-        return match ? match[0] : timeStr;
+    window.saveAttendanceEdit = function(name, date) {
+        const special = document.getElementById('editSpecial').value;
+        const updateData = special ? special : { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
+        db.ref(`attendance/${date}/${name}`).set(updateData).then(() => { alert("Updated"); window.closeAdminCustomModal(); });
     };
-
-    db.ref('attendance').off();
-    db.ref('attendance').on('value', snap => {
-        const data = snap.val() || {};
-        container.innerHTML = '';
-        last5Days.forEach(dStr => {
-            const dayData = data[dStr] || {};
-            let staffHtml = '';
-            
-            Object.entries(dayData).forEach(([name, info]) => {
-                let statusClass = "text-emerald-400";
-                let attendanceHtml = '';
-                const safeInfo = encodeURIComponent(JSON.stringify(info));
-
-                if (typeof info === 'string') {
-                    attendanceHtml = `<span class="text-amber-400 tracking-tighter">${info}</span>`;
-                } else if (info && typeof info === 'object') {
-                    // 시간 포맷팅 적용
-                    const attVal = info.attend ? (info.attend.includes("LATE") ? "LATE " : "ATT ") + formatTime(info.attend) : "";
-                    const leaVal = info.leave ? formatTime(info.leave) : "";
-                    
-                    if (info.attend && info.attend.includes("LATE")) statusClass = "text-red-400";
-
-                    attendanceHtml = `
-                        <div class="flex flex-col items-end gap-0.5">
-                            <span class="${statusClass} tracking-tighter">☀️ ${attVal}</span>
-                            ${leaVal ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${leaVal}</span>` : ''}
-                        </div>`;
-                }
-
-                if (attendanceHtml) {
-                    staffHtml += `
-                    <div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" 
-                         class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-95">
-                        <span class="text-slate-300 mt-0.5">${name}</span>
-                        ${attendanceHtml}
-                    </div>`;
-                }
-            });
-
-            container.innerHTML += `
-                <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/30 transition-colors">
-                    <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
-                    ${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}
-                </div>`;
-        });
-    });
-};
-
-// --- 출석 수정 모달 오픈 함수 (대시보드 통합용) ---
-window.openEditAttendance = function(name, date, infoEncoded) {
-    const info = JSON.parse(decodeURIComponent(infoEncoded));
-    const isSpecial = typeof info === 'string';
-    
-    const currentAttend = isSpecial ? "" : (info.attend || "");
-    const currentLeave = isSpecial ? "" : (info.leave || "");
-    const currentSpecial = isSpecial ? info : "";
-
-    const titleHtml = `
-        <div class="flex flex-col">
-            <span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span>
-            <span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm">(${date})</span></span>
-        </div>`;
-
-    const bodyHtml = `
-        <div class="space-y-4 text-left">
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Status</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In</span>
-                        <input type="text" id="editAttend" placeholder="ATT(8:00)" value="${currentAttend}" 
-                               class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/50">
-                    </div>
-                    <div class="space-y-1">
-                        <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out</span>
-                        <input type="text" id="editLeave" placeholder="17:00:00" value="${currentLeave}" 
-                               class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50">
-                    </div>
-                </div>
-            </div>
-            <div class="relative py-4">
-                <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div>
-                <div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div>
-            </div>
-            <div>
-                <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none">
-                    <option value="" ${currentSpecial === "" ? "selected" : ""}>--- NO SPECIAL STATUS ---</option>
-                    <option value="WO" ${currentSpecial === "WO" ? "selected" : ""}>WO (Work Out)</option>
-                    <option value="PEL" ${currentSpecial === "PEL" ? "selected" : ""}>PEL (Personal Leave)</option>
-                    <option value="ANL" ${currentSpecial === "ANL" ? "selected" : ""}>ANL (Annual Leave)</option>
-                    <option value="SIL" ${currentSpecial === "SIL" ? "selected" : ""}>SIL (Sick Leave)</option>
-                    <option value="OFF" ${currentSpecial === "OFF" ? "selected" : ""}>OFF (Day Off)</option>
-                </select>
-            </div>
-            <div class="flex flex-col gap-2 pt-4">
-                <button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button>
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-700 hover:text-slate-300 transition-all uppercase tracking-widest border border-slate-700">Cancel</button>
-                    <button onclick="window.deleteAttendance('${name}', '${date}')" class="bg-rose-900/10 text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-600 hover:text-white transition-all uppercase tracking-widest border border-rose-500/20">Delete</button>
-                </div>
-            </div>
-        </div>`;
-
-    window.openAdminCustomModal(titleHtml, bodyHtml);
-};
-
-// --- 출석 저장 핸들러 ---
-window.saveAttendanceEdit = function(name, date) {
-    const attend = document.getElementById('editAttend').value.trim();
-    const leave = document.getElementById('editLeave').value.trim();
-    const special = document.getElementById('editSpecial').value;
-    let updateData = special ? special : { attend: attend, leave: leave };
-
-    if(confirm(`Update record for ${name} on ${date}?`)) {
-        db.ref(`attendance/${date}/${name}`).set(updateData).then(() => {
-            alert("Updated successfully");
-            window.closeAdminCustomModal();
-        });
-    }
-};
-
-// --- 출석 삭제 핸들러 ---
-window.deleteAttendance = function(name, date) {
-    if(confirm(`Delete ${name}'s record for ${date}?`)) {
-        db.ref(`attendance/${date}/${name}`).remove().then(() => {
-            alert("Deleted successfully");
-            window.closeAdminCustomModal();
-        });
-    }
-};
-
-
-
-    // --- 2. 업무 보고 렌더링 (adminMemo 추출 포함) ---
-    window.renderRecentWork = function() {
-        const container = document.getElementById('recent_work_container');
-        if(!container) return;
-        db.ref('reports').off();
-        db.ref('reports').on('value', snap => {
-            const data = snap.val() || {};
-            container.innerHTML = '';
-            last5Days.forEach(dStr => {
-                const dayData = data[dStr] || {};
-                let reportHtml = '';
-                Object.entries(dayData).forEach(([name, report]) => {
-                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
-                                      (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
-                    
-                    const safeContent = encodeURIComponent(report.content || 'No content');
-                    const safeMemo = encodeURIComponent(report.adminMemo || '');
-                    
-                    reportHtml += `
-                        <div onclick="window.showWorkDetail('${name}', '${dStr}', '${report.status}', '${safeContent}', '${safeMemo}')" 
-                             class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">
-                            ${name}
-                        </div>`;
-                });
-                container.innerHTML += `
-                    <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-emerald-500/30 transition-colors">
-                        <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
-                        <div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div>
-                    </div>`;
-            });
-        });
+    window.deleteAttendance = function(name, date) {
+        if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
+window.saveDashboardSchedule = function(id) {
+        const title = document.getElementById('db_sch_title').value;
+        const start = document.getElementById('db_sch_start').value;
+        const end = document.getElementById('db_sch_end').value;
+        const allDay = document.getElementById('db_sch_allday').checked;
+        const desc = document.getElementById('db_sch_desc').value;
+        const adminMemo = document.getElementById('db_sch_memo').value;
 
-    // --- 3. 스케줄 렌더링 및 상세 보기 추가 ---
-    window.renderRecentSchedule = function() {
-        const container = document.getElementById('recent_sch_container');
-        if(!container) return;
-        db.ref('shared_schedules').off();
-        db.ref('shared_schedules').on('value', snap => {
-            const data = snap.val() || {};
-            container.innerHTML = '';
-            last5Days.forEach(dStr => {
-                let schHtml = '';
-                Object.entries(data).forEach(([id, ev]) => {
-                    const startDate = ev.start ? ev.start.split('T')[0] : "";
-                    const endDate = ev.end ? ev.end.split('T')[0] : "";
-                    if (dStr >= startDate && dStr <= endDate) {
-                        const author = ev.author || 'User';
-                        schHtml += `
-                            <div onclick="window.showSchDetail('${id}')" 
-                                 class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">
-                                <span class="opacity-70">[${author}]</span> ${ev.title}
-                            </div>`;
-                    }
-                });
-                container.innerHTML += `
-                    <div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-purple-500/30 transition-colors">
-                        <div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === last5Days[0] ? 'TODAY' : dStr}</div>
-                        <div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div>
-                    </div>`;
-            });
-        });
-    };
+        if(!title || !start) return alert('Title and Start Date are required.');
 
-    // --- 신규: 스케줄 상세 및 수정 모달 ---
-    window.showSchDetail = function(scheduleId) {
-        db.ref(`shared_schedules/${scheduleId}`).once("value", snap => {
-            const ev = snap.val();
-            if(!ev) return;
-
-            const titleHtml = `
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-500 font-black text-xs border border-purple-500/20">📅</div>
-                    <div>
-                        <div class="text-[11px] text-slate-500 font-bold uppercase tracking-tighter">Schedule Detail</div>
-                        <div class="text-lg font-black text-white leading-tight">${ev.title}</div>
-                    </div>
-                </div>`;
-
-            const bodyHtml = `
-                <div class="space-y-4 text-left">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">Start Date</label>
-                            <input type="date" id="db_sch_start" value="${ev.start ? ev.start.split('T')[0] : ''}" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">End Date</label>
-                            <input type="date" id="db_sch_end" value="${ev.end ? ev.end.split('T')[0] : ''}" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-purple-500 mb-1 block font-black uppercase tracking-widest">Event Title</label>
-                        <input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 text-slate-200 p-3 rounded-xl border border-slate-800 text-sm focus:outline-none focus:border-purple-600">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">Description</label>
-                        <textarea id="db_sch_desc" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none focus:outline-none focus:border-slate-600">${ev.desc || ev.description || ''}</textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label>
-                        <textarea id="db_sch_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none focus:outline-none focus:border-amber-700" placeholder="Private notes...">${ev.adminMemo || ''}</textarea>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <button onclick="saveDashboardSchedule('${scheduleId}')" class="col-span-2 bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg text-sm tracking-widest uppercase active:scale-95">
-                            UPDATE SCHEDULE
-                        </button>
-                        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all text-xs uppercase tracking-widest border border-slate-700 active:scale-95">
-                            Cancel
-                        </button>
-                        <button onclick="deleteDashboardSchedule('${scheduleId}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20 text-xs uppercase tracking-widest active:scale-95">
-                            Delete
-                        </button>
-                    </div>
-                </div>`;
-
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-        });
-    };
-
-    window.saveDashboardSchedule = function(id) {
         const updateData = {
-            title: document.getElementById('db_sch_title').value,
-            start: document.getElementById('db_sch_start').value,
-            end: document.getElementById('db_sch_end').value,
-            desc: document.getElementById('db_sch_desc').value,
-            adminMemo: document.getElementById('db_sch_memo').value,
-            lastModified: new Date().toISOString()
+            title,
+            start: start.replace(' ', 'T'),
+            end: end ? end.replace(' ', 'T') : start.replace(' ', 'T'),
+            allDay: allDay,
+            desc: desc,
+            adminMemo: adminMemo,
+            lastModified: Date.now()
         };
 
         db.ref(`shared_schedules/${id}`).update(updateData).then(() => {
-            alert("Schedule updated");
             window.closeAdminCustomModal();
         });
     };
 
     window.deleteDashboardSchedule = function(id) {
-        if(confirm("Are you sure you want to delete this schedule?")) {
-            db.ref(`shared_schedules/${id}`).remove().then(() => {
-                alert("Deleted successfully");
-                window.closeAdminCustomModal();
-            });
-        }
+        if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
 
+    // --- 초기화 실행 ---
     window.initAdminDashboard = function() {
+        window.updateQuickStats();
         window.renderRecentAttendance();
         window.renderRecentWork();
         window.renderRecentSchedule();
+        console.log("🚀 Admin Dashboard Synchronized");
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(window.initAdminDashboard, 500);
+    });
 })();
 </script>
