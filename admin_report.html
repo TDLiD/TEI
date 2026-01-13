@@ -326,62 +326,80 @@ if(monthInput) {
 }
 
 
-function drawReportCalendar(){
-        const y = reportViewDate.getFullYear();
-        const m = reportViewDate.getMonth();
-        const first = new Date(y, m, 1).getDay();
-        const last = new Date(y, m + 1, 0).getDate();
+function drawReportCalendar() {
+    // 1. 현재 뷰 날짜 기준 정보 계산
+    const y = reportViewDate.getFullYear();
+    const m = reportViewDate.getMonth();
+    const first = new Date(y, m, 1).getDay();
+    const last = new Date(y, m + 1, 0).getDate();
 
-        reportDb.ref("reports").once("value", snap => {
-            const data = snap.val() || {};
-            const body = document.getElementById("reportCalendarBody");
-            if(!body) return;
-            body.innerHTML = "";
-            let d = 1;
+    // 2. Firebase 데이터 조회
+    reportDb.ref("reports").once("value", snap => {
+        // [방어 코드] 데이터를 그릴 DOM 요소가 있는지 가장 먼저 확인
+        const body = document.getElementById("reportCalendarBody");
+        if (!body) {
+            console.warn("Calendar body element not found. Skipping render.");
+            return;
+        }
 
-            for(let i = 0; i < 6; i++){
-                const tr = document.createElement("tr");
-                for(let j = 0; j < 7; j++){
-                    const td = document.createElement("td");
-                    if(i === 0 && j < first || d > last){
-                        tr.appendChild(td); continue;
-                    }
+        const data = snap.val() || {};
+        body.innerHTML = ""; // 기존 내용 초기화
+        let d = 1;
 
-                    const date = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const reports = data[date] || {};
-                    const isToday = new Date().toISOString().split('T')[0] === date;
-                    
-                    if(isToday) td.classList.add('bg-blue-500/5');
-
-                    let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
-                    html += `<div class="flex flex-col gap-1 overflow-hidden">`;
-                    
-                    // [수정] 각 리포트 배지에 staff 이름을 전달하고, 클릭 전파(stopPropagation)를 막아 개별 클릭이 가능하게 함
-                    html += Object.keys(reports).map(n => `
-                        <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" 
-                             onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
-                            ${n}
-                        </div>
-                    `).join('');
-                    
-                    html += `</div>`;
-                    
-                    td.innerHTML = html;
-                    
-                    // 셀의 빈 공간 클릭 시 해당 날짜의 첫 번째 리포트를 기본으로 보여줌
-                    td.onclick = () => {
-                        const firstStaff = Object.keys(reports)[0];
-                        if(firstStaff) openReportDetail(date, firstStaff);
-                    };
-
+        // 3. 달력 행(Row) 생성 (최대 6주)
+        for (let i = 0; i < 6; i++) {
+            const tr = document.createElement("tr");
+            
+            // 4. 달력 열(Cell) 생성 (일~토)
+            for (let j = 0; j < 7; j++) {
+                const td = document.createElement("td");
+                
+                // 해당 월의 날짜 범위 밖이면 빈 칸 처리
+                if (i === 0 && j < first || d > last) {
                     tr.appendChild(td);
-                    d++;
+                    continue;
                 }
-                body.appendChild(tr);
-                if(d > last) break;
+
+                const date = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const reports = data[date] || {};
+                const isToday = new Date().toISOString().split('T')[0] === date;
+
+                // 오늘 날짜 배경 강조
+                if (isToday) td.classList.add('bg-blue-500/5');
+
+                // 셀 내부 HTML 생성
+                let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
+                html += `<div class="flex flex-col gap-1 overflow-hidden">`;
+
+                // 해당 날짜에 등록된 직원 리스트(배지) 추가
+                html += Object.keys(reports).map(n => `
+                    <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" 
+                         onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
+                        ${n}
+                    </div>
+                `).join('');
+
+                html += `</div>`;
+                td.innerHTML = html;
+
+                // 셀 자체 클릭 시 (빈 공간 포함) 첫 번째 직원 리포트 상세 열기
+                td.onclick = () => {
+                    const firstStaff = Object.keys(reports)[0];
+                    if (firstStaff) openReportDetail(date, firstStaff);
+                };
+
+                tr.appendChild(td);
+                d++;
             }
-        });
-    }
+            body.appendChild(tr);
+            
+            // 모든 날짜를 다 그렸으면 루프 종료
+            if (d > last) break;
+        }
+    }).catch(err => {
+        console.error("Firebase data fetch error:", err);
+    });
+}
 
 
 window.exportWorkReport = function(type) {
