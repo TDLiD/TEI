@@ -141,7 +141,7 @@
                 });
         };
 
-        window.loadReport = function(dateStr) {
+   window.loadReport = function(dateStr) {
             selectedDateStr = dateStr;
             renderMiniCalendar();
 
@@ -154,8 +154,10 @@
                 const container = document.getElementById('workCardContainer');
                 
                 if (!report) {
+                    // 보고서가 없으면 에디터 모드로 전환
                     window.showEditor(); 
                 } else {
+                    // 보고서가 있으면 상세 보기 모드 출력
                     actionBtn.innerHTML = `
                         <button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button>
                         <button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600 transition">Edit</button>
@@ -170,13 +172,22 @@
                             </div>`;
                     }
 
+                    // --- 오류 수정 구간: 상세보기 모드에서는 isNew, hasTemp 체크를 제거하거나 단순화 ---
                     container.innerHTML = `
                         <div class="bg-slate-900 p-6 rounded-2xl border ${report.status === 'Completed' ? 'border-green-900/50' : 'border-slate-800'} shadow-lg animate-fadeIn">
                             <div class="flex justify-between items-center mb-6">
-                                <span class="text-blue-400 text-sm font-black font-mono">${dateStr}</span>
-                                <span class="px-2 py-1 rounded-full text-[9px] font-bold ${report.status === 'Completed' ? 'bg-green-900/30 text-green-400' : 'bg-amber-900/30 text-amber-400'}">
-                                    ${report.status.toUpperCase()}
-                                </span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-blue-400 text-xs font-black uppercase tracking-widest">
+                                        Work Report
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                                        report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-500' : 
+                                        report.status === 'Pending' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'
+                                    }">
+                                        ${report.status || 'In Progress'}
+                                    </span>
+                                </div>
+                                <span class="text-slate-500 text-[10px] font-mono">${selectedDateStr}</span>
                             </div>
                             
                             <div class="space-y-6">
@@ -199,6 +210,50 @@
             });
         };
 
+
+// --- 복사 기능 관련 함수 (openCopyFromPicker) ---
+        let copyPicker = null;
+        window.openCopyFromPicker = function() {
+            // 보이지 않는 input을 생성하여 flatpickr(달력 팝업)를 연결
+            if (!document.getElementById('hiddenCopyInput')) {
+                const input = document.createElement('input');
+                input.id = 'hiddenCopyInput';
+                input.style.display = 'none';
+                document.body.appendChild(input);
+            }
+
+            // 기존에 생성된 달력이 있다면 제거 후 새로 생성
+            if (copyPicker) copyPicker.destroy();
+
+            copyPicker = flatpickr("#hiddenCopyInput", {
+                theme: "dark",
+                maxDate: "today", // 오늘 날짜 이후는 선택 불가
+                onChange: function(selectedDates, dateStr) {
+if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
+                        database.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
+                            const data = snapshot.val();
+                            if (data) {
+                                // Inject values into current editor fields (textarea)
+                                const todoEl = document.getElementById('editTodo');
+                                const summaryEl = document.getElementById('editSummary');
+                                
+                                if(todoEl) todoEl.value = data.todo || "";
+                                if(summaryEl) summaryEl.value = data.summary || data.content || "";
+                                
+                                // Reflect to temporary storage immediately to prevent data loss
+                                window.saveToTemp();
+                                alert("Data copied successfully.");
+                            } else {
+                                alert("No report found for the selected date.");
+                            }
+                        });
+                    }
+                }
+            });
+            copyPicker.open(); // 날짜 선택창 열기
+        };
+
+        // --- 수정된 showEditor 함수 ---
         window.showEditor = function() {
             document.getElementById('actionButtons').innerHTML = '';
             const container = document.getElementById('workCardContainer');
@@ -213,7 +268,6 @@
 
             if (tempRaw) {
                 const tempData = JSON.parse(tempRaw);
-                // 임시 저장 데이터가 서버 데이터보다 최신이거나 존재한다면 덮어쓰기
                 report = {
                     ...serverReport,
                     todo: tempData.todo || serverReport.todo,
@@ -229,11 +283,18 @@
             container.innerHTML = `
                 <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
                     <div class="flex justify-between items-center mb-5">
-                        <span class="text-blue-400 text-xs font-black uppercase tracking-widest">
-                            ${isNew ? 'New Report' : 'Edit Report'} 
-                            ${hasTemp ? '<span class="ml-2 text-rose-500 text-[8px] animate-pulse">(Temp Restored)</span>' : ''}
-                        </span>
-                        <span class="text-slate-500 text-[10px] font-mono">${selectedDateStr}</span>
+                        <div class="flex flex-col">
+                            <span class="text-blue-400 text-xs font-black uppercase tracking-widest">
+                                ${isNew ? 'New Report' : 'Edit Report'} 
+                            </span>
+                            ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
+                                📋 Copy from date
+                            </button>
+                            <span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -258,6 +319,7 @@
                     </div>
                 </div>`;
         };
+
 
         function renderMiniCalendar() {
             const year = viewDate.getFullYear();
