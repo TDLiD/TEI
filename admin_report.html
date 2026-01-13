@@ -172,8 +172,7 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
 
 <script>
@@ -253,70 +252,80 @@
     }
 
 
-// [추가] 엑셀 내보내기 기능
-    window.exportWorkReport = function(type) {
-        const monthVal = document.getElementById('exportMonth').value; // YYYY-MM
-        const yearVal = document.getElementById('exportYear').value;   // YYYY
+window.exportWorkReport = function(type) {
+    const monthVal = document.getElementById('exportMonth').value; 
+    const yearVal = document.getElementById('exportYear').value;   
 
-        reportDb.ref("reports").once("value", snap => {
-            const allData = snap.val() || {};
-            let exportData = [];
+    reportDb.ref("reports").once("value", snap => {
+        const allData = snap.val() || {};
+        let exportData = [];
+        const dates = Object.keys(allData).sort();
+        
+        dates.forEach(date => {
+            if (type === 'monthly' && !date.startsWith(monthVal)) return;
+            if (type === 'yearly' && !date.startsWith(yearVal)) return;
 
-            // 1. 데이터 필터링 및 가공
-            const dates = Object.keys(allData).sort();
-            
-            dates.forEach(date => {
-                // 타입별 필터링
-                if (type === 'monthly' && !date.startsWith(monthVal)) return;
-                if (type === 'yearly' && !date.startsWith(yearVal)) return;
-
-                const staffRecords = allData[date];
-                Object.keys(staffRecords).forEach(staff => {
-                    const r = staffRecords[staff];
-                    exportData.push({
-                        "DATE": date,
-                        "STAFF NAME": staff,
-                        "STATUS": r.status || '-',
-                        "TODO LIST": r.todo || '',
-                        "WORK SUMMARY": r.summary || '',
-                        "ADMIN MEMO": r.adminMemo || '',
-                        "LAST MODIFIED": r.lastModified ? r.lastModified.split('T')[0] : '-'
-                    });
+            const staffRecords = allData[date];
+            Object.keys(staffRecords).forEach(staff => {
+                const r = staffRecords[staff];
+                exportData.push({
+                    "DATE": date,
+                    "STAFF NAME": staff,
+                    "STATUS": r.status || '-',
+                    "TODO LIST": r.todo || '',      
+                    "WORK SUMMARY": r.summary || '', 
+                    "ADMIN MEMO": r.adminMemo || '', 
+                    "LAST MODIFIED": r.lastModified ? r.lastModified.split('T')[0] : '-'
                 });
             });
-
-            if (exportData.length === 0) {
-                alert("No records found for the selected period.");
-                return;
-            }
-
-            // 2. Staff별 -> Date별 정렬
-            exportData.sort((a, b) => {
-                if (a["STAFF NAME"] !== b["STAFF NAME"]) {
-                    return a["STAFF NAME"].localeCompare(b["STAFF NAME"]);
-                }
-                return a["DATE"].localeCompare(b["DATE"]);
-            });
-
-            // 3. 엑셀 파일 생성
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "WorkReports");
-
-            // 셀 너비 자동 조정 (간단히)
-            const wscols = [
-                {wch: 12}, {wch: 15}, {wch: 12}, {wch: 40}, {wch: 50}, {wch: 30}, {wch: 15}
-            ];
-            worksheet['!cols'] = wscols;
-
-            // 파일명 설정
-            let filename = `WorkReport_${type}`;
-            if (type === 'monthly') filename += `_${monthVal}`;
-            if (type === 'yearly') filename += `_${yearVal}`;
-            
-            XLSX.writeFile(workbook, `${filename}.xlsx`);
         });
-    };
+
+        if (exportData.length === 0) {
+            alert("No records found.");
+            return;
+        }
+
+        // 1. 워크시트 생성
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // 2. 모든 셀을 순회하며 '텍스트 줄 바꿈' 속성 강제 주입
+        if (worksheet['!ref']) {
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+                    if (!worksheet[cell_ref]) continue;
+
+                    // 줄바꿈 인식 및 상단 정렬 설정
+                    worksheet[cell_ref].s = {
+                        alignment: { 
+                            wrapText: true, 
+                            vertical: 'top',
+                            horizontal: 'left'
+                        }
+                    };
+                }
+            }
+        }
+
+        // 3. 열 너비 설정 (줄바꿈이 잘 보이도록 넉넉하게 설정)
+        worksheet['!cols'] = [
+            {wch: 12}, // DATE
+            {wch: 15}, // STAFF
+            {wch: 12}, // STATUS
+            {wch: 45}, // TODO LIST
+            {wch: 55}, // WORK SUMMARY
+            {wch: 35}, // ADMIN MEMO
+            {wch: 15}  // LAST MODIFIED
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "WorkReports");
+
+        let filename = `WorkReport_${type}_${new Date().getTime()}`;
+        XLSX.writeFile(workbook, `${filename}.xlsx`);
+    });
+};
 
 
 

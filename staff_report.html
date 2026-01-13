@@ -1,4 +1,4 @@
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
 <style>
     /* 기존 스타일 유지 및 추가 */
@@ -117,66 +117,99 @@
         let selectedDateStr = todayStr;
 
         // --- 통합 엑셀 내보내기 함수 (Admin 기능 이식) ---
-        window.exportStaffReport = function(mode) {
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth() + 1;
-            let fileName = "";
-            
-            database.ref('reports').once('value', (snapshot) => {
-                const allData = snapshot.val() || {};
-                const exportRows = [];
+window.exportStaffReport = function(mode) {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth() + 1;
+    let fileName = "";
+    
+    database.ref('reports').once('value', (snapshot) => {
+        const allData = snapshot.val() || {};
+        const exportRows = [];
+        const sortedDates = Object.keys(allData).sort();
 
-                // 모든 날짜 키를 가져와서 정렬
-                const sortedDates = Object.keys(allData).sort();
+        sortedDates.forEach(dateKey => {
+            const report = (allData[dateKey] && allData[dateKey][user]) ? allData[dateKey][user] : null;
+            if (!report) return;
 
-                sortedDates.forEach(dateKey => {
-                    const report = (allData[dateKey] && allData[dateKey][user]) ? allData[dateKey][user] : null;
-                    if (!report) return;
+            const [rYear, rMonth] = dateKey.split('-').map(Number);
+            let shouldInclude = false;
 
-                    const [rYear, rMonth] = dateKey.split('-').map(Number);
-                    let shouldInclude = false;
+            if (mode === 'monthly') {
+                if (rYear === year && rMonth === month) shouldInclude = true;
+                fileName = `WorkReport_${user}_${year}-${String(month).padStart(2,'0')}.xlsx`;
+            } else if (mode === 'yearly') {
+                if (rYear === year) shouldInclude = true;
+                fileName = `WorkReport_${user}_Year_${year}.xlsx`;
+            } else if (mode === 'all') {
+                shouldInclude = true;
+                fileName = `WorkReport_${user}_AllTime.xlsx`;
+            }
 
-                    if (mode === 'monthly') {
-                        if (rYear === year && rMonth === month) shouldInclude = true;
-                        fileName = `WorkReport_${user}_${year}-${String(month).padStart(2,'0')}.xlsx`;
-                    } else if (mode === 'yearly') {
-                        if (rYear === year) shouldInclude = true;
-                        fileName = `WorkReport_${user}_Year_${year}.xlsx`;
-                    } else if (mode === 'all') {
-                        shouldInclude = true;
-                        fileName = `WorkReport_${user}_AllTime.xlsx`;
-                    }
-
-                    if (shouldInclude) {
-                        exportRows.push({
-                            "Date": dateKey,
-                            "Status": report.status || "In Progress",
-                            "To-Do": report.todo || "",
-                            "Summary": report.summary || report.content || "",
-                            "Admin Memo": report.adminMemo || "",
-                            "Update Time": report.time || ""
-                        });
-                    }
+            if (shouldInclude) {
+                exportRows.push({
+                    "Date": dateKey,
+                    "Status": report.status || "In Progress",
+                    "To-Do": report.todo || "",
+                    "Summary": report.summary || report.content || "",
+                    "Admin Memo": report.adminMemo || "",
+                    "Update Time": report.time || ""
                 });
+            }
+        });
 
-                if (exportRows.length === 0) {
-                    alert("No report data found for the selected period.");
-                    return;
+        if (exportRows.length === 0) {
+            alert("No report data found.");
+            return;
+        }
+
+        // 1. 워크시트 생성
+        const worksheet = XLSX.utils.json_to_sheet(exportRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+        // 2. 모든 셀에 자동 줄바꿈(wrapText) 및 상단 정렬 스타일 적용
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                if (!worksheet[cellAddress]) continue;
+
+                // 폰트 및 정렬 스타일 적용 (xlsx-js-style 전용)
+                worksheet[cellAddress].s = {
+                    alignment: { 
+                        wrapText: true, 
+                        vertical: 'top', 
+                        horizontal: 'left' 
+                    },
+                    font: {
+                        name: 'Arial',
+                        sz: 10
+                    }
+                };
+                
+                // 헤더 영역(첫 줄)은 강조 스타일 추가
+                if (R === 0) {
+                    worksheet[cellAddress].s.fill = { fgColor: { rgb: "F2F2F2" } };
+                    worksheet[cellAddress].s.font.bold = true;
                 }
+            }
+        }
 
-                // 엑셀 변환 로직
-                const worksheet = XLSX.utils.json_to_sheet(exportRows);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+        // 3. 열 너비 설정
+        worksheet['!cols'] = [
+            { wch: 12 }, // Date
+            { wch: 12 }, // Status
+            { wch: 45 }, // To-Do
+            { wch: 55 }, // Summary
+            { wch: 35 }, // Admin Memo
+            { wch: 12 }  // Update Time
+        ];
 
-                // 열 너비 자동 조정
-                worksheet['!cols'] = [
-                    { wch: 15 }, { wch: 12 }, { wch: 40 }, { wch: 40 }, { wch: 30 }, { wch: 12 }
-                ];
+        // 4. 파일 저장 (xlsx-js-style 라이브러리가 스타일을 포함해 저장함)
+        XLSX.writeFile(workbook, fileName);
+    });
+};
 
-                XLSX.writeFile(workbook, fileName);
-            });
-        };
 
         // --- 기존 기능 유지 ---
         const getTempKey = (date) => `temp_report_${user}_${date}`;
