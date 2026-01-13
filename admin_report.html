@@ -156,25 +156,45 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monthly Report</label>
-            <div class="flex gap-2">
-                <input type="month" id="exportMonth" class="custom-input !py-2 text-xs font-bold">
-                <button onclick="exportWorkReport('monthly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
-            </div>
-        </div>
+        
 
-        <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yearly Report</label>
-            <div class="flex gap-2">
-                <select id="exportYear" class="custom-input !py-2 text-xs font-bold">
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                    <option value="2026" selected>2026</option>
-                </select>
-                <button onclick="exportWorkReport('yearly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
-            </div>
-        </div>
+<div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monthly Report</label>
+    <div class="flex gap-2">
+        <select id="exportMonthYear" class="custom-input !py-2 text-xs font-bold w-24">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+        </select>
+        <select id="exportMonthOnly" class="custom-input !py-2 text-xs font-bold flex-1">
+            <option value="01">JANUARY</option>
+            <option value="02">FEBRUARY</option>
+            <option value="03">MARCH</option>
+            <option value="04">APRIL</option>
+            <option value="05">MAY</option>
+            <option value="06">JUNE</option>
+            <option value="07">JULY</option>
+            <option value="08">AUGUST</option>
+            <option value="09">SEPTEMBER</option>
+            <option value="10">OCTOBER</option>
+            <option value="11">NOVEMBER</option>
+            <option value="12">DECEMBER</option>
+        </select>
+        <button onclick="exportWorkReport('monthly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
+    </div>
+</div>
+
+<div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yearly Report</label>
+    <div class="flex gap-2">
+        <select id="exportYear" class="custom-input !py-2 text-xs font-bold">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+        </select>
+        <button onclick="exportWorkReport('yearly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
+    </div>
+</div>
 
         <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50 flex flex-col justify-between">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">All-Time Overall</label>
@@ -276,13 +296,14 @@ window.importAdminWorkReport = function(event) {
 
 
 
-    function updateMonthTitle() {
-        const titleBox = document.getElementById('currentReportMonthYear');
-        if(titleBox) {
-            titleBox.innerText = reportViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-        }
+function updateMonthTitle() {
+    const titleBox = document.getElementById('currentReportMonthYear');
+    if(titleBox) {
+        // 'en-US'를 명시적으로 지정하여 영문(January 2026)으로 고정
+        const options = { month: 'long', year: 'numeric' };
+        titleBox.innerText = reportViewDate.toLocaleDateString('en-US', options);
     }
-
+}
     // [추가] 월 이동 함수들
     window.changeReportMonth = function(offset) {
         reportViewDate.setMonth(reportViewDate.getMonth() + offset);
@@ -293,6 +314,17 @@ window.importAdminWorkReport = function(event) {
         reportViewDate = new Date();
         window.renderWorkFull();
     };
+
+// (기존 코드) const currentMonthStr = ... 부분을 아래와 같이 확실하게 초기화
+const now = new Date();
+const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+const monthInput = document.getElementById('exportMonth');
+if(monthInput) {
+    monthInput.value = currentMonthStr;
+    // 브라우저에게 영문 UI를 강력하게 요청
+    monthInput.setAttribute('lang', 'en-US');
+}
+
 
 function drawReportCalendar(){
         const y = reportViewDate.getFullYear();
@@ -353,8 +385,20 @@ function drawReportCalendar(){
 
 
 window.exportWorkReport = function(type) {
-    const monthVal = document.getElementById('exportMonth').value; 
-    const yearVal = document.getElementById('exportYear').value;   
+    let monthVal = "";
+    let monthLabel = "";
+    
+    // Monthly 타입 설정
+    if (type === 'monthly') {
+        const y = document.getElementById('exportMonthYear').value;
+        const m = document.getElementById('exportMonthOnly').value;
+        const mText = document.getElementById('exportMonthOnly').options[document.getElementById('exportMonthOnly').selectedIndex].text;
+        monthVal = `${y}-${m}`;
+        monthLabel = `${y}_${mText}`; // 예: 2026_JANUARY
+    }
+    
+    const yearVal = document.getElementById('exportYear').value;
+    const todayStr = new Date().toISOString().split('T')[0]; // 현재 날짜 (2026-01-13)
 
     reportDb.ref("reports").once("value", snap => {
         const allData = snap.val() || {};
@@ -385,44 +429,36 @@ window.exportWorkReport = function(type) {
             return;
         }
 
-        // 1. 워크시트 생성
         const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-        // 2. 모든 셀을 순회하며 '텍스트 줄 바꿈' 속성 강제 주입
+        
+        // 셀 스타일 및 너비 설정 (기존 유지)
         if (worksheet['!ref']) {
             const range = XLSX.utils.decode_range(worksheet['!ref']);
             for (let R = range.s.r; R <= range.e.r; ++R) {
                 for (let C = range.s.c; C <= range.e.c; ++C) {
                     const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
                     if (!worksheet[cell_ref]) continue;
-
-                    // 줄바꿈 인식 및 상단 정렬 설정
                     worksheet[cell_ref].s = {
-                        alignment: { 
-                            wrapText: true, 
-                            vertical: 'top',
-                            horizontal: 'left'
-                        }
+                        alignment: { wrapText: true, vertical: 'top', horizontal: 'left' }
                     };
                 }
             }
         }
-
-        // 3. 열 너비 설정 (줄바꿈이 잘 보이도록 넉넉하게 설정)
-        worksheet['!cols'] = [
-            {wch: 12}, // DATE
-            {wch: 15}, // STAFF
-            {wch: 12}, // STATUS
-            {wch: 45}, // TODO LIST
-            {wch: 55}, // WORK SUMMARY
-            {wch: 35}, // ADMIN MEMO
-            {wch: 15}  // LAST MODIFIED
-        ];
+        worksheet['!cols'] = [{wch: 12}, {wch: 15}, {wch: 12}, {wch: 45}, {wch: 55}, {wch: 35}, {wch: 15}];
 
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "WorkReports");
 
-        let filename = `WorkReport_${type}_${new Date().getTime()}`;
+        // --- 파일명 생성 로직 수정 ---
+        let filename = "";
+        if (type === 'overall') {
+            filename = `WorkReport_overall_${todayStr}`;
+        } else if (type === 'yearly') {
+            filename = `WorkReport_yearly_${yearVal}_${todayStr}`;
+        } else if (type === 'monthly') {
+            filename = `WorkReport_monthly_${monthLabel}_${todayStr}`;
+        }
+        
         XLSX.writeFile(workbook, `${filename}.xlsx`);
     });
 };
