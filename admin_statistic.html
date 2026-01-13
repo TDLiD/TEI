@@ -333,99 +333,126 @@ window.exportToExcel = function(periodType) {
             renderChart('overallChart', 'overall', stats.overall);
         }
 
- function renderChart(canvasId, chartType, chartData) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || typeof Chart === 'undefined') return;
-            const ctx = canvas.getContext('2d');
+function renderChart(canvasId, chartType, chartData) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === 'undefined') return;
+    const ctx = canvas.getContext('2d');
 
-            // [추가된 해결 코드] Chart.js 공식 인스턴스 검색 및 제거
-            const existingChart = Chart.getChart(canvas); 
-            if (existingChart) {
-                existingChart.destroy();
+    // 1. 기존 차트 인스턴스 완전 제거 (메모리 누수 및 중복 방지)
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) existingChart.destroy();
+    if (charts[chartType]) {
+        charts[chartType].destroy();
+        charts[chartType] = null;
+    }
+
+    const isMobile = window.innerWidth < 768;
+
+    if (currentMode === 'att') {
+        // --- Attendance (막대 그래프) 로직 ---
+        const users = Object.keys(chartData).sort();
+        const targetTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+        const datasets = targetTypes.map(type => {
+            const dataValues = users.map(user => chartData[user][type] || 0);
+            if (dataValues.every(v => v === 0)) return null;
+            return {
+                label: type, 
+                data: dataValues, 
+                backgroundColor: typeColors[type], 
+                borderRadius: 4
+            };
+        }).filter(d => d !== null);
+
+        charts[chartType] = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: users, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: isMobile ? 'y' : 'x',
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#64748b' } },
+                    x: { ticks: { color: '#94a3b8' } }
+                }
             }
+        });
+    } else {
+        // --- Leave (선 그래프) 로직 ---
+        const datasets = Object.entries(chartData).map(([user, points], idx) => {
+            points.sort((a, b) => a.x.localeCompare(b.x));
+            const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`;
+            return {
+                label: user,
+                data: points,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 2,
+                pointRadius: 4,
+                tension: 0.3,
+                fill: false
+            };
+        });
 
-            // 기존 charts 객체 기반 제거 로직도 유지 (이중 안전장치)
-            if (charts[chartType]) {
-                charts[chartType].destroy();
-                charts[chartType] = null;
-            }
-
-            const isMobile = window.innerWidth < 768;
-
-            if (currentMode === 'att') {
-                const users = Object.keys(chartData).sort();
-                const targetTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
-                const datasets = targetTypes.map(type => {
-                    const dataValues = users.map(user => chartData[user][type] || 0);
-                    if (dataValues.every(v => v === 0)) return null;
-                    return {
-                        label: type, data: dataValues, backgroundColor: typeColors[type], borderRadius: 4
-                    };
-                }).filter(d => d !== null);
-
-                charts[chartType] = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: users, datasets: datasets },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        indexAxis: isMobile ? 'y' : 'x',
-                        scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1, color: '#64748b' } },
-                            x: { ticks: { color: '#94a3b8' } }
-                        }
-                    }
-                });
-            } else {
-                const datasets = Object.entries(chartData).map(([user, points], idx) => {
-                    points.sort((a, b) => a.x.localeCompare(b.x));
-                    const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`;
-                    return {
-                        label: user, data: points, borderColor: color, backgroundColor: color,
-                        borderWidth: 2, pointRadius: 4, tension: 0.3, fill: false
-                    };
-                });
-
-                charts[chartType] = new Chart(ctx, {
-                    type: 'line',
-                    data: { datasets: datasets },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        scales: {
-                            x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } },
-                            y: {
-                                min: 17.5, max: 23.0,
-                                afterBuildTicks: function(axis) {
-                                    const ticks = [];
-                                    for (let t = 17.5; t <= 19.5; t += (1/6)) ticks.push({ value: t });
-                                    for (let t = 19.5 + (1/3); t <= 23.0; t += (1/3)) ticks.push({ value: t });
-                                    axis.ticks = ticks;
-                                },
-                                ticks: {
-                                    color: '#94a3b8',
-                                    callback: (val) => {
-                                        const h = Math.floor(val + 0.0001);
-                                        const m = Math.round((val - h) * 60);
-                                        return `${h}:${m === 0 ? '00' : m}`;
-                                    }
-                                },
-                                grid: { color: 'rgba(255,255,255,0.05)' }
+        charts[chartType] = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { 
+                        type: 'category', 
+                        ticks: { color: '#94a3b8', font: { size: 10 } } 
+                    },
+                    y: {
+                        min: 17.5, 
+                        max: 23.0,
+                        afterBuildTicks: function(axis) {
+                            const ticks = [];
+                            // 17:30 ~ 19:30 (10분 단위: 1/6)
+                            for (let t = 17.5; t <= 19.5 + 0.001; t += (1/6)) {
+                                ticks.push({ value: t });
+                            }
+                            // 19:30 ~ 23:00 (20분 단위: 1/3)
+                            for (let t = 19.5 + (1/3); t <= 23.0 + 0.001; t += (1/3)) {
+                                ticks.push({ value: t });
+                            }
+                            axis.ticks = ticks;
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9 },
+                            autoSkip: false, // 커스텀 눈금을 모두 표시하기 위해 필수
+                            callback: function(val) {
+                                const h = Math.floor(val + 0.0001);
+                                const m = Math.round((val - h) * 60);
+                                return `${h}:${m === 0 ? '00' : (m < 10 ? '0' + m : m)}`;
                             }
                         },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => {
-                                        const h = Math.floor(ctx.parsed.y + 0.0001);
-                                        const m = Math.round((ctx.parsed.y - h) * 60);
-                                        return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
-                                    }
-                                }
+                        grid: { 
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawTicks: true
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#f8fafc', font: { size: 10 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const h = Math.floor(ctx.parsed.y + 0.0001);
+                                const m = Math.round((ctx.parsed.y - h) * 60);
+                                return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
                             }
                         }
                     }
-                });
+                }
             }
-        }
+        });
+    }
+}
 
 
 
