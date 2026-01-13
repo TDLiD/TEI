@@ -1,7 +1,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
 <style>
-    /* 기존 스타일 유지 및 추가 */
+    /* 1. 기존 공통 스타일 */
     .mini-cal th { padding: 10px 0; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
     .mini-cal td { 
         height: 70px; width: 14.28%; border: 1px solid #1e293b; vertical-align: top; padding: 6px; cursor: pointer; transition: all 0.2s; position: relative;
@@ -12,6 +12,7 @@
     .report-card-fixed { max-width: 400px; width: 100%; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
 
+    /* 2. 상태 태그 스타일 */
     .status-tag {
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
         font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 4px;
@@ -21,7 +22,7 @@
     .status-completed { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
     .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
 
-/* 기존 스타일 유지 및 드롭다운 버튼 스타일 추가 */
+    /* 3. Export 드롭다운 스타일 */
     .export-dropdown {
         position: relative;
         display: inline-block;
@@ -56,7 +57,41 @@
         display: block;
     }
 
+    /* 4. Import 버튼 스타일 */
+    .import-btn {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .import-btn:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+    /* 5. 신규 추가: 연도 선택(Year Select) 드롭다운 전용 스타일 */
+    .year-select {
+        background: transparent;
+        color: #3b82f6; /* 강조색 */
+        border: none;
+        font-family: inherit;
+        font-weight: 900;
+        cursor: pointer;
+        padding: 0 4px;
+        outline: none;
+        transition: color 0.2s;
+        appearance: none; /* 브라우저 기본 화살표 숨기기 원할 경우 */
+    }
+    .year-select:hover {
+        color: #60a5fa;
+    }
+    .year-select option {
+        background-color: #0f172a; /* 드롭다운 내부 배경 */
+        color: white;
+        padding: 10px;
+    }
 </style>
+
+
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
     <div class="report-card-fixed">
@@ -82,6 +117,12 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
+                    <input type="file" id="excelImportInput" accept=".xlsx, .xls" style="display: none;" onchange="window.importStaffReport(event)">
+                    <button onclick="document.getElementById('excelImportInput').click()" 
+                        class="import-btn px-3 py-1.5 rounded-lg text-[10px] font-black transition uppercase tracking-widest flex items-center gap-1">
+                        Excel Import ⬆
+                    </button>
+
                     <div class="export-dropdown">
                         <button class="bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-600 hover:text-white transition uppercase tracking-widest flex items-center gap-1">
                             Excel Export ▾
@@ -92,7 +133,6 @@
                             <button onclick="window.exportStaffReport('all')">All-Time Overall</button>
                         </div>
                     </div>
-                    <span class="hidden sm:inline text-[10px] text-blue-500 font-bold uppercase tracking-widest">Select Date</span>
                 </div>
             </div>
             
@@ -108,6 +148,8 @@
     </div>
 </div>
 
+
+
 <script>
     (function() {
         const user = sessionStorage.getItem('loggedInUser');
@@ -115,103 +157,159 @@
         let viewDate = new Date();
         const todayStr = new Date().toISOString().split('T')[0];
         let selectedDateStr = todayStr;
+        let currentReportData = null;
 
-        // --- 통합 엑셀 내보내기 함수 (Admin 기능 이식) ---
-window.exportStaffReport = function(mode) {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth() + 1;
-    let fileName = "";
-    
-    database.ref('reports').once('value', (snapshot) => {
-        const allData = snapshot.val() || {};
-        const exportRows = [];
-        const sortedDates = Object.keys(allData).sort();
+        // --- Excel Import Function ---
+// --- Excel Import Function (수정됨) ---
+window.importStaffReport = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        sortedDates.forEach(dateKey => {
-            const report = (allData[dateKey] && allData[dateKey][user]) ? allData[dateKey][user] : null;
-            if (!report) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            // cellDates: true 옵션을 주면 엑셀의 날짜 형식을 JS Date 객체로 변환 시도합니다.
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-            const [rYear, rMonth] = dateKey.split('-').map(Number);
-            let shouldInclude = false;
-
-            if (mode === 'monthly') {
-                if (rYear === year && rMonth === month) shouldInclude = true;
-                fileName = `WorkReport_${user}_${year}-${String(month).padStart(2,'0')}.xlsx`;
-            } else if (mode === 'yearly') {
-                if (rYear === year) shouldInclude = true;
-                fileName = `WorkReport_${user}_Year_${year}.xlsx`;
-            } else if (mode === 'all') {
-                shouldInclude = true;
-                fileName = `WorkReport_${user}_AllTime.xlsx`;
+            if (jsonData.length === 0) {
+                alert("No data found to import.");
+                return;
             }
 
-            if (shouldInclude) {
-                exportRows.push({
-                    "Date": dateKey,
-                    "Status": report.status || "In Progress",
-                    "To-Do": report.todo || "",
-                    "Summary": report.summary || report.content || "",
-                    "Admin Memo": report.adminMemo || "",
-                    "Update Time": report.time || ""
-                });
+            if (!confirm(`Do you want to save ${jsonData.length} records?`)) {
+                event.target.value = '';
+                return;
             }
-        });
 
-        if (exportRows.length === 0) {
-            alert("No report data found.");
-            return;
-        }
+            let successCount = 0;
+            const promises = jsonData.map(row => {
+                let rawDate = row["Date"];
+                let dateKey = "";
 
-        // 1. 워크시트 생성
-        const worksheet = XLSX.utils.json_to_sheet(exportRows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-
-        // 2. 모든 셀에 자동 줄바꿈(wrapText) 및 상단 정렬 스타일 적용
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
-        for (let R = range.s.r; R <= range.e.r; ++R) {
-            for (let C = range.s.c; C <= range.e.c; ++C) {
-                const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-                if (!worksheet[cellAddress]) continue;
-
-                // 폰트 및 정렬 스타일 적용 (xlsx-js-style 전용)
-                worksheet[cellAddress].s = {
-                    alignment: { 
-                        wrapText: true, 
-                        vertical: 'top', 
-                        horizontal: 'left' 
-                    },
-                    font: {
-                        name: 'Arial',
-                        sz: 10
-                    }
-                };
-                
-                // 헤더 영역(첫 줄)은 강조 스타일 추가
-                if (R === 0) {
-                    worksheet[cellAddress].s.fill = { fgColor: { rgb: "F2F2F2" } };
-                    worksheet[cellAddress].s.font.bold = true;
+                // 1. 숫자로 된 날짜(45305 등) 처리
+                if (typeof rawDate === 'number') {
+                    const dateObj = XLSX.utils.format_cell({ t: 'n', v: rawDate, z: 'yyyy-mm-dd' });
+                    // 엑셀 시리얼 넘버를 JS Date로 변환하는 안전한 방법
+                    const jsDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+                    dateKey = jsDate.toISOString().split('T')[0];
+                } 
+                // 2. 이미 Date 객체인 경우 (cellDates: true 영향)
+                else if (rawDate instanceof Date) {
+                    dateKey = rawDate.toISOString().split('T')[0];
                 }
-            }
+                // 3. 문자열인 경우
+                else if (typeof rawDate === 'string') {
+                    dateKey = rawDate.trim();
+                }
+
+                // 유효한 날짜 형식이 아니면 스킵 (YYYY-MM-DD 체크)
+                if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+                    console.warn("Invalid date format skipped:", rawDate);
+                    return Promise.resolve();
+                }
+
+                const reportData = {
+                    status: row["Status"] || "In Progress",
+                    todo: row["To-Do"] || "",
+                    summary: row["Summary"] || "",
+                    adminMemo: row["Admin Memo"] || "",
+                    time: row["Update Time"] || new Date().getHours().toString().padStart(2, '0') + ":00"
+                };
+
+                return database.ref(`reports/${dateKey}/${user}`).set(reportData)
+                    .then(() => { successCount++; });
+            });
+
+            Promise.all(promises).then(() => {
+                alert(`Successfully imported ${successCount} reports.`);
+                window.loadReport(selectedDateStr);
+                event.target.value = '';
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred while parsing the file.");
         }
-
-        // 3. 열 너비 설정
-        worksheet['!cols'] = [
-            { wch: 12 }, // Date
-            { wch: 12 }, // Status
-            { wch: 45 }, // To-Do
-            { wch: 55 }, // Summary
-            { wch: 35 }, // Admin Memo
-            { wch: 12 }  // Update Time
-        ];
-
-        // 4. 파일 저장 (xlsx-js-style 라이브러리가 스타일을 포함해 저장함)
-        XLSX.writeFile(workbook, fileName);
-    });
+    };
+    reader.readAsArrayBuffer(file);
 };
 
 
-        // --- 기존 기능 유지 ---
+        // --- Excel Export Function ---
+        window.exportStaffReport = function(mode) {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth() + 1;
+            let fileName = "";
+            
+            database.ref('reports').once('value', (snapshot) => {
+                const allData = snapshot.val() || {};
+                const exportRows = [];
+                const sortedDates = Object.keys(allData).sort();
+
+                sortedDates.forEach(dateKey => {
+                    const report = (allData[dateKey] && allData[dateKey][user]) ? allData[dateKey][user] : null;
+                    if (!report) return;
+
+                    const [rYear, rMonth] = dateKey.split('-').map(Number);
+                    let shouldInclude = false;
+
+                    if (mode === 'monthly') {
+                        if (rYear === year && rMonth === month) shouldInclude = true;
+                        fileName = `WorkReport_${user}_${year}-${String(month).padStart(2,'0')}.xlsx`;
+                    } else if (mode === 'yearly') {
+                        if (rYear === year) shouldInclude = true;
+                        fileName = `WorkReport_${user}_Year_${year}.xlsx`;
+                    } else if (mode === 'all') {
+                        shouldInclude = true;
+                        fileName = `WorkReport_${user}_AllTime.xlsx`;
+                    }
+
+                    if (shouldInclude) {
+                        exportRows.push({
+                            "Date": dateKey,
+                            "Status": report.status || "In Progress",
+                            "To-Do": report.todo || "",
+                            "Summary": report.summary || report.content || "",
+                            "Admin Memo": report.adminMemo || "",
+                            "Update Time": report.time || ""
+                        });
+                    }
+                });
+
+                if (exportRows.length === 0) {
+                    alert("No report data found.");
+                    return;
+                }
+
+                const worksheet = XLSX.utils.json_to_sheet(exportRows);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!worksheet[cellAddress]) continue;
+                        worksheet[cellAddress].s = {
+                            alignment: { wrapText: true, vertical: 'top', horizontal: 'left' },
+                            font: { name: 'Arial', sz: 10 }
+                        };
+                        if (R === 0) {
+                            worksheet[cellAddress].s.fill = { fgColor: { rgb: "F2F2F2" } };
+                            worksheet[cellAddress].s.font.bold = true;
+                        }
+                    }
+                }
+
+                worksheet['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 45 }, { wch: 55 }, { wch: 35 }, { wch: 12 }];
+                XLSX.writeFile(workbook, fileName);
+            });
+        };
+
+        // --- UI Control Functions ---
         const getTempKey = (date) => `temp_report_${user}_${date}`;
         
         window.saveToTemp = function() {
@@ -228,6 +326,12 @@ window.exportStaffReport = function(mode) {
 
         window.changeViewMonth = function(offset) {
             viewDate.setMonth(viewDate.getMonth() + offset);
+            renderMiniCalendar();
+        };
+
+        // --- 신규 추가: 연도 변경 함수 ---
+        window.changeViewYear = function(year) {
+            viewDate.setFullYear(parseInt(year));
             renderMiniCalendar();
         };
 
@@ -279,6 +383,11 @@ window.exportStaffReport = function(mode) {
 
         window.loadReport = function(dateStr) {
             selectedDateStr = dateStr;
+            // 캘린더를 렌더링할 때 선택된 날짜의 연도/월로 viewDate를 동기화하여 달력이 따라오게 함
+            const d = new Date(dateStr);
+            viewDate.setFullYear(d.getFullYear());
+            viewDate.setMonth(d.getMonth());
+            
             renderMiniCalendar();
             const actionBtn = document.getElementById('actionButtons');
             actionBtn.innerHTML = ''; 
@@ -333,7 +442,68 @@ window.exportStaffReport = function(mode) {
             });
         };
 
-        let copyPicker = null;
+        // --- Calendar Rendering ---
+        function renderMiniCalendar() {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            // 월 이름 추출
+            const monthName = viewDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+            
+            // 연도 선택 드롭다운 생성 (현재 연도 기준 전후 5년)
+            let yearOptions = '';
+            for (let y = year - 5; y <= year + 5; y++) {
+                yearOptions += `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`;
+            }
+            
+            // 헤더 업데이트 (월 + 연도 드롭다운)
+            document.getElementById('miniCalMonth').innerHTML = `
+                ${monthName} 
+                <select class="year-select" onchange="window.changeViewYear(this.value)">
+                    ${yearOptions}
+                </select>
+            `;
+            
+            database.ref('reports').once('value', (snapshot) => {
+                const allReports = snapshot.val() || {};
+                const tbody = document.getElementById('miniCalBody');
+                tbody.innerHTML = '';
+                let date = 1;
+                for (let i = 0; i < 6; i++) {
+                    let row = document.createElement('tr');
+                    for (let j = 0; j < 7; j++) {
+                        let cell = document.createElement('td');
+                        if (i === 0 && j < firstDay) {
+                            row.appendChild(cell);
+                        } else if (date > lastDate) {
+                            row.appendChild(cell);
+                        } else {
+                            const curDate = date;
+                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
+                            let cellHTML = `<div class="date-num text-xs font-bold ${dateStr === todayStr ? 'text-blue-500' : 'text-slate-500'}">${curDate}</div>`;
+                            const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
+
+                            if (userReport) {
+                                let statusClass = userReport.status === 'Completed' ? "status-completed" : (userReport.status === 'Pending' ? "status-pending" : "status-progress");
+                                let statusText = userReport.status === 'Completed' ? "COMPLETED" : (userReport.status === 'Pending' ? "PENDING" : "PROGRESS");
+                                cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
+                            }
+                            cell.innerHTML = cellHTML;
+                            if (dateStr === selectedDateStr) cell.classList.add('selected-date');
+                            cell.onclick = () => loadReport(dateStr);
+                            row.appendChild(cell);
+                            date++;
+                        }
+                    }
+                    tbody.appendChild(row);
+                    if (date > lastDate) break;
+                }
+            });
+        }
+
+        // --- Editor & Other Functions (생략 없이 유지) ---
         window.openCopyFromPicker = function() {
             if (!document.getElementById('hiddenCopyInput')) {
                 const input = document.createElement('input');
@@ -341,8 +511,8 @@ window.exportStaffReport = function(mode) {
                 input.style.display = 'none';
                 document.body.appendChild(input);
             }
-            if (copyPicker) copyPicker.destroy();
-            copyPicker = flatpickr("#hiddenCopyInput", {
+            if (window.copyPicker) window.copyPicker.destroy();
+            window.copyPicker = flatpickr("#hiddenCopyInput", {
                 theme: "dark",
                 maxDate: "today",
                 onChange: function(selectedDates, dateStr) {
@@ -363,7 +533,7 @@ window.exportStaffReport = function(mode) {
                     }
                 }
             });
-            copyPicker.open();
+            window.copyPicker.open();
         };
 
         window.showEditor = function() {
@@ -416,49 +586,7 @@ window.exportStaffReport = function(mode) {
                 </div>`;
         };
 
-        function renderMiniCalendar() {
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            document.getElementById('miniCalMonth').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-            
-            database.ref('reports').once('value', (snapshot) => {
-                const allReports = snapshot.val() || {};
-                const tbody = document.getElementById('miniCalBody');
-                tbody.innerHTML = '';
-                let date = 1;
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
-                        if (i === 0 && j < firstDay) {
-                            row.appendChild(cell);
-                        } else if (date > lastDate) {
-                            row.appendChild(cell);
-                        } else {
-                            const curDate = date;
-                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
-                            let cellHTML = `<div class="date-num text-xs font-bold ${dateStr === todayStr ? 'text-blue-500' : 'text-slate-500'}">${curDate}</div>`;
-                            const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
-
-                            if (userReport) {
-                                let statusClass = userReport.status === 'Completed' ? "status-completed" : (userReport.status === 'Pending' ? "status-pending" : "status-progress");
-                                let statusText = userReport.status === 'Completed' ? "COMPLETED" : (userReport.status === 'Pending' ? "PENDING" : "PROGRESS");
-                                cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
-                            }
-                            cell.innerHTML = cellHTML;
-                            if (dateStr === selectedDateStr) cell.classList.add('selected-date');
-                            cell.onclick = () => loadReport(dateStr);
-                            row.appendChild(cell);
-                            date++;
-                        }
-                    }
-                    tbody.appendChild(row);
-                    if (date > lastDate) break;
-                }
-            });
-        }
+        // 초기 실행
         loadReport(selectedDateStr);
     })();
 </script>

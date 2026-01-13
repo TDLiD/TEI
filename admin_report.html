@@ -133,13 +133,26 @@
 
 
 <div class="mt-8 bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-    <div class="flex items-center gap-3 mb-6">
-        <div class="p-2 bg-emerald-500/20 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-emerald-500/20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-black text-white italic">EXCEL <span class="text-emerald-500">MANAGEMENT</span></h3>
         </div>
-        <h3 class="text-xl font-black text-white italic">EXPORT <span class="text-emerald-500">EXCEL</span></h3>
+
+        <div class="flex items-center gap-2">
+            <input type="file" id="adminImportFile" class="hidden" accept=".xlsx, .xls" onchange="importAdminWorkReport(event)">
+            <button onclick="document.getElementById('adminImportFile').click()" 
+                class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-2 shadow-lg shadow-amber-900/20 uppercase tracking-widest">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Import Excel
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -186,6 +199,83 @@
         drawReportCalendar();
     };
 
+
+// 기존 스크립트 내부(IIFE) 혹은 적절한 위치에 추가
+window.importAdminWorkReport = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // [추가] 엑셀 숫자 날짜(46430 등)를 YYYY-MM-DD 문자열로 변환하는 함수
+    function formatExcelDate(value) {
+        if (typeof value === 'number') {
+            // 엑셀 날짜 일련번호를 JS 날짜 객체로 변환 (기준일: 1899-12-30)
+            const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        return String(value).trim(); // 이미 문자열이면 공백만 제거 후 반환
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+            if (jsonData.length === 0) {
+                alert("No data found to import.");
+                return;
+            }
+
+            if (!confirm(`Import ${jsonData.length} records? Existing data for the same staff/date will be overwritten.`)) {
+                event.target.value = '';
+                return;
+            }
+
+            const reportDb = firebase.database();
+            let successCount = 0;
+            
+            const promises = jsonData.map(row => {
+                // [수정] 날짜 데이터 읽을 때 formatExcelDate 함수 적용
+                const rawDate = row["DATE"];
+                const dateKey = formatExcelDate(rawDate); 
+                const staffName = row["STAFF NAME"];
+
+                // 유효성 검사 (변환 후 날짜 형식이 아니거나 이름이 없으면 스킵)
+                if (!dateKey || dateKey === 'undefined' || !staffName) return Promise.resolve();
+
+                const reportData = {
+                    status: row["STATUS"] || "In Progress",
+                    todo: row["TODO LIST"] || "",
+                    summary: row["WORK SUMMARY"] || "",
+                    adminMemo: row["ADMIN MEMO"] || "",
+                    lastModified: new Date().toISOString()
+                };
+
+                return reportDb.ref(`reports/${dateKey}/${staffName}`).set(reportData)
+                    .then(() => { successCount++; });
+            });
+
+            Promise.all(promises).then(() => {
+                alert(`Successfully imported ${successCount} reports.`);
+                if (typeof window.renderWorkFull === 'function') window.renderWorkFull(); 
+                event.target.value = '';
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Error parsing file. Please check if the format matches the exported Excel.");
+        }
+    };
+    reader.readAsArrayBuffer(file);
+};
+
+
+
     function updateMonthTitle() {
         const titleBox = document.getElementById('currentReportMonthYear');
         if(titleBox) {
@@ -204,14 +294,12 @@
         window.renderWorkFull();
     };
 
-    function drawReportCalendar(){
+function drawReportCalendar(){
         const y = reportViewDate.getFullYear();
         const m = reportViewDate.getMonth();
         const first = new Date(y, m, 1).getDay();
         const last = new Date(y, m + 1, 0).getDate();
 
-        // [참고] 기존 drawReportCalendar 내부 로직은 유지하되 
-        // y, m 변수가 reportViewDate를 참조하도록 변경됨
         reportDb.ref("reports").once("value", snap => {
             const data = snap.val() || {};
             const body = document.getElementById("reportCalendarBody");
@@ -231,17 +319,29 @@
                     const reports = data[date] || {};
                     const isToday = new Date().toISOString().split('T')[0] === date;
                     
-                    if(isToday) td.classList.add('bg-blue-500/5'); // 테일윈드 클래스로 변경
+                    if(isToday) td.classList.add('bg-blue-500/5');
 
                     let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
                     html += `<div class="flex flex-col gap-1 overflow-hidden">`;
+                    
+                    // [수정] 각 리포트 배지에 staff 이름을 전달하고, 클릭 전파(stopPropagation)를 막아 개별 클릭이 가능하게 함
                     html += Object.keys(reports).map(n => `
-                        <div class="report-item-badge text-[9px] truncate">${n}</div>
+                        <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" 
+                             onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
+                            ${n}
+                        </div>
                     `).join('');
+                    
                     html += `</div>`;
                     
                     td.innerHTML = html;
-                    td.onclick = () => openReportDetail(date, reports);
+                    
+                    // 셀의 빈 공간 클릭 시 해당 날짜의 첫 번째 리포트를 기본으로 보여줌
+                    td.onclick = () => {
+                        const firstStaff = Object.keys(reports)[0];
+                        if(firstStaff) openReportDetail(date, firstStaff);
+                    };
+
                     tr.appendChild(td);
                     d++;
                 }
@@ -329,8 +429,8 @@ window.exportWorkReport = function(type) {
 
 
 
-    function openReportDetail(date, reports){
-        const staff = Object.keys(reports)[0];
+  // [수정] 특정 직원의 이름을 인자로 받아 Firebase에서 해당 데이터만 가져오도록 변경
+    window.openReportDetail = function(date, staff){
         if(!staff) return;
 
         reportDb.ref(`reports/${date}/${staff}`).once("value", snap => {
@@ -393,6 +493,8 @@ window.exportWorkReport = function(type) {
             </div>`;
         });
     }
+
+
 
     // HTML 요소의 onclick에서 접근할 수 있도록 전역으로 등록
     window.closeReportDetail = function() {
