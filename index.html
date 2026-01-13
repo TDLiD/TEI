@@ -11,17 +11,16 @@
     <style>
         body { 
             font-family: "Pretendard", sans-serif; 
-            /* 배경 이미지 설정 */
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('images/gif/1.gif');
+            /* 기본 레이아웃 설정만 유지 */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
             color: #f1f5f9; 
             -webkit-tap-highlight-color: transparent; 
+            transition: background 0.5s ease-in-out; /* 배경 변경 시 부드러운 효과 */
         }
         
-        /* 입력창 투명도 조절로 배경과 어울리게 설정 */
         select, input { 
             background-color: rgba(30, 41, 59, 0.8) !important; 
             backdrop-filter: blur(10px);
@@ -30,7 +29,6 @@
             font-size: 16px !important; 
         }
 
-        /* 로그인 박스 반투명 효과 */
         .login-card {
             background-color: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
@@ -94,8 +92,33 @@
     </div>
 
     <script>
-        // 기존 스크립트 내용과 동일 (변동 없음)
         (function() {
+            // --- 요일별 배경 설정 로직 추가 ---
+            const setDayBackground = () => {
+                const day = new Date().getDay(); // 0(일) ~ 6(토)
+                let bgImage = "cat1.gif"; // 기본값 (월요일)
+
+                // 월(1)~금(5) 대응, 토(6)/일(0)은 금요일 이미지(cat5)로 유지 예시
+                const dailyImages = {
+                    1: "cat1.gif",
+                    2: "cat2.gif",
+                    3: "cat3.gif",
+                    4: "cat4.gif",
+                    5: "cat5.gif",
+                    6: "cat6.gif", // 토요일
+                    0: "cat7.gif"  // 일요일
+                };
+
+                bgImage = dailyImages[day] || "cat1.gif";
+                
+                // 배경 이미지 적용 (기존 투명도 오버레이 포함)
+                document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('images/gif/${bgImage}')`;
+            };
+
+            // 배경 즉시 실행
+            setDayBackground();
+
+            // --- 기존 Firebase 및 로그인 로직 ---
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
