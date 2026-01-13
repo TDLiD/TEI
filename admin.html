@@ -10,7 +10,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 
-    <style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css"> <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script> <style>
         body { font-family: Pretendard, sans-serif; background:#000; color:#f1f5f9; margin: 0; padding: 0; }
         .tab-btn { transition:.25s; cursor: pointer; }
         .tab-active { color:#3b82f6; font-weight:900; background:rgba(59,130,246,.1); border-radius:1rem; }
@@ -23,22 +25,12 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         @media (max-width: 767px) {
-            aside { display: none; }
+            aside { display: none !important; }
             main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
             .mobile-header { display: flex !important; }
-            .mobile-nav { display: grid !important; } /* flex에서 grid로 변경하여 간격 최적화 */
+            .mobile-nav { display: grid !important; }
         }
-
-@media (max-width: 767px) {
-        aside { display: none !important; } /* 확실하게 숨김 처리 */
-        main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
-        .mobile-header { display: flex !important; }
-        .mobile-nav { display: grid !important; }
-    }
-
     </style>
-
-
 </head>
 
 <body class="flex min-h-screen">
@@ -160,8 +152,6 @@ if (!window.openAdminCustomModal) {
             document.body.style.overflow = '';
         }
     };
-    Object.defineProperty(window, 'openAdminCustomModal', { writable: false, configurable: false });
-    Object.defineProperty(window, 'closeAdminCustomModal', { writable: false, configurable: false });
 }
 
 /* =========================================================
@@ -185,7 +175,7 @@ async function switchAdminTab(tab) {
         attendance: 'admin_attendance.html',
         reports:    'admin_report.html',
         schedule:   'admin_calendar.html',
-        statistic:  'admin_statistic.html', // 추가됨
+        statistic:  'admin_statistic.html',
         settings:   'admin_setting.html'
     };
 
@@ -196,6 +186,7 @@ async function switchAdminTab(tab) {
 
         area.innerHTML = html;
 
+        // 동적 스크립트 실행 (Flatpickr 초기화 등이 포함됨)
         area.querySelectorAll('script').forEach(oldScript => {
             const s = document.createElement('script');
             if (oldScript.src) {
@@ -207,12 +198,13 @@ async function switchAdminTab(tab) {
             document.body.removeChild(s);
         });
 
+        // 탭별 데이터 로딩 함수 호출
         setTimeout(() => {
             if (tab === 'dashboard')  window.initAdminDashboard?.();
             if (tab === 'attendance') window.renderAttendanceFull?.();
             if (tab === 'reports')    window.renderWorkFull?.();
             if (tab === 'schedule')   window.renderScheduleFull?.();
-            if (tab === 'statistic')  window.initAdminStatistic?.(); // 통계 초기화 함수 호출 가칭
+            if (tab === 'statistic')  window.initAdminStatistic?.();
             if (tab === 'settings')   window.initAdminSettings?.();
         }, 150);
 
@@ -235,15 +227,10 @@ window.addEventListener('DOMContentLoaded', () => {
    ========================================================= */
 function adminLogout() {
     if(confirm("시스템을 로그아웃 하시겠습니까?")) {
-        // 세션이나 로컬스토리지에 인증 정보가 있다면 여기서 삭제
-        // sessionStorage.removeItem('adminAuth'); 
-        
         alert("성공적으로 로그아웃되었습니다.");
-        location.href = "index.html"; // 메인 페이지로 이동
+        location.href = "index.html"; 
     }
 }
-
-
 </script>
 
 </body>
