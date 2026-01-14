@@ -262,6 +262,35 @@ function adminLogout() {
     }
 }
 
+/* =========================================================
+   6. 자동 로그아웃 (Inactivity Timeout) - 30분
+   ========================================================= */
+(function() {
+    let timeoutTimer;
+    const INACTIVITY_TIME = 30 * 60 * 1000; // 30분 설정
+
+    function autoLogout() {
+        // 관리자 페이지이므로 조금 더 명확한 알림을 줍니다.
+        alert("보안을 위해 30분간 활동이 없는 관리자 세션을 자동으로 종료합니다.");
+        sessionStorage.clear();
+        location.href = "index.html";
+    }
+
+    function resetTimer() {
+        clearTimeout(timeoutTimer);
+        timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
+    }
+
+    // 마우스 이동, 클릭, 키보드 입력, 터치, 스크롤 감시
+    window.onload = resetTimer;
+    window.onmousemove = resetTimer;
+    window.onmousedown = resetTimer; 
+    window.ontouchstart = resetTimer;
+    window.onclick = resetTimer;
+    window.onkeypress = resetTimer;
+    window.addEventListener('scroll', resetTimer, true);
+})();
+
 
 </script>
 

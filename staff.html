@@ -81,8 +81,7 @@
         </div>
     </main>
 
-    <script>
-        // ... (기존 스크립트 동일)
+ <script>
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser) { location.href = "index.html"; }
         
@@ -111,7 +110,7 @@
             
             const urls = {
                 'dash': 'staff_main.html',
-                'allatt': 'staff_allatt.html', // 추가
+                'allatt': 'staff_allatt.html',
                 'schedule': 'staff_calendar.html',
                 'work': 'staff_report.html',
                 'statistic': 'staff_statistic.html',
@@ -160,7 +159,35 @@
             }
         }
         
+        // --- [추가 코드] 자동 로그아웃 (Inactivity Timeout) ---
+        (function() {
+            let timeoutTimer;
+            const INACTIVITY_TIME = 10 * 60 * 1000; // 10분 설정
+
+            function autoLogout() {
+                alert("일정 시간 동안 활동이 없어 보안을 위해 자동 로그아웃됩니다.");
+                sessionStorage.clear();
+                location.href = "index.html";
+            }
+
+            function resetTimer() {
+                clearTimeout(timeoutTimer);
+                timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
+            }
+
+            // 활동 감지 이벤트 등록
+            window.onload = resetTimer;
+            window.onmousemove = resetTimer;
+            window.onmousedown = resetTimer; 
+            window.ontouchstart = resetTimer;
+            window.onclick = resetTimer;
+            window.onkeypress = resetTimer;
+            window.addEventListener('scroll', resetTimer, true);
+        })();
+
         switchTab('dash');
     </script>
+
+
 </body>
 </html>
