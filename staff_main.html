@@ -278,62 +278,72 @@ function getJakartaDate() {
         });
     };
 
-    function updateAttendanceStats(data) {
-        const viewYear = viewDate.getFullYear();
-        const viewMonth = viewDate.getMonth() + 1;
+function updateAttendanceStats(data) {
+    const viewYear = viewDate.getFullYear();
+    const viewMonth = viewDate.getMonth() + 1;
 
-        let totalRecords = 0;
-        let lateCount = 0;
-        let attCount = 0;
-        let totalLeaveMinutes = 0;
-        let leaveRecordCount = 0;
+    let totalRecords = 0;
+    let lateCount = 0;
+    let attCount = 0;
+    let totalLeaveMinutes = 0;
+    let leaveRecordCount = 0;
 
-        Object.keys(data).forEach(dateStr => {
-            const [year, month] = dateStr.split('-').map(Number);
-            if (year === viewYear && month === viewMonth) {
-                const rec = data[dateStr][user];
-                if (rec && typeof rec === 'object' && rec.attend) {
-                    totalRecords++;
-                    if (rec.attend.includes("LATE")) lateCount++;
-                    else if (rec.attend.includes("ATT")) attCount++;
+    Object.keys(data).forEach(dateStr => {
+        const [year, month] = dateStr.split('-').map(Number);
+        if (year === viewYear && month === viewMonth) {
+            const rec = data[dateStr][user];
+            if (rec && typeof rec === 'object' && rec.attend) {
+                totalRecords++;
+                if (rec.attend.includes("LATE")) lateCount++;
+                else if (rec.attend.includes("ATT")) attCount++;
 
-                    if (rec.leave) {
-                        const timeMatch = rec.leave.match(/(\d{2}):(\d{2})/);
-                        if (timeMatch) {
-                            totalLeaveMinutes += (parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]));
-                            leaveRecordCount++;
-                        }
+                if (rec.leave) {
+                    const timeMatch = rec.leave.match(/(\d{2}):(\d{2})/);
+                    if (timeMatch) {
+                        totalLeaveMinutes += (parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]));
+                        leaveRecordCount++;
                     }
                 }
             }
-        });
-
-        const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
-        const ratioText = document.getElementById('lateRatioPercent');
-        const bar = document.getElementById('lateRatioBar');
-        const card = document.getElementById('weeklySummaryCard');
-        const statusText = document.getElementById('lateRatioStatus');
-        const warnIcon = document.getElementById('warningIcon');
-
-        if (ratioText) ratioText.innerText = `${ratio}%`;
-        if (bar) {
-            bar.style.width = `${ratio}%`;
-            if (ratio >= 50) {
-                bar.className = "h-full bg-rose-500 transition-all duration-1000";
-                card.classList.add('warning-pulse');
-                statusText.innerText = "WARNING: HIGH LATE";
-                statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase";
-                warnIcon.classList.remove('hidden');
-            } else {
-                bar.className = "h-full bg-blue-500 transition-all duration-1000";
-                card.classList.remove('warning-pulse');
-                statusText.innerText = "GOOD STANDING";
-                statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
-                warnIcon.classList.add('hidden');
-            }
         }
-        document.getElementById('statCounts').innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
-        const avgLeaveElem = document.getElementById('avgLeaveTime');
+    });
+
+    const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
+    
+    // --- [중요] 여기서부터 요소 존재 여부 체크 ---
+    const ratioText = document.getElementById('lateRatioPercent');
+    const bar = document.getElementById('lateRatioBar');
+    const card = document.getElementById('weeklySummaryCard');
+    const statusText = document.getElementById('lateRatioStatus');
+    const warnIcon = document.getElementById('warningIcon');
+    const statCountsElem = document.getElementById('statCounts');
+    const avgLeaveElem = document.getElementById('avgLeaveTime');
+
+    // 요소가 있을 때만 실행하도록 조건문 처리
+    if (ratioText) ratioText.innerText = `${ratio}%`;
+    
+    if (bar && card && statusText && warnIcon) {
+        bar.style.width = `${ratio}%`;
+        if (ratio >= 50) {
+            bar.className = "h-full bg-rose-500 transition-all duration-1000";
+            card.classList.add('warning-pulse');
+            statusText.innerText = "WARNING: HIGH LATE";
+            statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase";
+            warnIcon.classList.remove('hidden');
+        } else {
+            bar.className = "h-full bg-blue-500 transition-all duration-1000";
+            card.classList.remove('warning-pulse');
+            statusText.innerText = "GOOD STANDING";
+            statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
+            warnIcon.classList.add('hidden');
+        }
+    }
+
+    if (statCountsElem) {
+        statCountsElem.innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
+    }
+
+    if (avgLeaveElem) {
         if (leaveRecordCount > 0) {
             const avgTotal = Math.round(totalLeaveMinutes / leaveRecordCount);
             avgLeaveElem.innerText = `Avg Leave: ${String(Math.floor(avgTotal / 60)).padStart(2, '0')}:${String(avgTotal % 60).padStart(2, '0')}`;
@@ -341,15 +351,21 @@ function getJakartaDate() {
             avgLeaveElem.innerText = `Avg Leave: --:--`;
         }
     }
+}
 
-    db.ref('settings/standardTime').on('value', (snap) => {
-        const val = snap.val();
-        if(val) {
-            standardTime = val;
-            document.getElementById('displayStdTime').innerText = standardTime;
-            if(btnIn) btnIn.disabled = false;
+db.ref('settings/standardTime').on('value', (snap) => {
+    const val = snap.val();
+    if(val) {
+        standardTime = val;
+        // 이 부분을 안전하게 수정
+        const stdTimeElem = document.getElementById('displayStdTime');
+        if (stdTimeElem) {
+            stdTimeElem.innerText = standardTime;
         }
-    });
+        
+        if(btnIn) btnIn.disabled = false;
+    }
+});
 
     document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', { 
         month: 'short', day: 'numeric', weekday: 'short', timeZone: 'Asia/Jakarta' 
@@ -387,16 +403,24 @@ function getJakartaDate() {
     window.goToday = function() { viewDate = getJakartaDate(); renderCalendar(); };
     window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
-// ... (기존 코드 생략) ...
 
 function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
-    document.getElementById('currentMonthYear').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+
+    // [추가] 월/년 표시 요소 체크
+    const monthYearElem = document.getElementById('currentMonthYear');
+    if (monthYearElem) {
+        monthYearElem.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    }
     
     db.ref('attendance').off();
     db.ref('attendance').on('value', (snap) => {
+        // [중요] 리스너 내부에서도 tbody가 존재하는지 매번 확인
+        const tbody = document.getElementById('calendarBody');
+        if (!tbody) return; // 요소가 없으면(다른 탭으로 이동했다면) 함수 즉시 종료
+
         const data = snap.val() || {};
         
         updateAttendanceStats(data);
@@ -406,8 +430,9 @@ function renderCalendar() {
             hasCheckedMissing = true;
         }
 
-        const tbody = document.getElementById('calendarBody');
+        // 기존 내용 삭제 전 다시 한번 안전 확인
         tbody.innerHTML = '';
+        
         let dateCounter = 1;
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
@@ -429,7 +454,6 @@ function renderCalendar() {
                         if (typeof rec === 'string') {
                             content += `<span class="time-label other-color mt-2">${rec}</span>`;
                         } else {
-                            // [수정] 출근 시간 표시 (초 단위 제외)
                             let attendText = rec.attend || "";
                             let displayAttend = "";
                             if (attendText) {
@@ -441,7 +465,6 @@ function renderCalendar() {
                             let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
                             if(displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
                             
-                            // [수정] 퇴근 시간 표시 (초 단위 제외)
                             let leaveText = rec.leave || "";
                             let displayLeave = "";
                             if (leaveText) {
@@ -462,7 +485,6 @@ function renderCalendar() {
     });
 }
 
-// ... (이하 동일) ...
 
 // [수정] 출근/퇴근 통합 수정 팝업 기능
 window.openEditPopup = function(dateStr, currentRec) {
