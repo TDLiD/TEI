@@ -379,115 +379,132 @@
             });
         }
 
-        /* --- 3. 렌더링 함수 (높이 자동 조절 포함) --- */
-        function renderSchedule() {
-            const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            document.getElementById('calMonthYear').innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+/* --- 3. 렌더링 함수 (높이 자동 조절 및 탭 이동 방어 로직 포함) --- */
+function renderSchedule() {
+    const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    
+    // 월/년 표시 업데이트 (요소가 있을 때만)
+    const monthYearEl = document.getElementById('calMonthYear');
+    if (monthYearEl) {
+        monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    }
 
-            db.ref('shared_schedules').off();
-            db.ref('shared_schedules').on('value', snap => {
-                const events = snap.val() || {};
-                const tbody = document.getElementById('scheduleBody');
-                tbody.innerHTML = '';
-                
-                const sortedEvents = Object.keys(events).map(id => ({
-                    id, ...events[id],
-                    sDate: events[id].start.split('T')[0],
-                    eDate: events[id].end.split('T')[0]
-                })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
+    // 1. 기존 리스너가 있다면 중복 방지를 위해 제거
+    const scheduleRef = db.ref('shared_schedules');
+    scheduleRef.off(); 
 
-                const eventSlots = {};
-                const dayOccupancy = {};
-                sortedEvents.forEach(ev => {
-                    let slot = 0;
-                    while (true) {
-                        let ok = true;
-                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                            const dStr = d.toISOString().split('T')[0];
-                            if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
-                        }
-                        if (ok) {
-                            for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                                const dStr = d.toISOString().split('T')[0];
-                                if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
-                                dayOccupancy[dStr].add(slot);
-                            }
-                            eventSlots[ev.id] = slot; break;
-                        }
-                        slot++;
+    // 2. 실시간 데이터 리스너 시작
+    scheduleRef.on('value', snap => {
+        const events = snap.val() || {};
+        const tbody = document.getElementById('scheduleBody');
+        
+        // [중요] 탭 이동 방어 코드: 렌더링할 대상(DOM)이 없으면 리스너를 스스로 파괴합니다.
+        if (!tbody) {
+            console.log("Schedule 탭이 활성 상태가 아니므로 리스너를 해제합니다.");
+            scheduleRef.off(); // 리스너를 끔 (메모리 누수 및 화면 깨짐 방지)
+            return;
+        }
+
+        tbody.innerHTML = ''; // 기존 내용 초기화
+        
+        // 데이터 정렬 및 슬롯 계산
+        const sortedEvents = Object.keys(events).map(id => ({
+            id, ...events[id],
+            sDate: events[id].start.split('T')[0],
+            eDate: events[id].end.split('T')[0]
+        })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
+
+        const eventSlots = {};
+        const dayOccupancy = {};
+        
+        sortedEvents.forEach(ev => {
+            let slot = 0;
+            while (true) {
+                let ok = true;
+                for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                    const dStr = d.toISOString().split('T')[0];
+                    if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
+                }
+                if (ok) {
+                    for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                        const dStr = d.toISOString().split('T')[0];
+                        if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
+                        dayOccupancy[dStr].add(slot);
                     }
-                });
+                    eventSlots[ev.id] = slot; break;
+                }
+                slot++;
+            }
+        });
 
-                let dateNum = 1;
-                for (let i = 0; i < 6; i++) {
-                    const tr = document.createElement('tr');
-                    let weekDates = [];
-                    let maxSlotsInWeek = 0;
+        // 실제 달력 그리기 로직
+        let dateNum = 1;
+        for (let i = 0; i < 6; i++) {
+            const tr = document.createElement('tr');
+            let weekDates = [];
+            let maxSlotsInWeek = 0;
 
-                    for (let j = 0; j < 7; j++) {
-                        if ((i === 0 && j < firstDay) || dateNum > lastDate) {
-                            weekDates.push(null);
-                        } else {
-                            weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`);
-                            dateNum++;
-                        }
-                    }
+            // 해당 주차 날짜 미리 계산
+            for (let j = 0; j < 7; j++) {
+                if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                    weekDates.push(null);
+                } else {
+                    weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`);
+                    dateNum++;
+                }
+            }
 
-                    // 높이 계산
-                    weekDates.forEach(dStr => {
-                        if (dStr && dayOccupancy[dStr]) {
-                            const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
-                            if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
-                        }
-                    });
-
-                    const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
-                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
-
-                    weekDates.forEach((dStr, j) => {
-                        const td = document.createElement('td');
-                        if (dStr) {
-                            td.dataset.date = dStr;
-                            td.ondragover = window.handleDragOver;
-                            td.ondragleave = window.handleDragLeave;
-                            td.ondrop = (e) => window.handleDrop(e, dStr);
-                            td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
-
-                            const isToday = (dStr === todayStr);
-                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
-
-                            sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                                if (dStr === ev.sDate || j === 0) {
-                                    const slot = eventSlots[ev.id];
-                                    const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
-                                    const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                                    const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
-                                    const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-
-                                    html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
-                                                draggable="true"
-                                                ondragstart="window.handleDragStart(event, '${ev.id}')"
-                                                ondragend="window.handleDragEnd(event)"
-                                                ontouchstart="window.handleTouchStart(event, '${ev.id}')"
-                                                ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
-                                                class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" 
-                                                style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
-                                                <span class="ev-title-text">${isCont ? '' : ev.title}</span>
-                                                <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
-                                            </div>`;
-                                }
-                            });
-                            td.innerHTML = html;
-                        }
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                    if (dateNum > lastDate) break;
+            // 해당 주차 최대 슬롯 확인 (높이 조절용)
+            weekDates.forEach(dStr => {
+                if (dStr && dayOccupancy[dStr]) {
+                    const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
+                    if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
                 }
             });
+
+            // 주차별 동적 높이 설정
+            const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
+            tr.style.height = Math.max(140, calculatedHeight) + 'px';
+
+            // td 생성 및 이벤트 렌더링
+            weekDates.forEach((dStr, j) => {
+                const td = document.createElement('td');
+                if (dStr) {
+                    td.dataset.date = dStr;
+                    td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+
+                    const isToday = (dStr === (new Date().toISOString().split('T')[0]));
+                    let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
+
+                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                        if (dStr === ev.sDate || j === 0) {
+                            const slot = eventSlots[ev.id];
+                            const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
+                            const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
+                            const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
+                            const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+
+                            html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
+                                        class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" 
+                                        style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
+                                        <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+                                        <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+                                    </div>`;
+                        }
+                    });
+                    td.innerHTML = html;
+                }
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+            if (dateNum > lastDate) break;
         }
+    });
+}
+
 
         /* --- 4. 초기화 및 플랫피커 --- */
         const baseConfig = { 
