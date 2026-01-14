@@ -14,19 +14,22 @@
     border-bottom: 1px solid #1e293b; 
 }
 
+/* style 태그 내 수정 */
 .schedule-cal td {
     position: relative;
     width: 14.28%;
-    min-height: 120px;
-    padding: 0; /* 패딩 제거하여 내부 래퍼 제어 */
+    min-height: 120px; /* 최소 높이는 유지 */
+    padding: 0;
     vertical-align: top;
     border: 0.5px solid #1e293b;
     transition: background 0.2s;
     cursor: pointer;
+    /* 고정 높이 관련 설정 제거 */
 }
 
 .schedule-cal tr {
-    height: 140px; 
+    /* height: 140px;  <-- 이 부분을 삭제하거나 주석 처리하세요 */
+    min-height: 140px;
 }
 
 /* 날짜 텍스트 스타일 및 오늘 날짜 하이라이트 */
@@ -154,7 +157,7 @@
     </div>
 
     <div class="bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
-        <table class="schedule-cal w-full border-collapse table-fixed">
+        <table class="schedule-cal w-full border-collapse table-auto">
             <thead>
                 <tr class="bg-slate-900/50">
                     <th class="text-red-500/80">SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th class="text-blue-500/80">SAT</th>
@@ -229,21 +232,18 @@
         /* --- 1. 전역 노출 함수 --- */
         window.closeModal = () => { document.getElementById('eventModal').classList.add('hidden'); };
 
-window.toggleTimePicker = (isAllDay) => {
-    const config = {
-        enableTime: !isAllDay,
-        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
-        altInput: true,
-        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-        // 모바일 브라우저의 기본 달력을 강제로 끄고 Flatpickr를 사용하게 함
-        disableMobile: true, 
-        static: true
-    };
-    
-    // 기존 피커 인스턴스의 옵션을 업데이트
-    if (startPicker) startPicker.set(config);
-    if (endPicker) endPicker.set(config);
-};
+        window.toggleTimePicker = (isAllDay) => {
+            const config = {
+                enableTime: !isAllDay,
+                dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
+                altInput: true,
+                altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+                disableMobile: true, 
+                static: true
+            };
+            if (startPicker) startPicker.set(config);
+            if (endPicker) endPicker.set(config);
+        };
 
         window.openAddModal = (dateStr) => {
             selectedId = null; currentEventData = null;
@@ -352,47 +352,34 @@ window.toggleTimePicker = (isAllDay) => {
             draggedId = null;
         };
 
-        /* --- 3. [핵심 수정] 일정 기간 유지 이동 로직 --- */
         function moveEvent(id, newStartDateStr) {
             const ref = db.ref('shared_schedules/' + id);
             ref.once('value').then(snap => {
                 const ev = snap.val();
                 if (!ev || (ev.author !== user && userRole !== 'admin')) return;
 
-                // 1. 기존 일정의 기간(Duration) 계산
                 const oldStart = new Date(ev.start);
                 const oldEnd = new Date(ev.end);
                 const durationMs = oldEnd.getTime() - oldStart.getTime();
 
-                // 2. 새로운 시작/종료 시간 설정
                 let nextStart, nextEnd;
 
                 if (ev.allDay) {
-                    // 종일 일정일 경우: 시간 없이 날짜만 계산
                     nextStart = new Date(newStartDateStr);
                     nextEnd = new Date(nextStart.getTime() + durationMs);
-                    
                     const formatYMD = (d) => d.toISOString().split('T')[0];
-                    ref.update({
-                        start: formatYMD(nextStart),
-                        end: formatYMD(nextEnd)
-                    });
+                    ref.update({ start: formatYMD(nextStart), end: formatYMD(nextEnd) });
                 } else {
-                    // 시간 포함 일정일 경우: 기존 시간대(HH:mm)를 유지하며 날짜 이동
                     const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
                     nextStart = new Date(newStartDateStr + 'T' + timePart);
                     nextEnd = new Date(nextStart.getTime() + durationMs);
-
                     const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
-                    ref.update({
-                        start: formatFull(nextStart),
-                        end: formatFull(nextEnd)
-                    });
+                    ref.update({ start: formatFull(nextStart), end: formatFull(nextEnd) });
                 }
             });
         }
 
-        /* --- 4. 렌더링 함수 --- */
+        /* --- 3. 렌더링 함수 (높이 자동 조절 포함) --- */
         function renderSchedule() {
             const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
             const firstDay = new Date(year, month, 1).getDay();
@@ -437,13 +424,27 @@ window.toggleTimePicker = (isAllDay) => {
                 for (let i = 0; i < 6; i++) {
                     const tr = document.createElement('tr');
                     let weekDates = [];
+                    let maxSlotsInWeek = 0;
+
                     for (let j = 0; j < 7; j++) {
-                        if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); } 
-                        else {
-                            weekDates.push(`${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`);
+                        if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                            weekDates.push(null);
+                        } else {
+                            weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`);
                             dateNum++;
                         }
                     }
+
+                    // 높이 계산
+                    weekDates.forEach(dStr => {
+                        if (dStr && dayOccupancy[dStr]) {
+                            const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
+                            if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
+                        }
+                    });
+
+                    const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
+                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
 
                     weekDates.forEach((dStr, j) => {
                         const td = document.createElement('td');
@@ -452,30 +453,30 @@ window.toggleTimePicker = (isAllDay) => {
                             td.ondragover = window.handleDragOver;
                             td.ondragleave = window.handleDragLeave;
                             td.ondrop = (e) => window.handleDrop(e, dStr);
-                            td.onclick = (e) => { if(e.target.tagName === 'TD') window.openAddModal(dStr); };
-                            
+                            td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+
                             const isToday = (dStr === todayStr);
-                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-red-500':(j===6?'text-blue-500':'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
-                            
+                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
+
                             sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
                                 if (dStr === ev.sDate || j === 0) {
                                     const slot = eventSlots[ev.id];
-                                    const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr))/(86400000)) + 1, 7 - j);
+                                    const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
                                     const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
                                     const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
                                     const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                                    
+
                                     html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
-                                        draggable="true"
-                                        ondragstart="window.handleDragStart(event, '${ev.id}')"
-                                        ondragend="window.handleDragEnd(event)"
-                                        ontouchstart="window.handleTouchStart(event, '${ev.id}')"
-                                        ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
-                                        class="event-item ${isCont} ${willCont} ${ev.adminMemo?'bg-purple-600':'bg-blue-600'}" 
-                                        style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
-                                        <span class="ev-title-text">${isCont ? '' : ev.title}</span>
-                                        <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
-                                    </div>`;
+                                                draggable="true"
+                                                ondragstart="window.handleDragStart(event, '${ev.id}')"
+                                                ondragend="window.handleDragEnd(event)"
+                                                ontouchstart="window.handleTouchStart(event, '${ev.id}')"
+                                                ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
+                                                class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" 
+                                                style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
+                                                <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+                                                <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+                                            </div>`;
                                 }
                             });
                             td.innerHTML = html;
@@ -488,19 +489,18 @@ window.toggleTimePicker = (isAllDay) => {
             });
         }
 
-// 스크립트 하단부 수정
-const baseConfig = { 
-    enableTime: true, 
-    dateFormat: "Y-m-d\\TH:i", 
-    altInput: true, 
-    altFormat: "Y-m-d h:i K", 
-    static: true,
-    disableMobile: true // 모바일에서도 Flatpickr 디자인 유지
-};
-startPicker = flatpickr("#evStart", baseConfig);
-endPicker = flatpickr("#evEnd", baseConfig);
-
+        /* --- 4. 초기화 및 플랫피커 --- */
+        const baseConfig = { 
+            enableTime: true, 
+            dateFormat: "Y-m-d\\TH:i", 
+            altInput: true, 
+            altFormat: "Y-m-d h:i K", 
+            static: true,
+            disableMobile: true 
+        };
+        startPicker = flatpickr("#evStart", baseConfig);
+        endPicker = flatpickr("#evEnd", baseConfig);
 
         renderSchedule();
-    })();
+    })(); // 즉시 실행 함수 종료
 </script>
