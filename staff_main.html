@@ -66,13 +66,12 @@
     color-scheme: dark; /* 브라우저 시간 선택기 다크모드 대응 */
 }
 
-/* [추가] 스타일 섹션 */
-.calendar-table {
-    table-layout: fixed; /* 셀 너비 고정 */
-    user-select: none;   /* 캘린더 숫자 드래그 방지 */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
-.time-label {
-    pointer-events: none; /* 라벨 클릭 시 부모 td의 onclick 방해 금지 */
+.animate-blink {
+    animation: blink 1s infinite;
 }
 
 </style>
@@ -201,12 +200,6 @@ function getJakartaDate() {
 
 (function() {
     const user = sessionStorage.getItem('loggedInUser');
-if (!user) {
-        alert("Session expired. Please login again.");
-        window.location.href = "index.html"; // 로그인 페이지로 리다이렉트
-        return;
-    }
-
     document.getElementById('mainWelcomeMsg').innerText = user;
     const db = firebase.database();
     
@@ -400,9 +393,7 @@ function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
-    
-    document.getElementById('currentMonthYear').innerText = 
-        viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    document.getElementById('currentMonthYear').innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
     
     db.ref('attendance').off();
     db.ref('attendance').on('value', (snap) => {
@@ -418,19 +409,13 @@ function renderCalendar() {
         const tbody = document.getElementById('calendarBody');
         tbody.innerHTML = '';
         let dateCounter = 1;
-
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
-            let hasDateInRow = false; // 해당 행에 날짜가 하나라도 있는지 확인
-
             for (let j = 0; j < 7; j++) {
                 let cell = document.createElement('td');
-                
-                // 날짜가 시작되기 전 빈 칸이거나, 마지막 날짜를 넘어간 빈 칸 처리
-                if ((i === 0 && j < firstDay) || dateCounter > lastDate) {
+                if (i === 0 && j < firstDay || dateCounter > lastDate) {
                     row.appendChild(cell);
                 } else {
-                    hasDateInRow = true;
                     const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
                     const rec = data[dStr] ? data[dStr][user] : null;
                     
@@ -440,38 +425,39 @@ function renderCalendar() {
                     cell.onclick = () => openEditPopup(dStr, rec);
 
                     let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
-                    
                     if (rec) {
                         if (typeof rec === 'string') {
                             content += `<span class="time-label other-color mt-2">${rec}</span>`;
                         } else {
-                            // 출근 시간 표시
-                            if (rec.attend) {
-                                const attMatch = rec.attend.match(/(\d{1,2}:\d{2})/);
-                                const prefix = rec.attend.includes("LATE") ? "LATE" : "ATT";
-                                const displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : rec.attend;
-                                const attendColor = rec.attend.includes("ATT") ? "att-color" : (rec.attend.includes("LATE") ? "late-color" : "other-color");
-                                content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
+                            // [수정] 출근 시간 표시 (초 단위 제외)
+                            let attendText = rec.attend || "";
+                            let displayAttend = "";
+                            if (attendText) {
+                                const attMatch = attendText.match(/(\d{1,2}:\d{2})/);
+                                const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
+                                displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
                             }
                             
-                            // 퇴근 시간 표시
-                            if (rec.leave) {
-                                const leaveMatch = rec.leave.match(/(\d{1,2}:\d{2})/);
-                                const displayLeave = leaveMatch ? leaveMatch[1] : rec.leave;
-                                content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
+                            let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
+                            if(displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
+                            
+                            // [수정] 퇴근 시간 표시 (초 단위 제외)
+                            let leaveText = rec.leave || "";
+                            let displayLeave = "";
+                            if (leaveText) {
+                                const leaveMatch = leaveText.match(/(\d{1,2}:\d{2})/);
+                                displayLeave = leaveMatch ? leaveMatch[1] : leaveText;
                             }
+                            if(displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                         }
                     }
                     cell.innerHTML = content;
-                    row.appendChild(cell);
+                    row.appendChild(cell); 
                     dateCounter++;
                 }
             }
-            // 날짜가 하나라도 들어있는 행만 추가 (6주차 공백 방지)
-            if (hasDateInRow) {
-                tbody.appendChild(row);
-            }
-            if (dateCounter > lastDate) break;
+            tbody.appendChild(row);
+            if (dateCounter > lastDate) break; 
         }
     });
 }
@@ -679,23 +665,32 @@ function showMissingPopup(missingInfo) {
 
     overlay.innerHTML = `
         <div class="missing-modal text-center">
-            <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                <span class="text-2xl">⚠️</span>
-            </div>
-            <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
-            <p class="text-slate-400 text-[10px] mb-6 font-bold leading-tight uppercase">
-                The following dates have incomplete logs:
-            </p>
-<p class="text-red-500 text-[10px] mb-6 font-bold leading-tight animate-pulse">
-    Enter the time by typing on each date!
+
+<div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+    <span class="text-2xl">⚠️</span>
+</div>
+<h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
+<p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">
+    The following dates have incomplete logs:
 </p>
-            <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">
-                ${listHtml}
-            </div>
-            <button onclick="document.getElementById('missingPopup').remove()" 
-                class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">
-                I UNDERSTAND
-            </button>
+
+<div class="flex items-center gap-2 mb-6">
+    <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">
+        WARNING
+    </span>
+    <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">
+        Please fill in the times for the unrecorded dates below
+    </span>
+</div>
+
+<div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">
+    ${listHtml}
+</div>
+<button onclick="document.getElementById('missingPopup').remove()" 
+    class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">
+    I UNDERSTAND
+</button>
+
         </div>
     `;
     document.body.appendChild(overlay);
