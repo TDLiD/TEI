@@ -1,34 +1,80 @@
 <div class="animate-fadeIn max-w-md">
     <h3 class="text-xl font-bold text-white mb-6">Account Settings</h3>
     
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-        <div class="space-y-6">
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Change Password</label>
-                <input type="password" id="settingNewPw" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter new password">
-            </div>
-            
-            <button onclick="updateUserPassword()" class="w-full bg-slate-800 text-blue-400 py-3 rounded-xl font-bold border border-slate-700 hover:bg-slate-700 transition">
-                Save Changes
-            </button>
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-8">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Change Password</label>
+            <input type="password" id="settingNewPw" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter new password">
         </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-3">Profile Icon</label>
+            <div id="emojiGrid" class="grid grid-cols-5 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+            </div>
+            <input type="hidden" id="selectedEmoji" value="1.webp">
+        </div>
+        
+        <button onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg active:scale-95">
+            SAVE CHANGES
+        </button>
     </div>
 </div>
 
 <script>
-    window.updateUserPassword = function() {
+    (function() {
+        const grid = document.getElementById('emojiGrid');
+        const hiddenInput = document.getElementById('selectedEmoji');
         const user = sessionStorage.getItem('loggedInUser');
-        const newPw = document.getElementById('settingNewPw').value;
+
+        // 1. 이모티콘 리스트 (10번 파일명 주의: 10.webp 인지 1０.webp 인지 확인 필요)
+        const emojis = ['1.webp', '2.webp', '3.webp', '4.webp', '5.webp', '6.webp', '7.webp', '8.webp', '9.webp', '10.webp'];
         
-        if(!newPw) return alert("Please enter a password.");
-        
-        firebase.database().ref('users/' + user).update({ 
-            password: newPw 
-        }).then(() => {
-            alert("Password updated successfully!");
-            document.getElementById('settingNewPw').value = '';
-        }).catch(error => {
-            alert("Update failed: " + error.message);
+        firebase.database().ref('users/' + user).once('value', snap => {
+            const currentImg = snap.val()?.profileImg || '1.webp';
+            hiddenInput.value = currentImg;
+
+            emojis.forEach(imgName => {
+                const imgWrap = document.createElement('div');
+                // 초기 로드 시 선택 상태 표시
+                const isSelected = currentImg === imgName;
+                imgWrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
+                imgWrap.innerHTML = `<img src="images/profile/${imgName}" class="w-full h-auto rounded-md object-cover aspect-square" alt="profile">`;
+                
+                imgWrap.onclick = () => {
+                    // 모든 아이템의 스타일 초기화 (child 접근 수정됨)
+                    Array.from(grid.children).forEach(child => {
+                        child.classList.remove('border-blue-500', 'bg-blue-500/20');
+                        child.classList.add('border-transparent');
+                    });
+                    
+                    // 클릭한 아이템 강조
+                    imgWrap.classList.remove('border-transparent');
+                    imgWrap.classList.add('border-blue-500', 'bg-blue-500/20');
+                    
+                    // hidden input 값 업데이트
+                    hiddenInput.value = imgName;
+                };
+                grid.appendChild(imgWrap);
+            });
         });
-    };
+
+        // 2. 통합 저장 함수
+        window.updateUserAccount = function() {
+            const newPw = document.getElementById('settingNewPw').value;
+            const profileImg = hiddenInput.value;
+            
+            const updates = { profileImg: profileImg };
+            if(newPw) updates.password = newPw;
+            
+            firebase.database().ref('users/' + user).update(updates).then(() => {
+                alert("Account updated successfully!");
+                // 탭 시스템 환경이므로 location.reload() 보다는 부모 페이지나 메인에서 업데이트를 감지하도록 설계됨
+                // 만약 전체 새로고침이 필요하면 아래 주석 해제
+                // location.reload(); 
+            }).catch(e => {
+                console.error(e);
+                alert("Update failed.");
+            });
+        };
+    })();
 </script>
