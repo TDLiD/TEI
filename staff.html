@@ -34,7 +34,10 @@
             <div class="flex lg:flex-col justify-between items-center lg:items-start gap-4 mb-6 lg:mb-12">
                 <div>
                     <h1 class="text-xl lg:text-2xl font-black tracking-tighter text-white uppercase">Daily <span class="text-blue-500">System</span></h1>
-                    <p id="desktopUser" class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest"></p>
+                    <div id="staff_profile_nav" class="flex items-center gap-2 mt-2">
+                        <div id="navEmojiContainer"></div>
+                        <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
+                    </div>
                 </div>
                 <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase">Logout</button>
             </div>
@@ -88,7 +91,24 @@
         const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         
-        if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+// [수정] 사이드바에 유저 이름 및 이모티콘 실시간 반영
+if(loggedInUser) {
+    if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+    
+    // 실시간 리스너로 프로필 이미지 가져오기
+    firebase.database().ref('users/' + loggedInUser).on('value', snap => {
+        const userData = snap.val();
+        const profileImg = userData?.profileImg || '1.webp';
+        const emojiContainer = document.getElementById('navEmojiContainer');
+        if(emojiContainer) {
+            // w-6 h-6 (모바일: 24px) | lg:w-12 lg:h-12 (데스크톱: 48px)
+            emojiContainer.innerHTML = `
+                <img src="images/profile/${profileImg}" 
+                     class="w-6 h-6 lg:w-12 lg:h-12 rounded-full border-2 border-slate-700 object-cover shadow-lg transition-all duration-300">
+            `;
+        }
+    });
+}
 
         function switchTab(type) {
             const tabs = {
@@ -158,7 +178,7 @@
                 location.href = "index.html"; 
             }
         }
-        
+
         // --- [추가 코드] 자동 로그아웃 (Inactivity Timeout) ---
         (function() {
             let timeoutTimer;
@@ -175,7 +195,6 @@
                 timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
             }
 
-            // 활동 감지 이벤트 등록
             window.onload = resetTimer;
             window.onmousemove = resetTimer;
             window.onmousedown = resetTimer; 
@@ -187,7 +206,5 @@
 
         switchTab('dash');
     </script>
-
-
 </body>
 </html>
