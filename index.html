@@ -15,9 +15,14 @@
             -webkit-tap-highlight-color: transparent; 
             margin: 0;
             overflow-x: hidden;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            transition: background 0.5s ease-in-out;
         }
 
-        /* 비디오 배경 스타일 */
+        /* 비디오 배경 스타일 (기본 숨김) */
         #video-bg {
             position: fixed;
             top: 50%;
@@ -28,17 +33,18 @@
             height: auto;
             z-index: -2;
             transform: translate(-50%, -50%);
-            object-fit: cover; /* 반응형 핵심: 비디오가 화면을 꽉 채우게 함 */
+            object-fit: cover;
+            display: none; /* JS에서 PC일 때만 block으로 변경 */
         }
 
-        /* 비디오 위의 어두운 오버레이 (가독성용) */
+        /* 배경 위 어두운 오버레이 */
         .video-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* 0.5는 어두운 정도 (조절 가능) */
+            background: rgba(0, 0, 0, 0.5);
             z-index: -1;
         }
         
@@ -64,8 +70,8 @@
 
     <video autoplay muted loop playsinline id="video-bg">
         <source src="images/gif/jennie.mp4" type="video/mp4">
-        Your browser does not support the video tag.
     </video>
+    
     <div class="video-overlay"></div>
 
     <div class="text-center mb-8 md:mb-12 animate-fadeIn w-full max-w-lg">
@@ -120,22 +126,42 @@
 
     <script>
         (function() {
-            // 요일별 배경 설정 로직 제거 (이제 단일 mp4 배경 사용)
-            // 만약 나중에 동영상도 요일별로 바꾼다면 여기서 video-bg의 src를 수정하면 됩니다.
+            // --- 기기 감지 및 배경 설정 로직 ---
+            const setResponsiveBackground = () => {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const videoEl = document.getElementById('video-bg');
 
-            // --- 기존 Firebase 및 로그인 로직 유지 ---
+                if (isMobile) {
+                    // 1. 모바일 기기일 때: GIF 요일별 적용
+                    videoEl.style.display = 'none'; // 비디오 숨김
+                    
+                    const day = new Date().getDay(); // 0(일)~6(토)
+                    const dailyImages = {
+                        1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif",
+                        4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif", 0: "jennie-7.gif"
+                    };
+                    const bgImage = dailyImages[day] || "jennie-1.gif";
+                    
+                    document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('images/gif/${bgImage}')`;
+                } else {
+                    // 2. PC일 때: MP4 비디오 적용
+                    videoEl.style.display = 'block';
+                    document.body.style.backgroundImage = 'none';
+                }
+            };
+
+            // 초기 실행
+            setResponsiveBackground();
+
+            // --- 기존 Firebase 및 로그인 로직 ---
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
-            
             const userSelect = document.getElementById('userName');
             const passwordInput = document.getElementById('password');
 
             passwordInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleLogin();
-                }
+                if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
             });
 
             database.ref('users').once('value', (snapshot) => {
@@ -166,9 +192,7 @@
                         sessionStorage.setItem('loggedInUser', name);
                         sessionStorage.setItem('userRole', userData.role);
                         location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
-                    } else {
-                        alert("Incorrect password.");
-                    }
+                    } else { alert("Incorrect password."); }
                 });
             };
 
@@ -182,9 +206,7 @@
                             const pw = userData.password;
                             const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
                             alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
-                        } else {
-                            alert("User information or password not found.");
-                        }
+                        } else { alert("User information or password not found."); }
                     });
                 }
             };
