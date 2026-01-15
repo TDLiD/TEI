@@ -27,9 +27,9 @@
         const hiddenInput = document.getElementById('selectedEmoji');
         const user = sessionStorage.getItem('loggedInUser');
 
-        // 1. 이미지 리스트 생성 (image-001.webp ~ image-032.webp)
+        // 1. 이미지 리스트 생성 (image-001.webp ~ image-036.webp)
         const emojis = [];
-        for (let i = 1; i <= 32; i++) {
+        for (let i = 1; i <= 36; i++) {
             // 숫자를 3자리 문자열로 변환 (예: 1 -> 001, 10 -> 010)
             const imgNumber = String(i).padStart(3, '0');
             emojis.push(`image-${imgNumber}.webp`);
