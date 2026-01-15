@@ -453,17 +453,21 @@ window.saveDashboardSchedule = function(id) {
         if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
 
-    // --- 초기화 실행 ---
+// --- 초기화 실행 ---
     window.initAdminDashboard = function() {
+        console.log("🚀 Admin Dashboard Initializing...");
         window.updateQuickStats();
         window.renderRecentAttendance();
         window.renderRecentWork();
         window.renderRecentSchedule();
-        console.log("🚀 Admin Dashboard Synchronized");
+        console.log("✅ Admin Dashboard Ready");
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(window.initAdminDashboard, 500);
-    });
+    // 기존의 document.addEventListener('DOMContentLoaded', ...) 대신 
+    // 즉시 실행하거나 admin.html에서 호출할 수 있게 준비합니다.
+    if (document.getElementById('quick_stats_container')) {
+        setTimeout(window.initAdminDashboard, 100);
+    }
+
 })();
 </script>

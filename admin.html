@@ -112,15 +112,17 @@
     </button>
 </nav>
 
-<div id="adminCustomModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAdminCustomModal()"></div>
-    <div class="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="p-8">
-            <div id="modalTitle" class="mb-6"></div>
-            <div id="modalBody"></div>
+
+<div id="adminCustomModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
+                <button onclick="closeAdminCustomModal()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
         </div>
     </div>
-</div>
+
 
 <script>
 /* =========================================================
@@ -140,106 +142,116 @@
 })();
 
 /* =========================================================
-   2. ADMIN 공용 모달
+   2. ADMIN 공용 모달 (고정 및 보호 버전)
    ========================================================= */
-if (!window.openAdminCustomModal) {
-    window.openAdminCustomModal = function (titleHtml, bodyHtml) {
+(function() {
+    const openFn = function (titleHtml, bodyHtml) {
         const modal = document.getElementById('adminCustomModal');
-        const tBox  = document.getElementById('modalTitle');
-        const bBox  = document.getElementById('modalBody');
-        if (!modal || !tBox || !bBox) return;
-        tBox.innerHTML = titleHtml;
-        bBox.innerHTML = bodyHtml;
+        const tBox = document.getElementById('modalTitle');
+        const bBox = document.getElementById('modalBody');
+
+        if (!modal) return;
+        if (tBox) tBox.innerHTML = titleHtml;
+        if (bBox) bBox.innerHTML = bodyHtml;
+        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     };
-    window.closeAdminCustomModal = function () {
+
+    const closeFn = function () {
         const modal = document.getElementById('adminCustomModal');
         if (modal) {
             modal.classList.add('hidden');
-            document.body.style.overflow = '';
         }
+        document.body.style.overflow = '';
     };
-    Object.defineProperty(window, 'openAdminCustomModal', { writable: false, configurable: false });
-    Object.defineProperty(window, 'closeAdminCustomModal', { writable: false, configurable: false });
-}
+
+    // 전역 변수로 등록하되, 다른 스크립트가 덮어쓰지 못하도록 잠금(writable: false)
+    Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false, configurable: true });
+    Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false, configurable: true });
+})();
 
 /* =========================================================
-   3. 탭 전환 (SPA Loader) - 리스너 정리 로직 포함
+   3. 탭 전환 (SPA Loader) - 안정성 강화
    ========================================================= */
 async function switchAdminTab(tab) {
-    // [보완] 탭 전환 시작 시 기존 리스너 해제 시도
-    // 각 페이지의 리스너가 중첩되어 실행되거나 죽은 DOM을 참조하는 것을 방지합니다.
-    if (typeof db !== 'undefined') {
-        db.ref('shared_schedules').off();
-        db.ref('attendance').off();
-        db.ref('reports').off();
-        // 필요한 다른 레퍼런스들도 이곳에서 .off() 처리 가능
+    // 1. 초기화 (에러 무시)
+    try {
+        document.body.style.overflow = '';
+        if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+    } catch (e) {}
+
+    // 2. Firebase 리스너 정리
+    if (window.db) {
+        const paths = ['attendance', 'reports', 'users', 'shared_schedules'];
+        paths.forEach(p => { try { db.ref(p).off(); } catch(e){} });
     }
 
-    // UI 업데이트
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('tab-active');
-        b.classList.add('tab-inactive');
-    });
+    // 3. 컨텐츠 영역 확보
+    const area = document.getElementById('adminContent');
+    if (!area) return;
+    area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+
+    // 4. UI 업데이트
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
     document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
 
-    document.querySelectorAll('.mobile-nav button').forEach(b => {
-        b.classList.remove('mobile-tab-active');
-    });
-    document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
-
     const map = {
-        dashboard:  'admin_dashboard.html',
+        dashboard: 'admin_dashboard.html',
         attendance: 'admin_attendance.html',
-        reports:    'admin_report.html',
-        schedule:   'admin_calendar.html',
-        statistic:  'admin_statistic.html',
-        settings:   'admin_setting.html'
+        reports: 'admin_report.html',
+        schedule: 'admin_calendar.html',
+        statistic: 'admin_statistic.html',
+        settings: 'admin_setting.html'
     };
 
     try {
-        const res  = await fetch(map[tab]);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
+        const res = await fetch(map[tab]);
+        if (!res.ok) throw new Error("파일을 찾을 수 없습니다.");
         const html = await res.text();
-        const area = document.getElementById('adminContent');
-
-        // [보완] 새로운 컨텐츠를 넣기 전에 영역을 완전히 비워 잔상을 제거
-        area.innerHTML = ''; 
+        
+        // 5. HTML 삽입
         area.innerHTML = html;
 
-        // 스크립트 재실행 로직
-        area.querySelectorAll('script').forEach(oldScript => {
-            const s = document.createElement('script');
+        // 6. 스크립트 실행
+        const scripts = area.querySelectorAll('script');
+        for (const oldScript of scripts) {
+            const newScript = document.createElement('script');
             if (oldScript.src) {
-                s.src = oldScript.src;
-                s.async = false; // 순서 보장을 위해 동기적 로드 설정
+                newScript.src = oldScript.src;
+                newScript.async = false;
+                await new Promise(r => { newScript.onload = r; newScript.onerror = r; document.head.appendChild(newScript); });
             } else {
-                s.textContent = oldScript.textContent;
+                newScript.textContent = oldScript.textContent;
+                document.head.appendChild(newScript);
             }
-            document.body.appendChild(s);
-            document.body.removeChild(s);
-        });
+            if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
+        }
 
-        // 페이지별 초기화 함수 호출 (약간의 지연을 주어 DOM 안착 보장)
+        // 7. 초기화 함수 실행 (약간의 지연으로 DOM 안착 대기)
         setTimeout(() => {
-            if (tab === 'dashboard')  window.initAdminDashboard?.();
-            if (tab === 'attendance') window.renderAttendanceFull?.();
-            if (tab === 'reports')    window.renderWorkFull?.();
-            if (tab === 'schedule')   window.renderScheduleFull?.();
-            if (tab === 'statistic')  window.initAdminStatistic?.(); 
-            if (tab === 'settings')   window.initAdminSettings?.();
-        }, 150);
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+            const initFuncs = {
+                dashboard: 'initAdminDashboard',
+                attendance: 'renderAttendanceFull',
+                reports: 'renderWorkFull',
+                schedule: 'renderScheduleFull',
+                statistic: 'initAdminStatistic',
+                settings: 'initAdminSettings'
+            };
+            const fn = window[initFuncs[tab]];
+            if (typeof fn === 'function') fn();
+        }, 100);
 
     } catch (e) {
-        console.error('[ADMIN TAB LOAD ERROR]', e);
-        // 에러 발생 시 사용자에게 알림 (선택 사항)
-        // area.innerHTML = `<div class="p-10 text-center text-red-500">페이지를 불러오지 못했습니다.</div>`;
+        area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
     }
 }
+
+
+// 1. 브라우저 새로고침이나 탭을 닫을 때를 대비한 안전장치
+window.addEventListener('beforeunload', () => {
+    document.body.style.overflow = '';
+});
 
 
 /* =========================================================
