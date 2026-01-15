@@ -25,7 +25,29 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 모든 페이지 공통: 사이드바 프로필 이미지 사이즈 통일 */
+    .nav-profile-img {
+        width: 60px !important;  /* 모바일 사이즈 */
+        height: 60px !important;
+        border-radius: 50%;
+        border: 2px solid #334155;
+        object-fit: cover;
+        display: block;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+    }
+
+    @media (min-width: 1024px) {
+        .nav-profile-img {
+            width: 100px !important; /* 데스크톱 사이즈 (staff_main과 동일하게 맞춤) */
+            height: 100px !important;
+        }
+    }
+
     </style>
+
+
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
 
@@ -100,13 +122,13 @@ if(loggedInUser) {
         const profileImg = userData?.profileImg || '1.webp';
         const emojiContainer = document.getElementById('navEmojiContainer');
         
-        if(emojiContainer) {
-            // 사이드바 이미지만 2배 이상 키우는 클래스 적용
-            emojiContainer.innerHTML = `
-                <img src="images/profile/${profileImg}" 
-                     class="nav-profile-img shadow-xl transition-all duration-300">
-            `;
-        }
+if(emojiContainer) {
+        // 반드시 class="nav-profile-img"가 포함되어야 위에서 설정한 CSS가 적용됩니다.
+        emojiContainer.innerHTML = `
+            <img src="images/profile/${profileImg}" 
+                 class="nav-profile-img shadow-xl">
+        `;
+    }
     });
 }
 
