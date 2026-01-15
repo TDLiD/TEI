@@ -152,7 +152,7 @@
 <script>
 (function() {
 
-// 1. 여기에 추가하세요 (함수 정의)
+    // 1. 여기에 추가하세요 (함수 정의)
     window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         const modal = document.getElementById('admin_custom_modal');
         const titleContainer = document.getElementById('admin_modal_title');
@@ -413,7 +413,7 @@
             .then(() => { if(window.closeAdminCustomModal) window.closeAdminCustomModal(); });
     };
 
-    /* --- 4. 렌더링 로직 (드래그 속성 추가) --- */
+    /* --- 4. 렌더링 로직 (오류 해결 및 중복 제거 버전) --- */
     window.renderScheduleFull = function() {
         const year = viewDate.getFullYear(), month = viewDate.getMonth();
         const isMobile = window.innerWidth < 768;
@@ -440,24 +440,36 @@
 
             const eventFinalSlot = {};
             const daySlotUsage = {};
+
+            // 슬롯 계산 로직
             sortedEvents.forEach(ev => {
                 let slot = 0;
-                while (true) {
+                let found = false;
+                while (!found) {
                     let isAvailable = true;
-                    for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                    let startDate = new Date(ev.sDate);
+                    let endDate = new Date(ev.eDate);
+
+                    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                         const dStr = d.toISOString().split('T')[0];
-                        if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) { isAvailable = false; break; }
+                        if (daySlotUsage[dStr] && daySlotUsage[dStr].has(slot)) {
+                            isAvailable = false;
+                            break;
+                        }
                     }
+
                     if (isAvailable) {
-                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                             const dStr = d.toISOString().split('T')[0];
                             if (!daySlotUsage[dStr]) daySlotUsage[dStr] = new Set();
                             daySlotUsage[dStr].add(slot);
                         }
                         eventFinalSlot[ev.id] = slot;
-                        break;
+                        found = true;
+                    } else {
+                        slot++;
                     }
-                    slot++;
+                    if (slot > 50) found = true;
                 }
             });
 
@@ -478,7 +490,6 @@
                     const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
                     const isToday = (dStr === todayStr);
 
-                    // 드롭 타겟 설정
                     td.dataset.date = dStr;
                     td.ondragover = window.handleAdminDragOver;
                     td.ondragleave = window.handleAdminDragLeave;
@@ -489,31 +500,36 @@
                         if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot;
                     }
 
-                    td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
+                    td.onclick = (e) => { 
+                        if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) 
+                            window.addAdminSchedule(dStr); 
+                    };
 
                     let html = `<div class="date-wrapper flex justify-between items-center">
-                        <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
-                            ${dateNum}
-                        </span>
-                    </div>`;
+                                    <span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">
+                                        ${dateNum}
+                                    </span>
+                                </div>`;
                     
                     sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
                         const shouldShow = isMobile || (dStr === ev.sDate || j === 0);
                         if (shouldShow) {
-                            const currentSlot = eventFinalSlot[ev.id];
+                            const currentSlot = eventFinalSlot[ev.id] || 0;
                             const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
                             const span = Math.min(diffDays + 1, 7 - j);
-                            const isContinued = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
-                            
-                            html += `<div onclick="event.stopPropagation(); window.showAdminSchDetail('${ev.id}', '${ev.title.replace(/'/g, "\\'")}', '${ev.start}', '${ev.end}', '${ev.author}', '${encodeURIComponent(ev.desc||'')}', '${encodeURIComponent(ev.adminMemo||'')}')" 
-                                draggable="true"
-                                ondragstart="window.handleAdminDragStart(event, '${ev.id}')"
-                                ondragend="window.handleAdminDragEnd(event)"
-                                class="sch-item ${ev.adminMemo?'bg-purple-600':'bg-blue-600'} ${isContinued} text-white" 
-                                style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
-                                <span class="sch-title-text">${(isContinued && !isMobile) ? '' : ev.title}</span>
-                                <span class="sch-staff-tag">${ev.author||''}</span>
-                            </div>`;
+                            const isCont = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
+
+                            const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+
+                            html += `<div onclick="event.stopPropagation(); window.handleAdminSchClick('${ev.id}', ${evData})" 
+                                        draggable="true"
+                                        ondragstart="window.handleAdminDragStart(event, '${ev.id}')"
+                                        ondragend="window.handleAdminDragEnd(event)"
+                                        class="sch-item ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'} ${isCont} text-white cursor-pointer" 
+                                        style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px);`}">
+                                        <span class="sch-title-text">${(isCont && !isMobile) ? '' : ev.title}</span>
+                                        <span class="sch-staff-tag">${ev.author||''}</span>
+                                    </div>`;
                         }
                     });
 
@@ -534,8 +550,23 @@
         });
     };
 
+    window.handleAdminSchClick = function(id, ev) {
+        if (typeof window.showAdminSchDetail === 'function') {
+            window.showAdminSchDetail(
+                id, 
+                ev.title, 
+                ev.start, 
+                ev.end, 
+                ev.author || 'admin', 
+                ev.desc || '', 
+                ev.adminMemo || ''
+            );
+        }
+    };
+
     window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
     window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
 
     window.renderScheduleFull();
-})();</script>
+})();
+</script>

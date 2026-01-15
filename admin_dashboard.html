@@ -1,3 +1,9 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+
 <div class="space-y-8 animate-fadeIn">
     <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
@@ -78,6 +84,15 @@
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.animate-blink {
+    animation: blink 1s infinite;
+}
+
 </style>
 
 
@@ -99,25 +114,33 @@ for(let i = -5; i <= 5; i++) {
 last5Days.sort();
 
 function initEditTimePickers(isAllDay = false) {
+    // 라이브러리 로드 여부 확인
+    if (typeof flatpickr === 'undefined') {
+        console.error("Flatpickr library is not loaded.");
+        return;
+    }
+
     const config = {
         enableTime: !isAllDay,
         dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
         altInput: true,
         altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
         monthSelectorType: "static",
-        locale: "ko", // 'en'에서 'ko'로 변경 가능
-        static: true,  // 모달 안에서 위치가 어긋나지 않게 고정
-        theme: "dark"  // 어두운 테마 적용
+        locale: "ko", 
+        static: true,
+        theme: "dark"
     };
     
     if (editStartPicker) editStartPicker.destroy();
     if (editEndPicker) editEndPicker.destroy();
     
-    // 이 부분이 실행될 때 라이브러리가 로드되어 있어야 에러가 나지 않습니다.
-    editStartPicker = flatpickr("#db_sch_start", config);
-    editEndPicker = flatpickr("#db_sch_end", config);
+    // input 요소가 DOM에 존재하는지 확인 후 초기화
+    const startEl = document.getElementById("db_sch_start");
+    const endEl = document.getElementById("db_sch_end");
+    
+    if (startEl) editStartPicker = flatpickr(startEl, config);
+    if (endEl) editEndPicker = flatpickr(endEl, config);
 }
-
 
 
     window.toggleEditTimePicker = function(isAllDay) {
@@ -209,23 +232,33 @@ function initEditTimePickers(isAllDay = false) {
         });
     };
 
-    window.renderRecentWork = function() {
-        const container = document.getElementById('recent_work_container');
-        if(!container) return;
-        db.ref('reports').on('value', snap => {
-            const data = snap.val() || {};
-            container.innerHTML = '';
-            last5Days.forEach(dStr => {
-                const dayData = data[dStr] || {};
-                let reportHtml = '';
-                Object.entries(dayData).forEach(([name, report]) => {
-                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
-                    reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all">${name}</div>`;
-                });
-                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
+window.renderRecentWork = function() {
+    const container = document.getElementById('recent_work_container');
+    if(!container) return;
+    db.ref('reports').on('value', snap => {
+        const data = snap.val() || {};
+        container.innerHTML = '';
+        last5Days.forEach(dStr => {
+            const dayData = data[dStr] || {};
+            let reportHtml = '';
+            Object.entries(dayData).forEach(([name, report]) => {
+                const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
+                
+                // 데이터의 readByAdmin 플래그 확인 (false 이거나 존재하지 않으면 NEW)
+                const isNew = report.readByAdmin !== true;
+                const newBadge = isNew ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : "";
+                
+                reportHtml += `
+                    <div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">
+                        ${newBadge}
+                        <span class="truncate">${name}</span>
+                    </div>`;
             });
+            container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
         });
-    };
+    });
+};
+
 
     window.renderRecentSchedule = function() {
         const container = document.getElementById('recent_sch_container');
@@ -247,8 +280,13 @@ function initEditTimePickers(isAllDay = false) {
         });
     };
 
-    // --- [4] 상세 수정/삭제 핸들러 (Cancel 버튼 추가됨) ---
+  // --- [4] 상세 수정/삭제 핸들러 (읽음 플래그 업데이트 추가됨) ---
     window.showWorkDetail = function(name, date) {
+        // [추가] 상세 내용을 클릭하여 여는 순간 'readByAdmin' 플래그를 true로 업데이트
+        db.ref(`reports/${date}/${name}`).update({
+            readByAdmin: true
+        });
+
         db.ref(`reports/${date}/${name}`).once("value", snap => {
             const r = snap.val() || {};
             const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`;
@@ -270,6 +308,8 @@ function initEditTimePickers(isAllDay = false) {
             window.openAdminCustomModal(titleHtml, bodyHtml);
         });
     };
+
+
 
     window.openEditAttendance = function(name, date, infoEncoded) {
         const info = JSON.parse(decodeURIComponent(infoEncoded));
@@ -345,12 +385,19 @@ window.showSchDetail = function(id) {
 
             window.openAdminCustomModal(titleHtml, bodyHtml);
             
-            // Modal 오픈 후 Flatpickr 초기화 (setTimeout으로 DOM 렌더링 보장)
-            setTimeout(() => {
-                initEditTimePickers(isAllDay);
-                editStartPicker.setDate(ev.start.replace('T', ' '));
-                editEndPicker.setDate(ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' '));
-            }, 50);
+// Modal 오픈 후 Flatpickr 초기화 (setTimeout으로 DOM 렌더링 보장)
+setTimeout(() => {
+    initEditTimePickers(isAllDay);
+    
+    // 수정된 부분: picker 인스턴스를 통해 날짜를 세팅해야 altInput에도 값이 표시됩니다.
+    if (editStartPicker) {
+        editStartPicker.setDate(ev.start.replace('T', ' '));
+    }
+    if (editEndPicker) {
+        const endDate = ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' ');
+        editEndPicker.setDate(endDate);
+    }
+}, 100); // 50ms에서 100ms로 약간 늘려 안정성을 높임
         });
     };
 
