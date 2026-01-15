@@ -11,22 +11,29 @@
         #currentMonthYear { font-size: 0.9rem; }
         .nav-btn { padding: 3px 5px !important; font-size: 0.65rem !important; }
 
-h2#mainWelcomeMsg { 
-            font-size: 1.5rem !important; /* 이름 텍스트 크기 */
-            display: flex;
-            align-items: center;
-            gap: 12px; /* 이모티콘과 이름 사이 간격 증가 */
-            margin-top: 8px;
-        }
+/* 기존 h2#mainWelcomeMsg 스타일 수정 */
+    h2#mainWelcomeMsg { 
+        display: flex;
+        align-items: center;
+        gap: 15px; /* 이미지와 이름 사이 간격 */
+        font-size: 1.5rem !important; 
+    }
 
-        /* 이모티콘 크기를 2배 이상으로 확대 */
-        h2#mainWelcomeMsg .main-emoji {
-            font-size: 3.5rem !important; /* 2배 이상 키운 크기 */
-            display: inline-block;
-            line-height: 1;
-            margin-right: 2px;
-            /* 애니메이션 제거됨 */
+    /* 프로필 이미지(이모티콘) 사이즈 강제 확대 */
+    .nav-profile-img {
+        width: 60px !important;  /* 모바일 기준 기존 24px에서 약 2.5배 확대 */
+        height: 60px !important;
+        border-radius: 50%;
+        border: 2px solid #334155;
+        object-fit: cover;
+    }
+
+    @media (min-width: 1024px) {
+        .nav-profile-img {
+            width: 100px !important; /* 데스크톱 기준 기존 48px에서 2배 이상 확대 */
+            height: 100px !important;
         }
+    }
 
         section { padding: 1rem !important; border-radius: 1.5rem !important; }
     }
@@ -218,13 +225,11 @@ function getJakartaDate() {
 
 (function() {
 
-const user = sessionStorage.getItem('loggedInUser') || 'GUEST';
-    
-    // 이모티콘 사이즈를 키우기 위해 전용 클래스(main-emoji)를 적용한 span을 삽입합니다.
-    // 손바닥 대신 인사하는 표정이나 다른 이모티콘으로 변경 가능합니다.
-    const welcomeElem = document.getElementById('mainWelcomeMsg');
-    if (welcomeElem) {
-        welcomeElem.innerHTML = `<span class="main-emoji">😊</span> ${user}`;
+const user = sessionStorage.getItem('loggedInUser');
+    // 본 페이지(대시보드) 상단에는 이미지 없이 이름만 깔끔하게 표시
+    const welcomeMsg = document.getElementById('mainWelcomeMsg');
+    if (welcomeMsg) {
+        welcomeMsg.innerText = user; 
     }
 
     const db = firebase.database();
