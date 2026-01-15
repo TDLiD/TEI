@@ -12,30 +12,25 @@
         .nav-btn { padding: 3px 5px !important; font-size: 0.65rem !important; }
 
 h2#mainWelcomeMsg { 
-        font-size: 1.5rem !important; /* 이름 텍스트 크기 */
-        display: flex;
-        align-items: center;
-        gap: 10px; /* 이모티콘과 이름 사이 간격 */
-    }
+            font-size: 1.5rem !important; /* 이름 텍스트 크기 */
+            display: flex;
+            align-items: center;
+            gap: 12px; /* 이모티콘과 이름 사이 간격 증가 */
+            margin-top: 8px;
+        }
 
-    /* 이모티콘 크기를 기존 대비 2배 이상으로 확대 */
-    h2#mainWelcomeMsg .main-emoji {
-        font-size: 3.2rem !important; /* 2배 정도 커진 크기 */
-        display: inline-block;
-        line-height: 1;
-        margin-right: 5px;
-        /* 약간의 생동감을 위해 애니메이션 추가 (선택사항) */
-        animation: wave 2s infinite origin-bottom;
-    }
-
-    /* 손 흔드는 애니메이션 (선택사항) */
-    @keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        50% { transform: rotate(15deg); }
-    }
+        /* 이모티콘 크기를 2배 이상으로 확대 */
+        h2#mainWelcomeMsg .main-emoji {
+            font-size: 3.5rem !important; /* 2배 이상 키운 크기 */
+            display: inline-block;
+            line-height: 1;
+            margin-right: 2px;
+            /* 애니메이션 제거됨 */
+        }
 
         section { padding: 1rem !important; border-radius: 1.5rem !important; }
     }
+
 
     .calendar-table td:hover { background-color: #0f172a; }
     .today-highlight { background-color: rgba(37, 99, 235, 0.1); border: 2px solid #3b82f6 !important; z-index: 10; }
@@ -223,9 +218,14 @@ function getJakartaDate() {
 
 (function() {
 
-const user = sessionStorage.getItem('loggedInUser');
-// 이모티콘을 span으로 감싸서 클래스를 부여합니다.
-document.getElementById('mainWelcomeMsg').innerHTML = `<span class="main-emoji">👋</span> ${user}`;
+const user = sessionStorage.getItem('loggedInUser') || 'GUEST';
+    
+    // 이모티콘 사이즈를 키우기 위해 전용 클래스(main-emoji)를 적용한 span을 삽입합니다.
+    // 손바닥 대신 인사하는 표정이나 다른 이모티콘으로 변경 가능합니다.
+    const welcomeElem = document.getElementById('mainWelcomeMsg');
+    if (welcomeElem) {
+        welcomeElem.innerHTML = `<span class="main-emoji">😊</span> ${user}`;
+    }
 
     const db = firebase.database();
     
