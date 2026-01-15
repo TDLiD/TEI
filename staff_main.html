@@ -10,7 +10,21 @@
         .time-label { font-size: 0.45rem !important; padding: 1px !important; margin-top: 1px !important; line-height: 1; letter-spacing: -0.05em; }
         #currentMonthYear { font-size: 0.9rem; }
         .nav-btn { padding: 3px 5px !important; font-size: 0.65rem !important; }
-        h2#mainWelcomeMsg { font-size: 1.25rem !important; line-height: 1.2; }
+
+/* 환영 메시지 및 이모티콘 크기 키우기 */
+    h2#mainWelcomeMsg { 
+        font-size: 1.8rem !important; /* 전체적인 크기 증가 */
+        line-height: 1.4; 
+        display: block; /* 줄바꿈 허용으로 시인성 확보 */
+    }
+
+    /* 만약 이모티콘만 별도의 span 등으로 감싸져 있다면 아래처럼 추가 */
+    h2#mainWelcomeMsg span.emoji {
+        font-size: 2.5rem !important; /* 이모티콘만 더 크게 */
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
         section { padding: 1rem !important; border-radius: 1.5rem !important; }
     }
 
