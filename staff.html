@@ -95,20 +95,21 @@
 if(loggedInUser) {
     if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
     
-    // 실시간 리스너로 프로필 이미지 가져오기
     firebase.database().ref('users/' + loggedInUser).on('value', snap => {
         const userData = snap.val();
         const profileImg = userData?.profileImg || '1.webp';
         const emojiContainer = document.getElementById('navEmojiContainer');
+        
         if(emojiContainer) {
-            // w-6 h-6 (모바일: 24px) | lg:w-12 lg:h-12 (데스크톱: 48px)
+            // 사이드바 이미지만 2배 이상 키우는 클래스 적용
             emojiContainer.innerHTML = `
                 <img src="images/profile/${profileImg}" 
-                     class="w-6 h-6 lg:w-12 lg:h-12 rounded-full border-2 border-slate-700 object-cover shadow-lg transition-all duration-300">
+                     class="nav-profile-img shadow-xl transition-all duration-300">
             `;
         }
     });
 }
+
 
         function switchTab(type) {
             const tabs = {
