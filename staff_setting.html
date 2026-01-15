@@ -27,61 +27,54 @@
         const hiddenInput = document.getElementById('selectedEmoji');
         const user = sessionStorage.getItem('loggedInUser');
 
-        // 1. 이모티콘 리스트 (10번 파일명 주의: 10.webp 인지 1０.webp 인지 확인 필요)
-        const emojis = ['1.webp', '2.webp', '3.webp', '4.webp', '5.webp', '6.webp', '7.webp', '8.webp', '9.webp', '10.webp', '11.webp'];
+        // 1. 이미지 리스트 생성 (image-001.webp ~ image-032.webp)
+        const emojis = [];
+        for (let i = 1; i <= 32; i++) {
+            // 숫자를 3자리 문자열로 변환 (예: 1 -> 001, 10 -> 010)
+            const imgNumber = String(i).padStart(3, '0');
+            emojis.push(`image-${imgNumber}.webp`);
+        }
         
         firebase.database().ref('users/' + user).once('value', snap => {
-            const currentImg = snap.val()?.profileImg || '1.webp';
+            // 기본값도 새로운 파일명 형식에 맞춰 수정 (예: image-001.webp)
+            const currentImg = snap.val()?.profileImg || 'image-001.webp';
             hiddenInput.value = currentImg;
 
             emojis.forEach(imgName => {
                 const imgWrap = document.createElement('div');
-                // 초기 로드 시 선택 상태 표시
                 const isSelected = currentImg === imgName;
                 imgWrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
+                
                 imgWrap.innerHTML = `<img src="images/profile/${imgName}" class="w-full h-auto rounded-md object-cover aspect-square" alt="profile">`;
                 
                 imgWrap.onclick = () => {
-                    // 모든 아이템의 스타일 초기화 (child 접근 수정됨)
                     Array.from(grid.children).forEach(child => {
                         child.classList.remove('border-blue-500', 'bg-blue-500/20');
                         child.classList.add('border-transparent');
                     });
-                    
-                    // 클릭한 아이템 강조
                     imgWrap.classList.remove('border-transparent');
                     imgWrap.classList.add('border-blue-500', 'bg-blue-500/20');
-                    
-                    // hidden input 값 업데이트
                     hiddenInput.value = imgName;
                 };
                 grid.appendChild(imgWrap);
             });
         });
 
-        // 2. 통합 저장 함수
-window.updateUserAccount = function() {
-    const pwInput = document.getElementById('settingNewPw');
-    const newPw = pwInput.value.trim(); // 공백 제거
-    const profileImg = hiddenInput.value;
-    
-    const updates = { profileImg: profileImg };
-    
-    // 만약 사용자가 비밀번호 칸을 건드리지 않았다면(빈칸이라면) 
-    // password 필드 자체를 업데이트 객체에 넣지 않습니다.
-    if(newPw !== "") {
-        updates.password = newPw;
-    }
-    
-    firebase.database().ref('users/' + user).update(updates).then(() => {
-        alert("Account updated successfully!");
-        // 비번 변경 후 입력창 초기화
-        pwInput.value = ""; 
-    }).catch(e => {
-        console.error(e);
-        alert("Update failed.");
-    });
-};
-
+        // 2. 통합 저장 함수 (기존과 동일)
+        window.updateUserAccount = function() {
+            const pwInput = document.getElementById('settingNewPw');
+            const newPw = pwInput.value.trim();
+            const profileImg = hiddenInput.value;
+            const updates = { profileImg: profileImg };
+            if(newPw !== "") { updates.password = newPw; }
+            
+            firebase.database().ref('users/' + user).update(updates).then(() => {
+                alert("Account updated successfully!");
+                pwInput.value = ""; 
+            }).catch(e => {
+                console.error(e);
+                alert("Update failed.");
+            });
+        };
     })();
 </script>
