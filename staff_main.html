@@ -11,18 +11,27 @@
         #currentMonthYear { font-size: 0.9rem; }
         .nav-btn { padding: 3px 5px !important; font-size: 0.65rem !important; }
 
-/* 환영 메시지 및 이모티콘 크기 키우기 */
-    h2#mainWelcomeMsg { 
-        font-size: 1.8rem !important; /* 전체적인 크기 증가 */
-        line-height: 1.4; 
-        display: block; /* 줄바꿈 허용으로 시인성 확보 */
+h2#mainWelcomeMsg { 
+        font-size: 1.5rem !important; /* 이름 텍스트 크기 */
+        display: flex;
+        align-items: center;
+        gap: 10px; /* 이모티콘과 이름 사이 간격 */
     }
 
-    /* 만약 이모티콘만 별도의 span 등으로 감싸져 있다면 아래처럼 추가 */
-    h2#mainWelcomeMsg span.emoji {
-        font-size: 2.5rem !important; /* 이모티콘만 더 크게 */
+    /* 이모티콘 크기를 기존 대비 2배 이상으로 확대 */
+    h2#mainWelcomeMsg .main-emoji {
+        font-size: 3.2rem !important; /* 2배 정도 커진 크기 */
         display: inline-block;
-        margin-bottom: 5px;
+        line-height: 1;
+        margin-right: 5px;
+        /* 약간의 생동감을 위해 애니메이션 추가 (선택사항) */
+        animation: wave 2s infinite origin-bottom;
+    }
+
+    /* 손 흔드는 애니메이션 (선택사항) */
+    @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(15deg); }
     }
 
         section { padding: 1rem !important; border-radius: 1.5rem !important; }
@@ -213,8 +222,11 @@ function getJakartaDate() {
 }
 
 (function() {
-    const user = sessionStorage.getItem('loggedInUser');
-    document.getElementById('mainWelcomeMsg').innerText = user;
+
+const user = sessionStorage.getItem('loggedInUser');
+// 이모티콘을 span으로 감싸서 클래스를 부여합니다.
+document.getElementById('mainWelcomeMsg').innerHTML = `<span class="main-emoji">👋</span> ${user}`;
+
     const db = firebase.database();
     
     let now = getJakartaDate(); 
