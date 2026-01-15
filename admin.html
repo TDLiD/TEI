@@ -12,9 +12,10 @@
 
     <style>
         body { font-family: Pretendard, sans-serif; background:#000; color:#f1f5f9; margin: 0; padding: 0; }
-        .tab-btn { transition:.25s; cursor: pointer; }
-        .tab-active { color:#3b82f6; font-weight:900; background:rgba(59,130,246,.1); border-radius:1rem; }
+        .tab-btn { transition:.25s; cursor: pointer; border-radius: 0.75rem; margin-bottom: 0.25rem; }
+        .tab-active { color:#3b82f6; font-weight:900; background:rgba(59,130,246,.1); }
         .tab-inactive { color:#64748b; }
+        .tab-inactive:hover { color:#f1f5f9; background:rgba(255,255,255,0.05); }
 
         /* 모바일 하단 탭바 전용 스타일 */
         .mobile-tab-active { color: #3b82f6 !important; font-weight: 900; }
@@ -23,30 +24,22 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
         @media (max-width: 767px) {
-            aside { display: none; }
+            aside { display: none !important; }
             main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
             .mobile-header { display: flex !important; }
-            .mobile-nav { display: grid !important; } /* flex에서 grid로 변경하여 간격 최적화 */
+            .mobile-nav { display: grid !important; }
         }
-
-@media (max-width: 767px) {
-        aside { display: none !important; } /* 확실하게 숨김 처리 */
-        main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
-        .mobile-header { display: flex !important; }
-        .mobile-nav { display: grid !important; }
-    }
-
     </style>
-
-
 </head>
 
 <body class="flex min-h-screen">
 
-<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-5 justify-between">
-    <div class="flex items-center gap-2">
-        <h1 class="text-lg font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-        <div class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full font-bold uppercase tracking-tighter">Master</div>
+<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full border border-slate-700 overflow-hidden bg-slate-800">
+            <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+        </div>
+        <h1 class="text-md font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
     </div>
     <div class="flex items-center gap-4">
         <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
@@ -55,13 +48,27 @@
 </header>
 
 <aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
-    <div class="flex items-center gap-3 mb-10">
-        <h1 class="text-2xl font-black italic">
+    <div class="mb-10">
+        <h1 class="text-2xl font-black italic mb-6">
             ADMIN <span class="text-blue-500">SYSTEM</span>
         </h1>
+        
+        <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-lg shadow-blue-500/10">
+                <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+            </div>
+            <div class="overflow-hidden">
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
+                <div class="text-sm font-black text-white truncate">MASTER MANAGER</div>
+                <div class="inline-flex items-center gap-1.5 mt-1">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <nav class="flex flex-col gap-2 flex-1">
+    <nav class="flex flex-col gap-1 flex-1">
         <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
         <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
         <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
@@ -112,17 +119,15 @@
     </button>
 </nav>
 
-
 <div id="adminCustomModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
-                <button onclick="closeAdminCustomModal()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
+            <button onclick="closeAdminCustomModal()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
         </div>
+        <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
     </div>
-
+</div>
 
 <script>
 /* =========================================================
@@ -142,59 +147,53 @@
 })();
 
 /* =========================================================
-   2. ADMIN 공용 모달 (고정 및 보호 버전)
+   2. ADMIN 공용 모달
    ========================================================= */
 (function() {
     const openFn = function (titleHtml, bodyHtml) {
         const modal = document.getElementById('adminCustomModal');
         const tBox = document.getElementById('modalTitle');
         const bBox = document.getElementById('modalBody');
-
         if (!modal) return;
         if (tBox) tBox.innerHTML = titleHtml;
         if (bBox) bBox.innerHTML = bodyHtml;
-        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     };
-
     const closeFn = function () {
         const modal = document.getElementById('adminCustomModal');
-        if (modal) {
-            modal.classList.add('hidden');
-        }
+        if (modal) modal.classList.add('hidden');
         document.body.style.overflow = '';
     };
-
-    // 전역 변수로 등록하되, 다른 스크립트가 덮어쓰지 못하도록 잠금(writable: false)
     Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false, configurable: true });
     Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false, configurable: true });
 })();
 
 /* =========================================================
-   3. 탭 전환 (SPA Loader) - 안정성 강화
+   3. 탭 전환 (SPA Loader)
    ========================================================= */
 async function switchAdminTab(tab) {
-    // 1. 초기화 (에러 무시)
     try {
         document.body.style.overflow = '';
         if (window.closeAdminCustomModal) window.closeAdminCustomModal();
     } catch (e) {}
 
-    // 2. Firebase 리스너 정리
     if (window.db) {
         const paths = ['attendance', 'reports', 'users', 'shared_schedules'];
         paths.forEach(p => { try { db.ref(p).off(); } catch(e){} });
     }
 
-    // 3. 컨텐츠 영역 확보
     const area = document.getElementById('adminContent');
     if (!area) return;
     area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
 
-    // 4. UI 업데이트
+    // PC 탭 활성화 UI
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
     document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+
+    // 모바일 탭 활성화 UI
+    document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
+    document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
 
     const map = {
         dashboard: 'admin_dashboard.html',
@@ -209,11 +208,8 @@ async function switchAdminTab(tab) {
         const res = await fetch(map[tab]);
         if (!res.ok) throw new Error("파일을 찾을 수 없습니다.");
         const html = await res.text();
-        
-        // 5. HTML 삽입
         area.innerHTML = html;
 
-        // 6. 스크립트 실행
         const scripts = area.querySelectorAll('script');
         for (const oldScript of scripts) {
             const newScript = document.createElement('script');
@@ -228,7 +224,6 @@ async function switchAdminTab(tab) {
             if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
         }
 
-        // 7. 초기화 함수 실행 (약간의 지연으로 DOM 안착 대기)
         setTimeout(() => {
             const initFuncs = {
                 dashboard: 'initAdminDashboard',
@@ -247,12 +242,9 @@ async function switchAdminTab(tab) {
     }
 }
 
-
-// 1. 브라우저 새로고침이나 탭을 닫을 때를 대비한 안전장치
 window.addEventListener('beforeunload', () => {
     document.body.style.overflow = '';
 });
-
 
 /* =========================================================
    4. 초기 진입
@@ -266,34 +258,26 @@ window.addEventListener('DOMContentLoaded', () => {
    ========================================================= */
 function adminLogout() {
     if(confirm("시스템을 로그아웃 하시겠습니까?")) {
-        // 세션이나 로컬스토리지에 인증 정보가 있다면 여기서 삭제
-        // sessionStorage.removeItem('adminAuth'); 
-        
         alert("성공적으로 로그아웃되었습니다.");
-        location.href = "index.html"; // 메인 페이지로 이동
+        location.href = "index.html";
     }
 }
 
 /* =========================================================
-   6. 자동 로그아웃 (Inactivity Timeout) - 30분
+   6. 자동 로그아웃 (Inactivity Timeout)
    ========================================================= */
 (function() {
     let timeoutTimer;
-    const INACTIVITY_TIME = 30 * 60 * 1000; // 30분 설정
-
+    const INACTIVITY_TIME = 30 * 60 * 1000;
     function autoLogout() {
-        // 관리자 페이지이므로 조금 더 명확한 알림을 줍니다.
         alert("보안을 위해 30분간 활동이 없는 관리자 세션을 자동으로 종료합니다.");
         sessionStorage.clear();
         location.href = "index.html";
     }
-
     function resetTimer() {
         clearTimeout(timeoutTimer);
         timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
     }
-
-    // 마우스 이동, 클릭, 키보드 입력, 터치, 스크롤 감시
     window.onload = resetTimer;
     window.onmousemove = resetTimer;
     window.onmousedown = resetTimer; 
@@ -302,8 +286,6 @@ function adminLogout() {
     window.onkeypress = resetTimer;
     window.addEventListener('scroll', resetTimer, true);
 })();
-
-
 </script>
 
 </body>

@@ -21,17 +21,26 @@
     <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
         <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
             <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>
-            SYSTEM CONFIGURATION
+            SYSTEM CONFIGURATION (24H)
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-end">
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Attendance Time</label>
-                <input type="time" id="std_attendance_time" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:ring-2 focus:ring-amber-500 transition">
+        <div class="flex flex-col md:flex-row items-start md:items-end gap-6">
+            <div class="w-full md:w-auto">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-3 ml-1 tracking-widest">Standard Attendance Time</label>
+                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
+                    <select id="select_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center">
+                        </select>
+                    <span class="text-xl font-bold text-slate-500">:</span>
+                    <select id="select_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center">
+                        </select>
+                </div>
             </div>
-            <button onclick="window.saveSystemConfig()" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">
-                Save Configuration
-            </button>
+            <div class="flex-1 w-full">
+                <button onclick="window.saveSystemConfig()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">
+                    Save Configuration
+                </button>
+            </div>
         </div>
+        <p id="current_time_display" class="mt-4 text-[11px] text-amber-500/70 font-bold italic ml-1">Current Setting: Loading...</p>
     </div>
 
     <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
@@ -88,15 +97,14 @@
 <style>
     /* Mobile-specific table to card conversion */
     @media (max-width: 767px) {
-        #staff_list_body blockquote, 
         #staff_list_body tr {
             display: flex;
             flex-direction: column;
             padding: 1rem;
             background: rgba(15, 23, 42, 0.4);
             position: relative;
+            margin-bottom: 1px;
         }
-
         #staff_list_body td {
             display: flex;
             justify-content: space-between;
@@ -104,43 +112,99 @@
             padding: 0.5rem 0;
             border: none;
         }
-
         #staff_list_body td:first-child {
             font-size: 1.1rem;
             color: #fff;
-            margin-bottom: 0.5rem;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             padding-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
-
-        /* Label injection for mobile cards */
         #staff_list_body td:nth-child(2)::before { content: "Role"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
         #staff_list_body td:nth-child(3)::before { content: "Password"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
-        
-        #staff_list_body td:last-child {
-            margin-top: 0.5rem;
-            justify-content: flex-end;
-            width: 100%;
-        }
-        
-        #staff_list_body select, 
-        #staff_list_body input {
-            max-width: 160px !important;
-        }
+        #staff_list_body td:last-child { margin-top: 0.5rem; justify-content: flex-end; width: 100%; }
+        #staff_list_body select, #staff_list_body input { max-width: 160px !important; }
+    }
+    
+    /* Chrome, Safari, Edge에서 Select 박스 화살표 제거 (커스텀 디자인용) */
+    select {
+        background-image: none;
     }
 </style>
 
 <script>
 (function() {
     const db = firebase.database();
+    const hSelect = document.getElementById('select_hour');
+    const mSelect = document.getElementById('select_minute');
+
+    // 초기화: 시(0-23), 분(0-59) 옵션 생성
+    function initSelectors() {
+        hSelect.innerHTML = Array.from({length: 24}, (_, i) => 
+            `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+        mSelect.innerHTML = Array.from({length: 60}, (_, i) => 
+            `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+    }
 
     window.initAdminSettings = function() {
+        initSelectors();
         loadSystemConfig();
         loadStaffList();
     };
 
+    /**
+     * [로드] DB에서 가져와 Select 값을 설정
+     */
+    function loadSystemConfig() {
+        db.ref('settings/config').once('value', snap => {
+            const data = snap.val() || {};
+            let timeStr = data.stdAttendance || "09:00";
+            
+            // 기존 AM/PM 구형 데이터 변환 호환성
+            if (timeStr.includes('AM') || timeStr.includes('PM')) {
+                timeStr = convertLegacyTo24(timeStr);
+            }
+
+            const [hh, mm] = timeStr.split(':');
+            if(hh && mm) {
+                hSelect.value = hh;
+                mSelect.value = mm;
+            }
+            document.getElementById('current_time_display').innerText = `Current Setting: ${timeStr} (24H Format)`;
+        });
+    }
+
+    /**
+     * [저장] Select 박스의 값을 조합하여 DB에 저장
+     */
+    window.saveSystemConfig = function() {
+        const selectedTime = `${hSelect.value}:${mSelect.value}`;
+        
+        db.ref('settings/config').update({
+            stdAttendance: selectedTime,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            alert(`Configuration saved: ${selectedTime}`);
+            document.getElementById('current_time_display').innerText = `Current Setting: ${selectedTime} (24H Format)`;
+        });
+    };
+
+    function convertLegacyTo24(timeStr) {
+        try {
+            const parts = timeStr.split(' ');
+            const timeParts = parts[0].split(':');
+            let hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1];
+            const ampm = parts[1];
+
+            if (ampm === 'PM' && hours < 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        } catch(e) { return "09:00"; }
+    }
+
+    // --- Staff 관리 로직 (동일하게 유지) ---
     window.exportFullData = function() {
-        if(!confirm("Do you want to export the entire database to a JSON file for backup?")) return;
+        if(!confirm("Export entire database to JSON?")) return;
         db.ref('/').once('value', snap => {
             const data = snap.val();
             const dataStr = JSON.stringify(data, null, 2);
@@ -148,7 +212,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `daily_system_backup_${new Date().toISOString().slice(0,10)}.json`;
+            link.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
             link.click();
             URL.revokeObjectURL(url);
         });
@@ -157,7 +221,7 @@
     window.importFullData = function(event) {
         const file = event.target.files[0];
         if(!file) return;
-        if(!confirm("CRITICAL WARNING: This will DELETE all current data and replace it with the file's content. Are you sure?")) {
+        if(!confirm("CRITICAL: Replace ALL data?")) {
             event.target.value = '';
             return;
         }
@@ -166,28 +230,12 @@
             try {
                 const jsonData = JSON.parse(e.target.result);
                 db.ref('/').set(jsonData).then(() => {
-                    alert("Database restored successfully.");
+                    alert("Restore complete.");
                     location.reload();
                 });
-            } catch (err) { alert("Invalid JSON file."); }
+            } catch (err) { alert("Invalid file."); }
         };
         reader.readAsText(file);
-    };
-
-    function loadSystemConfig() {
-        db.ref('settings/config').once('value', snap => {
-            const data = snap.val() || {};
-            if(data.stdAttendance) document.getElementById('std_attendance_time').value = data.stdAttendance;
-        });
-    }
-
-    window.saveSystemConfig = function() {
-        const timeVal = document.getElementById('std_attendance_time').value;
-        if(!timeVal) return alert("Please select a time.");
-        db.ref('settings/config').update({
-            stdAttendance: timeVal,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => alert("System configuration updated!"));
     };
 
     window.addNewStaff = function() {
@@ -196,19 +244,15 @@
         const roleSelect = document.getElementById('add_staff_role');
         const staffName = nameInput.value.trim();
         const staffPw = pwInput.value.trim();
-
-        if(!staffName) return alert("Please enter a Staff Name.");
-        if(!staffPw) return alert("Please enter a Password.");
-        
+        if(!staffName || !staffPw) return alert("Fill all fields.");
         db.ref('users/' + staffName).once('value', snap => {
-            if(snap.exists()) return alert("This Staff Name already exists.");
+            if(snap.exists()) return alert("Exists.");
             db.ref('users/' + staffName).set({
                 role: roleSelect.value,
                 password: staffPw
             }).then(() => {
-                alert("New staff member added!");
-                nameInput.value = '';
-                pwInput.value = '';
+                alert("Staff added.");
+                nameInput.value = ''; pwInput.value = '';
             });
         });
     };
@@ -225,18 +269,18 @@
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-white block md:table-cell">${uid}</td>
                     <td class="p-4 block md:table-cell">
-                        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px] focus:border-blue-500 outline-none">
+                        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]">
                             <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
                             <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
                             <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
                         </select>
                     </td>
                     <td class="p-4 block md:table-cell">
-                        <input type="text" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px] focus:border-blue-500 outline-none">
+                        <input type="text" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]">
                     </td>
-                    <td class="p-4 text-right space-x-2 whitespace-nowrap block md:table-cell">
-                        <button onclick="window.updateStaff('${uid}')" class="text-[10px] font-black bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
-                        <button onclick="window.deleteStaff('${uid}')" class="text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">DEL</button>
+                    <td class="p-4 text-right space-x-2 block md:table-cell">
+                        <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
+                        <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">DEL</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -247,18 +291,16 @@
     window.updateStaff = function(uid) {
         const role = document.getElementById(`role_${uid}`).value;
         const password = document.getElementById(`pw_${uid}`).value.trim();
-        if(!password) return alert("Password cannot be empty.");
-        db.ref('users/' + uid).update({ role, password }).then(() => alert("Updated!"));
+        db.ref('users/' + uid).update({ role, password }).then(() => alert("Updated."));
     };
 
     window.deleteStaff = function(uid) {
-        if(!confirm(`DANGER: Permanently delete staff [${uid}]?`)) return;
-        const adminPwInput = prompt("ADMIN VERIFICATION REQUIRED:");
-        if (adminPwInput === "1") {
-            db.ref('users/' + uid).remove().then(() => alert(`Deleted.`));
-        } else if (adminPwInput !== null) {
-            alert("Verification failed.");
-        }
+        if(!confirm(`Delete ${uid}?`)) return;
+        const adminPw = prompt("Admin password:");
+        if (adminPw === "1") db.ref('users/' + uid).remove();
     };
+
+    // 초기 실행
+    initSelectors();
 })();
 </script>
