@@ -98,7 +98,6 @@
 .animate-blink {
     animation: blink 1s infinite;
 }
-
 </style>
 
 
@@ -350,25 +349,48 @@ function updateAttendanceStats(data) {
     const statCountsElem = document.getElementById('statCounts');
     const avgLeaveElem = document.getElementById('avgLeaveTime');
 
-    // 요소가 있을 때만 실행하도록 조건문 처리
-    if (ratioText) ratioText.innerText = `${ratio}%`;
+  // 요소가 있을 때만 실행하도록 조건문 처리
+if (ratioText) ratioText.innerText = `${ratio}%`;
+
+if (bar && card && statusText && warnIcon) {
+    bar.style.width = `${ratio}%`;
     
-    if (bar && card && statusText && warnIcon) {
-        bar.style.width = `${ratio}%`;
-        if (ratio >= 50) {
-            bar.className = "h-full bg-rose-500 transition-all duration-1000";
-            card.classList.add('warning-pulse');
-            statusText.innerText = "WARNING: HIGH LATE";
-            statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase";
-            warnIcon.classList.remove('hidden');
-        } else {
-            bar.className = "h-full bg-blue-500 transition-all duration-1000";
-            card.classList.remove('warning-pulse');
-            statusText.innerText = "GOOD STANDING";
-            statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
-            warnIcon.classList.add('hidden');
+    if (ratio >= 50) {
+        // --- 지각 50% 이상일 때 (위험) ---
+        bar.className = "h-full bg-rose-500 transition-all duration-1000";
+        card.classList.add('warning-pulse');
+        
+        statusText.innerText = "Aku terlambat!";
+        // 상태 텍스트에 빨간색 + 깜빡임 클래스 추가
+        statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase animate-blink";
+        
+        // 지각률 숫자(%) 부분에도 깜빡임 효과 추가
+        if (ratioText) {
+            ratioText.classList.add('animate-blink');
+            ratioText.classList.add('text-rose-500'); // 숫자도 빨간색으로 변경하고 싶을 경우
         }
+        
+        warnIcon.classList.remove('hidden');
+    } else {
+        // --- 정상 상태일 때 ---
+        bar.className = "h-full bg-blue-500 transition-all duration-1000";
+        card.classList.remove('warning-pulse');
+        
+        statusText.innerText = "GOOD STANDING";
+        // 깜빡임 클래스 제거
+        statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
+        
+        if (ratioText) {
+            ratioText.classList.remove('animate-blink');
+            ratioText.classList.remove('text-rose-500'); // 빨간색 제거
+            ratioText.classList.add('text-white'); // 원래 색상으로 복구
+        }
+        
+        warnIcon.classList.add('hidden');
     }
+}
+
+
 
     if (statCountsElem) {
         statCountsElem.innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
@@ -752,4 +774,5 @@ function showMissingPopup(missingInfo) {
     renderCalendar();
 
 })();
+
 </script>
