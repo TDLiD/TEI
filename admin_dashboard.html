@@ -99,7 +99,12 @@
 <script>
 (function() {
     const db = firebase.database();
-let editStartPicker, editEndPicker; // 추가: 시간 선택기 변수
+
+// 스크립트 최상단 변수 선언부에 추가
+let editStartPicker, editEndPicker; 
+let attStartPicker, attEndPicker; // 출근부용 변수 추가
+
+
     const today = new Date();
     const todayStr = today.toLocaleDateString('sv-SE');
 
@@ -156,10 +161,22 @@ function initEditTimePickers(isAllDay = false) {
         document.body.style.overflow = 'hidden';
     };
 
-    window.closeAdminCustomModal = function() {
+window.closeAdminCustomModal = function() {
+        // Flatpickr 인스턴스들 정리
+        if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
+        if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
+        if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
+        if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
+
+        // 강제로 남아있는 flatpickr 달력 엘리먼트 제거 (최후의 수단)
+        const leftovers = document.querySelectorAll('.flatpickr-calendar');
+        leftovers.forEach(el => el.remove());
+
         document.getElementById('customAdminModal').classList.add('hidden');
         document.body.style.overflow = '';
     };
+
+
 
     // --- [2] 실시간 통계 엔진 ---
     window.updateQuickStats = function() {
@@ -387,18 +404,33 @@ window.openEditAttendance = function(name, date, infoEncoded) {
             
         window.openAdminCustomModal(titleHtml, bodyHtml);
 
-        // [핵심] 모달이 열린 후 Flatpickr를 시간 모드로 초기화
+// [수정된 로직]
         setTimeout(() => {
-            flatpickr(".time-picker-input", {
+            const config = {
                 enableTime: true,
                 noCalendar: true,
                 dateFormat: "H:i",
                 time_24hr: true,
                 locale: "ko",
                 theme: "dark",
-                disableMobile: "true" // 모바일에서도 커스텀 UI 유지
-            });
+                disableMobile: "true",
+                // 아래 static: true를 설정하면 입력창 바로 아래에 생성되어 
+                // 화면 우측 상단으로 튀는 현상을 방지할 수 있습니다.
+                static: true 
+            };
+
+            // 기존 인스턴스가 있다면 파괴
+            if (attStartPicker) attStartPicker.destroy();
+            if (attEndPicker) attEndPicker.destroy();
+
+            // ID별로 개별 초기화
+            const attendEl = document.getElementById("editAttend");
+            const leaveEl = document.getElementById("editLeave");
+
+            if (attendEl) attStartPicker = flatpickr(attendEl, config);
+            if (leaveEl) attEndPicker = flatpickr(leaveEl, config);
         }, 100);
+
     });
 };
 
