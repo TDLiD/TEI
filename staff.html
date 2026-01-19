@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - DAILY SYSTEM</title>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+<script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
+
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
@@ -26,28 +27,24 @@
         .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 모든 페이지 공통: 사이드바 프로필 이미지 사이즈 통일 */
-    .nav-profile-img {
-        width: 60px !important;  /* 모바일 사이즈 */
-        height: 60px !important;
-        border-radius: 50%;
-        border: 2px solid #334155;
-        object-fit: cover;
-        display: block;
-        margin-bottom: 8px;
-        transition: all 0.3s ease;
-    }
-
-    @media (min-width: 1024px) {
         .nav-profile-img {
-            width: 100px !important; /* 데스크톱 사이즈 (staff_main과 동일하게 맞춤) */
-            height: 100px !important;
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50%;
+            border: 2px solid #334155;
+            object-fit: cover;
+            display: block;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
-    }
 
+        @media (min-width: 1024px) {
+            .nav-profile-img {
+                width: 100px !important;
+                height: 100px !important;
+            }
+        }
     </style>
-
-
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
 
@@ -70,6 +67,9 @@
                 </button>
                 <button onclick="switchTab('schedule')" id="tabSchedule" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">📅</span> Schedule
+                </button>
+                <button onclick="switchTab('leave')" id="tabLeave" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
+                    <span class="lg:inline hidden">🏖️</span> Leave Application
                 </button>
                 <button onclick="switchTab('work')" id="tabWork" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">📝</span> Work Report
@@ -113,54 +113,64 @@
         const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         
-// [수정] 사이드바에 유저 이름 및 이모티콘 실시간 반영
-if(loggedInUser) {
-    if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+        if(loggedInUser) {
+            if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+            
+            firebase.database().ref('users/' + loggedInUser).on('value', snap => {
+                const userData = snap.val();
+                const profileImg = userData?.profileImg || '1.webp';
+                const emojiContainer = document.getElementById('navEmojiContainer');
+                
+                if(emojiContainer) {
+                    emojiContainer.innerHTML = `
+                        <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl">
+                    `;
+                }
+            });
+        }
+
+function switchTab(type) {
+    const tabs = {
+        'dash': document.getElementById('tabDash'),
+        'schedule': document.getElementById('tabSchedule'),
+        'leave': document.getElementById('tabLeave'),
+        'work': document.getElementById('tabWork'),
+        'statistic': document.getElementById('tabStatistic'),
+        'setting': document.getElementById('tabSetting')
+    };
     
-    firebase.database().ref('users/' + loggedInUser).on('value', snap => {
-        const userData = snap.val();
-        const profileImg = userData?.profileImg || '1.webp';
-        const emojiContainer = document.getElementById('navEmojiContainer');
-        
-if(emojiContainer) {
-        // 반드시 class="nav-profile-img"가 포함되어야 위에서 설정한 CSS가 적용됩니다.
-        emojiContainer.innerHTML = `
-            <img src="images/profile/${profileImg}" 
-                 class="nav-profile-img shadow-xl">
-        `;
+    // 모든 탭 비활성화 스타일 적용
+    Object.values(tabs).forEach(tab => {
+        if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
+    });
+    
+    // 선택된 탭 활성화 스타일 적용
+    if(tabs[type]) {
+        tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
+        tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
+    
+    const urls = {
+        'dash': 'staff_main.html',
+        'schedule': 'staff_calendar.html',
+        'leave': 'staff_leave.html',
+        'work': 'staff_report.html',
+        'statistic': 'staff_statistic.html',
+        'setting': 'staff_setting.html'
+    };
+
+    // [수정 핵심] loadHTML이 완료된 후 각 페이지의 초기화 함수를 실행
+    loadHTML(urls[type], function() {
+        if (type === 'leave' && typeof window.initLeavePage === 'function') {
+            window.initLeavePage();
+        } else if (type === 'dash' && typeof window.initDashboard === 'function') {
+            // 다른 탭들도 초기화 함수가 있다면 여기에 추가
+            window.initDashboard();
+        }
+        // 추가로 필요한 페이지별 초기화 로직...
     });
 }
 
-
-        function switchTab(type) {
-            const tabs = {
-                'dash': document.getElementById('tabDash'),
-                'schedule': document.getElementById('tabSchedule'),
-                'work': document.getElementById('tabWork'),
-                'statistic': document.getElementById('tabStatistic'),
-                'setting': document.getElementById('tabSetting')
-            };
-            
-            Object.values(tabs).forEach(tab => {
-                if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
-            });
-            
-            if(tabs[type]) {
-                tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
-                tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-            
-            const urls = {
-                'dash': 'staff_main.html',
-                'allatt': 'staff_allatt.html',
-                'schedule': 'staff_calendar.html',
-                'work': 'staff_report.html',
-                'statistic': 'staff_statistic.html',
-                'setting': 'staff_setting.html'
-            };
-            loadHTML(urls[type]);
-        }
 
         async function loadHTML(url) {
             try {
@@ -202,10 +212,9 @@ if(emojiContainer) {
             }
         }
 
-        // --- [추가 코드] 자동 로그아웃 (Inactivity Timeout) ---
         (function() {
             let timeoutTimer;
-            const INACTIVITY_TIME = 10 * 60 * 1000; // 10분 설정
+            const INACTIVITY_TIME = 10 * 60 * 1000; 
 
             function autoLogout() {
                 alert("일정 시간 동안 활동이 없어 보안을 위해 자동 로그아웃됩니다.");

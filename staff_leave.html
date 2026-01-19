@@ -1,0 +1,471 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<style>
+    /* 휴가 전용 미니 달력 스타일 */
+    .leave-calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .leave-calendar-table th { padding: 12px 0; color: #64748b; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid #1e293b; }
+    .leave-calendar-table td { height: 90px; border: 1px solid #1e293b; vertical-align: top; padding: 6px; position: relative; transition: background 0.2s; }
+    .leave-day-num { font-size: 11px; font-weight: 900; color: #475569; margin-bottom: 4px; }
+    
+    .leave-badge { 
+        font-size: 9px; padding: 3px 5px; border-radius: 6px; margin-top: 3px; 
+        font-weight: 800; color: white; text-align: center; display: block;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .badge-pending { background-color: #f59e0b; border-left: 3px solid #b45309; }
+    .badge-approved { background-color: #10b981; border-left: 3px solid #047857; }
+    .today-cell { background-color: rgba(99, 102, 241, 0.05); }
+    .today-cell .leave-day-num { color: #6366f1; }
+
+/* 오늘 날짜 셀 강조 스타일 수정 및 추가 */
+.today-cell { 
+    background-color: rgba(99, 102, 241, 0.1) !important; /* 배경색 농도 증가 */
+    border: 2px solid #6366f1 !important; /* 테두리 추가 */
+    box-shadow: inset 0 0 10px rgba(99, 102, 241, 0.1);
+}
+.today-cell .leave-day-num { 
+    color: #6366f1; 
+    font-weight: 900; 
+}
+
+/* 오늘 표시 뱃지 추가 */
+.today-mark {
+    background: #6366f1;
+    color: white;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 900;
+    margin-left: 5px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+</style>
+
+<div class="animate-fadeIn space-y-6 pb-20">
+    <div class="flex justify-between items-center bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
+        <div>
+            <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                <div class="w-1.5 h-7 bg-indigo-500 rounded-full"></div>
+                LEAVE APPLICATION
+            </h2>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 ml-4">Request and manage your time off</p>
+        </div>
+        <button onclick="openLeaveModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs transition-all active:scale-95 shadow-lg shadow-indigo-500/20">
+            NEW REQUEST
+        </button>
+    </div>
+
+    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] border border-slate-800 backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-6 px-2">
+            <h3 id="calendarMonthTitle" class="text-lg font-black text-white uppercase italic tracking-tighter">Month Year</h3>
+            <div class="flex gap-2">
+                <button onclick="changeLeaveMonth(-1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button onclick="changeLeaveMonth(1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+        <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar">
+            </div>
+    </div>
+
+    <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
+        <h3 class="text-sm font-black text-white mb-6 flex items-center gap-2 uppercase tracking-tighter">
+            <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+            My Annual Leave History
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="text-slate-500 uppercase tracking-widest border-b border-slate-800">
+                        <th class="pb-4 font-black">Type</th>
+                        <th class="pb-4 font-black">Dates</th>
+                        <th class="pb-4 font-black">Reason</th>
+                        <th class="pb-4 font-black">Status</th>
+                        <th class="pb-4 font-black text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="leaveHistoryBody" class="divide-y divide-slate-800/50">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn">
+        <h3 id="modalTitle" class="text-xl font-black text-white mb-6 uppercase italic">New Leave Request</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Leave Type</label>
+                <select id="leaveType" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <option value="PEL">PEL (Personal Leave)</option>
+                    <option value="ANL">ANL (Annual Leave)</option>
+                    <option value="HAL">HAL (Half Day Leave)</option>
+                    <option value="SIL">SIL (Sick Leave)</option>
+                    <option value="SPL">SPL (Special Leave)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Select Dates</label>
+                <input type="text" id="leaveDateRange" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white font-bold outline-none" placeholder="Choose your dates">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Reason / Note</label>
+                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?"></textarea>
+            </div>
+<div id="adminMemoContainer" class="hidden">
+    <label class="block text-[10px] font-bold text-rose-400 uppercase mb-2 ml-1">Admin Memo</label>
+    <div id="adminMemoText" class="w-full bg-rose-500/5 border border-rose-500/20 p-4 rounded-2xl text-rose-200 text-sm italic min-h-[60px]">
+    </div>
+</div>
+
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-8">
+            <button onclick="closeLeaveModal()" class="bg-slate-800 text-slate-400 font-bold py-4 rounded-2xl hover:bg-slate-700 transition">CANCEL</button>
+            <button id="saveLeaveBtn" onclick="submitLeaveRequest()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition">SUBMIT</button>
+        </div>
+        <button id="deleteLeaveBtn" onclick="deleteLeave()" class="w-full mt-3 text-rose-500 text-[10px] font-bold uppercase tracking-widest hidden">Delete this request</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const db = firebase.database();
+
+// 수정 코드 (staff.html 로그인 세션 키값에 맞춤)
+const user = sessionStorage.getItem('loggedInUser') || sessionStorage.getItem('user_id');
+
+    let datePicker;
+    let editingId = null;
+    let currentViewDate = new Date();
+
+    // 초기화 함수
+    window.initLeavePage = function() {
+
+// 유저 정보가 정말 없는지 체크하는 방어 코드 추가
+        if (!user || user === "null") {
+            console.error("User ID not found in session!");
+            alert("사용자 정보가 없습니다. 다시 로그인해 주세요.");
+            return;
+        }
+
+        initFlatpickr();
+        loadLeaveHistory();
+        renderCalendar();
+    };
+
+    function initFlatpickr() {
+        datePicker = flatpickr("#leaveDateRange", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            theme: "dark",
+            minDate: "today",
+            locale: { rangeSeparator: ' ~ ' }
+        });
+    }
+
+    // 달력 렌더링 로직 (에러 해결 핵심)
+window.renderCalendar = function() {
+    const container = document.getElementById('leaveCalendarContainer');
+    const title = document.getElementById('calendarMonthTitle');
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
+
+    title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    // 오늘 날짜 정보 생성
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+    db.ref(`leaves/${user}/${year}`).once('value', snap => {
+        const leaves = snap.val() || {};
+        
+        let html = `<table class="leave-calendar-table"><thead><tr>`;
+        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => html += `<th>${day}</th>`);
+        html += `</tr></thead><tbody><tr>`;
+
+        for(let i=0; i<firstDay; i++) html += `<td></td>`;
+
+        for(let d=1; d<=lastDate; d++) {
+            if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
+            
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            
+            // --- [추가] 오늘 날짜 강조 및 뱃지 로직 ---
+            const isToday = dateStr === todayStr;
+            const tdClass = isToday ? 'today-cell' : '';
+            const todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
+            
+            let badges = '';
+            Object.entries(leaves).forEach(([id, item]) => {
+                if(dateStr >= item.startDate && dateStr <= item.endDate) {
+                    const currentDay = new Date(dateStr).getDay();
+                    if (currentDay !== 0 && currentDay !== 6) {
+                        const sClass = item.status === 'Approved' ? 'badge-approved' : 'badge-pending';
+                        badges += `<div class="leave-badge ${sClass}">${item.type}</div>`;
+                    }
+                }
+            });
+
+            // --- [수정] td 태그에 강조 클래스와 오늘 뱃지 적용 ---
+            html += `
+                <td class="${tdClass}">
+                    <div class="leave-day-num">${d}${todayBadge}</div>
+                    ${badges}
+                </td>`;
+        }
+        html += `</tr></tbody></table>`;
+        container.innerHTML = html;
+    });
+};
+
+
+    window.changeLeaveMonth = function(val) {
+        currentViewDate.setMonth(currentViewDate.getMonth() + val);
+        renderCalendar();
+    };
+
+// 신청 내역 로드 (Admin Memo 표시 버전)
+// 신청 내역 로드 부분 수정
+function loadLeaveHistory() {
+    const year = new Date().getFullYear();
+    const historyRef = db.ref(`leaves/${user}/${year}`);
+    
+    // 이전에 걸려있던 리스너가 있다면 중복 방지를 위해 끕니다.
+    historyRef.off(); 
+
+    historyRef.on('value', snap => {
+        const tbody = document.getElementById('leaveHistoryBody');
+        
+        // [방어 코드 1] 테이블 바디 요소가 없으면 리스너를 해제하고 종료합니다.
+        if (!tbody) {
+            historyRef.off(); 
+            return;
+        }
+
+        const list = snap.val() || {};
+        tbody.innerHTML = '';
+
+        Object.entries(list).sort((a,b) => b[1].requestedAt - a[1].requestedAt).forEach(([id, data]) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-white/5 transition-colors cursor-pointer";
+            
+            // [방어 코드 2] 클릭 시 실행될 함수가 안전하게 동작하도록 감쌉니다.
+            tr.onclick = () => {
+                if (typeof openLeaveModal === 'function') {
+                    openLeaveModal(id, data);
+                }
+            };
+            
+            const statusColor = data.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
+            const adminMemoHTML = data.adminMemo 
+                ? `<div class="flex items-center gap-1.5 text-amber-500/80 italic overflow-hidden">
+                     <span class="text-[10px]">💬</span>
+                     <span class="truncate max-w-[100px]">${data.adminMemo}</span>
+                   </div>`
+                : `<span class="text-slate-700">-</span>`;
+            
+            tr.innerHTML = `
+                <td class="py-4 font-black text-indigo-400">${data.type}</td>
+                <td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td>
+                <td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td>
+                <td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td>
+                <td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td>
+                <td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }, error => {
+        console.error("Firebase listener error:", error);
+    });
+}
+
+window.openLeaveModal = function(id = null, data = null) {
+    editingId = id;
+    const modal = document.getElementById('leaveModal');
+    
+    // [1] 가장 기본인 모달창 존재 여부 체크
+    if (!modal) {
+        console.warn("leaveModal element not found.");
+        return; 
+    }
+
+    // 모든 필요한 DOM 요소들 가져오기
+    const deleteBtn = document.getElementById('deleteLeaveBtn');
+    const saveBtn = document.getElementById('saveLeaveBtn');
+    const memoContainer = document.getElementById('adminMemoContainer');
+    const memoText = document.getElementById('adminMemoText');
+    const leaveTypeInput = document.getElementById('leaveType');
+    const leaveReasonInput = document.getElementById('leaveReason');
+    const dateInput = document.getElementById('leaveDateRange');
+    const modalTitle = document.getElementById('modalTitle'); // 제목 요소 추가
+
+    // [2] 필수 조작 요소들이 하나라도 없으면 중단 (에러 방지 핵심)
+    if (!deleteBtn || !saveBtn || !leaveTypeInput || !modalTitle) {
+        console.warn("One or more modal sub-elements are missing.");
+        return;
+    }
+
+    // 이제 안전하게 classList 사용 가능
+    modal.classList.remove('hidden'); 
+    
+    if (id && data) {
+        modalTitle.innerText = "Edit Leave Request"; // 안전하게 접근
+        leaveTypeInput.value = data.type;
+        
+        if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
+        leaveReasonInput.value = data.reason || "";
+
+        if (data.status === 'Approved') {
+            deleteBtn.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+            
+            leaveTypeInput.disabled = true;
+            leaveReasonInput.disabled = true;
+            if(dateInput) dateInput.disabled = true;
+            
+            modalTitle.innerText = "View Approved Leave";
+        } else {
+            deleteBtn.classList.remove('hidden');
+            saveBtn.classList.remove('hidden');
+            
+            leaveTypeInput.disabled = false;
+            leaveReasonInput.disabled = false;
+            if(dateInput) dateInput.disabled = false;
+        }
+
+        // Admin Memo 처리 (요소가 있을 때만)
+        if (memoContainer && memoText) {
+            if (data.adminMemo) {
+                memoContainer.classList.remove('hidden');
+                memoText.innerText = data.adminMemo;
+            } else {
+                memoContainer.classList.add('hidden');
+            }
+        }
+        
+        editingData = data; 
+    } else {
+        // 신규 신청 시 초기화
+        modalTitle.innerText = "New Leave Request";
+        leaveTypeInput.selectedIndex = 0;
+        if (datePicker) datePicker.clear();
+        leaveReasonInput.value = "";
+        
+        deleteBtn.classList.add('hidden');
+        saveBtn.classList.remove('hidden');
+        
+        leaveTypeInput.disabled = false;
+        leaveReasonInput.disabled = false;
+        if(dateInput) dateInput.disabled = false;
+        
+        if (memoContainer) memoContainer.classList.add('hidden');
+        editingData = null;
+    }
+};
+
+
+
+
+    window.closeLeaveModal = function() {
+        document.getElementById('leaveModal').classList.add('hidden');
+    };
+
+// 저장 함수 수정 (주말 자동 제외 로직 포함)
+window.submitLeaveRequest = function() {
+    if (editingData && editingData.status === 'Approved') {
+        return alert("Approved requests cannot be modified.");
+    }
+
+    const type = document.getElementById('leaveType').value;
+    const range = datePicker.selectedDates;
+    const reason = document.getElementById('leaveReason').value.trim();
+
+    if (range.length === 0) return alert("Please select dates.");
+    
+    // 1. 선택된 범위 내의 모든 날짜를 확인하여 주말 제외
+    const start = new Date(range[0]);
+    const end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
+    
+    let validDates = [];
+    let tempDate = new Date(start);
+
+    while (tempDate <= end) {
+        const day = tempDate.getDay(); // 0: 일요일, 6: 토요일
+        // 토요일(6)과 일요일(0)이 아닌 경우만 리스트에 추가
+        if (day !== 0 && day !== 6) {
+            validDates.push(new Date(tempDate));
+        }
+        tempDate.setDate(tempDate.getDate() + 1);
+    }
+
+    if (validDates.length === 0) {
+        return alert("The selected range only contains weekends. Please pick weekdays.");
+    }
+
+    // 2. 주말이 제외된 날짜들 중 첫날과 마지막날을 저장 데이터로 설정
+// submitLeaveRequest 내 날짜 처리 부분
+const startDate = validDates[0].toLocaleDateString('en-CA'); // 실제 평일 첫날
+const endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA'); // 실제 평일 마지막날
+    const year = new Date(startDate).getFullYear();
+
+    const leaveData = {
+        type, 
+        startDate, 
+        endDate, 
+        reason,
+        status: "Pending",
+        requestedAt: firebase.database.ServerValue.TIMESTAMP,
+        totalWeekdays: validDates.length // 실제 평일 일수 저장 (리포트용)
+    };
+
+    const ref = editingId ? 
+        db.ref(`leaves/${user}/${year}/${editingId}`) : 
+        db.ref(`leaves/${user}/${year}`).push();
+
+    ref.set(leaveData).then(() => {
+        alert(`Request processed.\nTotal: ${validDates.length} weekday(s) (Weekends excluded).`);
+        closeLeaveModal();
+        renderCalendar();
+    });
+};
+
+
+// 삭제 함수 수정
+window.deleteLeave = function() {
+    if (!editingId || !editingData) return;
+    
+    // 승인 상태 체크 (이중 보안)
+    if (editingData.status === 'Approved') {
+        return alert("Approved requests cannot be deleted.");
+    }
+
+    if (!confirm("Are you sure you want to cancel this request?")) return;
+    
+    const year = new Date(editingData.startDate).getFullYear();
+    db.ref(`leaves/${user}/${year}/${editingId}`).remove().then(() => {
+        alert("Deleted.");
+        closeLeaveModal();
+        renderCalendar();
+    }).catch(err => {
+        console.error(err);
+        alert("Failed to delete.");
+    });
+};
+
+
+    // 실행
+    initLeavePage();
+})();
+</script>

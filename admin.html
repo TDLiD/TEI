@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,286 +8,357 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+<script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 
     <style>
-        body { font-family: Pretendard, sans-serif; background:#000; color:#f1f5f9; margin: 0; padding: 0; }
-        .tab-btn { transition:.25s; cursor: pointer; border-radius: 0.75rem; margin-bottom: 0.25rem; }
-        .tab-active { color:#3b82f6; font-weight:900; background:rgba(59,130,246,.1); }
-        .tab-inactive { color:#64748b; }
-        .tab-inactive:hover { color:#f1f5f9; background:rgba(255,255,255,0.05); }
+        body {
+            font-family: Pretendard, sans-serif;
+            background: #000;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tab-btn {
+            transition: .25s;
+            cursor: pointer;
+            border-radius: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .tab-active {
+            color: #3b82f6;
+            font-weight: 900;
+            background: rgba(59, 130, 246, .1);
+        }
+
+        .tab-inactive {
+            color: #64748b;
+        }
+
+        .tab-inactive:hover {
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.05);
+        }
 
         /* 모바일 하단 탭바 전용 스타일 */
-        .mobile-tab-active { color: #3b82f6 !important; font-weight: 900; }
-        
+        .mobile-tab-active {
+            color: #3b82f6 !important;
+            font-weight: 900;
+        }
+
         /* 스크롤바 숨기기 */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
 
         @media (max-width: 767px) {
-            aside { display: none !important; }
-            main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
-            .mobile-header { display: flex !important; }
-            .mobile-nav { display: grid !important; }
+            aside {
+                display: none !important;
+            }
+
+            main {
+                padding: 1rem !important;
+                padding-bottom: 85px !important;
+                padding-top: 60px !important;
+            }
+
+            .mobile-header {
+                display: flex !important;
+            }
+
+            .mobile-nav {
+                display: grid !important;
+            }
         }
     </style>
 </head>
 
 <body class="flex min-h-screen">
 
-<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
-    <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-            <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
-        </div>
-        <h1 class="text-md font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-    </div>
-    <div class="flex items-center gap-4">
-        <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
-        <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
-    </div>
-</header>
-
-<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
-    <div class="mb-10">
-        <h1 class="text-2xl font-black italic mb-6">
-            ADMIN <span class="text-blue-500">SYSTEM</span>
-        </h1>
-        
-        <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-lg shadow-blue-500/10">
-                <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+    <header
+        class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full border border-slate-700 overflow-hidden bg-slate-800">
+                <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover"
+                    onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
             </div>
-            <div class="overflow-hidden">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
-                <div class="text-sm font-black text-white truncate">MASTER MANAGER</div>
-                <div class="inline-flex items-center gap-1.5 mt-1">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
+            <h1 class="text-md font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
+            <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
+        </div>
+    </header>
+
+    <aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
+        <div class="mb-10">
+            <h1 class="text-2xl font-black italic mb-6">
+                ADMIN <span class="text-blue-500">SYSTEM</span>
+            </h1>
+
+            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
+                <div
+                    class="w-12 h-12 rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-lg shadow-blue-500/10">
+                    <img src="images/profile/admin.webp" alt="Admin" class="w-full h-full object-cover"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                </div>
+                <div class="overflow-hidden">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
+                    <div class="text-sm font-black text-white truncate">MASTER MANAGER</div>
+                    <div class="inline-flex items-center gap-1.5 mt-1">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <nav class="flex flex-col gap-1 flex-1">
-        <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
-        <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
-        <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
-        <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 SCHEDULE</button>
-        <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 STATISTICS</button> 
-        <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ SETTINGS</button>
-        
-        <div class="h-[1px] bg-slate-800 my-4"></div>
+        <nav class="flex flex-col gap-1 flex-1">
+            <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊DASHBOARD</button>
+            <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
+            <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
+            <button id="btn-leave" onclick="switchAdminTab('leave')" class="tab-btn px-4 py-3 text-left">🏖️ LEAVE MGT</button>
+            <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅SCHEDULE</button>
+            <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈STATISTICS</button>
+            <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️SETTINGS</button>
 
-        <a href="https://tdlid.github.io" target="_blank" class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">
-            🌐 TDLiD Homepage
-        </a>
+            <div class="h-[1px] bg-slate-800 my-4"></div>
+
+            <a href="https://tdlid.github.io" target="_blank"
+                class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">
+                🌐 TDLiD Homepage
+            </a>
+        </nav>
+
+        <button onclick="adminLogout()"
+            class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">
+            🚪 Logout System
+        </button>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
+    </main>
+
+    <nav
+        class="mobile-nav fixed bottom-0 left-0 right-0 h-16 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-6 items-center px-1">
+        <button onclick="switchAdminTab('dashboard')"
+            class="m-btn-dashboard flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">📊</span>
+            <span class="text-[8px] font-bold uppercase">Dash</span>
+        </button>
+        <button onclick="switchAdminTab('attendance')"
+            class="m-btn-attendance flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">👤</span>
+            <span class="text-[8px] font-bold uppercase">Att</span>
+        </button>
+        <button onclick="switchAdminTab('reports')"
+            class="m-btn-reports flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">📝</span>
+            <span class="text-[8px] font-bold uppercase">Repo</span>
+        </button>
+
+<button onclick="switchAdminTab('leave')"
+        class="m-btn-leave flex flex-col items-center gap-1 text-slate-500">
+        <span class="text-lg">🏖️</span>
+        <span class="text-[8px] font-bold uppercase">Leave</span>
+    </button>
+
+        <button onclick="switchAdminTab('schedule')"
+            class="m-btn-schedule flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">📅</span>
+            <span class="text-[8px] font-bold uppercase">Sch</span>
+        </button>
+        <button onclick="switchAdminTab('statistic')"
+            class="m-btn-statistic flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">📈</span>
+            <span class="text-[8px] font-bold uppercase">Stat</span>
+        </button>
+        <button onclick="switchAdminTab('settings')"
+            class="m-btn-settings flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-lg">⚙️</span>
+            <span class="text-[8px] font-bold uppercase">Set</span>
+        </button>
     </nav>
 
-    <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">
-        🚪 Logout System
-    </button>
-</aside>
-
-<main class="flex-1 p-8 overflow-y-auto">
-    <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
-</main>
-
-<nav class="mobile-nav fixed bottom-0 left-0 right-0 h-16 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-6 items-center px-1">
-    <button onclick="switchAdminTab('dashboard')" class="m-btn-dashboard flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">📊</span>
-        <span class="text-[8px] font-bold uppercase">Dash</span>
-    </button>
-    <button onclick="switchAdminTab('attendance')" class="m-btn-attendance flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">👤</span>
-        <span class="text-[8px] font-bold uppercase">Att</span>
-    </button>
-    <button onclick="switchAdminTab('reports')" class="m-btn-reports flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">📝</span>
-        <span class="text-[8px] font-bold uppercase">Repo</span>
-    </button>
-    <button onclick="switchAdminTab('schedule')" class="m-btn-schedule flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">📅</span>
-        <span class="text-[8px] font-bold uppercase">Sch</span>
-    </button>
-    <button onclick="switchAdminTab('statistic')" class="m-btn-statistic flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">📈</span>
-        <span class="text-[8px] font-bold uppercase">Stat</span>
-    </button>
-    <button onclick="switchAdminTab('settings')" class="m-btn-settings flex flex-col items-center gap-1 text-slate-500">
-        <span class="text-lg">⚙️</span>
-        <span class="text-[8px] font-bold uppercase">Set</span>
-    </button>
-</nav>
-
-<div id="adminCustomModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
-            <button onclick="closeAdminCustomModal()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+    <div id="adminCustomModal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
+                <button onclick="closeAdminCustomModal()"
+                    class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
         </div>
-        <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
     </div>
-</div>
 
-<script>
-/* =========================================================
-   1. Firebase 초기화
-   ========================================================= */
-(function () {
-    if (!window.firebase) return;
-    const firebaseConfig = {
-        databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com"
-    };
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    if (!window.db) {
-        window.db = firebase.database();
-    }
-})();
-
-/* =========================================================
-   2. ADMIN 공용 모달
-   ========================================================= */
-(function() {
-    const openFn = function (titleHtml, bodyHtml) {
-        const modal = document.getElementById('adminCustomModal');
-        const tBox = document.getElementById('modalTitle');
-        const bBox = document.getElementById('modalBody');
-        if (!modal) return;
-        if (tBox) tBox.innerHTML = titleHtml;
-        if (bBox) bBox.innerHTML = bodyHtml;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    };
-    const closeFn = function () {
-        const modal = document.getElementById('adminCustomModal');
-        if (modal) modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-    Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false, configurable: true });
-    Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false, configurable: true });
-})();
-
-/* =========================================================
-   3. 탭 전환 (SPA Loader)
-   ========================================================= */
-async function switchAdminTab(tab) {
-    try {
-        document.body.style.overflow = '';
-        if (window.closeAdminCustomModal) window.closeAdminCustomModal();
-    } catch (e) {}
-
-    if (window.db) {
-        const paths = ['attendance', 'reports', 'users', 'shared_schedules'];
-        paths.forEach(p => { try { db.ref(p).off(); } catch(e){} });
-    }
-
-    const area = document.getElementById('adminContent');
-    if (!area) return;
-    area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
-
-    // PC 탭 활성화 UI
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
-    document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
-
-    // 모바일 탭 활성화 UI
-    document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
-    document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
-
-    const map = {
-        dashboard: 'admin_dashboard.html',
-        attendance: 'admin_attendance.html',
-        reports: 'admin_report.html',
-        schedule: 'admin_calendar.html',
-        statistic: 'admin_statistic.html',
-        settings: 'admin_setting.html'
-    };
-
-    try {
-        const res = await fetch(map[tab]);
-        if (!res.ok) throw new Error("파일을 찾을 수 없습니다.");
-        const html = await res.text();
-        area.innerHTML = html;
-
-        const scripts = area.querySelectorAll('script');
-        for (const oldScript of scripts) {
-            const newScript = document.createElement('script');
-            if (oldScript.src) {
-                newScript.src = oldScript.src;
-                newScript.async = false;
-                await new Promise(r => { newScript.onload = r; newScript.onerror = r; document.head.appendChild(newScript); });
-            } else {
-                newScript.textContent = oldScript.textContent;
-                document.head.appendChild(newScript);
+    <script>
+        /* =========================================================
+           1. Firebase 초기화
+           ========================================================= */
+        (function () {
+            if (!window.firebase) return;
+            const firebaseConfig = {
+                databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com"
+            };
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
             }
-            if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
+            if (!window.db) {
+                window.db = firebase.database();
+            }
+        })();
+
+        /* =========================================================
+           2. ADMIN 공용 모달
+           ========================================================= */
+        (function () {
+            const openFn = function (titleHtml, bodyHtml) {
+                const modal = document.getElementById('adminCustomModal');
+                const tBox = document.getElementById('modalTitle');
+                const bBox = document.getElementById('modalBody');
+                if (!modal) return;
+                if (tBox) tBox.innerHTML = titleHtml;
+                if (bBox) bBox.innerHTML = bodyHtml;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+            const closeFn = function () {
+                const modal = document.getElementById('adminCustomModal');
+                if (modal) modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+            Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false, configurable: true });
+            Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false, configurable: true });
+        })();
+
+        /* =========================================================
+           3. 탭 전환 (SPA Loader)
+           ========================================================= */
+        async function switchAdminTab(tab) {
+            try {
+                document.body.style.overflow = '';
+                if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+            } catch (e) { }
+
+            if (window.db) {
+                const paths = ['attendance', 'reports', 'users', 'shared_schedules'];
+                paths.forEach(p => { try { db.ref(p).off(); } catch (e) { } });
+            }
+
+            const area = document.getElementById('adminContent');
+            if (!area) return;
+            area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+
+            // PC 탭 활성화 UI
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
+            document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+
+            // 모바일 탭 활성화 UI
+            document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
+            document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
+
+            const map = {
+                dashboard: 'admin_dashboard.html',
+                attendance: 'admin_attendance.html',
+                reports: 'admin_report.html',
+leave: 'admin_leave.html',      // 추가
+                schedule: 'admin_calendar.html',
+                statistic: 'admin_statistic.html',
+                settings: 'admin_setting.html'
+            };
+
+            try {
+                const res = await fetch(map[tab]);
+                if (!res.ok) throw new Error("파일을 찾을 수 없습니다.");
+                const html = await res.text();
+                area.innerHTML = html;
+
+                const scripts = area.querySelectorAll('script');
+                for (const oldScript of scripts) {
+                    const newScript = document.createElement('script');
+                    if (oldScript.src) {
+                        newScript.src = oldScript.src;
+                        newScript.async = false;
+                        await new Promise(r => { newScript.onload = r; newScript.onerror = r; document.head.appendChild(newScript); });
+                    } else {
+                        newScript.textContent = oldScript.textContent;
+                        document.head.appendChild(newScript);
+                    }
+                    if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
+                }
+
+                setTimeout(() => {
+                    const initFuncs = {
+                        dashboard: 'initAdminDashboard',
+                        attendance: 'renderAttendanceFull',
+                        reports: 'renderWorkFull',
+leave: 'renderAdminCalendar', // admin_leave.html 내의 초기화 함수명
+                        schedule: 'renderScheduleFull',
+                        statistic: 'initAdminStatistic',
+                        settings: 'initAdminSettings'
+                    };
+                    const fn = window[initFuncs[tab]];
+                    if (typeof fn === 'function') fn();
+                }, 100);
+
+            } catch (e) {
+                area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
+            }
         }
 
-        setTimeout(() => {
-            const initFuncs = {
-                dashboard: 'initAdminDashboard',
-                attendance: 'renderAttendanceFull',
-                reports: 'renderWorkFull',
-                schedule: 'renderScheduleFull',
-                statistic: 'initAdminStatistic',
-                settings: 'initAdminSettings'
-            };
-            const fn = window[initFuncs[tab]];
-            if (typeof fn === 'function') fn();
-        }, 100);
+        window.addEventListener('beforeunload', () => {
+            document.body.style.overflow = '';
+        });
 
-    } catch (e) {
-        area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
-    }
-}
+        /* =========================================================
+           4. 초기 진입
+           ========================================================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            switchAdminTab('dashboard');
+        });
 
-window.addEventListener('beforeunload', () => {
-    document.body.style.overflow = '';
-});
+        /* =========================================================
+           5. 로그아웃 기능
+           ========================================================= */
+        function adminLogout() {
+            if (confirm("시스템을 로그아웃 하시겠습니까?")) {
+                alert("성공적으로 로그아웃되었습니다.");
+                location.href = "index.html";
+            }
+        }
 
-/* =========================================================
-   4. 초기 진입
-   ========================================================= */
-window.addEventListener('DOMContentLoaded', () => {
-    switchAdminTab('dashboard');
-});
-
-/* =========================================================
-   5. 로그아웃 기능
-   ========================================================= */
-function adminLogout() {
-    if(confirm("시스템을 로그아웃 하시겠습니까?")) {
-        alert("성공적으로 로그아웃되었습니다.");
-        location.href = "index.html";
-    }
-}
-
-/* =========================================================
-   6. 자동 로그아웃 (Inactivity Timeout)
-   ========================================================= */
-(function() {
-    let timeoutTimer;
-    const INACTIVITY_TIME = 30 * 60 * 1000;
-    function autoLogout() {
-        alert("보안을 위해 30분간 활동이 없는 관리자 세션을 자동으로 종료합니다.");
-        sessionStorage.clear();
-        location.href = "index.html";
-    }
-    function resetTimer() {
-        clearTimeout(timeoutTimer);
-        timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
-    }
-    window.onload = resetTimer;
-    window.onmousemove = resetTimer;
-    window.onmousedown = resetTimer; 
-    window.ontouchstart = resetTimer;
-    window.onclick = resetTimer;
-    window.onkeypress = resetTimer;
-    window.addEventListener('scroll', resetTimer, true);
-})();
-</script>
+        /* =========================================================
+           6. 자동 로그아웃 (Inactivity Timeout)
+           ========================================================= */
+        (function () {
+            let timeoutTimer;
+            const INACTIVITY_TIME = 30 * 60 * 1000;
+            function autoLogout() {
+                alert("보안을 위해 30분간 활동이 없는 관리자 세션을 자동으로 종료합니다.");
+                sessionStorage.clear();
+                location.href = "index.html";
+            }
+            function resetTimer() {
+                clearTimeout(timeoutTimer);
+                timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
+            }
+            window.onload = resetTimer;
+            window.onmousemove = resetTimer;
+            window.onmousedown = resetTimer;
+            window.ontouchstart = resetTimer;
+            window.onclick = resetTimer;
+            window.onkeypress = resetTimer;
+            window.addEventListener('scroll', resetTimer, true);
+        })();
+    </script>
 
 </body>
+
 </html>
