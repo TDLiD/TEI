@@ -205,17 +205,24 @@ function initEditTimePickers(isAllDay = false) {
         });
     };
 
-    // --- [3] 데이터 렌더링 엔진 ---
-    window.renderRecentAttendance = function() {
-        const container = document.getElementById('recent_att_container');
-        if(!container) return;
-        const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
+  // --- [3] 데이터 렌더링 엔진 수정 ---
+window.renderRecentAttendance = function() {
+    const container = document.getElementById('recent_att_container');
+    if(!container) return;
+    const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
+    
+    // 전체 사용자 명단을 가져오기 위해 users 노드 한번 참조 (신규 등록용)
+    db.ref('users').once('value', userSnap => {
+        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+        
         db.ref('attendance').on('value', snap => {
             const data = snap.val() || {};
             container.innerHTML = '';
+            
             last5Days.forEach(dStr => {
                 const dayData = data[dStr] || {};
                 let staffHtml = '';
+                
                 Object.entries(dayData).forEach(([name, info]) => {
                     const safeInfo = encodeURIComponent(JSON.stringify(info));
                     let content = '';
@@ -225,12 +232,24 @@ function initEditTimePickers(isAllDay = false) {
                         const lea = formatTime(info.leave);
                         content = `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${att}</span>${lea ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${lea}</span>`:''}</div>`;
                     }
-                    staffHtml += `<div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
+                    // 이벤트 전파 중단(stopPropagation)을 추가하여 부모 셀 클릭 이벤트와 겹치지 않게 함
+                    staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
                 });
-                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`;
+
+                // 셀(카드) 클릭 시 신규 입력을 위해 openEditAttendance 호출 (이름 없이 호출)
+                container.innerHTML += `
+                    <div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div>
+                            <div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div>
+                        </div>
+                        ${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}
+                    </div>`;
             });
         });
-    };
+    });
+};
+
 
 window.renderRecentWork = function() {
     const container = document.getElementById('recent_work_container');
@@ -311,14 +330,47 @@ window.renderRecentWork = function() {
 
 
 
-    window.openEditAttendance = function(name, date, infoEncoded) {
-        const info = JSON.parse(decodeURIComponent(infoEncoded));
-        const isSpecial = typeof info === 'string';
-        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span><span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm font-normal">(${date})</span></span></div>`;
+// --- [4] 상세 수정/입력 핸들러 수정 ---
+window.openEditAttendance = function(name, date, infoEncoded) {
+    const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {};
+    const isSpecial = typeof info === 'string';
+    const isNew = name === '';
+
+    db.ref('users').once('value', userSnap => {
+        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+        
+        let nameFieldHtml = `<span class="text-lg font-black text-white">${name}</span>`;
+        if(isNew) {
+            nameFieldHtml = `
+                <select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1">
+                    <option value="">-- SELECT STAFF --</option>
+                    ${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
+                </select>`;
+        }
+
+        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
+        
+        // [수정 포인트] input type을 text로 유지하되 readonly를 추가하고, 시계 아이콘 느낌의 디자인 적용
         const bodyHtml = `<div class="space-y-4 text-left">
             <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors"></div>
-                <div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors"></div>
+                <div class="space-y-1">
+                    <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span>
+                    <div class="relative">
+                        <input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" 
+                            class="time-picker-input w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer" 
+                            placeholder="Pick Time" readonly>
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span>
+                    <div class="relative">
+                        <input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" 
+                            class="time-picker-input w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer" 
+                            placeholder="Pick Time" readonly>
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span>
+                    </div>
+                </div>
             </div>
             <div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div>
             <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500 transition-colors">
@@ -326,14 +378,48 @@ window.renderRecentWork = function() {
                 <option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option>
             </select>
             <div class="flex flex-col gap-3 pt-4">
-                <button onclick="saveAttendanceEdit('${name}', '${date}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button>
+                <button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button>
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
-                    <button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>
+                    ${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}
                 </div>
             </div></div>`;
+            
         window.openAdminCustomModal(titleHtml, bodyHtml);
+
+        // [핵심] 모달이 열린 후 Flatpickr를 시간 모드로 초기화
+        setTimeout(() => {
+            flatpickr(".time-picker-input", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                locale: "ko",
+                theme: "dark",
+                disableMobile: "true" // 모바일에서도 커스텀 UI 유지
+            });
+        }, 100);
+    });
+};
+
+
+
+// --- [5] 저장 로직 통합 ---
+window.processAttendanceSave = function(name, date, isNew) {
+    const finalName = isNew ? document.getElementById('editName').value : name;
+    if(!finalName) return alert("Please select a staff member.");
+    
+    const special = document.getElementById('editSpecial').value;
+    const updateData = special ? special : { 
+        attend: document.getElementById('editAttend').value.trim(), 
+        leave: document.getElementById('editLeave').value.trim() 
     };
+    
+    db.ref(`attendance/${date}/${finalName}`).set(updateData).then(() => { 
+        alert(isNew ? "Registered" : "Updated"); 
+        window.closeAdminCustomModal(); 
+    });
+};
 
 window.showSchDetail = function(id) {
         db.ref(`shared_schedules/${id}`).once("value", snap => {
