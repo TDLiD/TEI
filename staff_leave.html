@@ -63,10 +63,16 @@
     <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] border border-slate-800 backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6 px-2">
             <h3 id="calendarMonthTitle" class="text-lg font-black text-white uppercase italic tracking-tighter">Month Year</h3>
-            <div class="flex gap-2">
+            
+            <div class="flex gap-2 items-center">
+                <button onclick="goToToday()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl text-[10px] font-black transition-all border border-indigo-500/30 active:scale-95 mr-1">
+                    TODAY
+                </button>
+                
                 <button onclick="changeLeaveMonth(-1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
                 </button>
+                
                 <button onclick="changeLeaveMonth(1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
                 </button>
@@ -74,6 +80,8 @@
         </div>
         <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar">
             </div>
+    </div>
+    
     </div>
 
     <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
@@ -235,6 +243,19 @@ window.renderCalendar = function() {
         currentViewDate.setMonth(currentViewDate.getMonth() + val);
         renderCalendar();
     };
+
+// [추가] 오늘 날짜가 포함된 월로 이동하는 함수
+window.goToToday = function() {
+    currentViewDate = new Date(); // 현재 날짜객체로 초기화
+    renderCalendar();             // 달력 다시 그리기
+};
+
+// 기존의 changeLeaveMonth 함수
+window.changeLeaveMonth = function(val) {
+    currentViewDate.setMonth(currentViewDate.getMonth() + val);
+    renderCalendar();
+};
+
 
 // 신청 내역 로드 (Admin Memo 표시 버전)
 // 신청 내역 로드 부분 수정

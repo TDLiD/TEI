@@ -28,19 +28,22 @@
 
 
 <div id="weekly_leave_section" class="hidden mb-8 animate-fadeIn">
-    <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md">
+    <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group"
+         onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
         <div class="flex justify-between items-center mb-4 px-2">
             <h2 class="text-sm font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter">
                 <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
                 Vacationers This Week
             </h2>
-            <div id="week_range_text" class="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full uppercase"></div>
+            <div class="flex items-center gap-3">
+                <div id="week_range_text" class="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full uppercase"></div>
+                <span class="text-[10px] font-black text-indigo-500 group-hover:translate-x-1 transition-transform">GO TO LEAVE MGT →</span>
+            </div>
         </div>
-        <div id="weekly_leave_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div id="weekly_leave_container" class="flex flex-wrap gap-2 px-2">
             </div>
     </div>
 </div>
-
 
     <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
@@ -223,6 +226,7 @@ window.closeAdminCustomModal = function() {
 
 
 
+// [수정] 주간 휴가자 렌더링 함수 로직 변경
 window.renderWeeklyLeaves = function() {
     const container = document.getElementById('weekly_leave_container');
     const section = document.getElementById('weekly_leave_section');
@@ -231,11 +235,14 @@ window.renderWeeklyLeaves = function() {
 
     // 1. 이번 주의 월요일~일요일 범위 계산
     const curr = new Date();
-    const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1); // 월요일
-    const last = first + 6; // 일요일
+    const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1); 
+    const last = first + 6; 
 
-    const monday = new Date(curr.setDate(first)).toISOString().split('T')[0];
-    const sunday = new Date(curr.setDate(last)).toISOString().split('T')[0];
+    const mondayDate = new Date(new Date().setDate(first));
+    const sundayDate = new Date(new Date().setDate(last));
+    
+    const monday = mondayDate.toISOString().split('T')[0];
+    const sunday = sundayDate.toISOString().split('T')[0];
     
     rangeText.innerText = `${monday} ~ ${sunday}`;
 
@@ -244,65 +251,41 @@ window.renderWeeklyLeaves = function() {
         const allLeaves = snap.val() || {};
         container.innerHTML = '';
         let hasAnyThisWeek = false;
+        
+        // 이번 주 휴가자 명단을 중복 없이 관리하기 위한 Map
+        const weeklyStaffMap = new Map();
 
-        // 월~일 각 날짜별로 배열 준비
-        const weekDays = [];
-        for(let i=0; i<7; i++) {
-            const d = new Date(monday);
-            d.setDate(d.getDate() + i);
-            weekDays.push({
-                dateStr: d.toISOString().split('T')[0],
-                dayName: d.toLocaleString('en-US', {weekday: 'short'}),
-                staffs: []
-            });
-        }
-
-        // 데이터 필터링 (Approved 상태이면서 이번 주 기간 내에 걸쳐있는 경우)
         Object.entries(allLeaves).forEach(([uid, years]) => {
             Object.values(years).forEach(yearData => {
                 Object.values(yearData).forEach(leave => {
                     if (leave.status === 'Approved') {
-                        weekDays.forEach(day => {
-                            if (day.dateStr >= leave.startDate && day.dateStr <= leave.endDate) {
-                                // 주말(토,일) 제외 로직 (선택사항)
-                                const dObj = new Date(day.dateStr);
-                                if (dObj.getDay() !== 0 && dObj.getDay() !== 6) {
-                                    day.staffs.push({ name: uid, type: leave.type });
-                                    hasAnyThisWeek = true;
-                                }
-                            }
-                        });
+                        // 이번 주 범위와 겹치는지 확인
+                        // (휴가시작 <= 이번주 일요일 && 휴가종료 >= 이번주 월요일)
+                        if (leave.startDate <= sunday && leave.endDate >= monday) {
+                            weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type });
+                            hasAnyThisWeek = true;
+                        }
                     }
                 });
             });
         });
 
-        // 3. 렌더링
+        // 3. 렌더링 (심플한 텍스트 칩 형태로 표시)
         if (hasAnyThisWeek) {
             section.classList.remove('hidden');
-            weekDays.forEach(day => {
-                const isToday = day.dateStr === new Date().toISOString().split('T')[0];
-                let staffBadges = day.staffs.map(s => `
-                    <div class="bg-indigo-500/20 border border-indigo-500/30 rounded-lg p-1.5 mb-1 flex flex-col items-center">
-                        <span class="text-[10px] text-white font-black">${s.name}</span>
-                        <span class="text-[8px] text-indigo-400 font-bold">${s.type}</span>
-                    </div>
-                `).join('');
-
-                container.innerHTML += `
-                    <div class="p-3 rounded-2xl ${isToday ? 'bg-indigo-600/20 border-2 border-indigo-500/50' : 'bg-slate-800/30 border border-slate-800'} transition-all">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-[10px] font-black ${isToday ? 'text-indigo-400' : 'text-slate-500'}">${day.dayName}</span>
-                            <span class="text-[9px] font-bold text-slate-600">${day.dateStr.slice(8,10)}</span>
-                        </div>
-                        <div class="min-h-[40px]">
-                            ${staffBadges || '<div class="text-[9px] text-slate-700 italic text-center py-2">-</div>'}
-                        </div>
+            let html = '';
+            weeklyStaffMap.forEach(staff => {
+                html += `
+                    <div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl">
+                        <span class="text-xs font-black text-white">${staff.name}</span>
+                        <span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span>
+                        <span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span>
                     </div>
                 `;
             });
+            container.innerHTML = html;
         } else {
-            section.classList.add('hidden'); // 이번 주 휴가자가 없으면 섹션 숨김
+            section.classList.add('hidden'); 
         }
     });
 };
