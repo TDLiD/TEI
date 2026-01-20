@@ -1,40 +1,49 @@
 <style>
-    /* 캘린더 컨테이너 최적화: 데스크톱 축소 시 깨짐 방지 */
+    /* 1. 캘린더 기본 레이아웃 및 데스크톱 최적화 */
     .calendar-wrapper {
         width: 100%;
-        overflow-x: auto; /* 작은 화면에서 가로 스크롤 허용 */
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
     .calendar-table {
         width: 100%;
         border-collapse: collapse;
-        /* table-fixed를 제거하여 내부 콘텐츠(이름 등)가 잘리지 않게 함 */
         table-layout: auto; 
     }
 
-    /* 데스크톱 모드에서 최소 가로 너비 보장 */
     @media (min-width: 769px) {
         .calendar-table {
             min-width: 750px; 
         }
+        /* 데스크톱 셀 높이 고정 및 상단 정렬 */
+        .calendar-table td {
+            height: 140px;
+            vertical-align: top;
+            padding: 10px;
+            border: 1px solid #1e293b;
+        }
     }
 
-    /* 캘린더 셀 내 텍스트 반응형 폰트 조절 */
+    /* 2. 공통 레코드 아이템 스타일 */
     .attendance-record-item {
         font-size: clamp(8px, 0.8vw, 10px);
+        transition: all 0.2s ease;
     }
 
-    /* 모바일 대응 (768px 이하) */
+    /* 3. 모바일 UI 개선 (핵심) */
     @media (max-width: 768px) {
-        .calendar-table thead { display: none; }
+        .calendar-table thead { display: none; } /* 요일 헤더 숨김 */
+        
         #full_att_calendar_body { 
             display: flex; 
             flex-direction: column; 
-            gap: 12px; 
+            gap: 14px; 
             padding: 4px;
         }
+
         #full_att_calendar_body tr { display: contents; }
+
         #full_att_calendar_body td { 
             display: block; 
             width: 100% !important; 
@@ -42,45 +51,79 @@
             border: none !important; 
             padding: 0 !important;
         }
-        /* 날짜가 없는 빈 셀은 숨김 */
+
+        /* 날짜가 없는 빈 셀은 모바일에서 완전히 숨김 */
         #full_att_calendar_body td:empty { display: none; }
         
-        /* 모바일 전용 카드 스타일 */
+        /* [개선] 요약 카드 스타일 */
         .mobile-date-card {
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 20px;
-            padding: 16px;
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 24px;
+            padding: 18px;
             border: 1px solid rgba(51, 65, 85, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
+
+        /* 오늘 날짜 강조 */
         .today-highlight {
             border: 2px solid #3b82f6 !important;
-            background: rgba(59, 130, 246, 0.1) !important;
+            background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important;
+        }
+
+        /* 모바일 카드 내 날짜 헤더 */
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 기록 리스트 컨테이너 */
+        .mobile-record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 개별 스태프 카드 */
+        .attendance-record-item {
+            background: rgba(15, 23, 42, 0.6) !important;
+            padding: 12px !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
         }
     }
 </style>
 
-<div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] md:rounded-3xl border border-slate-800 shadow-2xl">
+<div class="bg-slate-900/50 p-4 md:p-6 rounded-[2.5rem] md:rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <h2 class="text-xl font-black text-white flex items-center gap-2">
-            <span class="text-blue-500">■</span> STAFF ATTENDANCE <span class="hidden md:inline">(FULL)</span>
+            <div class="w-1.5 h-6 bg-blue-500 rounded-full"></div>
+            STAFF ATTENDANCE <span class="text-slate-500 font-light text-sm uppercase tracking-widest ml-1 hidden md:inline">Management</span>
         </h2>
         
-        <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50">
-            <button onclick="changeFullMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <div id="full_att_month" class="text-sm md:text-base font-black text-white min-w-[120px] text-center uppercase tracking-tighter italic"></div>
-            <button onclick="changeFullMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-            </button>
-            <button onclick="goTodayFull()" class="ml-1 px-3 py-1.5 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded-lg hover:bg-blue-600 hover:text-white transition-all">TODAY</button>
+        <div class="flex items-center gap-3 bg-slate-800/50 p-1.5 rounded-2xl border border-slate-700/50 w-full md:w-auto justify-between">
+            <div class="flex items-center gap-1">
+                <button onclick="changeFullMonth(-1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div id="full_att_month" class="text-xs md:text-sm font-black text-white min-w-[100px] md:min-w-[140px] text-center uppercase tracking-widest italic"></div>
+                <button onclick="changeFullMonth(1)" class="p-2 hover:bg-slate-700 rounded-xl transition-all active:scale-90 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+            <button onclick="goTodayFull()" class="px-4 py-2 bg-blue-600/20 text-blue-400 text-[10px] font-black rounded-xl hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest border border-blue-500/20">Today</button>
         </div>
     </div>
 
     <div class="calendar-wrapper no-scrollbar">
         <table class="calendar-table">
             <thead>
-                <tr class="text-slate-500 text-[10px] uppercase tracking-widest">
+                <tr class="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
                     <th class="py-4">Sun</th><th class="py-4">Mon</th><th class="py-4">Tue</th>
                     <th class="py-4">Wed</th><th class="py-4">Thu</th><th class="py-4">Fri</th><th class="py-4">Sat</th>
                 </tr>
@@ -89,6 +132,8 @@
         </table>
     </div>
 </div>
+
+
 
 <script>
     (function() {
@@ -185,117 +230,113 @@
             }
         };
 
- window.renderAttendanceFull = function() {
-    const monthLabel = document.getElementById('full_att_month');
-    const tbody = document.getElementById('full_att_calendar_body');
-    
-    // 1. 초기 요소 체크 (SPA 로드 타이밍 문제 해결)
-    if (!monthLabel || !tbody) {
-        // 요소가 아직 로드되지 않았다면 잠시 후 재시도
-        setTimeout(window.renderAttendanceFull, 100);
-        return;
-    }
-
-    monthLabel.innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
-    
-    // 2. 기존 리스너가 있다면 중복 방지를 위해 먼저 해제
-    const attRef = db.ref('attendance');
-    attRef.off(); 
-    
-    // 3. 실시간 데이터 리스너 시작
-    attRef.on('value', snap => {
-        const data = snap.val() || {};
-        const currentTbody = document.getElementById('full_att_calendar_body');
+window.renderAttendanceFull = function() {
+        const monthLabel = document.getElementById('full_att_month');
+        const tbody = document.getElementById('full_att_calendar_body');
         
-        // [중요] 탭 이동 방어: 사용자가 다른 탭으로 이동해서 tbody가 사라졌다면
-        // 리스너를 스스로 파괴하고 실행을 중단합니다. (에러 발생 근본 차단)
-        if (!currentTbody) {
-            console.log("Attendance 탭이 비활성화되어 리스너를 해제합니다.");
-            attRef.off();
+        if (!monthLabel || !tbody) {
+            setTimeout(window.renderAttendanceFull, 100);
             return;
         }
-        
-        currentTbody.innerHTML = '';
-        
-        const year = viewDate.getFullYear(), month = viewDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        const todayStr = new Date().toISOString().split('T')[0];
-        const isMobile = window.innerWidth <= 768;
-        
-        // --- 통계 계산 변수 (필요 시) ---
-        let presentCount = 0;
-        let totalCount = 0;
 
-        // --- 달력 렌더링 로직 시작 ---
-        let dateNum = 1;
+        monthLabel.innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'});
+        
+        const attRef = db.ref('attendance');
+        attRef.off(); 
+        
+        attRef.on('value', snap => {
+            const data = snap.val() || {};
+            const currentTbody = document.getElementById('full_att_calendar_body');
+            
+            if (!currentTbody) {
+                attRef.off();
+                return;
+            }
+            
+            currentTbody.innerHTML = '';
+            
+            const year = viewDate.getFullYear(), month = viewDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isMobile = window.innerWidth <= 768;
+            
+            let dateNum = 1;
 
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
+            for (let i = 0; i < 6; i++) {
+                let row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    let cell = document.createElement('td');
+                    
+                    if (i === 0 && j < firstDay || dateNum > lastDate) { 
+                        row.appendChild(cell); 
+                    } else {
+                        const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+                        const isToday = dStr === todayStr;
+                        const dayOfWeek = new Date(year, month, dateNum).toLocaleString('en-US', {weekday: 'long'});
                         
-                        if (i === 0 && j < firstDay || dateNum > lastDate) { 
-                            row.appendChild(cell); 
-                        } else {
-                            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                            const isToday = dStr === todayStr;
-                            
-                            cell.className = isMobile 
-                                ? `mobile-date-card ${isToday ? 'today-highlight' : ''}`
-                                : `border border-slate-800 md:h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''}`;
-                            
-                            let content = `
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[11px] font-black ${isToday ? 'text-blue-400' : 'text-slate-500'}">${dateNum}</span>
-                                    ${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">TODAY</span>' : ''}
-                                </div>`;
-                            
-                            const dayRecords = data[dStr] || {};
-                            const hasRecords = Object.keys(dayRecords).length > 0;
+                        cell.className = isMobile 
+                            ? `mobile-date-card ${isToday ? 'today-highlight' : ''}`
+                            : `transition-all ${isToday ? 'today-highlight' : ''}`;
+                        
+                        // 카드 헤더 (날짜 및 오늘 표시)
+                        let content = `
+                            <div class="${isMobile ? 'mobile-card-header' : 'flex justify-between items-center mb-3'}">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-lg font-black ${isToday ? 'text-blue-400' : 'text-white'}">${dateNum}</span>
+                                    ${isMobile ? `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${dayOfWeek}</span>` : ''}
+                                </div>
+                                ${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}
+                            </div>`;
+                        
+                        const dayRecords = data[dStr] || {};
+                        const recordsContainer = isMobile ? `<div class="mobile-record-list">` : `<div>`;
+                        content += recordsContainer;
 
-                            if(hasRecords) {
-                                Object.entries(dayRecords).forEach(([name, info]) => {
-                                    let attHtml = '';
-                                    const safeInfo = encodeURIComponent(JSON.stringify(info));
+                        const recordEntries = Object.entries(dayRecords);
+                        if(recordEntries.length > 0) {
+                            recordEntries.forEach(([name, info]) => {
+                                let attHtml = '';
+                                const safeInfo = encodeURIComponent(JSON.stringify(info));
 
-                                    if (typeof info === 'string') {
-                                        attHtml = `<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-black text-[9px] border border-amber-500/20">${info}</span>`;
-                                    } else {
-                                        // 초 단위를 제외한 시간 포맷 적용
-                                        const displayAttend = formatTimeShort(info.attend || "");
-                                        const displayLeave = formatTimeShort(info.leave || "");
-                                        
-                                        const sClass = (info.attend || "").includes("LATE") ? "text-rose-500" : ((info.attend || "").includes("ATT") ? "text-emerald-500" : "text-slate-500");
-                                        
-                                        attHtml = `
-                                            <div class="flex flex-col items-end gap-0.5">
-                                                <span class="${sClass} font-black tracking-tighter">☀️ ${displayAttend}</span>
-                                                ${displayLeave ? `<span class="text-slate-400 font-black tracking-tighter">🌙 ${displayLeave}</span>` : ''}
-                                            </div>`;
-                                    }
-
-                                    content += `
-                                        <div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" 
-                                             class="attendance-record-item flex justify-between items-center text-[10px] mb-1.5 bg-slate-800/80 md:bg-slate-800/40 p-2 md:p-1.5 rounded-xl border border-slate-700/50 gap-2 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-95 shadow-sm">
-                                            <span class="truncate font-black text-slate-200" style="max-width: 50%">${name}</span>
-                                            ${attHtml}
+                                if (typeof info === 'string') {
+                                    attHtml = `<span class="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-500 font-black text-[10px] border border-amber-500/20">${info}</span>`;
+                                } else {
+                                    const displayAttend = formatTimeShort(info.attend || "");
+                                    const displayLeave = formatTimeShort(info.leave || "");
+                                    const isLate = (info.attend || "").includes("LATE");
+                                    const sClass = isLate ? "text-rose-500" : "text-emerald-500";
+                                    
+                                    attHtml = `
+                                        <div class="flex flex-col items-end gap-0.5">
+                                            <span class="${sClass} font-black tracking-tighter">☀️ ${displayAttend}</span>
+                                            ${displayLeave ? `<span class="text-slate-400 font-black tracking-tighter">🌙 ${displayLeave}</span>` : ''}
                                         </div>`;
-                                });
-                            } else if(isMobile) {
-                                content += `<div class="text-[10px] text-slate-700 font-medium italic py-2 text-center">No records</div>`;
-                            }
+                                }
 
-                            cell.innerHTML = content;
-                            row.appendChild(cell);
-                            dateNum++;
+                                content += `
+                                    <div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" 
+                                         class="attendance-record-item flex justify-between items-center p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-[0.98]">
+                                        <span class="truncate font-black text-slate-200 text-[11px]" style="max-width: 55%">${name}</span>
+                                        ${attHtml}
+                                    </div>`;
+                            });
+                        } else if(isMobile) {
+                            content += `<div class="text-[10px] text-slate-600 font-bold italic py-4 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-800">NO RECORDS</div>`;
                         }
+                        
+                        content += `</div>`;
+                        cell.innerHTML = content;
+                        row.appendChild(cell);
+                        dateNum++;
                     }
-                    currentTbody.appendChild(row);
-                    if (dateNum > lastDate) break;
                 }
-            });
-        };
+                currentTbody.appendChild(row);
+                if (dateNum > lastDate) break;
+            }
+        });
+    };
+
 
         window.changeFullMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderAttendanceFull(); };
         window.goTodayFull = () => { viewDate = new Date(); window.renderAttendanceFull(); };
