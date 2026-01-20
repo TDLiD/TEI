@@ -156,7 +156,8 @@ function switchTab(type) {
         'leave': 'staff_leave.html',
         'work': 'staff_report.html',
         'statistic': 'staff_statistic.html',
-        'setting': 'staff_setting.html'
+        'setting': 'staff_setting.html',
+'all': 'staff_allatt.html' // <--- 이 줄을 반드시 추가하세요!
     };
 
     // [수정 핵심] loadHTML이 완료된 후 각 페이지의 초기화 함수를 실행
@@ -172,24 +173,50 @@ function switchTab(type) {
 }
 
 
-        async function loadHTML(url) {
-            try {
-                const frame = document.getElementById('contentFrame');
-                const response = await fetch(url);
-                const text = await response.text();
-                frame.innerHTML = text;
-                
-                const footerContainer = document.getElementById('footerContainer');
-                if (!footerContainer.innerHTML) {
-                    const footerRes = await fetch('staff_footer.html');
-                    const footerText = await footerRes.text();
-                    footerContainer.innerHTML = footerText;
-                    executeScripts(footerContainer);
-                }
-
-                executeScripts(frame);
-            } catch (e) { console.error("Failed to load page:", e); }
+async function loadHTML(url, callback) { // 1. callback 인자 추가
+    try {
+        // 2. url이 undefined이거나 비어있을 경우 예외 처리
+        if (!url) {
+            console.error("Error: URL is undefined or empty");
+            return;
         }
+
+        const frame = document.getElementById('contentFrame');
+        const response = await fetch(url);
+        
+        // 3. fetch 결과가 성공적이지 않을 때 처리
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        frame.innerHTML = text;
+        
+        const footerContainer = document.getElementById('footerContainer');
+        if (!footerContainer.innerHTML) {
+            const footerRes = await fetch('staff_footer.html');
+            const footerText = await footerRes.text();
+            footerContainer.innerHTML = footerText;
+            executeScripts(footerContainer);
+        }
+
+        executeScripts(frame);
+
+        // 4. 페이지 로드 및 스크립트 실행 후 콜백 함수가 있으면 실행
+        if (typeof callback === 'function') {
+            callback();
+        }
+        
+    } catch (e) { 
+        console.error("Failed to load page:", e); 
+        // 사용자에게 에러 표시 (선택 사항)
+        document.getElementById('contentFrame').innerHTML = 
+            `<div class="p-10 text-center text-rose-500 font-bold uppercase">
+                File Not Found: ${url}
+            </div>`;
+    }
+}
+
 
         function executeScripts(container) {
             const scripts = container.querySelectorAll('script');

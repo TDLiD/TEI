@@ -1,5 +1,4 @@
 <style>
-    /* (기존 스타일 유지) */
     .calendar-table th {
         padding: 6px 0;
         color: #64748b;
@@ -7,7 +6,6 @@
         text-align: center;
         font-weight: 800;
     }
-
     .calendar-table td {
         height: 70px;
         width: 14.28%;
@@ -17,13 +15,11 @@
         position: relative;
         transition: background 0.2s;
     }
-
     @media (max-width: 640px) {
         .calendar-table td {
             height: 55px !important;
             padding: 1px;
         }
-
         .time-label {
             font-size: 0.45rem !important;
             padding: 1px !important;
@@ -31,60 +27,41 @@
             line-height: 1;
             letter-spacing: -0.05em;
         }
-
-        #currentMonthYear {
-            font-size: 0.9rem;
-        }
-
+        #currentMonthYear { font-size: 0.9rem; }
         .nav-btn {
             padding: 3px 5px !important;
             font-size: 0.65rem !important;
         }
-
-        /* 기존 h2#mainWelcomeMsg 스타일 수정 */
         h2#mainWelcomeMsg {
             display: flex;
             align-items: center;
             gap: 15px;
-            /* 이미지와 이름 사이 간격 */
             font-size: 1.5rem !important;
         }
-
-        /* 프로필 이미지(이모티콘) 사이즈 강제 확대 */
         .nav-profile-img {
             width: 60px !important;
-            /* 모바일 기준 기존 24px에서 약 2.5배 확대 */
             height: 60px !important;
             border-radius: 50%;
             border: 2px solid #334155;
             object-fit: cover;
         }
-
-        @media (min-width: 1024px) {
-            .nav-profile-img {
-                width: 100px !important;
-                /* 데스크톱 기준 기존 48px에서 2배 이상 확대 */
-                height: 100px !important;
-            }
-        }
-
         section {
             padding: 1rem !important;
             border-radius: 1.5rem !important;
         }
     }
-
-
-    .calendar-table td:hover {
-        background-color: #0f172a;
+    @media (min-width: 1024px) {
+        .nav-profile-img {
+            width: 100px !important;
+            height: 100px !important;
+        }
     }
-
+    .calendar-table td:hover { background-color: #0f172a; }
     .today-highlight {
         background-color: rgba(37, 99, 235, 0.1);
         border: 2px solid #3b82f6 !important;
         z-index: 10;
     }
-
     .time-label {
         display: block;
         font-family: 'JetBrains Mono', monospace;
@@ -95,64 +72,29 @@
         border-radius: 3px;
         text-align: center;
     }
-
-    .att-color {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: #10b981;
-    }
-
-    .late-color {
-        background-color: rgba(244, 63, 94, 0.15);
-        color: #f43f5e;
-    }
-
-    .other-color {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: #f59e0b;
-    }
-
+    .att-color { background-color: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .late-color { background-color: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+    .other-color { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; }
     .out-time {
         background-color: rgba(148, 163, 184, 0.1);
         color: #94a3b8;
         border: 1px solid rgba(148, 163, 184, 0.2);
     }
-
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    /* [추가] 지각 경고 바 애니메이션 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .warning-pulse {
         animation: pulse-red 2s infinite;
         border: 2px solid #f43f5e !important;
     }
-
     @keyframes pulse-red {
-        0% {
-            box-shadow: 0 0 0px rgba(244, 63, 94, 0);
-        }
-
-        50% {
-            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
-        }
-
-        100% {
-            box-shadow: 0 0 0px rgba(244, 63, 94, 0);
-        }
+        0% { box-shadow: 0 0 0px rgba(244, 63, 94, 0); }
+        50% { box-shadow: 0 0 15px rgba(244, 63, 94, 0.4); }
+        100% { box-shadow: 0 0 0px rgba(244, 63, 94, 0); }
     }
-
-    /* 미입력 알림 모달 스타일 */
     .missing-modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(8px);
         display: flex;
@@ -160,8 +102,7 @@
         justify-content: center;
         z-index: 9999;
     }
-
-    .missing-modal {
+    .missing-modal, .edit-modal {
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 1.5rem;
@@ -170,14 +111,10 @@
         padding: 2rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-
-    /* 수정 모달 스타일 */
     .edit-modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(8px);
         display: flex;
@@ -185,118 +122,69 @@
         justify-content: center;
         z-index: 10000;
     }
-
-    .edit-modal {
-        background: #0f172a;
-        border: 1px solid #334155;
-        border-radius: 1.5rem;
-        width: 90%;
-        max-width: 400px;
-        padding: 2rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .edit-modal input[readonly] {
-        background-color: #1e293b;
-        color: #64748b;
-        cursor: not-allowed;
-    }
-
-    .edit-modal input[type="time"] {
-        color-scheme: dark;
-        /* 브라우저 시간 선택기 다크모드 대응 */
-    }
-
+    .edit-modal input[readonly] { background-color: #1e293b; color: #64748b; cursor: not-allowed; }
+    .edit-modal input[type="time"] { color-scheme: dark; }
     @keyframes blink {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.3;
-        }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
     }
-
-    .animate-blink {
-        animation: blink 1s infinite;
+    .animate-blink { animation: blink 1s infinite; }
+    @keyframes pulse-border {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
-
-@keyframes pulse-border {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-.animate-pulse-slow { animation: pulse-border 2s infinite; }
-
+    .animate-pulse-slow { animation: pulse-border 2s infinite; }
 </style>
-
-
 
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
     <div class="w-full lg:w-1/3 space-y-3 md:space-y-6">
         <div class="px-1">
             <p class="text-slate-500 text-[9px] uppercase font-black tracking-widest mb-0.5">Authenticated as</p>
             <h2 id="mainWelcomeMsg" class="text-xl md:text-3xl font-black text-white"></h2>
-
-
-<div id="leaveStatusAlert" class="hidden px-4 pt-4">
-    <div id="leaveAlertContent" class="p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg">
-        <div class="flex items-center gap-3">
-            <span id="leaveAlertIcon" class="text-xl"></span>
-            <div>
-                <p id="leaveAlertTitle" class="text-[10px] font-black uppercase italic leading-none"></p>
-                <p id="leaveAlertMsg" class="text-white text-xs font-bold mt-1"></p>
+            <div id="leaveStatusAlert" class="hidden px-4 pt-4">
+                <div id="leaveAlertContent" class="p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <span id="leaveAlertIcon" class="text-xl"></span>
+                        <div>
+                            <p id="leaveAlertTitle" class="text-[10px] font-black uppercase italic leading-none"></p>
+                            <p id="leaveAlertMsg" class="text-white text-xs font-bold mt-1"></p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white/50 hover:text-white">&times;</button>
+                </div>
             </div>
-        </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="text-white/50 hover:text-white">&times;</button>
-    </div>
-</div>
-
-            <div id="weeklySummaryCard"
-                class="mt-4 p-4 rounded-2xl border border-slate-800 bg-slate-900/50 transition-all duration-500">
+            <div id="weeklySummaryCard" class="mt-4 p-4 rounded-2xl border border-slate-800 bg-slate-900/50 transition-all duration-500">
                 <div class="flex items-center justify-between mb-1">
                     <span id="warningIcon" class="text-lg hidden">⚠️</span>
-                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Monthly Attendance
-                        Stats</span>
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Monthly Attendance Stats</span>
                 </div>
-
                 <div class="flex items-end justify-between gap-2">
                     <div class="flex items-end gap-2">
                         <span id="lateRatioPercent" class="text-3xl font-black text-white">0%</span>
-                        <span id="lateRatioStatus"
-                            class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Checking...</span>
+                        <span id="lateRatioStatus" class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Checking...</span>
                     </div>
                     <div class="text-right text-[10px] font-bold text-slate-400 leading-tight">
                         <div id="statCounts">T: 0 | A: 0 | L: 0</div>
                         <div id="avgLeaveTime" class="text-blue-400">Avg Leave: --:--</div>
                     </div>
                 </div>
-
                 <div class="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
-                    <div id="lateRatioBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%">
-                    </div>
+                    <div id="lateRatioBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
                 </div>
             </div>
         </div>
-
         <section class="bg-slate-900 p-4 md:p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
             <div class="flex justify-between items-center mb-4 md:mb-6">
                 <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Attendance Panel</p>
                 <p id="liveDate" class="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded"></p>
             </div>
-
             <div class="space-y-3 md:space-y-4">
-                <div id="timeInputWrapper"
-                    class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50 transition-opacity">
+                <div id="timeInputWrapper" class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50 transition-opacity">
                     <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1 md:mb-2">Time (24H)</label>
-                    <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8"
-                        class="w-full bg-slate-800 text-white text-xl md:text-2xl font-black p-2 md:p-3 rounded-lg border border-slate-600 outline-none text-center">
+                    <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8" class="w-full bg-slate-800 text-white text-xl md:text-2xl font-black p-2 md:p-3 rounded-lg border border-slate-600 outline-none text-center">
                 </div>
-
                 <div class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50">
-                    <select id="specialStatus" onchange="toggleInputMode()"
-                        class="w-full bg-slate-800 text-white font-bold p-2 md:p-3 rounded-lg border border-slate-600 outline-none cursor-pointer text-xs">
+                    <select id="specialStatus" onchange="toggleInputMode()" class="w-full bg-slate-800 text-white font-bold p-2 md:p-3 rounded-lg border border-slate-600 outline-none cursor-pointer text-xs">
                         <option value="">--- REGULAR (IN/OUT) ---</option>
                         <option value="WO">WO (Work Out)</option>
                         <option value="PEL">PEL (Personal Leave)</option>
@@ -306,64 +194,40 @@
                         <option value="SPL">SPL (Special Leave)</option>
                     </select>
                 </div>
-
                 <div id="buttonArea" class="grid grid-cols-2 gap-2 md:gap-3">
-                    <button id="btnIn" onclick="handleAttendance('attend')"
-                        class="bg-emerald-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET
-                        IN</button>
-                    <button id="btnOut" onclick="handleAttendance('leave')"
-                        class="bg-rose-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET
-                        OUT</button>
+                    <button id="btnIn" onclick="handleAttendance('attend')" class="bg-emerald-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET IN</button>
+                    <button id="btnOut" onclick="handleAttendance('leave')" class="bg-rose-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SET OUT</button>
                 </div>
-
                 <div id="specialButtonArea" class="hidden">
-                    <button onclick="handleSpecialStatus()"
-                        class="w-full bg-blue-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SAVE
-                        STATUS</button>
+                    <button onclick="handleSpecialStatus()" class="w-full bg-blue-600 text-white py-3 md:py-4 rounded-xl text-xs font-black transition active:scale-95">SAVE STATUS</button>
                 </div>
             </div>
-
-            <div id="attendanceLog"
-                class="mt-3 p-2 bg-black/30 rounded-lg text-center text-[9px] font-bold text-slate-400 italic">No
-                records</div>
+            <div id="attendanceLog" class="mt-3 p-2 bg-black/30 rounded-lg text-center text-[9px] font-bold text-slate-400 italic">No records</div>
         </section>
     </div>
-
     <div class="flex-1">
         <section class="bg-slate-900 p-3 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl h-full">
             <div class="mb-6 flex justify-center sm:justify-start">
-                <button onclick="switchTab('allatt')"
-                    class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
-                    <img src="images/gif/click.gif" alt="click"
-                        class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
+                <button onclick="switchTab('all')" class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
+                    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
                     <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
                     <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
                 </button>
             </div>
-
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 px-1 gap-3">
                 <div class="flex items-center justify-between w-full sm:w-auto gap-3">
-                    <div id="currentMonthYear"
-                        class="text-sm md:text-lg font-black text-white italic underline decoration-blue-500 underline-offset-4">
-                    </div>
+                    <div id="currentMonthYear" class="text-sm md:text-lg font-black text-white italic underline decoration-blue-500 underline-offset-4"></div>
                     <div class="flex bg-slate-800 rounded-lg p-0.5">
-                        <button onclick="changeMonth(-1)"
-                            class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">PREV</button>
-                        <button onclick="goToday()"
-                            class="nav-btn px-2 py-1 text-blue-400 text-[10px] font-black mx-0.5">TODAY</button>
-                        <button onclick="changeMonth(1)"
-                            class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">NEXT</button>
+                        <button onclick="changeMonth(-1)" class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">PREV</button>
+                        <button onclick="goToday()" class="nav-btn px-2 py-1 text-blue-400 text-[10px] font-black mx-0.5">TODAY</button>
+                        <button onclick="changeMonth(1)" class="nav-btn px-2 py-1 text-slate-400 text-[10px] font-black">NEXT</button>
                     </div>
                 </div>
-
-                <div
-                    class="flex items-center gap-3 w-full sm:w-auto justify-end sm:border-l sm:border-slate-800 sm:pl-4">
-                    <span class="text-[9px] text-slate-500 font-bold uppercase">Std: <span id="displayStdTime"
-                            class="text-slate-300">--:--</span></span>
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end sm:border-l sm:border-slate-800 sm:pl-4">
+                    <span class="text-[9px] text-slate-500 font-bold uppercase">Std: <span id="displayStdTime" class="text-slate-300">--:--</span></span>
                     <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
                 </div>
             </div>
-
             <div class="overflow-x-auto no-scrollbar rounded-xl border border-slate-800">
                 <table class="calendar-table min-w-[300px] w-full border-collapse bg-slate-900/50">
                     <thead>
@@ -390,79 +254,59 @@
         const jakartaStr = now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
         return new Date(jakartaStr);
     }
-
     (function () {
-
         const user = sessionStorage.getItem('loggedInUser');
-        // 본 페이지(대시보드) 상단에는 이미지 없이 이름만 깔끔하게 표시
         const welcomeMsg = document.getElementById('mainWelcomeMsg');
         if (welcomeMsg) {
             welcomeMsg.innerText = user;
         }
-// 1. db를 먼저 초기화합니다.
-const db = firebase.database();
-
-// 2. 그 다음에 함수를 호출합니다.
-if (user) {
-    checkLeaveStatus(user);
-}
-
+        const db = firebase.database();
+        if (user) {
+            checkLeaveStatus(user);
+        }
         let now = getJakartaDate();
         let viewDate = new Date(now);
-
         const y = now.getFullYear();
         const m = String(now.getMonth() + 1).padStart(2, '0');
         const d = String(now.getDate()).padStart(2, '0');
         const todayStr = `${y}-${m}-${d}`;
         let standardTime = "";
-        let hasCheckedMissing = false; // [추가] 팝업 중복 실행 방지 플래그
-
+        let hasCheckedMissing = false;
         const btnIn = document.getElementById('btnIn');
         const timeInput = document.getElementById('manualTime');
 
-
-function checkLeaveStatus(uid) {
-    const currentYear = new Date().getFullYear();
-    db.ref(`leaves/${uid}/${currentYear}`).on('value', (snapshot) => {
-        const leaves = snapshot.val();
-        if (!leaves) return;
-
-        // 가장 최근 신청 건 확인 (또는 Pending/Rejected가 하나라도 있는지 확인)
-        const leaveArray = Object.values(leaves);
-        const alertTarget = leaveArray.find(l => l.status === 'Pending' || l.status === 'Rejected');
-        
-        const alertDiv = document.getElementById('leaveStatusAlert');
-        const content = document.getElementById('leaveAlertContent');
-        const icon = document.getElementById('leaveAlertIcon');
-        const title = document.getElementById('leaveAlertTitle');
-        const msg = document.getElementById('leaveAlertMsg');
-
-        if (alertTarget) {
-            alertDiv.classList.remove('hidden');
-            if (alertTarget.status === 'Pending') {
-                content.className = "p-4 rounded-[1.5rem] border border-amber-500/30 bg-amber-500/10 animate-pulse-slow flex items-center justify-between shadow-lg shadow-amber-500/5";
-                icon.innerText = "⏳";
-                title.className = "text-[10px] font-black uppercase italic leading-none text-amber-500";
-                title.innerText = "Leave Request Pending";
-                msg.innerText = `${alertTarget.type} (${alertTarget.startDate}) is awaiting approval.`;
-            } else if (alertTarget.status === 'Rejected') {
-                content.className = "p-4 rounded-[1.5rem] border border-rose-500/30 bg-rose-500/10 flex items-center justify-between shadow-lg shadow-rose-500/5";
-                icon.innerText = "🚫";
-                title.className = "text-[10px] font-black uppercase italic leading-none text-rose-500";
-                title.innerText = "Leave Request Rejected";
-                msg.innerText = `${alertTarget.type} was rejected. Check admin memo.`;
-            }
-        } else {
-            // Approved만 있거나 신청 데이터가 없으면 숨김
-            alertDiv.classList.add('hidden');
+        function checkLeaveStatus(uid) {
+            const currentYear = new Date().getFullYear();
+            db.ref(`leaves/${uid}/${currentYear}`).on('value', (snapshot) => {
+                const leaves = snapshot.val();
+                if (!leaves) return;
+                const leaveArray = Object.values(leaves);
+                const alertTarget = leaveArray.find(l => l.status === 'Pending' || l.status === 'Rejected');
+                const alertDiv = document.getElementById('leaveStatusAlert');
+                const content = document.getElementById('leaveAlertContent');
+                const icon = document.getElementById('leaveAlertIcon');
+                const title = document.getElementById('leaveAlertTitle');
+                const msg = document.getElementById('leaveAlertMsg');
+                if (alertTarget) {
+                    alertDiv.classList.remove('hidden');
+                    if (alertTarget.status === 'Pending') {
+                        content.className = "p-4 rounded-[1.5rem] border border-amber-500/30 bg-amber-500/10 animate-pulse-slow flex items-center justify-between shadow-lg shadow-amber-500/5";
+                        icon.innerText = "⏳";
+                        title.className = "text-[10px] font-black uppercase italic leading-none text-amber-500";
+                        title.innerText = "Leave Request Pending";
+                        msg.innerText = `${alertTarget.type} (${alertTarget.startDate}) is awaiting approval.`;
+                    } else if (alertTarget.status === 'Rejected') {
+                        content.className = "p-4 rounded-[1.5rem] border border-rose-500/30 bg-rose-500/10 flex items-center justify-between shadow-lg shadow-rose-500/5";
+                        icon.innerText = "🚫";
+                        title.className = "text-[10px] font-black uppercase italic leading-none text-rose-500";
+                        title.innerText = "Leave Request Rejected";
+                        msg.innerText = `${alertTarget.type} was rejected. Check admin memo.`;
+                    }
+                } else {
+                    alertDiv.classList.add('hidden');
+                }
+            });
         }
-    });
-}
-
-// 로그인 성공 시 호출 (uid는 로그인한 사용자의 ID)
-// 예: checkLeaveStatus(currentUid);
-
-
 
 
         function updateLiveTime() {
@@ -514,11 +358,7 @@ function checkLeaveStatus(uid) {
                     const [sHH, sMM] = standardTime.split(':').map(Number);
                     const stdMinutes = sHH * 60 + sMM;
                     const inputMinutes = iHH * 60 + iMM;
-                    if (inputMinutes <= stdMinutes) {
-                        finalVal = `ATT(${storageTime})`;
-                    } else {
-                        finalVal = `LATE(${storageTime})`;
-                    }
+                    finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
                 }
                 if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
                     db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
@@ -530,12 +370,7 @@ function checkLeaveStatus(uid) {
         function updateAttendanceStats(data) {
             const viewYear = viewDate.getFullYear();
             const viewMonth = viewDate.getMonth() + 1;
-
-            let totalRecords = 0;
-            let lateCount = 0;
-            let attCount = 0;
-            let totalLeaveMinutes = 0;
-            let leaveRecordCount = 0;
+            let totalRecords = 0, lateCount = 0, attCount = 0, totalLeaveMinutes = 0, leaveRecordCount = 0;
 
             Object.keys(data).forEach(dateStr => {
                 const [year, month] = dateStr.split('-').map(Number);
@@ -545,7 +380,6 @@ function checkLeaveStatus(uid) {
                         totalRecords++;
                         if (rec.attend.includes("LATE")) lateCount++;
                         else if (rec.attend.includes("ATT")) attCount++;
-
                         if (rec.leave) {
                             const timeMatch = rec.leave.match(/(\d{2}):(\d{2})/);
                             if (timeMatch) {
@@ -558,8 +392,6 @@ function checkLeaveStatus(uid) {
             });
 
             const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
-
-            // --- [중요] 여기서부터 요소 존재 여부 체크 ---
             const ratioText = document.getElementById('lateRatioPercent');
             const bar = document.getElementById('lateRatioBar');
             const card = document.getElementById('weeklySummaryCard');
@@ -568,53 +400,33 @@ function checkLeaveStatus(uid) {
             const statCountsElem = document.getElementById('statCounts');
             const avgLeaveElem = document.getElementById('avgLeaveTime');
 
-            // 요소가 있을 때만 실행하도록 조건문 처리
             if (ratioText) ratioText.innerText = `${ratio}%`;
-
             if (bar && card && statusText && warnIcon) {
                 bar.style.width = `${ratio}%`;
-
                 if (ratio >= 50) {
-                    // --- 지각 50% 이상일 때 (위험) ---
                     bar.className = "h-full bg-rose-500 transition-all duration-1000";
                     card.classList.add('warning-pulse');
-
                     statusText.innerText = "Aku terlambat!";
-                    // 상태 텍스트에 빨간색 + 깜빡임 클래스 추가
                     statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase animate-blink";
-
-                    // 지각률 숫자(%) 부분에도 깜빡임 효과 추가
                     if (ratioText) {
-                        ratioText.classList.add('animate-blink');
-                        ratioText.classList.add('text-rose-500'); // 숫자도 빨간색으로 변경하고 싶을 경우
+                        ratioText.classList.add('animate-blink', 'text-rose-500');
                     }
-
                     warnIcon.classList.remove('hidden');
                 } else {
-                    // --- 정상 상태일 때 ---
                     bar.className = "h-full bg-blue-500 transition-all duration-1000";
                     card.classList.remove('warning-pulse');
-
                     statusText.innerText = "GOOD STANDING";
-                    // 깜빡임 클래스 제거
                     statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
-
                     if (ratioText) {
-                        ratioText.classList.remove('animate-blink');
-                        ratioText.classList.remove('text-rose-500'); // 빨간색 제거
-                        ratioText.classList.add('text-white'); // 원래 색상으로 복구
+                        ratioText.classList.remove('animate-blink', 'text-rose-500');
+                        ratioText.classList.add('text-white');
                     }
-
                     warnIcon.classList.add('hidden');
                 }
             }
-
-
-
             if (statCountsElem) {
                 statCountsElem.innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
             }
-
             if (avgLeaveElem) {
                 if (leaveRecordCount > 0) {
                     const avgTotal = Math.round(totalLeaveMinutes / leaveRecordCount);
@@ -629,12 +441,8 @@ function checkLeaveStatus(uid) {
             const val = snap.val();
             if (val) {
                 standardTime = val;
-                // 이 부분을 안전하게 수정
                 const stdTimeElem = document.getElementById('displayStdTime');
-                if (stdTimeElem) {
-                    stdTimeElem.innerText = standardTime;
-                }
-
+                if (stdTimeElem) stdTimeElem.innerText = standardTime;
                 if (btnIn) btnIn.disabled = false;
             }
         });
@@ -675,13 +483,10 @@ function checkLeaveStatus(uid) {
         window.goToday = function () { viewDate = getJakartaDate(); renderCalendar(); };
         window.changeMonth = function (offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
-
         function renderCalendar() {
             const year = viewDate.getFullYear(), month = viewDate.getMonth();
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
-
-            // [추가] 월/년 표시 요소 체크
             const monthYearElem = document.getElementById('currentMonthYear');
             if (monthYearElem) {
                 monthYearElem.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -689,22 +494,15 @@ function checkLeaveStatus(uid) {
 
             db.ref('attendance').off();
             db.ref('attendance').on('value', (snap) => {
-                // [중요] 리스너 내부에서도 tbody가 존재하는지 매번 확인
                 const tbody = document.getElementById('calendarBody');
-                if (!tbody) return; // 요소가 없으면(다른 탭으로 이동했다면) 함수 즉시 종료
-
+                if (!tbody) return;
                 const data = snap.val() || {};
-
                 updateAttendanceStats(data);
-
                 if (!hasCheckedMissing) {
                     checkMissingRecords(data);
                     hasCheckedMissing = true;
                 }
-
-                // 기존 내용 삭제 전 다시 한번 안전 확인
                 tbody.innerHTML = '';
-
                 let dateCounter = 1;
                 for (let i = 0; i < 6; i++) {
                     let row = document.createElement('tr');
@@ -715,12 +513,9 @@ function checkLeaveStatus(uid) {
                         } else {
                             const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
                             const rec = data[dStr] ? data[dStr][user] : null;
-
                             if (dStr === todayStr) cell.classList.add('today-highlight');
-
                             cell.style.cursor = 'pointer';
                             cell.onclick = () => openEditPopup(dStr, rec);
-
                             let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
                             if (rec) {
                                 if (typeof rec === 'string') {
@@ -733,10 +528,8 @@ function checkLeaveStatus(uid) {
                                         const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
                                         displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
                                     }
-
                                     let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
                                     if (displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
-
                                     let leaveText = rec.leave || "";
                                     let displayLeave = "";
                                     if (leaveText) {
@@ -757,241 +550,200 @@ function checkLeaveStatus(uid) {
             });
         }
 
+ window.openEditPopup = function (dateStr, currentRec) {
+    if (document.getElementById('editPopup')) return;
 
-        // [수정] 출근/퇴근 통합 수정 팝업 기능
-        window.openEditPopup = function (dateStr, currentRec) {
-            if (document.getElementById('editPopup')) return;
+    let attVal = "", leaveVal = "", isAttReadOnly = false;
+    let isLeaveInfo = false; // 휴가 정보 여부 확인 변수
+    let leaveTypeText = "";
 
-            let attVal = "";
-            let leaveVal = "";
-            let isAttReadOnly = false;
+    // 휴가 코드 리스트 (PEL: 개인휴가, ANL: 연차, HAL: 반차, SIL: 병가, SPL: 특별휴가 등)
+    const leaveCodes = ["PEL", "ANL", "HAL", "SIL", "SPL", "WO"];
 
-            // [수정된 로직] openEditPopup 내부 시간 추출 부분
-            if (currentRec) {
-                if (typeof currentRec === 'string') {
-                    attVal = currentRec;
-                    isAttReadOnly = true;
+    if (currentRec) {
+        // 1. 단순 문자열인 경우 (주로 휴가 코드)
+        if (typeof currentRec === 'string') {
+            if (leaveCodes.includes(currentRec)) {
+                isLeaveInfo = true;
+                leaveTypeText = currentRec;
+            }
+            attVal = currentRec;
+            isAttReadOnly = true;
+        } 
+        // 2. 객체 형태인 경우 (일반 출퇴근 기록)
+        else {
+            if (currentRec.attend) {
+                const timeMatch = currentRec.attend.match(/(\d{1,2}:\d{2})/);
+                if (timeMatch) {
+                    const [hh, mm] = timeMatch[1].split(':');
+                    attVal = `${hh.padStart(2, '0')}:${mm}`;
                 } else {
-                    // 출근 시간 추출: 시(Hour)가 1자리(8:23) 또는 2자리(08:23) 모두 대응
-                    if (currentRec.attend) {
-                        // \d{1,2}를 사용하여 1~2자리 숫자 모두 매칭
-                        const timeMatch = currentRec.attend.match(/(\d{1,2}:\d{2})/);
-                        if (timeMatch) {
-                            // 입력 필드(type="time")는 HH:mm (2자리) 형식을 요구하므로 padStart 추가
-                            const [hh, mm] = timeMatch[1].split(':');
-                            attVal = `${hh.padStart(2, '0')}:${mm}`;
-                        } else {
-                            attVal = currentRec.attend;
-                        }
-                        isAttReadOnly = true;
+                    // 시간이 아니고 코드(SPL 등)가 들어있는 경우 체크
+                    if (leaveCodes.includes(currentRec.attend)) {
+                        isLeaveInfo = true;
+                        leaveTypeText = currentRec.attend;
                     }
-
-                    // 퇴근 시간 추출: 동일하게 1~2자리 대응 및 포맷 보정
-                    if (currentRec.leave) {
-                        const leaveMatch = currentRec.leave.match(/(\d{1,2}:\d{2})/);
-                        if (leaveMatch) {
-                            const [hh, mm] = leaveMatch[1].split(':');
-                            leaveVal = `${hh.padStart(2, '0')}:${mm}`;
-                        } else {
-                            leaveVal = currentRec.leave;
-                        }
-                    }
+                    attVal = currentRec.attend;
+                }
+                isAttReadOnly = true;
+            }
+            if (currentRec.leave) {
+                const leaveMatch = currentRec.leave.match(/(\d{1,2}:\d{2})/);
+                if (leaveMatch) {
+                    const [hh, mm] = leaveMatch[1].split(':');
+                    leaveVal = `${hh.padStart(2, '0')}:${mm}`;
+                } else {
+                    leaveVal = currentRec.leave;
                 }
             }
+        }
+    }
 
-            const overlay = document.createElement('div');
-            overlay.id = 'editPopup';
-            overlay.className = 'edit-modal-overlay animate-fadeIn';
+    const overlay = document.createElement('div');
+    overlay.id = 'editPopup';
+    overlay.className = 'edit-modal-overlay animate-fadeIn';
 
-            overlay.innerHTML = `
+    // 버튼 구성: 휴가 정보면 닫기 버튼만, 아니면 저장 버튼 포함
+    let footerButtons = '';
+    if (isLeaveInfo) {
+        footerButtons = `
+            <button onclick="document.getElementById('editPopup').remove()" 
+                    class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">
+                Close (Read Only)
+            </button>`;
+    } else {
+        footerButtons = `
+            <button onclick="document.getElementById('editPopup').remove()" 
+                    class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">
+                Cancel
+            </button>
+            <button onclick="saveEdit('${dateStr}')" 
+                    class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">
+                Save Change
+            </button>`;
+    }
+
+    overlay.innerHTML = `
         <div class="edit-modal">
-            <div class="mb-4">
-                <p class="text-[10px] font-black ${isAttReadOnly ? 'text-rose-500' : 'text-emerald-500'} uppercase tracking-widest text-center mb-1">
-                    ${isAttReadOnly ? '⚠️ Attendance Locked' : '✍️ Attendance Missing'}
+            <div class="mb-4 text-center">
+                <p class="text-[10px] font-black ${isLeaveInfo ? 'text-amber-500' : (isAttReadOnly ? 'text-rose-500' : 'text-emerald-500')} uppercase tracking-widest mb-1">
+                    ${isLeaveInfo ? '📅 Leave Information' : (isAttReadOnly ? '⚠️ Attendance Locked' : '✍️ Attendance Missing')}
                 </p>
-                <h3 class="text-white font-black text-center text-lg">${dateStr}</h3>
+                <h3 class="text-white font-black text-lg">${dateStr}</h3>
             </div>
-            
             <div class="space-y-4">
                 <div>
-                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance Time</label>
-                    <input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly ? 'readonly' : ''} 
-                           class="w-full ${isAttReadOnly ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">
+                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
+                    ${isLeaveInfo ? 
+                        `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>` :
+                        `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly ? 'readonly' : ''} 
+                               class="w-full ${isAttReadOnly ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`
+                    }
                 </div>
-                
+                ${!isLeaveInfo ? `
                 <div>
                     <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
                     <input type="time" id="editLeaveTime" value="${leaveVal}"
                            class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button onclick="document.getElementById('editPopup').remove()" 
-                            class="bg-slate-800 text-slate-400 font-black py-3 rounded-xl hover:bg-slate-700 transition">CANCEL</button>
-                    <button onclick="saveEditRecord('${dateStr}', ${isAttReadOnly})" 
-                            class="bg-blue-600 text-white font-black py-3 rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">SAVE RECORD</button>
+                </div>` : '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'}
+                
+                <div class="${isLeaveInfo ? '' : 'grid grid-cols-2'} gap-3 mt-6">
+                    ${footerButtons}
                 </div>
             </div>
         </div>
     `;
-            document.body.appendChild(overlay);
-        };
+    document.body.appendChild(overlay);
+};
 
 
-        // [수정] 저장 로직: 출근 기록 여부에 따른 조건부 업데이트
+
         window.saveEditRecord = function (dateStr, isAttReadOnly) {
             const newAtt = document.getElementById('editAttTime').value;
             const newLeave = document.getElementById('editLeaveTime').value;
             const updateData = {};
-
-            // 1. 출근 시간 처리 (이미 있는 경우는 업데이트 제외)
             if (!isAttReadOnly && newAtt) {
                 if (!standardTime) { alert("Standard time loading..."); return; }
-
                 const [iHH, iMM] = newAtt.split(':').map(Number);
                 const [sHH, sMM] = standardTime.split(':').map(Number);
                 const stdMinutes = sHH * 60 + sMM;
                 const inputMinutes = iHH * 60 + iMM;
-
                 updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
             }
-
-            // 2. 퇴근 시간 처리
-            if (newLeave) {
-                updateData.leave = newLeave;
-            }
-
+            if (newLeave) updateData.leave = newLeave;
             if (Object.keys(updateData).length === 0) {
                 alert("No changes to save.");
                 return;
             }
-
             if (confirm(`Save changes for ${dateStr}?`)) {
                 db.ref('attendance/' + dateStr + '/' + user).update(updateData)
                     .then(() => {
                         alert("Record updated successfully.");
                         document.getElementById('editPopup').remove();
-                    }).catch(err => {
-                        alert("Error: " + err.message);
-                    });
+                    }).catch(err => alert("Error: " + err.message));
             }
         };
 
-
-        // [수정] 미입력 기록 체크 로직 - Attendance/Leave 개별 표시 추가
         function checkMissingRecords(data) {
             if (!user) return;
-
-            const today = getJakartaDate();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth();
-            const todayDate = today.getDate();
-
-            let missingInfo = []; // 날짜와 누락 정보를 담을 배열
-
-            // 1일부터 어제까지 루프
+            const today = getJakartaDate(), currentYear = today.getFullYear(), currentMonth = today.getMonth(), todayDate = today.getDate();
+            let missingInfo = [];
             for (let day = 1; day < todayDate; day++) {
                 const checkDate = new Date(currentYear, currentMonth, day);
                 const dayOfWeek = checkDate.getDay();
-
-                // 주말 제외
                 if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                     const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const dayData = data[dStr];
-
                     if (dayData) {
-                        const hasAnyStaffRecord = Object.keys(dayData).length > 0;
+                        const myRec = dayData[user];
+                        let missingStatus = [];
+                        if (!myRec) {
+                            missingStatus.push("Attendance", "Leave");
+                        } else if (typeof myRec === 'object') {
+                            if (!myRec.attend) missingStatus.push("Attendance");
+                            if (!myRec.leave) missingStatus.push("Leave");
+                        } else if (typeof myRec === 'string') continue;
 
-                        if (hasAnyStaffRecord) {
-                            const myRec = dayData[user]; // 로그인한 사용자의 기록
-                            let missingStatus = [];
-
-                            if (!myRec) {
-                                // 기록이 아예 없는 경우
-                                missingStatus.push("Attendance", "Leave");
-                            } else if (typeof myRec === 'object') {
-                                // 객체는 있지만 필드가 누락된 경우
-                                if (!myRec.attend) missingStatus.push("Attendance");
-                                if (!myRec.leave) missingStatus.push("Leave");
-                            } else if (typeof myRec === 'string') {
-                                // WO, ANL 등 문자열 상태인 경우는 누락이 없는 것으로 간주
-                                continue;
-                            }
-
-                            if (missingStatus.length > 0) {
-                                const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
-                                missingInfo.push({
-                                    date: `${dStr} (${dayName})`,
-                                    status: missingStatus.join(' & ')
-                                });
-                            }
+                        if (missingStatus.length > 0) {
+                            const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+                            missingInfo.push({ date: `${dStr} (${dayName})`, status: missingStatus.join(' & ') });
                         }
                     }
                 }
             }
-
-            if (missingInfo.length > 0) {
-                showMissingPopup(missingInfo);
-            }
+            if (missingInfo.length > 0) showMissingPopup(missingInfo);
         }
-
-
 
         function showMissingPopup(missingInfo) {
             if (document.getElementById('missingPopup')) return;
-
             const overlay = document.createElement('div');
             overlay.id = 'missingPopup';
             overlay.className = 'missing-modal-overlay animate-fadeIn';
-
-            // [수정] 객체에서 속성(date, status)을 추출하여 HTML 생성
             let listHtml = missingInfo.map(info => `
-        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
-            <div class="text-left">
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
-                <p class="text-rose-400 font-mono text-xs font-black uppercase">
-                    Missing: <span class="text-white">${info.status}</span>
-                </p>
-            </div>
-            <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-        </div>
-    `).join('');
-
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
+                    <div class="text-left">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
+                        <p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${info.status}</span></p>
+                    </div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                </div>`).join('');
             overlay.innerHTML = `
-        <div class="missing-modal text-center">
-
-<div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-    <span class="text-2xl">⚠️</span>
-</div>
-<h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
-<p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">
-    The following dates have incomplete logs:
-</p>
-
-<div class="flex items-center gap-2 mb-6">
-    <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">
-        WARNING
-    </span>
-    <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">
-        Please fill in the times for the unrecorded dates below
-    </span>
-</div>
-
-<div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">
-    ${listHtml}
-</div>
-<button onclick="document.getElementById('missingPopup').remove()" 
-    class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">
-    I UNDERSTAND
-</button>
-
-        </div>
-    `;
+                <div class="missing-modal text-center">
+                    <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                        <span class="text-2xl">⚠️</span>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
+                    <p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">The following dates have incomplete logs:</p>
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">WARNING</span>
+                        <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please fill in the times for the unrecorded dates below</span>
+                    </div>
+                    <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
+                    <button onclick="document.getElementById('missingPopup').remove()" 
+                        class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">I UNDERSTAND</button>
+                </div>`;
             document.body.appendChild(overlay);
         }
-
         renderCalendar();
-
     })();
-
 </script>
