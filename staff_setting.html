@@ -27,24 +27,32 @@
         const hiddenInput = document.getElementById('selectedEmoji');
         const user = sessionStorage.getItem('loggedInUser');
 
-        // 1. 이미지 리스트 생성 (image-001.webp ~ image-036.webp)
+        // 1. 이미지 리스트 생성
         const emojis = [];
+        
+        // 정적 이미지 추가 (image-001.webp ~ image-036.webp)
         for (let i = 1; i <= 36; i++) {
-            // 숫자를 3자리 문자열로 변환 (예: 1 -> 001, 10 -> 010)
             const imgNumber = String(i).padStart(3, '0');
             emojis.push(`image-${imgNumber}.webp`);
         }
+
+        // 애니메이션 이미지 추가 (image-001.gif ~ image-021.gif)
+        for (let i = 1; i <= 21; i++) {
+            const imgNumber = String(i).padStart(3, '0');
+            emojis.push(`image-${imgNumber}.gif`);
+        }
         
         firebase.database().ref('users/' + user).once('value', snap => {
-            // 기본값도 새로운 파일명 형식에 맞춰 수정 (예: image-001.webp)
             const currentImg = snap.val()?.profileImg || 'image-001.webp';
             hiddenInput.value = currentImg;
 
             emojis.forEach(imgName => {
                 const imgWrap = document.createElement('div');
                 const isSelected = currentImg === imgName;
+                
                 imgWrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
                 
+                // 모든 이미지가 images/profile/ 폴더 안에 있으므로 경로를 통일합니다.
                 imgWrap.innerHTML = `<img src="images/profile/${imgName}" class="w-full h-auto rounded-md object-cover aspect-square" alt="profile">`;
                 
                 imgWrap.onclick = () => {
@@ -54,13 +62,14 @@
                     });
                     imgWrap.classList.remove('border-transparent');
                     imgWrap.classList.add('border-blue-500', 'bg-blue-500/20');
+                    
                     hiddenInput.value = imgName;
                 };
                 grid.appendChild(imgWrap);
             });
         });
 
-        // 2. 통합 저장 함수 (기존과 동일)
+        // 2. 통합 저장 함수 (기존 유지)
         window.updateUserAccount = function() {
             const pwInput = document.getElementById('settingNewPw');
             const newPw = pwInput.value.trim();
