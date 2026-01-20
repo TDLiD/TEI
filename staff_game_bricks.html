@@ -65,15 +65,11 @@
     const db = firebase.database();
 
     let score = 0, lives = 3, level = 1, maxLevel = 20, gameRunning = false, bricks = [];
-    let paddle = { width: 0, height: 16, x: 0, bottomOffset: 60 }; // 하단에서 60px 띄움
-    let ball = { x: 0, y: 0, dx: 0, dy: 0, radius: 7, baseSpeed: 5.0 };
-    let brickConfig = { rowCount: 0, columnCount: 0, width: 0, height: 22, padding: 6, offsetTop: 90 };
+    let paddle = { width: 0, height: 16, x: 0, bottomOffset: 80 }; 
+    let ball = { x: 0, y: 0, dx: 0, dy: 0, radius: 7, baseSpeed: 4.5 };
+    let brickConfig = { rowCount: 0, columnCount: 0, width: 0, height: 20, padding: 5, offsetTop: 100 };
 
-    function updateUI(id, text) {
-        const el = document.getElementById(id);
-        if (el) el.innerText = text;
-    }
-
+    // 1. 랭킹 로드 함수를 window에 안전하게 등록
     window.loadRankings = function() {
         const today = new Date().toISOString().split('T')[0];
         db.ref(`game_scores/bricks/${today}`).orderByChild('score').limitToLast(5).once('value', (snap) => {
@@ -91,43 +87,61 @@
         });
     };
 
-    function initLevel() {
-        // 모바일 브라우저의 실제 가시 높이로 캔버스 크기 조정
-        cvs.width = window.innerWidth;
-        cvs.height = window.innerHeight;
-
-        paddle.width = Math.max(90, (cvs.width * 0.25));
-        paddle.x = (cvs.width - paddle.width) / 2;
-        
-        ball.x = cvs.width / 2;
-        ball.y = cvs.height - paddle.bottomOffset - 50;
-        
-        let speed = ball.baseSpeed + (level * 0.4);
-        ball.dx = speed * (Math.random() > 0.5 ? 1 : -1);
-        ball.dy = -speed;
-
-        brickConfig.width = Math.floor((cvs.width - 40) / 7); // 모바일 기준 7컬럼 최적화
-        createLevelPattern();
-        updateUI("levelDisplay", level < 10 ? "0" + level : level);
+    function updateUI(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
     }
 
+    // 기존 레벨 별 패턴 생성 알고리즘 (유지)
     function createLevelPattern() {
-        brickConfig.columnCount = Math.floor((cvs.width - 20) / (brickConfig.width + brickConfig.padding));
-        const totalBricksWidth = brickConfig.columnCount * (brickConfig.width + brickConfig.padding) - brickConfig.padding;
-        const startX = (cvs.width - totalBricksWidth) / 2;
+        const type = level % 5;
+        brickConfig.columnCount = 9; 
+        brickConfig.rowCount = 8 + Math.floor(level / 2);
+        brickConfig.width = Math.floor((cvs.width - (brickConfig.columnCount + 1) * brickConfig.padding) / brickConfig.columnCount);
         
-        brickConfig.rowCount = 4 + Math.floor(level / 4);
+        const totalWidth = brickConfig.columnCount * (brickConfig.width + brickConfig.padding) - brickConfig.padding;
+        const startX = (cvs.width - totalWidth) / 2;
+        
         bricks = [];
         for (let c = 0; c < brickConfig.columnCount; c++) {
             bricks[c] = [];
             for (let r = 0; r < brickConfig.rowCount; r++) {
+                let status = 0;
+                const midC = Math.floor(brickConfig.columnCount / 2);
+                const midR = Math.floor(brickConfig.rowCount / 2);
+
+                switch(type) {
+                    case 1: if (c >= midC - r && c <= midC + r && r <= midC + 2) status = 1; break;
+                    case 2: if (Math.abs(c - midC) + Math.abs(r - midR) <= midC) status = 1; break;
+                    case 3: if ((r === 0 && (c === 1 || c === 2 || c === 6 || c === 7)) || (r === 1 && (c >= 0 && c <= 3 || c >= 5 && c <= 8)) || (r >= 2 && c >= r - 2 && c <= brickConfig.columnCount - (r - 1))) status = 1; break;
+                    case 4: if (Math.abs(c - midC) >= Math.abs(r - midR) - 1) status = 1; break;
+                    default: if ((c + r) % 2 === 0) status = 1; break;
+                }
+
                 bricks[c][r] = { 
                     x: startX + c * (brickConfig.width + brickConfig.padding), 
                     y: r * (brickConfig.height + brickConfig.padding) + brickConfig.offsetTop, 
-                    status: 1 
+                    status: status,
+                    color: `hsl(${(level * 70 + r * 20) % 360}, 70%, 55%)`
                 };
             }
         }
+    }
+
+    function initLevel() {
+        cvs.width = window.innerWidth;
+        cvs.height = window.innerHeight;
+        paddle.width = Math.max(100, (cvs.width * 0.3) - (level * 2));
+        paddle.x = (cvs.width - paddle.width) / 2;
+        ball.x = cvs.width / 2;
+        ball.y = cvs.height - paddle.bottomOffset - 40;
+        
+        let speed = ball.baseSpeed + (level * 0.3);
+        ball.dx = speed * (Math.random() > 0.5 ? 1 : -1);
+        ball.dy = -speed;
+
+        createLevelPattern();
+        updateUI("levelDisplay", level < 10 ? "0" + level : level);
     }
 
     window.startGame = function() {
@@ -142,18 +156,21 @@
 
     function draw() {
         if (!gameRunning) return;
-        ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, cvs.width, cvs.height);
+        ctx.fillStyle = "#0f172a"; 
+        ctx.fillRect(0, 0, cvs.width, cvs.height);
 
         let activeBricks = 0;
-        bricks.forEach((col, c) => col.forEach((b, r) => {
+        bricks.forEach((col) => col.forEach((b) => {
             if (b.status === 1) {
                 activeBricks++;
-                ctx.fillStyle = `hsl(${(r * 40) % 360}, 70%, 50%)`;
+                ctx.fillStyle = b.color;
+                ctx.shadowBlur = 5; ctx.shadowColor = "rgba(0,0,0,0.5)";
                 if(ctx.roundRect) {
                     ctx.beginPath(); ctx.roundRect(b.x, b.y, brickConfig.width, brickConfig.height, 4); ctx.fill();
                 } else {
                     ctx.fillRect(b.x, b.y, brickConfig.width, brickConfig.height);
                 }
+                ctx.shadowBlur = 0;
                 
                 if (ball.x > b.x && ball.x < b.x + brickConfig.width && ball.y > b.y && ball.y < b.y + brickConfig.height) {
                     ball.dy = -ball.dy; b.status = 0;
@@ -162,9 +179,8 @@
             }
         }));
 
-        if (activeBricks === 0) { gameRunning = false; setTimeout(nextLevel, 500); return; }
+        if (activeBricks === 0) { gameRunning = false; setTimeout(nextLevel, 800); return; }
 
-        // 패들 (바닥에서 일정 높이 위로 띄움)
         const paddleY = cvs.height - paddle.bottomOffset;
         ctx.fillStyle = "#3b82f6";
         ctx.beginPath();
@@ -172,30 +188,30 @@
         else ctx.rect(paddle.x, paddleY, paddle.width, paddle.height);
         ctx.fill();
 
-        // 공
+        ctx.shadowBlur = 10; ctx.shadowColor = "#fff";
         ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
         ctx.fillStyle = "#fff"; ctx.fill();
+        ctx.shadowBlur = 0;
 
-        // 벽 충돌
         if (ball.x + ball.dx > cvs.width - ball.radius || ball.x + ball.dx < ball.radius) ball.dx = -ball.dx;
         if (ball.y + ball.dy < 60 + ball.radius) ball.dy = -ball.dy;
         
-        // 패들 충돌
         if (ball.y + ball.dy > paddleY - ball.radius) {
             if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
                 ball.dy = -ball.dy;
-            } else if (ball.y > cvs.height) { // 완전히 화면 밖으로 나갔을 때
+                let hitPos = (ball.x - (paddle.x + paddle.width/2)) / (paddle.width/2);
+                ball.dx = hitPos * (ball.baseSpeed + level);
+            } else if (ball.y > cvs.height) {
                 lives--; updateUI("livesDisplay", "❤️".repeat(Math.max(0, lives)));
                 if (lives <= 0) {
                     gameRunning = false;
-                    alert("GAME OVER\nSCORE: " + score); location.reload();
+                    alert("GAME OVER\nFINAL SCORE: " + score); location.reload();
                 } else {
                     ball.x = cvs.width/2; ball.y = paddleY - 50;
-                    ball.dy = -ball.baseSpeed; ball.dx = (Math.random()-0.5)*5;
+                    ball.dy = -(ball.baseSpeed + level); ball.dx = (Math.random()-0.5)*5;
                 }
             }
         }
-
         ball.x += ball.dx; ball.y += ball.dy;
         requestAnimationFrame(draw);
     }
@@ -208,14 +224,21 @@
         if (!gameRunning) return;
         const x = (e.touches ? e.touches[0].clientX : e.clientX);
         paddle.x = Math.max(0, Math.min(cvs.width - paddle.width, x - paddle.width / 2));
-        e.preventDefault();
+        if(e.touches) e.preventDefault();
     };
     
     document.addEventListener("mousemove", move);
     document.addEventListener("touchmove", move, { passive: false });
     window.addEventListener('resize', initLevel);
     
+    // 2. 실행부: 안전하게 순서 제어
     initLevel();
-    loadRankings();
+    
+    // 0.1초 뒤에 랭킹 함수가 존재하는지 체크 후 호출 (Uncaught TypeError 방지)
+    setTimeout(() => {
+        if (typeof window.loadRankings === 'function') {
+            window.loadRankings();
+        }
+    }, 100);
 })();
 </script>
