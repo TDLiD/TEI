@@ -1,49 +1,41 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
-
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 
 <div class="space-y-8 animate-fadeIn">
-
-<div id="leave_alert_banner" class="hidden mb-6 cursor-pointer group" 
-     onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }"> 
-    <div class="bg-amber-500/10 border-2 border-amber-500/50 p-4 rounded-[2rem] flex items-center justify-between backdrop-blur-md animate-blink">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+    <div id="leave_alert_banner" class="hidden mb-6 cursor-pointer group" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }"> 
+        <div class="bg-amber-500/10 border-2 border-amber-500/50 p-4 rounded-[2rem] flex items-center justify-between backdrop-blur-md animate-blink">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-amber-500 font-black text-sm uppercase tracking-tighter">New Leave Request Pending</h3>
+                    <p id="leave_alert_text" class="text-[11px] text-amber-200/70 font-bold">There are new leave applications waiting for your approval.</p>
+                </div>
             </div>
-            <div>
-                <h3 class="text-amber-500 font-black text-sm uppercase tracking-tighter">New Leave Request Pending</h3>
-                <p id="leave_alert_text" class="text-[11px] text-amber-200/70 font-bold">There are new leave applications waiting for your approval.</p>
-            </div>
-        </div>
-        <div class="bg-amber-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase group-hover:bg-amber-400 transition-colors">
-            Review Now
+            <div class="bg-amber-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase group-hover:bg-amber-400 transition-colors">Review Now</div>
         </div>
     </div>
-</div>
 
-
-<div id="weekly_leave_section" class="hidden mb-8 animate-fadeIn">
-    <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group"
-         onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
-        <div class="flex justify-between items-center mb-4 px-2">
-            <h2 class="text-sm font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter">
-                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                Vacationers This Week
-            </h2>
-            <div class="flex items-center gap-3">
-                <div id="week_range_text" class="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full uppercase"></div>
-                <span class="text-[10px] font-black text-indigo-500 group-hover:translate-x-1 transition-transform">GO TO LEAVE MGT →</span>
+    <div id="weekly_leave_section" class="hidden mb-8 animate-fadeIn">
+        <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <h2 class="text-sm font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                    Vacationers This Week
+                </h2>
+                <div class="flex items-center gap-3">
+                    <div id="week_range_text" class="text-[10px] font-bold text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full uppercase"></div>
+                    <span class="text-[10px] font-black text-indigo-500 group-hover:translate-x-1 transition-transform">GO TO LEAVE MGT →</span>
+                </div>
             </div>
+            <div id="weekly_leave_container" class="flex flex-wrap gap-2 px-2"></div>
         </div>
-        <div id="weekly_leave_container" class="flex flex-wrap gap-2 px-2">
-            </div>
     </div>
-</div>
 
     <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
@@ -69,12 +61,10 @@
 
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2">
-                <span class="text-blue-500">■</span> RECENT ATTENDANCE
-            </h2>
+            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-blue-500">■</span> RECENT ATTENDANCE</h2>
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div>
         </div>
-<div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        <div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         <div class="mt-6 pt-4 border-t border-slate-800/50">
             <div class="flex flex-wrap gap-y-2 gap-x-4">
                 <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">ATT: Normal</span></div>
@@ -88,22 +78,18 @@
 
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2">
-                <span class="text-emerald-500">■</span> RECENT WORK REPORTS
-            </h2>
+            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-emerald-500">■</span> RECENT WORK REPORTS</h2>
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days Summary</div>
         </div>
-<div id="recent_work_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        <div id="recent_work_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
     </div>
 
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2">
-                <span class="text-purple-500">■</span> RECENT SCHEDULE
-            </h2>
+            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-purple-500">■</span> RECENT SCHEDULE</h2>
             <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Upcoming & Current</div>
         </div>
-<div id="recent_sch_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        <div id="recent_sch_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
     </div>
 </div>
 
@@ -111,97 +97,62 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" onclick="window.closeAdminCustomModal()"></div>
     <div class="relative bg-slate-900 w-full max-w-md max-h-[90vh] rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden transform transition-all flex flex-col animate-in zoom-in duration-200">
         <div id="modalHeaderArea" class="p-6 pb-4 border-b border-slate-800/50 bg-gradient-to-br from-slate-800/50 to-transparent flex-shrink-0"></div>
-        
         <div id="modalBodyArea" class="p-6 overflow-y-auto text-white flex-grow custom-scrollbar"></div>
-        
         <div id="modalFooterArea" class="p-6 pt-0 flex-shrink-0"></div>
     </div>
 </div>
 
-
 <style>
-/* 부드러운 스크롤바 디자인 (선택 사항) */
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-.animate-blink {
-    animation: blink 1s infinite;
-}
 
 @keyframes alert-blink {
     0%, 100% { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 0px rgba(245, 158, 11, 0); }
     50% { border-color: rgba(245, 158, 11, 1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
 }
-.animate-blink {
-    animation: alert-blink 1.5s infinite;
-}
-
+.animate-blink { animation: alert-blink 1.5s infinite; }
 </style>
 
 
 <script>
 (function() {
     const db = firebase.database();
-
-// 스크립트 최상단 변수 선언부에 추가
-let editStartPicker, editEndPicker; 
-let attStartPicker, attEndPicker; // 출근부용 변수 추가
-
+    let editStartPicker, editEndPicker; 
+    let attStartPicker, attEndPicker; 
 
     const today = new Date();
     const todayStr = today.toLocaleDateString('sv-SE');
+    const last5Days = [];
+    for(let i = -5; i <= 5; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() + i);
+        last5Days.push(d.toLocaleDateString('sv-SE'));
+    }
+    last5Days.sort();
 
-const last5Days = [];
-// -5(5일 전)부터 +5(5일 후)까지 반복
-for(let i = -5; i <= 5; i++) {
-    const d = new Date();
-    d.setDate(today.getDate() + i);
-    last5Days.push(d.toLocaleDateString('sv-SE'));
-}
-// 날짜순 정렬 (과거 -> 미래 순으로 보고 싶을 경우)
-last5Days.sort();
-
-function initEditTimePickers(isAllDay = false) {
-    // 라이브러리 로드 여부 확인
-    if (typeof flatpickr === 'undefined') {
-        console.error("Flatpickr library is not loaded.");
-        return;
+    function initEditTimePickers(isAllDay = false) {
+        if (typeof flatpickr === 'undefined') return;
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            monthSelectorType: "static",
+            locale: "ko", 
+            static: true,
+            theme: "dark"
+        };
+        if (editStartPicker) editStartPicker.destroy();
+        if (editEndPicker) editEndPicker.destroy();
+        const startEl = document.getElementById("db_sch_start");
+        const endEl = document.getElementById("db_sch_end");
+        if (startEl) editStartPicker = flatpickr(startEl, config);
+        if (endEl) editEndPicker = flatpickr(endEl, config);
     }
 
-    const config = {
-        enableTime: !isAllDay,
-        dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-        altInput: true,
-        altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-        monthSelectorType: "static",
-        locale: "ko", 
-        static: true,
-        theme: "dark"
-    };
-    
-    if (editStartPicker) editStartPicker.destroy();
-    if (editEndPicker) editEndPicker.destroy();
-    
-    // input 요소가 DOM에 존재하는지 확인 후 초기화
-    const startEl = document.getElementById("db_sch_start");
-    const endEl = document.getElementById("db_sch_end");
-    
-    if (startEl) editStartPicker = flatpickr(startEl, config);
-    if (endEl) editEndPicker = flatpickr(endEl, config);
-}
+    window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
 
-
-    window.toggleEditTimePicker = function(isAllDay) {
-        initEditTimePickers(isAllDay);
-    };
-
-
-    // --- [1] 모달 제어 시스템 ---
     window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         document.getElementById('modalHeaderArea').innerHTML = titleHtml;
         document.getElementById('modalBodyArea').innerHTML = bodyHtml;
@@ -209,92 +160,57 @@ function initEditTimePickers(isAllDay = false) {
         document.body.style.overflow = 'hidden';
     };
 
-window.closeAdminCustomModal = function() {
-        // Flatpickr 인스턴스들 정리
+    window.closeAdminCustomModal = function() {
         if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
         if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
         if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
         if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
-
-        // 강제로 남아있는 flatpickr 달력 엘리먼트 제거 (최후의 수단)
-        const leftovers = document.querySelectorAll('.flatpickr-calendar');
-        leftovers.forEach(el => el.remove());
-
+        document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
         document.getElementById('customAdminModal').classList.add('hidden');
         document.body.style.overflow = '';
     };
 
+    window.renderWeeklyLeaves = function() {
+        const container = document.getElementById('weekly_leave_container');
+        const section = document.getElementById('weekly_leave_section');
+        const rangeText = document.getElementById('week_range_text');
+        if (!container) return;
+        const curr = new Date();
+        const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1); 
+        const last = first + 6; 
+        const monday = new Date(new Date().setDate(first)).toISOString().split('T')[0];
+        const sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0];
+        rangeText.innerText = `${monday} ~ ${sunday}`;
 
-
-// [수정] 주간 휴가자 렌더링 함수 로직 변경
-window.renderWeeklyLeaves = function() {
-    const container = document.getElementById('weekly_leave_container');
-    const section = document.getElementById('weekly_leave_section');
-    const rangeText = document.getElementById('week_range_text');
-    if (!container) return;
-
-    // 1. 이번 주의 월요일~일요일 범위 계산
-    const curr = new Date();
-    const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1); 
-    const last = first + 6; 
-
-    const mondayDate = new Date(new Date().setDate(first));
-    const sundayDate = new Date(new Date().setDate(last));
-    
-    const monday = mondayDate.toISOString().split('T')[0];
-    const sunday = sundayDate.toISOString().split('T')[0];
-    
-    rangeText.innerText = `${monday} ~ ${sunday}`;
-
-    // 2. 데이터 가져오기
-    db.ref('leaves').on('value', snap => {
-        const allLeaves = snap.val() || {};
-        container.innerHTML = '';
-        let hasAnyThisWeek = false;
-        
-        // 이번 주 휴가자 명단을 중복 없이 관리하기 위한 Map
-        const weeklyStaffMap = new Map();
-
-        Object.entries(allLeaves).forEach(([uid, years]) => {
-            Object.values(years).forEach(yearData => {
-                Object.values(yearData).forEach(leave => {
-                    if (leave.status === 'Approved') {
-                        // 이번 주 범위와 겹치는지 확인
-                        // (휴가시작 <= 이번주 일요일 && 휴가종료 >= 이번주 월요일)
-                        if (leave.startDate <= sunday && leave.endDate >= monday) {
+        db.ref('leaves').on('value', snap => {
+            const allLeaves = snap.val() || {};
+            container.innerHTML = '';
+            let hasAnyThisWeek = false;
+            const weeklyStaffMap = new Map();
+            Object.entries(allLeaves).forEach(([uid, years]) => {
+                Object.values(years).forEach(yearData => {
+                    Object.values(yearData).forEach(leave => {
+                        if (leave.status === 'Approved' && leave.startDate <= sunday && leave.endDate >= monday) {
                             weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type });
                             hasAnyThisWeek = true;
                         }
-                    }
+                    });
                 });
             });
+            if (hasAnyThisWeek) {
+                section.classList.remove('hidden');
+                let html = '';
+                weeklyStaffMap.forEach(staff => {
+                    html += `<div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl"><span class="text-xs font-black text-white">${staff.name}</span><span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span><span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span></div>`;
+                });
+                container.innerHTML = html;
+            } else {
+                section.classList.add('hidden'); 
+            }
         });
+    };
 
-        // 3. 렌더링 (심플한 텍스트 칩 형태로 표시)
-        if (hasAnyThisWeek) {
-            section.classList.remove('hidden');
-            let html = '';
-            weeklyStaffMap.forEach(staff => {
-                html += `
-                    <div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl">
-                        <span class="text-xs font-black text-white">${staff.name}</span>
-                        <span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span>
-                        <span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        } else {
-            section.classList.add('hidden'); 
-        }
-    });
-};
-
-
-
-// --- [2] 실시간 통계 엔진 ---
     window.updateQuickStats = function() {
-        // 1. 출석 및 지각 통계
         db.ref('users').on('value', userSnap => {
             const usersData = userSnap.val() || {};
             const totalStaffCount = Object.keys(usersData).filter(name => name.toLowerCase() !== 'admin').length;
@@ -314,15 +230,11 @@ window.renderWeeklyLeaves = function() {
                 if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount;
             });
         });
-
-        // 2. 업무 리포트 통계
         db.ref(`reports/${todayStr}`).on('value', snap => {
             const data = snap.val() || {};
             const pendingCount = Object.values(data).filter(r => r.status === 'Pending').length;
             if (document.getElementById('stat_pending')) document.getElementById('stat_pending').innerText = pendingCount;
         });
-
-        // 3. 진행 중인 스케줄 통계
         db.ref('shared_schedules').on('value', snap => {
             const data = snap.val() || {};
             let ongoingCount = 0;
@@ -337,128 +249,69 @@ window.renderWeeklyLeaves = function() {
                 el.className = ongoingCount > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600";
             }
         });
-
-        // [추가된 기능] 4. 실시간 휴가 신청 알림 감지
         db.ref('leaves').on('value', snap => {
             const allLeaves = snap.val() || {};
             let leavePendingCount = 0;
-            
-            // 데이터 구조(leaves/{uid}/{year}/{id})를 순회하며 Pending 상태 카운트
             Object.values(allLeaves).forEach(userLeaves => {
                 Object.values(userLeaves).forEach(yearData => {
                     Object.values(yearData).forEach(request => {
-                        if (request.status === 'Pending') {
-                            leavePendingCount++;
-                        }
+                        if (request.status === 'Pending') leavePendingCount++;
                     });
                 });
             });
-
-const alertBanner = document.getElementById('leave_alert_banner');
+            const alertBanner = document.getElementById('leave_alert_banner');
             const alertText = document.getElementById('leave_alert_text');
-
-// 스크립트 내 약 250라인 근처
-if (leavePendingCount > 0) {
-    if (alertBanner) {
-        alertBanner.classList.remove('hidden');
-        
-        alertBanner.onclick = function() {
-            // 주소 이동 대신 탭 전환 함수 호출
-            if (typeof switchAdminTab === 'function') {
-                switchAdminTab('leave');
-            } else {
-                // 만약 이 코드가 iframe 내부라면 부모창의 함수를 호출
-                window.parent.switchAdminTab('leave');
-            }
-        };
-    }
-
-
-                if (alertText) {
-                    alertText.innerText = `There are ${leavePendingCount} new leave application(s) waiting for your approval.`;
+            if (leavePendingCount > 0) {
+                if (alertBanner) {
+                    alertBanner.classList.remove('hidden');
+                    alertBanner.onclick = () => (typeof switchAdminTab === 'function' ? switchAdminTab('leave') : window.parent.switchAdminTab('leave'));
                 }
+                if (alertText) alertText.innerText = `There are ${leavePendingCount} new leave application(s) waiting for your approval.`;
             } else {
                 if (alertBanner) alertBanner.classList.add('hidden');
             }
-
         });
     };
 
+    window.renderRecentAttendance = function() {
+        const container = document.getElementById('recent_att_container');
+        if(!container) return;
+        const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
+        db.ref('users').once('value', userSnap => {
+            db.ref('attendance').on('value', snap => {
+                const data = snap.val() || {};
+                container.innerHTML = '';
+                last5Days.forEach(dStr => {
+                    const dayData = data[dStr] || {};
+                    let staffHtml = '';
+                    Object.entries(dayData).forEach(([name, info]) => {
+                        const safeInfo = encodeURIComponent(JSON.stringify(info));
+                        let content = typeof info === 'string' ? `<span class="text-amber-400">${info}</span>` : `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${(info.attend?.includes("LATE")?"LATE ":"ATT ")+formatTime(info.attend)}</span>${info.leave ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${formatTime(info.leave)}</span>`:''}</div>`;
+                        staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
+                    });
+                    container.innerHTML += `<div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group"><div class="flex justify-between items-center mb-2"><div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div></div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`;
+                });
+            });
+        });
+    };
 
-
-  // --- [3] 데이터 렌더링 엔진 수정 ---
-window.renderRecentAttendance = function() {
-    const container = document.getElementById('recent_att_container');
-    if(!container) return;
-    const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
-    
-    // 전체 사용자 명단을 가져오기 위해 users 노드 한번 참조 (신규 등록용)
-    db.ref('users').once('value', userSnap => {
-        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-        
-        db.ref('attendance').on('value', snap => {
+    window.renderRecentWork = function() {
+        const container = document.getElementById('recent_work_container');
+        if(!container) return;
+        db.ref('reports').on('value', snap => {
             const data = snap.val() || {};
             container.innerHTML = '';
-            
             last5Days.forEach(dStr => {
                 const dayData = data[dStr] || {};
-                let staffHtml = '';
-                
-                Object.entries(dayData).forEach(([name, info]) => {
-                    const safeInfo = encodeURIComponent(JSON.stringify(info));
-                    let content = '';
-                    if (typeof info === 'string') content = `<span class="text-amber-400">${info}</span>`;
-                    else {
-                        const att = info.attend ? (info.attend.includes("LATE") ? "LATE " : "ATT ") + formatTime(info.attend) : "";
-                        const lea = formatTime(info.leave);
-                        content = `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${att}</span>${lea ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${lea}</span>`:''}</div>`;
-                    }
-                    // 이벤트 전파 중단(stopPropagation)을 추가하여 부모 셀 클릭 이벤트와 겹치지 않게 함
-                    staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
+                let reportHtml = '';
+                Object.entries(dayData).forEach(([name, report]) => {
+                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
+                    reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">${report.readByAdmin !== true ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : ""}<span class="truncate">${name}</span></div>`;
                 });
-
-                // 셀(카드) 클릭 시 신규 입력을 위해 openEditAttendance 호출 (이름 없이 호출)
-                container.innerHTML += `
-                    <div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div>
-                            <div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div>
-                        </div>
-                        ${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}
-                    </div>`;
+                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
             });
         });
-    });
-};
-
-
-window.renderRecentWork = function() {
-    const container = document.getElementById('recent_work_container');
-    if(!container) return;
-    db.ref('reports').on('value', snap => {
-        const data = snap.val() || {};
-        container.innerHTML = '';
-        last5Days.forEach(dStr => {
-            const dayData = data[dStr] || {};
-            let reportHtml = '';
-            Object.entries(dayData).forEach(([name, report]) => {
-                const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
-                
-                // 데이터의 readByAdmin 플래그 확인 (false 이거나 존재하지 않으면 NEW)
-                const isNew = report.readByAdmin !== true;
-                const newBadge = isNew ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : "";
-                
-                reportHtml += `
-                    <div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">
-                        ${newBadge}
-                        <span class="truncate">${name}</span>
-                    </div>`;
-            });
-            container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
-        });
-    });
-};
-
+    };
 
     window.renderRecentSchedule = function() {
         const container = document.getElementById('recent_sch_container');
@@ -471,221 +324,69 @@ window.renderRecentWork = function() {
                 Object.entries(data).forEach(([id, ev]) => {
                     const s = ev.start ? ev.start.split('T')[0] : "";
                     const e = ev.end ? ev.end.split('T')[0] : s;
-                    if (dStr >= s && dStr <= e) {
-                        schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`;
-                    }
+                    if (dStr >= s && dStr <= e) schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`;
                 });
                 container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div></div>`;
             });
         });
     };
 
-  // --- [4] 상세 수정/삭제 핸들러 (읽음 플래그 업데이트 추가됨) ---
     window.showWorkDetail = function(name, date) {
-        // [추가] 상세 내용을 클릭하여 여는 순간 'readByAdmin' 플래그를 true로 업데이트
-        db.ref(`reports/${date}/${name}`).update({
-            readByAdmin: true
-        });
-
+        db.ref(`reports/${date}/${name}`).update({ readByAdmin: true });
         db.ref(`reports/${date}/${name}`).once("value", snap => {
             const r = snap.val() || {};
             const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left">
-                <div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label>
-                <select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm">
-                    <option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option>
-                </select></div>
-                <div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div>
-                <div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div>
-                <div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div>
-                <div class="flex flex-col gap-3 mt-4">
-                    <button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
-                        <button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button>
-                    </div>
-                </div></div>`;
+            const bodyHtml = `<div class="space-y-4 text-left"><div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label><select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div><div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div><div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div><div class="flex flex-col gap-3 mt-4"><button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
         });
     };
 
-
-
-// --- [4] 상세 수정/입력 핸들러 수정 ---
-window.openEditAttendance = function(name, date, infoEncoded) {
-    const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {};
-    const isSpecial = typeof info === 'string';
-    const isNew = name === '';
-
-    db.ref('users').once('value', userSnap => {
-        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-        
-        let nameFieldHtml = `<span class="text-lg font-black text-white">${name}</span>`;
-        if(isNew) {
-            nameFieldHtml = `
-                <select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1">
-                    <option value="">-- SELECT STAFF --</option>
-                    ${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
-                </select>`;
-        }
-
-        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
-        
-        // [수정 포인트] input type을 text로 유지하되 readonly를 추가하고, 시계 아이콘 느낌의 디자인 적용
-        const bodyHtml = `<div class="space-y-4 text-left">
-            <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                    <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span>
-                    <div class="relative">
-                        <input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" 
-                            class="time-picker-input w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer" 
-                            placeholder="Pick Time" readonly>
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span>
-                    <div class="relative">
-                        <input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" 
-                            class="time-picker-input w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer" 
-                            placeholder="Pick Time" readonly>
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span>
-                    </div>
-                </div>
-            </div>
-            <div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div>
-            <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500 transition-colors">
-                <option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option>
-                <option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option>
-            </select>
-            <div class="flex flex-col gap-3 pt-4">
-                <button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
-                    ${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}
-                </div>
-            </div></div>`;
-            
-        window.openAdminCustomModal(titleHtml, bodyHtml);
-
-// [수정된 로직]
-        setTimeout(() => {
-            const config = {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i",
-                time_24hr: true,
-                locale: "ko",
-                theme: "dark",
-                disableMobile: "true",
-                // 아래 static: true를 설정하면 입력창 바로 아래에 생성되어 
-                // 화면 우측 상단으로 튀는 현상을 방지할 수 있습니다.
-                static: true 
-            };
-
-            // 기존 인스턴스가 있다면 파괴
-            if (attStartPicker) attStartPicker.destroy();
-            if (attEndPicker) attEndPicker.destroy();
-
-            // ID별로 개별 초기화
-            const attendEl = document.getElementById("editAttend");
-            const leaveEl = document.getElementById("editLeave");
-
-            if (attendEl) attStartPicker = flatpickr(attendEl, config);
-            if (leaveEl) attEndPicker = flatpickr(leaveEl, config);
-        }, 100);
-
-    });
-};
-
-
-
-// --- [5] 저장 로직 통합 ---
-window.processAttendanceSave = function(name, date, isNew) {
-    const finalName = isNew ? document.getElementById('editName').value : name;
-    if(!finalName) return alert("Please select a staff member.");
-    
-    const special = document.getElementById('editSpecial').value;
-    const updateData = special ? special : { 
-        attend: document.getElementById('editAttend').value.trim(), 
-        leave: document.getElementById('editLeave').value.trim() 
+    window.openEditAttendance = function(name, date, infoEncoded) {
+        const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {};
+        const isSpecial = typeof info === 'string';
+        const isNew = name === '';
+        db.ref('users').once('value', userSnap => {
+            const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+            let nameFieldHtml = isNew ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}</select>` : `<span class="text-lg font-black text-white">${name}</span>`;
+            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
+            const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: "ko", theme: "dark", disableMobile: "true", static: true };
+                if (attStartPicker) attStartPicker.destroy();
+                if (attEndPicker) attEndPicker.destroy();
+                const attendEl = document.getElementById("editAttend");
+                const leaveEl = document.getElementById("editLeave");
+                if (attendEl) attStartPicker = flatpickr(attendEl, config);
+                if (leaveEl) attEndPicker = flatpickr(leaveEl, config);
+            }, 100);
+        });
     };
-    
-    db.ref(`attendance/${date}/${finalName}`).set(updateData).then(() => { 
-        alert(isNew ? "Registered" : "Updated"); 
-        window.closeAdminCustomModal(); 
-    });
-};
 
-window.showSchDetail = function(id) {
+    window.processAttendanceSave = function(name, date, isNew) {
+        const finalName = isNew ? document.getElementById('editName').value : name;
+        if(!finalName) return alert("Please select a staff member.");
+        const special = document.getElementById('editSpecial').value;
+        const updateData = special || { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
+        db.ref(`attendance/${date}/${finalName}`).set(updateData).then(() => { alert(isNew ? "Registered" : "Updated"); window.closeAdminCustomModal(); });
+    };
+
+    window.showSchDetail = function(id) {
         db.ref(`shared_schedules/${id}`).once("value", snap => {
-            const ev = snap.val(); 
-            if(!ev) return;
-            
+            const ev = snap.val(); if(!ev) return;
             const isAllDay = ev.allDay || (!ev.start.includes(':'));
-            const decodedDesc = decodeURIComponent(ev.desc || '');
-            const decodedMemo = decodeURIComponent(ev.adminMemo || '');
-
             const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
-            const bodyHtml = `
-                <div class="space-y-4 pt-2 text-left">
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label>
-                        <input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none transition-all">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label>
-                            <input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label>
-                            <input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white">
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 ml-1">
-                        <input type="checkbox" id="db_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950">
-                        <label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label>
-                        <textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodedDesc}</textarea>
-                    </div>
-                    <div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3">
-                        <label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label>
-                        <textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodedMemo}</textarea>
-                    </div>
-
-<div class="flex flex-col gap-2">
-    <button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button>
-    <div class="grid grid-cols-2 gap-3">
-        <button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>
-        <button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button>
-    </div>
-</div>
-                </div>`;
-
+            const bodyHtml = `<div class="space-y-4 pt-2 text-left"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label><input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none"></div><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label><input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label><input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div></div><div class="flex items-center gap-2 ml-1"><input type="checkbox" id="db_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950"><label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label><textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodeURIComponent(ev.desc || '')}</textarea></div><div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3"><label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label><textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodeURIComponent(ev.adminMemo || '')}</textarea></div><div class="flex flex-col gap-2"><button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
-            
-// Modal 오픈 후 Flatpickr 초기화 (setTimeout으로 DOM 렌더링 보장)
-setTimeout(() => {
-    initEditTimePickers(isAllDay);
-    
-    // 수정된 부분: picker 인스턴스를 통해 날짜를 세팅해야 altInput에도 값이 표시됩니다.
-    if (editStartPicker) {
-        editStartPicker.setDate(ev.start.replace('T', ' '));
-    }
-    if (editEndPicker) {
-        const endDate = ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' ');
-        editEndPicker.setDate(endDate);
-    }
-}, 100); // 50ms에서 100ms로 약간 늘려 안정성을 높임
+            setTimeout(() => {
+                initEditTimePickers(isAllDay);
+                if (editStartPicker) editStartPicker.setDate(ev.start.replace('T', ' '));
+                if (editEndPicker) editEndPicker.setDate(ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' '));
+            }, 100);
         });
     };
 
-
-    // --- 기타 기능 (Save/Delete)는 기존과 동일하게 유지 ---
-    window.saveDashboardReport = function(date, staff) {
+window.saveDashboardReport = function(date, staff) {
         const updateData = {
             status: document.getElementById('db_rp_status').value,
             todo: document.getElementById('db_rp_todo').value,
@@ -695,18 +396,22 @@ setTimeout(() => {
         };
         db.ref(`reports/${date}/${staff}`).update(updateData).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
     };
+
     window.deleteDashboardReport = function(date, staff) {
         if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
+
     window.saveAttendanceEdit = function(name, date) {
         const special = document.getElementById('editSpecial').value;
         const updateData = special ? special : { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
         db.ref(`attendance/${date}/${name}`).set(updateData).then(() => { alert("Updated"); window.closeAdminCustomModal(); });
     };
+
     window.deleteAttendance = function(name, date) {
         if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
-window.saveDashboardSchedule = function(id) {
+
+    window.saveDashboardSchedule = function(id) {
         const title = document.getElementById('db_sch_title').value;
         const start = document.getElementById('db_sch_start').value;
         const end = document.getElementById('db_sch_end').value;
@@ -735,23 +440,16 @@ window.saveDashboardSchedule = function(id) {
         if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
     };
 
-// --- 초기화 실행 ---
     window.initAdminDashboard = function() {
-        console.log("🚀 Admin Dashboard Initializing...");
         window.updateQuickStats();
         window.renderRecentAttendance();
         window.renderRecentWork();
         window.renderRecentSchedule();
-window.renderWeeklyLeaves(); // <-- 이 줄 추가
-        console.log("✅ Admin Dashboard Ready");
+        window.renderWeeklyLeaves();
     };
 
-    // 기존의 document.addEventListener('DOMContentLoaded', ...) 대신 
-    // 즉시 실행하거나 admin.html에서 호출할 수 있게 준비합니다.
     if (document.getElementById('quick_stats_container')) {
         setTimeout(window.initAdminDashboard, 100);
     }
-
 })();
-
 </script>

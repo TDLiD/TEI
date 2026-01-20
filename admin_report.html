@@ -1,310 +1,162 @@
 <style>
-    /* attendance 스타일과 통일 */
-    .report-calendar-wrapper {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .report-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed; /* 셀 크기 고정 */
-    }
-
-    .report-table th { 
-        padding: 12px 0; 
-        color: #64748b; 
-        font-size: 0.75rem; 
-        text-align: center; 
-        font-weight: 800; 
-        text-transform: uppercase;
-        border-bottom: 1px solid #1e293b;
-    }
-
-    .report-table td { 
-        height: 100px; 
-        border: 1px solid #1e293b; 
-        vertical-align: top; 
-        padding: 8px; 
-        position: relative; 
-        transition: background 0.2s;
-    }
-
-    .report-table td:hover { 
-        background-color: #0f172a; 
-        cursor: pointer; 
-    }
-
-    /* 리포트 배지 스타일 (attendance의 시간 라벨 스타일 적용) */
-    .report-item-badge {
-        display: block;
-        font-size: 0.65rem;
-        font-weight: 800;
-        padding: 2px 6px;
-        margin-top: 3px;
-        border-radius: 4px;
-        background-color: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-        border-left: 2px solid #3b82f6;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* 상세 패널 디자인 개선 */
-    .detail-panel {
-        background: #0f172a;
-        border: 1px solid #1e293b;
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .custom-input {
-        background: #1e293b;
-        color: #f1f5f9;
-        padding: 12px;
-        border-radius: 12px;
-        width: 100%;
-        border: 1px solid transparent;
-        transition: border 0.2s;
-        font-size: 0.875rem;
-    }
-
-    .custom-input:focus {
-        border-color: #3b82f6;
-        outline: none;
-    }
-
-    label {
-        font-weight: 800;
-        letter-spacing: -0.025em;
-    }
-
-/* 기존 스타일 유지... */
+    .report-calendar-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .report-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .report-table th { padding: 12px 0; color: #64748b; font-size: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid #1e293b; }
+    .report-table td { height: 100px; border: 1px solid #1e293b; vertical-align: top; padding: 8px; position: relative; transition: background 0.2s; }
+    .report-table td:hover { background-color: #0f172a; cursor: pointer; }
+    .report-item-badge { display: block; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; margin-top: 3px; border-radius: 4px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border-left: 2px solid #3b82f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .detail-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    .custom-input { background: #1e293b; color: #f1f5f9; padding: 12px; border-radius: 12px; width: 100%; border: 1px solid transparent; transition: border 0.2s; font-size: 0.875rem; }
+    .custom-input:focus { border-color: #3b82f6; outline: none; }
+    label { font-weight: 800; letter-spacing: -0.025em; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     #currentReportMonthYear { min-width: 150px; }
-
 </style>
 
 <div class="flex flex-col lg:flex-row gap-8 animate-fadeIn">
-
     <div class="flex-1 min-w-0">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-2 gap-4">
             <div class="flex flex-col">
-                <h2 class="text-3xl font-black italic text-white">
-                    WORK <span class="text-emerald-500">REPORTS</span>
-                </h2>
+                <h2 class="text-3xl font-black italic text-white">WORK <span class="text-emerald-500">REPORTS</span></h2>
                 <div id="currentReportMonthYear" class="text-lg font-black text-slate-400 italic mt-1 uppercase tracking-tighter"></div>
             </div>
-            
             <div class="flex items-center gap-4">
                 <div class="flex bg-slate-900 border border-slate-800 rounded-xl p-1 shadow-inner">
-                    <button onclick="changeReportMonth(-1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest hover:text-white uppercase">
-                        &lt; Prev
-                    </button>
-                    <button onclick="goReportToday()" class="nav-btn px-4 py-2 text-blue-400 transition rounded-lg text-[10px] font-black tracking-widest mx-1 hover:bg-blue-500/10 uppercase">
-                        Today
-                    </button>
-                    <button onclick="changeReportMonth(1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest hover:text-white uppercase">
-                        Next &gt;
-                    </button>
+                    <button onclick="changeReportMonth(-1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest hover:text-white uppercase">&lt; Prev</button>
+                    <button onclick="goReportToday()" class="nav-btn px-4 py-2 text-blue-400 transition rounded-lg text-[10px] font-black tracking-widest mx-1 hover:bg-blue-500/10 uppercase">Today</button>
+                    <button onclick="changeReportMonth(1)" class="nav-btn px-4 py-2 text-slate-400 transition rounded-lg text-[10px] font-black tracking-widest hover:text-white uppercase">Next &gt;</button>
                 </div>
             </div>
         </div>
-
         <div class="report-calendar-wrapper bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
             <table class="report-table">
                 <thead>
                     <tr class="bg-slate-900/50">
-                        <th class="text-rose-500">Sun</th>
-                        <th>Mon</th><th>Tue</th><th>Wed</th>
-                        <th>Thu</th><th>Fri</th>
-                        <th class="text-blue-500">Sat</th>
+                        <th class="text-rose-500">Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th class="text-blue-500">Sat</th>
                     </tr>
                 </thead>
                 <tbody id="reportCalendarBody"></tbody>
             </table>
         </div>
     </div>
-
     <div id="reportDetail" class="w-full lg:w-[420px] hidden shrink-0"></div>
 </div>
-
 
 <div class="mt-8 bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-xl">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-3">
             <div class="p-2 bg-emerald-500/20 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </div>
             <h3 class="text-xl font-black text-white italic">EXCEL <span class="text-emerald-500">MANAGEMENT</span></h3>
         </div>
-
         <div class="flex items-center gap-2">
             <input type="file" id="adminImportFile" class="hidden" accept=".xlsx, .xls" onchange="importAdminWorkReport(event)">
-            <button onclick="document.getElementById('adminImportFile').click()" 
-                class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-2 shadow-lg shadow-amber-900/20 uppercase tracking-widest">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                Import Excel
+            <button onclick="document.getElementById('adminImportFile').click()" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-2 shadow-lg shadow-amber-900/20 uppercase tracking-widest">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> Import Excel
             </button>
         </div>
     </div>
-
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-
-<div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monthly Report</label>
-    <div class="flex gap-2">
-        <select id="exportMonthYear" class="custom-input !py-2 text-xs font-bold w-24">
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-            <option value="2026" selected>2026</option>
-        </select>
-        <select id="exportMonthOnly" class="custom-input !py-2 text-xs font-bold flex-1">
-            <option value="01">JANUARY</option>
-            <option value="02">FEBRUARY</option>
-            <option value="03">MARCH</option>
-            <option value="04">APRIL</option>
-            <option value="05">MAY</option>
-            <option value="06">JUNE</option>
-            <option value="07">JULY</option>
-            <option value="08">AUGUST</option>
-            <option value="09">SEPTEMBER</option>
-            <option value="10">OCTOBER</option>
-            <option value="11">NOVEMBER</option>
-            <option value="12">DECEMBER</option>
-        </select>
-        <button onclick="exportWorkReport('monthly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
-    </div>
-</div>
-
-<div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yearly Report</label>
-    <div class="flex gap-2">
-        <select id="exportYear" class="custom-input !py-2 text-xs font-bold">
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-            <option value="2026" selected>2026</option>
-        </select>
-        <button onclick="exportWorkReport('yearly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
-    </div>
-</div>
-
+        <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Monthly Report</label>
+            <div class="flex gap-2">
+                <select id="exportMonthYear" class="custom-input !py-2 text-xs font-bold w-24">
+                    <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option>
+                </select>
+                <select id="exportMonthOnly" class="custom-input !py-2 text-xs font-bold flex-1">
+                    <option value="01">JANUARY</option><option value="02">FEBRUARY</option><option value="03">MARCH</option><option value="04">APRIL</option><option value="05">MAY</option><option value="06">JUNE</option><option value="07">JULY</option><option value="08">AUGUST</option><option value="09">SEPTEMBER</option><option value="10">OCTOBER</option><option value="11">NOVEMBER</option><option value="12">DECEMBER</option>
+                </select>
+                <button onclick="exportWorkReport('monthly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
+            </div>
+        </div>
+        <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yearly Report</label>
+            <div class="flex gap-2">
+                <select id="exportYear" class="custom-input !py-2 text-xs font-bold">
+                    <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option>
+                </select>
+                <button onclick="exportWorkReport('yearly')" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all">GO</button>
+            </div>
+        </div>
         <div class="space-y-3 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50 flex flex-col justify-between">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">All-Time Overall</label>
-            <button onclick="exportWorkReport('overall')" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-xl text-[10px] font-black transition-all border border-blue-400/20 shadow-lg shadow-blue-900/40">
-                EXPORT ALL RECORDS
-            </button>
+            <button onclick="exportWorkReport('overall')" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-xl text-[10px] font-black transition-all border border-blue-400/20 shadow-lg shadow-blue-900/40">EXPORT ALL RECORDS</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-
-
 <script>
 (function() {
     const reportDb = window.db || firebase.database();
     let reportViewDate = new Date();
 
-    // [수정] 화면 갱신 시 제목 업데이트 포함
     window.renderWorkFull = function(){
         updateMonthTitle();
         drawReportCalendar();
     };
 
-
-// 기존 스크립트 내부(IIFE) 혹은 적절한 위치에 추가
-window.importAdminWorkReport = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // [추가] 엑셀 숫자 날짜(46430 등)를 YYYY-MM-DD 문자열로 변환하는 함수
-    function formatExcelDate(value) {
-        if (typeof value === 'number') {
-            // 엑셀 날짜 일련번호를 JS 날짜 객체로 변환 (기준일: 1899-12-30)
-            const date = new Date(Math.round((value - 25569) * 86400 * 1000));
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-        return String(value).trim(); // 이미 문자열이면 공백만 제거 후 반환
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-            if (jsonData.length === 0) {
-                alert("No data found to import.");
-                return;
+    window.importAdminWorkReport = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        function formatExcelDate(value) {
+            if (typeof value === 'number') {
+                const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
             }
-
-            if (!confirm(`Import ${jsonData.length} records? Existing data for the same staff/date will be overwritten.`)) {
-                event.target.value = '';
-                return;
-            }
-
-            const reportDb = firebase.database();
-            let successCount = 0;
-            
-            const promises = jsonData.map(row => {
-                // [수정] 날짜 데이터 읽을 때 formatExcelDate 함수 적용
-                const rawDate = row["DATE"];
-                const dateKey = formatExcelDate(rawDate); 
-                const staffName = row["STAFF NAME"];
-
-                // 유효성 검사 (변환 후 날짜 형식이 아니거나 이름이 없으면 스킵)
-                if (!dateKey || dateKey === 'undefined' || !staffName) return Promise.resolve();
-
-                const reportData = {
-                    status: row["STATUS"] || "In Progress",
-                    todo: row["TODO LIST"] || "",
-                    summary: row["WORK SUMMARY"] || "",
-                    adminMemo: row["ADMIN MEMO"] || "",
-                    lastModified: new Date().toISOString()
-                };
-
-                return reportDb.ref(`reports/${dateKey}/${staffName}`).set(reportData)
-                    .then(() => { successCount++; });
-            });
-
-            Promise.all(promises).then(() => {
-                alert(`Successfully imported ${successCount} reports.`);
-                if (typeof window.renderWorkFull === 'function') window.renderWorkFull(); 
-                event.target.value = '';
-            });
-
-        } catch (err) {
-            console.error(err);
-            alert("Error parsing file. Please check if the format matches the exported Excel.");
+            return String(value).trim();
         }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                if (jsonData.length === 0) return alert("No data found to import.");
+                if (!confirm(`Import ${jsonData.length} records? Existing data for the same staff/date will be overwritten.`)) {
+                    event.target.value = '';
+                    return;
+                }
+                const reportDb = firebase.database();
+                let successCount = 0;
+                const promises = jsonData.map(row => {
+                    const dateKey = formatExcelDate(row["DATE"]); 
+                    const staffName = row["STAFF NAME"];
+                    if (!dateKey || dateKey === 'undefined' || !staffName) return Promise.resolve();
+                    const reportData = {
+                        status: row["STATUS"] || "In Progress",
+                        todo: row["TODO LIST"] || "",
+                        summary: row["WORK SUMMARY"] || "",
+                        adminMemo: row["ADMIN MEMO"] || "",
+                        lastModified: new Date().toISOString()
+                    };
+                    return reportDb.ref(`reports/${dateKey}/${staffName}`).set(reportData).then(() => { successCount++; });
+                });
+                Promise.all(promises).then(() => {
+                    alert(`Successfully imported ${successCount} reports.`);
+                    if (typeof window.renderWorkFull === 'function') window.renderWorkFull(); 
+                    event.target.value = '';
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Error parsing file.");
+            }
+        };
+        reader.readAsArrayBuffer(file);
     };
-    reader.readAsArrayBuffer(file);
-};
 
-
-
-function updateMonthTitle() {
-    const titleBox = document.getElementById('currentReportMonthYear');
-    if(titleBox) {
-        // 'en-US'를 명시적으로 지정하여 영문(January 2026)으로 고정
-        const options = { month: 'long', year: 'numeric' };
-        titleBox.innerText = reportViewDate.toLocaleDateString('en-US', options);
+    function updateMonthTitle() {
+        const titleBox = document.getElementById('currentReportMonthYear');
+        if(titleBox) {
+            titleBox.innerText = reportViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
     }
-}
-    // [추가] 월 이동 함수들
+
     window.changeReportMonth = function(offset) {
         reportViewDate.setMonth(reportViewDate.getMonth() + offset);
         window.renderWorkFull();
@@ -315,246 +167,135 @@ function updateMonthTitle() {
         window.renderWorkFull();
     };
 
-// (기존 코드) const currentMonthStr = ... 부분을 아래와 같이 확실하게 초기화
-const now = new Date();
-const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-const monthInput = document.getElementById('exportMonth');
-if(monthInput) {
-    monthInput.value = currentMonthStr;
-    // 브라우저에게 영문 UI를 강력하게 요청
-    monthInput.setAttribute('lang', 'en-US');
-}
-
-
-function drawReportCalendar() {
-    // 1. 현재 뷰 날짜 기준 정보 계산
-    const y = reportViewDate.getFullYear();
-    const m = reportViewDate.getMonth();
-    const first = new Date(y, m, 1).getDay();
-    const last = new Date(y, m + 1, 0).getDate();
-
-    // 2. Firebase 데이터 조회
-    reportDb.ref("reports").once("value", snap => {
-        // [방어 코드] 데이터를 그릴 DOM 요소가 있는지 가장 먼저 확인
-        const body = document.getElementById("reportCalendarBody");
-        if (!body) {
-            console.warn("Calendar body element not found. Skipping render.");
-            return;
-        }
-
-        const data = snap.val() || {};
-        body.innerHTML = ""; // 기존 내용 초기화
-        let d = 1;
-
-        // 3. 달력 행(Row) 생성 (최대 6주)
-        for (let i = 0; i < 6; i++) {
-            const tr = document.createElement("tr");
-            
-            // 4. 달력 열(Cell) 생성 (일~토)
-            for (let j = 0; j < 7; j++) {
-                const td = document.createElement("td");
-                
-                // 해당 월의 날짜 범위 밖이면 빈 칸 처리
-                if (i === 0 && j < first || d > last) {
-                    tr.appendChild(td);
-                    continue;
-                }
-
-                const date = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const reports = data[date] || {};
-                const isToday = new Date().toISOString().split('T')[0] === date;
-
-                // 오늘 날짜 배경 강조
-                if (isToday) td.classList.add('bg-blue-500/5');
-
-                // 셀 내부 HTML 생성
-                let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
-                html += `<div class="flex flex-col gap-1 overflow-hidden">`;
-
-                // 해당 날짜에 등록된 직원 리스트(배지) 추가
-                html += Object.keys(reports).map(n => `
-                    <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" 
-                         onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
-                        ${n}
-                    </div>
-                `).join('');
-
-                html += `</div>`;
-                td.innerHTML = html;
-
-                // 셀 자체 클릭 시 (빈 공간 포함) 첫 번째 직원 리포트 상세 열기
-                td.onclick = () => {
-                    const firstStaff = Object.keys(reports)[0];
-                    if (firstStaff) openReportDetail(date, firstStaff);
-                };
-
-                tr.appendChild(td);
-                d++;
-            }
-            body.appendChild(tr);
-            
-            // 모든 날짜를 다 그렸으면 루프 종료
-            if (d > last) break;
-        }
-    }).catch(err => {
-        console.error("Firebase data fetch error:", err);
-    });
-}
-
-
-window.exportWorkReport = function(type) {
-    let monthVal = "";
-    let monthLabel = "";
-    
-    // Monthly 타입 설정
-    if (type === 'monthly') {
-        const y = document.getElementById('exportMonthYear').value;
-        const m = document.getElementById('exportMonthOnly').value;
-        const mText = document.getElementById('exportMonthOnly').options[document.getElementById('exportMonthOnly').selectedIndex].text;
-        monthVal = `${y}-${m}`;
-        monthLabel = `${y}_${mText}`; // 예: 2026_JANUARY
+    const now = new Date();
+    const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    const monthInput = document.getElementById('exportMonth');
+    if(monthInput) {
+        monthInput.value = currentMonthStr;
+        monthInput.setAttribute('lang', 'en-US');
     }
-    
-    const yearVal = document.getElementById('exportYear').value;
-    const todayStr = new Date().toISOString().split('T')[0]; // 현재 날짜 (2026-01-13)
 
-    reportDb.ref("reports").once("value", snap => {
-        const allData = snap.val() || {};
-        let exportData = [];
-        const dates = Object.keys(allData).sort();
-        
-        dates.forEach(date => {
-            if (type === 'monthly' && !date.startsWith(monthVal)) return;
-            if (type === 'yearly' && !date.startsWith(yearVal)) return;
+    function drawReportCalendar() {
+        const y = reportViewDate.getFullYear();
+        const m = reportViewDate.getMonth();
+        const first = new Date(y, m, 1).getDay();
+        const last = new Date(y, m + 1, 0).getDate();
+        reportDb.ref("reports").once("value", snap => {
+            const body = document.getElementById("reportCalendarBody");
+            if (!body) return;
+            const data = snap.val() || {};
+            body.innerHTML = "";
+            let d = 1;
+            for (let i = 0; i < 6; i++) {
+                const tr = document.createElement("tr");
+                for (let j = 0; j < 7; j++) {
+                    const td = document.createElement("td");
+                    if (i === 0 && j < first || d > last) {
+                        tr.appendChild(td);
+                        continue;
+                    }
+                    const date = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const reports = data[date] || {};
+                    const isToday = new Date().toISOString().split('T')[0] === date;
+                    if (isToday) td.classList.add('bg-blue-500/5');
+                    let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
+                    html += `<div class="flex flex-col gap-1 overflow-hidden">`;
+                    html += Object.keys(reports).map(n => `
+                        <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
+                            ${n}
+                        </div>
+                    `).join('');
+                    html += `</div>`;
+                    td.innerHTML = html;
+                    td.onclick = () => {
+                        const firstStaff = Object.keys(reports)[0];
+                        if (firstStaff) openReportDetail(date, firstStaff);
+                    };
+                    tr.appendChild(td);
+                    d++;
+                }
+                body.appendChild(tr);
+                if (d > last) break;
+            }
+        });
+    }
 
-            const staffRecords = allData[date];
-            Object.keys(staffRecords).forEach(staff => {
-                const r = staffRecords[staff];
-                exportData.push({
-                    "DATE": date,
-                    "STAFF NAME": staff,
-                    "STATUS": r.status || '-',
-                    "TODO LIST": r.todo || '',      
-                    "WORK SUMMARY": r.summary || '', 
-                    "ADMIN MEMO": r.adminMemo || '', 
-                    "LAST MODIFIED": r.lastModified ? r.lastModified.split('T')[0] : '-'
+    window.exportWorkReport = function(type) {
+        let monthVal = "", monthLabel = "";
+        if (type === 'monthly') {
+            const y = document.getElementById('exportMonthYear').value;
+            const m = document.getElementById('exportMonthOnly').value;
+            const mText = document.getElementById('exportMonthOnly').options[document.getElementById('exportMonthOnly').selectedIndex].text;
+            monthVal = `${y}-${m}`;
+            monthLabel = `${y}_${mText}`;
+        }
+        const yearVal = document.getElementById('exportYear').value;
+        const todayStr = new Date().toISOString().split('T')[0];
+        reportDb.ref("reports").once("value", snap => {
+            const allData = snap.val() || {};
+            let exportData = [];
+            const dates = Object.keys(allData).sort();
+            dates.forEach(date => {
+                if (type === 'monthly' && !date.startsWith(monthVal)) return;
+                if (type === 'yearly' && !date.startsWith(yearVal)) return;
+                const staffRecords = allData[date];
+                Object.keys(staffRecords).forEach(staff => {
+                    const r = staffRecords[staff];
+                    exportData.push({
+                        "DATE": date, "STAFF NAME": staff, "STATUS": r.status || '-', "TODO LIST": r.todo || '', 
+                        "WORK SUMMARY": r.summary || '', "ADMIN MEMO": r.adminMemo || '', 
+                        "LAST MODIFIED": r.lastModified ? r.lastModified.split('T')[0] : '-'
+                    });
                 });
             });
-        });
-
-        if (exportData.length === 0) {
-            alert("No records found.");
-            return;
-        }
-
-        const worksheet = XLSX.utils.json_to_sheet(exportData);
-        
-        // 셀 스타일 및 너비 설정 (기존 유지)
-        if (worksheet['!ref']) {
-            const range = XLSX.utils.decode_range(worksheet['!ref']);
-            for (let R = range.s.r; R <= range.e.r; ++R) {
-                for (let C = range.s.c; C <= range.e.c; ++C) {
-                    const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
-                    if (!worksheet[cell_ref]) continue;
-                    worksheet[cell_ref].s = {
-                        alignment: { wrapText: true, vertical: 'top', horizontal: 'left' }
-                    };
+            if (exportData.length === 0) return alert("No records found.");
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            if (worksheet['!ref']) {
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+                        if (worksheet[cell_ref]) worksheet[cell_ref].s = { alignment: { wrapText: true, vertical: 'top', horizontal: 'left' } };
+                    }
                 }
             }
-        }
-        worksheet['!cols'] = [{wch: 12}, {wch: 15}, {wch: 12}, {wch: 45}, {wch: 55}, {wch: 35}, {wch: 15}];
+            worksheet['!cols'] = [{wch: 12}, {wch: 15}, {wch: 12}, {wch: 45}, {wch: 55}, {wch: 35}, {wch: 15}];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "WorkReports");
+            let filename = type === 'overall' ? `WorkReport_overall_${todayStr}` : (type === 'yearly' ? `WorkReport_yearly_${yearVal}_${todayStr}` : `WorkReport_monthly_${monthLabel}_${todayStr}`);
+            XLSX.writeFile(workbook, `${filename}.xlsx`);
+        });
+    };
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "WorkReports");
-
-        // --- 파일명 생성 로직 수정 ---
-        let filename = "";
-        if (type === 'overall') {
-            filename = `WorkReport_overall_${todayStr}`;
-        } else if (type === 'yearly') {
-            filename = `WorkReport_yearly_${yearVal}_${todayStr}`;
-        } else if (type === 'monthly') {
-            filename = `WorkReport_monthly_${monthLabel}_${todayStr}`;
-        }
-        
-        XLSX.writeFile(workbook, `${filename}.xlsx`);
-    });
-};
-
-
-
-  // [수정] 특정 직원의 이름을 인자로 받아 Firebase에서 해당 데이터만 가져오도록 변경
     window.openReportDetail = function(date, staff){
         if(!staff) return;
-
         reportDb.ref(`reports/${date}/${staff}`).once("value", snap => {
             const r = snap.val() || {};
             const box = document.getElementById("reportDetail");
             if(!box) return;
             box.classList.remove("hidden");
-
             box.innerHTML = `
             <div class="detail-panel p-6 sticky top-0">
                 <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h3 class="text-2xl font-black text-white">Report Detail</h3>
-                        <p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p>
-                    </div>
-                    <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div><h3 class="text-2xl font-black text-white">Report Detail</h3><p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p></div>
+                    <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-
                 <div class="space-y-4">
-                    <div>
-                        <label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label>
-                        <select id="rp_status" class="custom-input font-bold text-blue-400">
-                            <option ${r.status==='In Progress'?'selected':''}>In Progress</option>
-                            <option ${r.status==='Completed'?'selected':''}>Completed</option>
-                            <option ${r.status==='Pending'?'selected':''}>Pending</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label>
-                        <textarea id="rp_todo" class="custom-input h-24 resize-none" placeholder="Enter task list...">${r.todo||''}</textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label>
-                        <textarea id="rp_summary" class="custom-input h-32 resize-none" placeholder="Describe work results...">${r.summary||''}</textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label>
-                        <textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20" placeholder="Private notes...">${r.adminMemo||''}</textarea>
-                    </div>
+                    <div><label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label><select id="rp_status" class="custom-input font-bold text-blue-400"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div>
+                    <div><label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label><textarea id="rp_todo" class="custom-input h-24 resize-none">${r.todo||''}</textarea></div>
+                    <div><label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label><textarea id="rp_summary" class="custom-input h-32 resize-none">${r.summary||''}</textarea></div>
+                    <div><label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label><textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20">${r.adminMemo||''}</textarea></div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3 mt-8">
-                    <button onclick="saveReport('${date}','${staff}')"
-                        class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">
-                        SAVE CHANGES
-                    </button>
-                    <button onclick="closeReportDetail()"
-                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">
-                        Cancel
-                    </button>
-                    <button onclick="deleteReport('${date}','${staff}')"
-                        class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">
-                        Delete
-                    </button>
+                    <button onclick="saveReport('${date}','${staff}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">SAVE CHANGES</button>
+                    <button onclick="closeReportDetail()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">Cancel</button>
+                    <button onclick="deleteReport('${date}','${staff}')" class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">Delete</button>
                 </div>
             </div>`;
         });
     }
 
-
-
-    // HTML 요소의 onclick에서 접근할 수 있도록 전역으로 등록
-    window.closeReportDetail = function() {
-        document.getElementById("reportDetail").classList.add("hidden");
-    };
-
+    window.closeReportDetail = function() { document.getElementById("reportDetail").classList.add("hidden"); };
     window.saveReport = function(date, staff){
         reportDb.ref(`reports/${date}/${staff}`).update({
             status: document.getElementById('rp_status').value,
@@ -562,21 +303,12 @@ window.exportWorkReport = function(type) {
             summary: document.getElementById('rp_summary').value,
             adminMemo: document.getElementById('rp_memo').value,
             lastModified: new Date().toISOString()
-        }).then(() => {
-            alert("Saved successfully");
-            drawReportCalendar();
-        });
+        }).then(() => { alert("Saved successfully"); drawReportCalendar(); });
     };
-
     window.deleteReport = function(date, staff){
-        if(!confirm("Are you sure you want to delete this report?")) return;
-        reportDb.ref(`reports/${date}/${staff}`).remove().then(() => {
-            window.closeReportDetail();
-            drawReportCalendar();
-        });
+        if(!confirm("Are you sure?")) return;
+        reportDb.ref(`reports/${date}/${staff}`).remove().then(() => { window.closeReportDetail(); drawReportCalendar(); });
     };
-
-    // 최초 로드 시 실행
     drawReportCalendar();
 })();
 </script>

@@ -3,7 +3,6 @@
     .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; }
     .chart-container { position: relative; height: 300px; width: 100%; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
-    /* 탭 스타일 */
     .stat-tab-btn { transition: all 0.3s; position: relative; }
     .stat-tab-btn.active { color: #facc15; }
     .stat-tab-btn.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #facc15; border-radius: 2px; }
@@ -64,27 +63,24 @@
         const db = firebase.database();
         let monthViewDate = new Date(); 
         let yearViewDate = new Date();
-        let currentTab = 'att'; // 'att' or 'leave'
+        let currentTab = 'att';
         
         const typeColors = {
             'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
             'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
-            'LEAVE_DONE': '#6366f1' // 퇴근용 전용 색상
+            'LEAVE_DONE': '#6366f1'
         };
 
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
 
-        // 탭 전환 함수
         window.switchStatTab = function(tab) {
             currentTab = tab;
             document.getElementById('tabBtnAtt').classList.toggle('active', tab === 'att');
             document.getElementById('tabBtnLeave').classList.toggle('active', tab === 'leave');
-            
             const titles = ['statTitleMonth', 'statTitleYear', 'statTitleOverall'];
             const label = tab === 'att' ? 'Attendance' : 'Leave';
             titles.forEach(id => document.getElementById(id).innerText = label);
-
             processAndRender();
         };
 
@@ -106,24 +102,19 @@
             }
         }
 
-   function processAndRender() {
+        function processAndRender() {
             if (!cachedData || !document.getElementById('monthlyChart')) return;
-
             const monthKey = monthViewDate.toISOString().substring(0, 7);
             const yearKey = yearViewDate.getFullYear().toString();
-            
             document.getElementById('txtMonth').innerText = monthViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('txtYear').innerText = yearKey;
-
             const stats = { month: {}, year: {}, overall: {} };
 
-            // [수정] Leave 탭일 때 시간 데이터를 저장하기 위한 구조 변경
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
                     if (currentTab === 'att') {
                         let type = (typeof record === 'string') ? record : (record.attend ? (record.attend.includes("ATT") ? "ATT" : (record.attend.includes("LATE") ? "LATE" : "")) : "");
                         if (!type || !typeColors[type]) return;
-
                         const updateCount = (obj) => {
                             if (!obj[user]) obj[user] = {};
                             obj[user][type] = (obj[user][type] || 0) + 1;
@@ -132,11 +123,9 @@
                         if (date.startsWith(yearKey)) updateCount(stats.year);
                         updateCount(stats.overall);
                     } else {
-                        // [수정] Leave 탭: 날짜별 시간 값을 숫자로 저장
                         if (typeof record !== 'string' && record.leave) {
                             const timeParts = record.leave.split(':');
                             const decimalTime = parseInt(timeParts[0]) + (parseInt(timeParts[1]) / 60);
-                            
                             const updateTimeData = (obj) => {
                                 if (!obj[user]) obj[user] = [];
                                 obj[user].push({ x: date, y: decimalTime });
@@ -148,151 +137,115 @@
                     }
                 });
             });
-
             renderChart('monthlyChart', 'month', stats.month);
             renderChart('yearlyChart', 'year', stats.year);
             renderChart('overallChart', 'overall', stats.overall);
         }
 
-// ... (기존 상단 로직 동일)
+        function renderChart(canvasId, chartType, chartData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return;
+            const ctx = canvas.getContext('2d');
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) { existingChart.destroy(); }
 
-function renderChart(canvasId, chartType, chartData) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || typeof Chart === 'undefined') return;
-    const ctx = canvas.getContext('2d');
+            if (currentTab === 'att') {
+                const users = Object.keys(chartData).sort();
+                const relevantTypes = ['ATT', 'LATE', 'WO', 'PEL', 'ANL', 'HAL', 'SIL', 'SPL', 'EVL'];
+                const datasets = relevantTypes.map(type => {
+                    const dataPoints = users.map(user => chartData[user][type] || 0);
+                    if (dataPoints.every(v => v === 0)) return null;
+                    return {
+                        label: type,
+                        data: dataPoints,
+                        backgroundColor: typeColors[type],
+                        borderRadius: 4
+                    };
+                }).filter(d => d !== null);
 
-    const existingChart = Chart.getChart(canvas);
-    if (existingChart) { existingChart.destroy(); }
-
-    if (currentTab === 'att') {
-        // --- [Attendance: 막대 그래프 로직] ---
-        const users = Object.keys(chartData).sort();
-        // 표시할 근태 타입들
-        const relevantTypes = ['ATT', 'LATE', 'WO', 'PEL', 'ANL', 'HAL', 'SIL', 'SPL', 'EVL'];
-        
-        const datasets = relevantTypes.map(type => {
-            const dataPoints = users.map(user => chartData[user][type] || 0);
-            // 해당 타입의 데이터가 하나도 없으면 데이터셋 제외
-            if (dataPoints.every(v => v === 0)) return null;
-            
-            return {
-                label: type,
-                data: dataPoints,
-                backgroundColor: typeColors[type],
-                borderRadius: 4
-            };
-        }).filter(d => d !== null);
-
-        charts[chartType] = new Chart(ctx, {
-            type: 'bar',
-            data: { 
-                labels: users, 
-                datasets: datasets 
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { 
-                        stacked: false, // 사용자별로 옆으로 나열
-                        ticks: { color: '#94a3b8', font: { size: 10 } } 
-                    },
-                    y: { 
-                        beginAtZero: true,
-                        ticks: { 
-                            stepSize: 1, 
-                            color: '#94a3b8',
-                            callback: (value) => value + 'd' // '일수' 표시
-                        },
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                    }
-                },
-                plugins: {
-                    legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } }
-                }
-            }
-        });
-
-    } else {
-        // --- [Leave: 점-선 그래프 로직] ---
-        const datasets = Object.entries(chartData).map(([user, points], idx) => {
-            // 날짜순 정렬
-            points.sort((a, b) => a.x.localeCompare(b.x));
-            const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`; 
-            return {
-                label: user,
-                data: points,
-                borderColor: color,
-                backgroundColor: color,
-                borderWidth: 2,
-                pointRadius: 4,
-                tension: 0.3,
-                fill: false
-            };
-        });
-
-        charts[chartType] = new Chart(ctx, {
-            type: 'line',
-            data: { datasets: datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { 
-                        type: 'category', 
-                        ticks: { color: '#64748b', font: { size: 10 } } 
-                    },
-                    y: {
-                        min: 17.5,
-                        max: 22.0,
-                        afterBuildTicks: function(axis) {
-                            const ticks = [];
-                            for (let time = 17.5; time <= 18.5 + 0.0001; time += (5/60)) {
-                                ticks.push({ value: time });
-                            }
-                            for (let time = 18.5 + (20/60); time <= 22.0 + 0.0001; time += (20/60)) {
-                                ticks.push({ value: time });
-                            }
-                            axis.ticks = ticks;
-                        },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: { size: 9 },
-                            autoSkip: false,
-                            callback: function(value) {
-                                const h = Math.floor(value + 0.0001);
-                                const m = Math.round((value - h) * 60);
-                                return `${h}:${m === 0 ? '00' : (m < 10 ? '0' + m : m)}`;
+                charts[chartType] = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: users, datasets: datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { stacked: false, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { stepSize: 1, color: '#94a3b8', callback: (value) => value + 'd' },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
                             }
                         },
-                        grid: { 
-                            color: (context) => (context.tick && context.tick.value % 1 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
-                            lineWidth: (context) => (context.tick && context.tick.value % 1 === 0 ? 1.5 : 1)
+                        plugins: {
+                            legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } }
                         }
                     }
-                },
-                plugins: {
-                    legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx) => {
-                                const h = Math.floor(ctx.parsed.y + 0.0001);
-                                const m = Math.round((ctx.parsed.y - h) * 60);
-                                return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
+                });
+            } else {
+                const datasets = Object.entries(chartData).map(([user, points], idx) => {
+                    points.sort((a, b) => a.x.localeCompare(b.x));
+                    const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`; 
+                    return {
+                        label: user,
+                        data: points,
+                        borderColor: color,
+                        backgroundColor: color,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.3,
+                        fill: false
+                    };
+                });
+
+                charts[chartType] = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'category', ticks: { color: '#64748b', font: { size: 10 } } },
+                            y: {
+                                min: 17.5, max: 22.0,
+                                afterBuildTicks: function(axis) {
+                                    const ticks = [];
+                                    for (let time = 17.5; time <= 18.5 + 0.0001; time += (5/60)) { ticks.push({ value: time }); }
+                                    for (let time = 18.5 + (20/60); time <= 22.0 + 0.0001; time += (20/60)) { ticks.push({ value: time }); }
+                                    axis.ticks = ticks;
+                                },
+                                ticks: {
+                                    color: '#94a3b8', font: { size: 9 }, autoSkip: false,
+                                    callback: function(value) {
+                                        const h = Math.floor(value + 0.0001);
+                                        const m = Math.round((value - h) * 60);
+                                        return `${h}:${m === 0 ? '00' : (m < 10 ? '0' + m : m)}`;
+                                    }
+                                },
+                                grid: { 
+                                    color: (context) => (context.tick && context.tick.value % 1 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
+                                    lineWidth: (context) => (context.tick && context.tick.value % 1 === 0 ? 1.5 : 1)
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const h = Math.floor(ctx.parsed.y + 0.0001);
+                                        const m = Math.round((ctx.parsed.y - h) * 60);
+                                        return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                });
             }
-        });
-    }
-}
+        }
 
-
-        setTimeout(() => {
-            initStats();
-        }, 300);
-
+        setTimeout(() => { initStats(); }, 300);
         window.refreshStatistics = processAndRender;
     })();
 </script>
