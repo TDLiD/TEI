@@ -56,6 +56,9 @@
                 <button onclick="switchTab('statistic')" id="tabStatistic" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">📈</span> Statistics
                 </button>
+                <button onclick="switchTab('game')" id="tabGame" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
+                    <span class="lg:inline hidden">🎮</span> Game
+                </button>
                 <button onclick="switchTab('setting')" id="tabSetting" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">⚙️</span> Settings
                 </button>
@@ -104,6 +107,7 @@
                 'leave': document.getElementById('tabLeave'),
                 'work': document.getElementById('tabWork'),
                 'statistic': document.getElementById('tabStatistic'),
+                'game': document.getElementById('tabGame'), // 추가
                 'setting': document.getElementById('tabSetting')
             };
             Object.values(tabs).forEach(tab => {
@@ -119,6 +123,7 @@
                 'leave': 'staff_leave.html',
                 'work': 'staff_report.html',
                 'statistic': 'staff_statistic.html',
+                'game': 'staff_game_bricks.html', // 추가한 게임 파일명
                 'setting': 'staff_setting.html',
                 'all': 'staff_allatt.html'
             };

@@ -1,0 +1,266 @@
+<style>
+    #gameCanvas { display: block; touch-action: none; background: #0f172a; width: 100%; height: 100%; }
+    
+    /* 상단 UI 바 디자인 전면 수정 */
+    #gameUI { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 70px;
+        background: rgba(15, 23, 42, 0.9); 
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+        display: none; /* 초기 상태 숨김 */
+        justify-content: space-between; 
+        align-items: center;
+        padding: 0 20px; 
+        z-index: 100;
+    }
+    
+    .stat-group { display: flex; align-items: center; gap: 15px; }
+    
+    .stat-box { 
+        background: rgba(255, 255, 255, 0.05);
+        padding: 5px 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        min-width: 80px;
+    }
+    
+    .stat-label { font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+    .stat-value { font-size: 22px; font-weight: 900; color: #fff; font-family: monospace; line-height: 1; }
+    
+    #livesDisplay { font-size: 18px; letter-spacing: 2px; }
+</style>
+
+<div id="gameIntro" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-50 bg-slate-950/90 backdrop-blur-md">
+    <h2 class="text-5xl font-black text-white italic mb-2 tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500">Brick Breaker</h2>
+    <p class="text-blue-500 font-bold mb-8 tracking-widest text-[10px]">PREMIUM 3D EDITION</p>
+    <div class="w-full max-w-xs bg-slate-800/30 rounded-3xl p-6 border border-slate-700/50 mb-8 shadow-2xl">
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Daily Top Records</h3>
+        <div id="rankingList" class="space-y-2">
+            <p class="text-slate-600 text-xs py-2">Loading...</p>
+        </div>
+    </div>
+    <button onclick="startGame()" class="px-12 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black rounded-2xl transition-all active:scale-95 shadow-[0_0_20px_rgba(37,99,235,0.4)] uppercase tracking-widest">
+        Game Start
+    </button>
+</div>
+
+<div id="gameUI">
+    <div class="stat-group">
+        <div class="stat-box">
+            <span class="stat-label">LEVEL</span>
+            <span id="levelDisplay" class="stat-value text-yellow-400">01</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">SCORE</span>
+            <span id="scoreDisplay" class="stat-value text-blue-400">0</span>
+        </div>
+    </div>
+    <div class="stat-box text-right" style="min-width: fit-content;">
+        <span class="stat-label">LIVES</span>
+        <span id="livesDisplay" class="stat-value text-rose-500">❤️❤️❤️</span>
+    </div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+(function() {
+    const cvs = document.getElementById("gameCanvas");
+    const ctx = cvs.getContext("2d");
+    const db = firebase.database();
+
+    let score = 0, lives = 3, level = 1, maxLevel = 20, gameRunning = false, bricks = [];
+    let paddle = { width: 0, height: 18, x: 0 };
+    let ball = { x: 0, y: 0, dx: 0, dy: 0, radius: 7, baseSpeed: 5.5 };
+    let brickConfig = { rowCount: 0, columnCount: 0, width: 0, height: 24, padding: 8, offsetTop: 120 };
+
+    function updateUI(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    }
+
+    window.loadRankings = function() {
+        const today = new Date().toISOString().split('T')[0];
+        db.ref(`game_scores/bricks/${today}`).orderByChild('score').limitToLast(5).once('value', (snap) => {
+            const list = document.getElementById('rankingList');
+            if (!list) return;
+            if (!snap.exists()) { list.innerHTML = '<p class="text-slate-700 text-[10px] font-bold">NO RECORDS</p>'; return; }
+            let sortedArr = [];
+            snap.forEach(c => { sortedArr.unshift(c.val()); });
+            list.innerHTML = sortedArr.map((d, i) => `
+                <div class="flex justify-between items-center bg-slate-900/40 p-3 rounded-xl border border-white/5">
+                    <span class="text-slate-500 font-black text-[10px]">${i+1}</span>
+                    <span class="flex-grow text-slate-200 font-bold text-xs text-left ml-3">${d.userId}</span>
+                    <span class="text-blue-400 font-black text-xs">${d.score.toLocaleString()}</span>
+                </div>`).join('');
+        });
+    };
+
+    async function saveScore(s) {
+        if(s <= 0) return;
+        const today = new Date().toISOString().split('T')[0];
+        const realTimeUser = sessionStorage.getItem('loggedInUser') || 'Staff';
+        const userScoreRef = db.ref(`game_scores/bricks/${today}/${realTimeUser}`);
+        try {
+            const snapshot = await userScoreRef.once('value');
+            if (!snapshot.exists() || s > snapshot.val().score) {
+                await userScoreRef.set({ userId: realTimeUser, score: s, ts: firebase.database.ServerValue.TIMESTAMP });
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function createLevelPattern() {
+        brickConfig.columnCount = Math.floor((cvs.width - 40) / (brickConfig.width + brickConfig.padding));
+        const totalBricksWidth = brickConfig.columnCount * (brickConfig.width + brickConfig.padding) - brickConfig.padding;
+        const startX = (cvs.width - totalBricksWidth) / 2;
+        
+        brickConfig.rowCount = 5 + Math.floor(level / 3);
+        const patternType = level % 5;
+
+        bricks = [];
+        for (let c = 0; c < brickConfig.columnCount; c++) {
+            bricks[c] = [];
+            for (let r = 0; r < brickConfig.rowCount; r++) {
+                let status = 0;
+                if (patternType === 1) { // 피라미드
+                    const center = Math.floor(brickConfig.columnCount / 2);
+                    if (c >= center - r && c <= center + r) status = 1;
+                } else if (patternType === 2) { // 다이아몬드
+                    const midCol = Math.floor(brickConfig.columnCount / 2);
+                    const midRow = Math.floor(brickConfig.rowCount / 2);
+                    if (Math.abs(c - midCol) + Math.abs(r - midRow) <= midRow) status = 1;
+                } else if (patternType === 3) { // 체크무늬
+                    if ((c + r) % 2 === 0) status = 1;
+                } else if (patternType === 4) { // 랜덤
+                    status = Math.random() > (0.65 - (level * 0.01)) ? 1 : 0;
+                } else { // 기본
+                    status = 1;
+                }
+                bricks[c][r] = { 
+                    x: startX + c * (brickConfig.width + brickConfig.padding), 
+                    y: r * (brickConfig.height + brickConfig.padding) + brickConfig.offsetTop, 
+                    status: status 
+                };
+            }
+        }
+    }
+
+    function initLevel() {
+        cvs.width = window.innerWidth;
+        cvs.height = window.innerHeight;
+        paddle.width = Math.max(80, (cvs.width * 0.3) - (level * 7));
+        paddle.x = (cvs.width - paddle.width) / 2;
+        ball.x = cvs.width / 2;
+        ball.y = cvs.height - 100;
+        let speed = ball.baseSpeed + (level * 0.45);
+        ball.dx = speed * (Math.random() > 0.5 ? 1 : -1);
+        ball.dy = -speed;
+        brickConfig.width = Math.floor(cvs.width / 11);
+        createLevelPattern();
+        updateUI("levelDisplay", level < 10 ? "0" + level : level);
+    }
+
+    function drawBrick(x, y, w, h, color) {
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.fillRect(x + 4, y + 4, w, h);
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, darkenColor(color, 45));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(x, y, w, h, 5); else ctx.rect(x, y, w, h);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.25)";
+        ctx.fillRect(x, y, w, 2);
+    }
+
+    function darkenColor(hex, percent) {
+        let num = parseInt(hex.replace("#",""), 16), amt = Math.round(2.55 * percent),
+        R = (num >> 16) - amt, G = (num >> 8 & 0x00FF) - amt, B = (num & 0x0000FF) - amt;
+        return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
+    }
+
+    window.startGame = function() {
+        document.getElementById('gameIntro').style.display = 'none';
+        document.getElementById('gameUI').style.display = 'flex'; // visibility 대신 display 사용
+        score = 0; lives = 3; level = 1; gameRunning = true;
+        updateUI("scoreDisplay", "0");
+        updateUI("livesDisplay", "❤️❤️❤️");
+        initLevel();
+        draw();
+    };
+
+    function draw() {
+        if (!gameRunning) return;
+        const bgGrad = ctx.createRadialGradient(cvs.width/2, cvs.height/2, 0, cvs.width/2, cvs.height/2, cvs.height);
+        bgGrad.addColorStop(0, "#1e293b"); bgGrad.addColorStop(1, "#020617");
+        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+        const brickColors = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#6366f1", "#a855f7"];
+        let activeBricks = 0;
+
+        bricks.forEach((col, c) => col.forEach((b, r) => {
+            if (b.status === 1) {
+                activeBricks++;
+                drawBrick(b.x, b.y, brickConfig.width, brickConfig.height, brickColors[r % brickColors.length]);
+                if (ball.x > b.x && ball.x < b.x + brickConfig.width && ball.y > b.y && ball.y < b.y + brickConfig.height) {
+                    ball.dy = -ball.dy; b.status = 0;
+                    score += (10 * level); updateUI("scoreDisplay", score.toLocaleString());
+                }
+            }
+        }));
+
+        if (activeBricks === 0) { gameRunning = false; setTimeout(nextLevel, 500); return; }
+
+        const paddleGrad = ctx.createLinearGradient(paddle.x, 0, paddle.x + paddle.width, 0);
+        paddleGrad.addColorStop(0, "#60a5fa"); paddleGrad.addColorStop(1, "#2563eb");
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(paddle.x + 5, cvs.height - 42, paddle.width, paddle.height);
+        ctx.fillStyle = paddleGrad; ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(paddle.x, cvs.height - 45, paddle.width, paddle.height, 10); else ctx.rect(paddle.x, cvs.height - 45, paddle.width, paddle.height);
+        ctx.fill();
+
+        ctx.shadowBlur = 18; ctx.shadowColor = "#fff";
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+        ctx.fillStyle = "#fff"; ctx.fill(); ctx.shadowBlur = 0;
+
+        if (ball.x + ball.dx > cvs.width - ball.radius || ball.x + ball.dx < ball.radius) ball.dx = -ball.dx;
+        if (ball.y + ball.dy < 70 + ball.radius) ball.dy = -ball.dy; // 헤더 높이에 맞춤
+        else if (ball.y + ball.dy > cvs.height - 45 - ball.radius) {
+            if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                ball.dy = -ball.dy;
+                let hitPos = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                ball.dx = hitPos * 7.5;
+            } else if (ball.y > cvs.height) {
+                lives--; updateUI("livesDisplay", "❤️".repeat(Math.max(0, lives)));
+                if (lives <= 0) {
+                    gameRunning = false; saveScore(score);
+                    alert("GAME OVER\nFINAL SCORE: " + score); location.reload();
+                } else {
+                    ball.x = cvs.width/2; ball.y = cvs.height-100;
+                    ball.dy = -(ball.baseSpeed + level * 0.5); ball.dx = (Math.random()-0.5)*5;
+                }
+            }
+        }
+        ball.x += ball.dx; ball.y += ball.dy;
+        requestAnimationFrame(draw);
+    }
+
+    function nextLevel() {
+        if (level >= maxLevel) { saveScore(score); alert("🏆 ALL STAGES CLEARED!"); location.reload(); }
+        else { level++; initLevel(); gameRunning = true; draw(); }
+    }
+
+    const move = (e) => {
+        if (!gameRunning) return;
+        const x = (e.touches ? e.touches[0].clientX : e.clientX);
+        paddle.x = Math.max(0, Math.min(cvs.width - paddle.width, x - paddle.width / 2));
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("touchmove", move, { passive: false });
+    window.addEventListener('resize', initLevel);
+    initLevel();
+    loadRankings();
+})();
+</script>
