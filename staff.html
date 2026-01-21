@@ -221,12 +221,17 @@
             });
         }
 
-        function logout() { 
-            if(confirm("Are you sure you want to log out?")) {
-                sessionStorage.clear(); 
-                location.href = "index.html"; 
-            }
-        }
+function logout() { 
+    if (confirm("Are you sure you want to log out?")) {
+        // 1. 모든 세션 데이터 삭제
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser'); // 혹시 모를 로컬 스토리지도 정리
+
+        // 2. 캐시를 무시하고 페이지를 강제로 리로드하듯 이동 (모바일 대응)
+        // 뒤로 가기를 방지하기 위해 replace를 사용합니다.
+        window.location.replace("index.html");
+    }
+}
 
         (function() {
             let timeoutTimer;
