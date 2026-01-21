@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
 
+    <script src="staff-level.js"></script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -51,14 +53,20 @@
     <aside class="w-full lg:w-72 lg:h-screen bg-black/50 border-b lg:border-b-0 lg:border-r border-slate-800 backdrop-blur-xl sticky top-0 z-[100] flex-shrink-0">
         <div class="p-4 lg:p-8 flex flex-col h-full">
             <div class="flex lg:flex-col justify-between items-center lg:items-start gap-4 mb-6 lg:mb-12">
-                <div>
+                <div class="w-full">
                     <h1 class="text-xl lg:text-2xl font-black tracking-tighter text-white uppercase">Daily <span class="text-blue-500">System</span></h1>
-                    <div id="staff_profile_nav" class="flex items-center gap-2 mt-2">
+                    
+                    <div class="flex items-center gap-3 mt-4">
                         <div id="navEmojiContainer"></div>
-                        <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
+                        <div class="flex flex-col">
+                            <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
+                            <span class="text-[8px] text-emerald-500 font-bold">● ONLINE</span>
+                        </div>
                     </div>
+
+                    <div id="levelDisplayContainer" class="w-full"></div>
                 </div>
-                <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase">Logout</button>
+                <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase flex-shrink-0">Logout</button>
             </div>
 
             <nav class="flex lg:flex-col gap-1 overflow-x-auto no-scrollbar pb-2 lg:pb-0 flex-grow">
@@ -80,10 +88,6 @@
                 <button onclick="switchTab('setting')" id="tabSetting" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">⚙️</span> Settings
                 </button>
-                
-                <a href="https://tdlid.github.io" target="_blank" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all">
-                    <span class="lg:inline hidden">🌐</span> TDLiD Homepage
-                </a>
             </nav>
 
             <div class="hidden lg:block pt-4 mt-4 border-t border-slate-800/50">
@@ -113,8 +117,9 @@
         const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         
+        // 1. 유저 정보 로드 및 레벨 시스템 실행
         if(loggedInUser) {
-            if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+            document.getElementById('desktopUser').innerText = loggedInUser;
             
             firebase.database().ref('users/' + loggedInUser).on('value', snap => {
                 const userData = snap.val();
@@ -122,13 +127,25 @@
                 const emojiContainer = document.getElementById('navEmojiContainer');
                 
                 if(emojiContainer) {
-                    emojiContainer.innerHTML = `
-                        <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl">
-                    `;
+                    emojiContainer.innerHTML = `<img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">`;
                 }
+
+                // 레벨 시스템 안전하게 시작
+                startLevelSystem();
             });
         }
 
+        // 레벨 시스템 스크립트가 로드되었는지 확인 후 실행하는 함수
+        function startLevelSystem() {
+            if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
+                window.LevelSystem.init(loggedInUser);
+            } else {
+                // 파일 로딩 대기를 위해 재시도
+                setTimeout(startLevelSystem, 300);
+            }
+        }
+
+        // 2. 탭 전환 로직
         function switchTab(type) {
             const tabs = {
                 'dash': document.getElementById('tabDash'),
@@ -154,32 +171,22 @@
                 'leave': 'staff_leave.html',
                 'work': 'staff_report.html',
                 'statistic': 'staff_statistic.html',
-                'setting': 'staff_setting.html',
-                'all': 'staff_allatt.html'
+                'setting': 'staff_setting.html'
             };
 
             loadHTML(urls[type], function() {
-                if (type === 'leave' && typeof window.initLeavePage === 'function') {
-                    window.initLeavePage();
-                } else if (type === 'dash' && typeof window.initDashboard === 'function') {
-                    window.initDashboard();
-                }
+                if (type === 'leave' && typeof window.initLeavePage === 'function') { window.initLeavePage(); }
+                else if (type === 'dash' && typeof window.initDashboard === 'function') { window.initDashboard(); }
             });
         }
 
+        // 3. 페이지 로더
         async function loadHTML(url, callback) {
             try {
-                if (!url) {
-                    console.error("Error: URL is undefined or empty");
-                    return;
-                }
-
+                if (!url) return;
                 const frame = document.getElementById('contentFrame');
                 const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 const text = await response.text();
                 frame.innerHTML = text;
@@ -193,17 +200,12 @@
                 }
 
                 executeScripts(frame);
-
-                if (typeof callback === 'function') {
-                    callback();
-                }
+                if (typeof callback === 'function') callback();
                 
             } catch (e) { 
                 console.error("Failed to load page:", e); 
                 document.getElementById('contentFrame').innerHTML = 
-                    `<div class="p-10 text-center text-rose-500 font-bold uppercase">
-                        File Not Found: ${url}
-                    </div>`;
+                    `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
             }
         }
 
@@ -221,24 +223,21 @@
             });
         }
 
-function logout() { 
-    if (confirm("Are you sure you want to log out?")) {
-        // 1. 모든 세션 데이터 삭제
-        sessionStorage.clear();
-        localStorage.removeItem('loggedInUser'); // 혹시 모를 로컬 스토리지도 정리
+        // 4. 로그아웃
+        function logout() { 
+            if (confirm("Are you sure you want to log out?")) {
+                sessionStorage.clear();
+                localStorage.removeItem('loggedInUser');
+                window.location.replace("index.html");
+            }
+        }
 
-        // 2. 캐시를 무시하고 페이지를 강제로 리로드하듯 이동 (모바일 대응)
-        // 뒤로 가기를 방지하기 위해 replace를 사용합니다.
-        window.location.replace("index.html");
-    }
-}
-
+        // 5. 자동 로그아웃 (보안)
         (function() {
             let timeoutTimer;
-            const INACTIVITY_TIME = 10 * 60 * 1000; 
+            const INACTIVITY_TIME = 15 * 60 * 1000; 
 
             function autoLogout() {
-                alert("You have been automatically logged out due to inactivity for security reasons.");
                 sessionStorage.clear();
                 location.href = "index.html";
             }
@@ -248,15 +247,13 @@ function logout() {
                 timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
             }
 
-            window.onload = resetTimer;
-            window.onmousemove = resetTimer;
-            window.onmousedown = resetTimer; 
-            window.ontouchstart = resetTimer;
-            window.onclick = resetTimer;
-            window.onkeypress = resetTimer;
-            window.addEventListener('scroll', resetTimer, true);
+            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(evt => {
+                window.addEventListener(evt, resetTimer, true);
+            });
+            resetTimer();
         })();
 
+        // 초기 대시보드 로드
         switchTab('dash');
     </script>
 </body>
