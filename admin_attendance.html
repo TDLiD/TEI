@@ -9,9 +9,8 @@
 
     .attendance-record-item { font-size: clamp(8px, 0.8vw, 10px); transition: all 0.2s ease; width: 100%; }
     
-    /* Time Input Style Optimization */
     input[type="time"]::-webkit-calendar-picker-indicator {
-        filter: invert(1); /* 어두운 배경에서 아이콘이 보이도록 설정 */
+        filter: invert(1);
         cursor: pointer;
     }
 
@@ -65,10 +64,8 @@
         const db = firebase.database();
         let viewDate = new Date();
 
-        // 시간을 HH:mm 형식으로 정규화하는 함수 (시계 창 입력을 위해 필요)
         const normalizeTime = (timeStr) => {
             if (!timeStr) return "";
-            // "ATT(08:30)" 또는 "08:30:00" 등에서 시간 숫자만 추출
             const match = timeStr.match(/(\d{1,2}):(\d{1,2})/);
             if (match) {
                 return `${match[1].padStart(2, '0')}:${match[2].padStart(2, '0')}`;
@@ -84,8 +81,6 @@
         window.openEditAttendance = function (name, date, infoEncoded) {
             const info = JSON.parse(decodeURIComponent(infoEncoded));
             const isSpecial = typeof info === 'string';
-            
-            // 시계창 입력을 위해 순수 시간(HH:mm) 포맷으로 변환
             const currentAttend = isSpecial ? "" : normalizeTime(info.attend || "");
             const currentLeave = isSpecial ? "" : normalizeTime(info.leave || "");
             const currentSpecial = isSpecial ? info : "";
@@ -142,9 +137,6 @@
             let attend = document.getElementById('editAttend').value.trim();
             const leave = document.getElementById('editLeave').value.trim();
             const special = document.getElementById('editSpecial').value;
-            
-            // 기존 데이터 포맷 유지를 위해 필요 시 "ATT(HH:mm)" 등으로 가공 가능
-            // 여기서는 깔끔하게 시간 정보만 저장하도록 구성했습니다.
             let updateData = special ? special : { attend: attend, leave: leave };
 
             if (confirm(`Update record for ${name} on ${date}?`)) {
@@ -162,10 +154,11 @@
             }
         };
 
-        window.renderAttendanceFull = function () {
+window.renderAttendanceFull = function () {
             const monthLabel = document.getElementById('full_att_month');
             const tbody = document.getElementById('full_att_calendar_body');
             if (!monthLabel || !tbody) { setTimeout(window.renderAttendanceFull, 100); return; }
+            
             monthLabel.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
             const attRef = db.ref('attendance');
             attRef.off();
@@ -174,59 +167,89 @@
                 const currentTbody = document.getElementById('full_att_calendar_body');
                 if (!currentTbody) { attRef.off(); return; }
                 currentTbody.innerHTML = '';
+                
                 const year = viewDate.getFullYear(), month = viewDate.getMonth();
-                const firstDay = new Date(year, month, 1).getDay();
                 const lastDate = new Date(year, month + 1, 0).getDate();
-                const todayStr = new Date().toISOString().split('T')[0];
+                
+                // 오늘 날짜 정보
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                const isCurrentMonth = (now.getFullYear() === year && now.getMonth() === month);
+                
                 const isMobile = window.innerWidth <= 768;
-                let dateNum = 1;
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
-                        if (i === 0 && j < firstDay || dateNum > lastDate) {
-                            row.appendChild(cell);
-                        } else {
-                            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
-                            const isToday = dStr === todayStr;
-                            const dayOfWeek = new Date(year, month, dateNum).toLocaleString('en-US', { weekday: 'long' });
-                            cell.className = isMobile ? `mobile-date-card ${isToday ? 'today-highlight' : ''}` : `transition-all ${isToday ? 'today-highlight' : ''}`;
-                            let content = `<div class="${isMobile ? 'mobile-card-header' : 'flex justify-between items-center mb-3'}"><div class="flex items-baseline gap-2"><span class="text-lg font-black ${isToday ? 'text-blue-400' : 'text-white'}">${dateNum}</span>${isMobile ? `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${dayOfWeek}</span>` : ''}</div>${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}</div>`;
-                            const dayRecords = data[dStr] || {};
-                            content += isMobile ? `<div class="mobile-record-list">` : `<div>`;
-                            const recordEntries = Object.entries(dayRecords);
-                            if (recordEntries.length > 0) {
-                                recordEntries.forEach(([name, info]) => {
-                                    let attHtml = '';
-                                    const safeInfo = encodeURIComponent(JSON.stringify(info));
-                                    if (typeof info === 'string') { attHtml = `<span class="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-500 font-black text-[10px] border border-amber-500/20">${info}</span>`; }
-                                    else {
-                                        const displayAttend = formatTimeShort(info.attend || "");
-                                        const displayLeave = formatTimeShort(info.leave || "");
-                                        const sClass = (info.attend || "").includes("LATE") ? "text-rose-500" : "text-emerald-500";
-                                        attHtml = `<div class="flex flex-col items-end gap-0.5"><span class="${sClass} font-black tracking-tighter">☀️ ${displayAttend}</span>${displayLeave ? `<span class="text-slate-400 font-black tracking-tighter">🌙 ${displayLeave}</span>` : ''}</div>`;
-                                    }
-                                    content += `<div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="attendance-record-item flex justify-between items-center p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-[0.98]"><span class="truncate font-black text-slate-200 text-[11px]" style="max-width: 55%">${name}</span>${attHtml}</div>`;
-                                });
-                            } else if (isMobile) {
-                                content += `<div class="text-[10px] text-slate-600 font-bold italic py-4 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-800">NO RECORDS</div>`;
-                            }
-                            content += `</div>`;
-                            cell.innerHTML = content;
-                            row.appendChild(cell);
-                            dateNum++;
-                        }
+
+                if (isMobile) {
+                    // 모바일: 오늘 날짜부터 역순으로 표시
+                    // 이번 달을 보고 있다면 '오늘'부터 시작, 이전 달을 보고 있다면 '말일'부터 시작
+                    let startDay = isCurrentMonth ? now.getDate() : lastDate;
+
+                    for (let d = startDay; d >= 1; d--) {
+                        createDateCell(d, year, month, data, todayStr, true, currentTbody);
                     }
-                    currentTbody.appendChild(row);
-                    if (dateNum > lastDate) break;
+                } else {
+                    // 데스크톱: 표준 그리드 (1일부터 표시)
+                    const firstDay = new Date(year, month, 1).getDay();
+                    let dateNum = 1;
+                    for (let i = 0; i < 6; i++) {
+                        let row = document.createElement('tr');
+                        for (let j = 0; j < 7; j++) {
+                            if (i === 0 && j < firstDay || dateNum > lastDate) {
+                                row.appendChild(document.createElement('td'));
+                            } else {
+                                createDateCell(dateNum, year, month, data, todayStr, false, row);
+                                dateNum++;
+                            }
+                        }
+                        currentTbody.appendChild(row);
+                        if (dateNum > lastDate) break;
+                    }
                 }
             });
         };
 
+        // Helper function to create the cell content to avoid duplication
+        function createDateCell(dateNum, year, month, data, todayStr, isMobile, parentElement) {
+            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
+            const isToday = dStr === todayStr;
+            const dayOfWeek = new Date(year, month, dateNum).toLocaleString('en-US', { weekday: 'long' });
+            
+            let cell = document.createElement('td');
+            cell.className = isMobile ? `mobile-date-card ${isToday ? 'today-highlight' : ''}` : `transition-all ${isToday ? 'today-highlight' : ''}`;
+            
+            let content = `<div class="${isMobile ? 'mobile-card-header' : 'flex justify-between items-center mb-3'}"><div class="flex items-baseline gap-2"><span class="text-lg font-black ${isToday ? 'text-blue-400' : 'text-white'}">${dateNum}</span>${isMobile ? `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${dayOfWeek}</span>` : ''}</div>${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}</div>`;
+            
+            const dayRecords = data[dStr] || {};
+            content += isMobile ? `<div class="mobile-record-list">` : `<div>`;
+            
+            const recordEntries = Object.entries(dayRecords);
+            if (recordEntries.length > 0) {
+                recordEntries.forEach(([name, info]) => {
+                    let attHtml = '';
+                    const safeInfo = encodeURIComponent(JSON.stringify(info));
+                    if (typeof info === 'string') { 
+                        attHtml = `<span class="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-500 font-black text-[10px] border border-amber-500/20">${info}</span>`; 
+                    } else {
+                        const displayAttend = formatTimeShort(info.attend || "");
+                        const displayLeave = formatTimeShort(info.leave || "");
+                        const sClass = (info.attend || "").includes("LATE") ? "text-rose-500" : "text-emerald-500";
+                        attHtml = `<div class="flex flex-col items-end gap-0.5"><span class="${sClass} font-black tracking-tighter">☀️ ${displayAttend}</span>${displayLeave ? `<span class="text-slate-400 font-black tracking-tighter">🌙 ${displayLeave}</span>` : ''}</div>`;
+                    }
+                    content += `<div onclick="window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="attendance-record-item flex justify-between items-center p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-[0.98]"><span class="truncate font-black text-slate-200 text-[11px]" style="max-width: 55%">${name}</span>${attHtml}</div>`;
+                });
+            } else if (isMobile) {
+                content += `<div class="text-[10px] text-slate-600 font-bold italic py-4 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-800">NO RECORDS</div>`;
+            }
+            content += `</div>`;
+            cell.innerHTML = content;
+            parentElement.appendChild(cell);
+        }
+
         window.changeFullMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderAttendanceFull(); };
         window.goTodayFull = () => { viewDate = new Date(); window.renderAttendanceFull(); };
+        
         let resizeTimer;
         window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(window.renderAttendanceFull, 250); });
+        
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', window.renderAttendanceFull);
         else window.renderAttendanceFull();
     })();
