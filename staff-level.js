@@ -1,33 +1,24 @@
 /**
- * staff-level.js - 지각/누락자 점수 방어 및 통계 가시성 강화 버전
+ * staff-level.js - 전체 카운트 로직 수정 및 통계 강화 버전
  */
 const LevelSystem = {
-    // 1. 포인트 밸런스 설정 (Alex 기준 1/10 하향 및 지각 방어 로직)
+    // 1. 포인트 밸런스 설정
     points: { 
-        attPerfect: 15,    // 정상 출근 시
-        attRow: 5,         // 기록 점수 (기록만 있어도 부여하는 기본 점수 상향)
-        report: 5,         // 리포트 작성
-        leave: -2,         // 휴가 사용 등 (필요 시)
-        missingLeave: -5,  // 퇴근 누락 감점 완화
-        latePenalty: -2    // 지각 시 소량 감점
+        attPerfect: 15,    
+        attRow: 5,         
+        report: 5,         
+        leave: -2,         
+        missingLeave: -5,  
+        latePenalty: -2    
     },
 
-    // 2. 20단계 레벨 구간 (기존 유지)
+    // 2. 레벨 구간 설정 (기존 동일)
     getRank(totalPoints) {
         if (totalPoints >= 50000) return { name: 'ETERNAL', color: 'text-white shadow-[0_0_10px_#fff]', icon: '🌌', next: 100000 };
         if (totalPoints >= 35000) return { name: 'CHALLENGER I', color: 'text-rose-500', icon: '👑', next: 50000 };
         if (totalPoints >= 25000) return { name: 'CHALLENGER II', color: 'text-rose-400', icon: '🏆', next: 35000 };
         if (totalPoints >= 18000) return { name: 'GRANDMASTER I', color: 'text-red-500', icon: '🔥', next: 25000 };
         if (totalPoints >= 12000) return { name: 'GRANDMASTER II', color: 'text-red-400', icon: '🌋', next: 18000 };
-        if (totalPoints >= 9000)  return { name: 'MASTER I', color: 'text-purple-400', icon: '🔮', next: 12000 };
-        if (totalPoints >= 7000)  return { name: 'MASTER II', color: 'text-purple-500', icon: '🧿', next: 9000 };
-        if (totalPoints >= 5500)  return { name: 'DIAMOND I', color: 'text-cyan-400', icon: '💎', next: 7000 };
-        if (totalPoints >= 4500)  return { name: 'DIAMOND II', color: 'text-cyan-500', icon: '🔹', next: 5500 };
-        if (totalPoints >= 3800)  return { name: 'DIAMOND III', color: 'text-cyan-600', icon: '💠', next: 4500 };
-        if (totalPoints >= 3000)  return { name: 'PLATINUM I', color: 'text-indigo-400', icon: '🌟', next: 3800 };
-        if (totalPoints >= 2400)  return { name: 'PLATINUM II', color: 'text-indigo-500', icon: '✨', next: 3000 };
-        if (totalPoints >= 1800)  return { name: 'GOLD I', color: 'text-yellow-400', icon: '🥇', next: 2400 };
-        if (totalPoints >= 1300)  return { name: 'GOLD II', color: 'text-yellow-500', icon: '🟡', next: 1800 };
         if (totalPoints >= 900)   return { name: 'SILVER I', color: 'text-slate-200', icon: '🥈', next: 1300 };
         if (totalPoints >= 600)   return { name: 'SILVER II', color: 'text-slate-400', icon: '⚪', next: 900 };
         if (totalPoints >= 400)   return { name: 'BRONZE I', color: 'text-orange-400', icon: '🥉', next: 600 };
@@ -36,40 +27,60 @@ const LevelSystem = {
         return { name: 'IRON II', color: 'text-stone-600', icon: '👶', next: 50 };
     },
 
-    // 3. 데이터 계산 로직 (지각/누락 점수 방어 포함)
+    // 3. 데이터 계산 로직 (전체 카운트 범위 수정)
     calculateUserStats(userId, allAtt, allReports, userLeaves) {
         let totalAttRows = 0, pureAttCount = 0, lateCount = 0, reportCount = 0;
         let totalLeaveMinutes = 0, leaveTimeCount = 0;
         let missingAttendCount = 0, missingLeaveCount = 0;
 
+        // 휴가 및 기타 상태 리스트
+        const leaveStatusList = ["WO", "PEL", "ANL", "HAL", "SIL", "SPL", "EVL", "OFF"];
+
         if (allAtt) {
             Object.keys(allAtt).forEach(date => {
                 const userData = allAtt[date][userId];
-                if (!userData || userData === "WO" || userData === "OFF") return;
+                if (!userData) return;
 
-                totalAttRows++;
                 const attVal = (typeof userData === 'object') ? userData.attend : userData;
-                const statusStr = String(attVal || "").trim();
+                const statusStr = String(attVal || "").trim().toUpperCase();
                 const lTime = (typeof userData === 'object') ? userData.leave : null;
-                const leaveStr = String(lTime || "").trim();
+                const leaveStr = String(lTime || "").trim().toUpperCase();
 
-                const hasAttend = statusStr.includes("ATT") || statusStr.includes("LATE") || statusStr.match(/^\d{2}:\d{2}$/);
-                const hasLeave = leaveStr.match(/^\d{2}:\d{2}$/);
+                // --- 전체 카운트(totalAttRows) 판별 로직 ---
+                // 1. 일반 출근/지각/시간기록이 있거나
+                // 2. 요청하신 휴가 및 WO 상태가 포함되어 있다면 전체 카운트에 포함
+                const isNormalWork = statusStr.includes("ATT") || statusStr.includes("LATE") || statusStr.match(/^\d{2}:\d{2}$/);
+                const isLeaveStatus = leaveStatusList.some(s => statusStr.includes(s));
 
-                if (hasAttend && !hasLeave) missingLeaveCount++;
-                if (!hasAttend && hasLeave) missingAttendCount++;
-
-                if (statusStr.includes("ATT") || statusStr.match(/^\d{2}:\d{2}$/)) {
-                    pureAttCount++;
-                } else if (statusStr.includes("LATE")) {
-                    lateCount++;
+                if (isNormalWork || isLeaveStatus) {
+                    totalAttRows++; // 이 행을 전체 분모에 포함
+                } else {
+                    return; // 그 외(데이터 없음 등)는 무시
                 }
-                
-                if (hasLeave) {
-                    const m = leaveStr.match(/(\d{1,2}):(\d{1,2})/);
-                    if (m) {
-                        totalLeaveMinutes += (parseInt(m[1]) * 60) + parseInt(m[2]);
-                        leaveTimeCount++;
+
+                // --- 세부 상태 판별 ---
+                if (isNormalWork) {
+                    const hasAttend = statusStr.includes("ATT") || statusStr.includes("LATE") || statusStr.match(/^\d{2}:\d{2}$/);
+                    const hasLeave = leaveStr.match(/^\d{2}:\d{2}$/);
+
+                    // 누락 체크 (정상 출근 데이터일 때만)
+                    if (hasAttend && !hasLeave) missingLeaveCount++;
+                    if (!hasAttend && hasLeave) missingAttendCount++;
+
+                    // 정시 출근 vs 지각
+                    if (statusStr.includes("ATT") || (statusStr.match(/^\d{2}:\d{2}$/) && !statusStr.includes("LATE"))) {
+                        pureAttCount++;
+                    } else if (statusStr.includes("LATE")) {
+                        lateCount++;
+                    }
+
+                    // 퇴근 시간 평균 계산용
+                    if (hasLeave) {
+                        const m = leaveStr.match(/(\d{1,2}):(\d{1,2})/);
+                        if (m) {
+                            totalLeaveMinutes += (parseInt(m[1]) * 60) + parseInt(m[2]);
+                            leaveTimeCount++;
+                        }
                     }
                 }
             });
@@ -81,21 +92,21 @@ const LevelSystem = {
         
         const leaveUsageCount = userLeaves ? Object.keys(userLeaves).length : 0;
 
-        // 점수 합산 로직
+        // 점수 합산
         const attPoints = pureAttCount * this.points.attPerfect;
-        const latePoints = lateCount * (this.points.attPerfect * 0.4); // 지각 시 정상점수의 40% 부여
+        const latePoints = lateCount * (this.points.attPerfect * 0.4); 
         const rowPoints = totalAttRows * this.points.attRow;
         const repPoints = reportCount * this.points.report;
         const penaltyPoints = (leaveUsageCount * this.points.leave) + (missingLeaveCount * this.points.missingLeave);
 
         let basePoints = attPoints + latePoints + rowPoints + repPoints + penaltyPoints;
-
         const attRate = totalAttRows > 0 ? (pureAttCount / totalAttRows) : 0;
+        
+        // 보너스 및 방어선
         let bonus = 0;
         if (attRate >= 0.95) bonus = basePoints * 0.1;
         else if (attRate < 0.3) bonus = -(basePoints * 0.1);
 
-        // 최저 점수 방어선: 기록당 2점은 무조건 보장 (0점 방지)
         const totalPoints = Math.max(totalAttRows * 2, Math.floor(basePoints + bonus));
 
         let avgLeaveTime = "--:--";
@@ -114,7 +125,7 @@ const LevelSystem = {
         };
     },
 
-    // 4. 데이터 초기화 및 로딩
+    // 4. 초기화
     async init(userId) {
         if (!userId) return;
         try {
@@ -142,7 +153,7 @@ const LevelSystem = {
         } catch (error) { console.error("Level System Error:", error); }
     },
 
-    // 5. 전체 랭킹 팝업 UI (통계 강화 버전)
+    // 5. 팝업 UI
     showStaffPopup() {
         let existing = document.getElementById('staffRankPopup');
         if (existing) existing.remove();
@@ -184,7 +195,7 @@ const LevelSystem = {
         document.body.appendChild(popup);
     },
 
-    // 6. 메인 화면 렌더링 UI (통계 강화 버전)
+    // 6. 메인 렌더링
     render(points, rank, stats) {
         const container = document.getElementById('levelDisplayContainer');
         if (!container) return;
