@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - DAILY SYSTEM</title>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+
     <style>
         body { font-family: "Pretendard", sans-serif; background-color: #000000; color: #f8fafc; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .tab-btn { transition: all 0.3s; position: relative; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
@@ -23,11 +25,28 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-profile-img { width: 60px !important; height: 60px !important; border-radius: 50%; border: 2px solid #334155; object-fit: cover; display: block; margin-bottom: 8px; transition: all 0.3s ease; }
-        @media (min-width: 1024px) { .nav-profile-img { width: 100px !important; height: 100px !important; } }
+
+        .nav-profile-img {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50%;
+            border: 2px solid #334155;
+            object-fit: cover;
+            display: block;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 1024px) {
+            .nav-profile-img {
+                width: 100px !important;
+                height: 100px !important;
+            }
+        }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
+
     <aside class="w-full lg:w-72 lg:h-screen bg-black/50 border-b lg:border-b-0 lg:border-r border-slate-800 backdrop-blur-xl sticky top-0 z-[100] flex-shrink-0">
         <div class="p-4 lg:p-8 flex flex-col h-full">
             <div class="flex lg:flex-col justify-between items-center lg:items-start gap-4 mb-6 lg:mb-12">
@@ -40,6 +59,7 @@
                 </div>
                 <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase">Logout</button>
             </div>
+
             <nav class="flex lg:flex-col gap-1 overflow-x-auto no-scrollbar pb-2 lg:pb-0 flex-grow">
                 <button onclick="switchTab('dash')" id="tabDash" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active">
                     <span class="lg:inline hidden">🏠</span> Dashboard
@@ -56,16 +76,15 @@
                 <button onclick="switchTab('statistic')" id="tabStatistic" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">📈</span> Statistics
                 </button>
-                <button onclick="switchTab('game')" id="tabGame" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
-                    <span class="lg:inline hidden">🎮</span> Game
-                </button>
                 <button onclick="switchTab('setting')" id="tabSetting" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive">
                     <span class="lg:inline hidden">⚙️</span> Settings
                 </button>
+                
                 <a href="https://tdlid.github.io" target="_blank" class="tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all">
                     <span class="lg:inline hidden">🌐</span> TDLiD Homepage
                 </a>
             </nav>
+
             <div class="hidden lg:block pt-4 mt-4 border-t border-slate-800/50">
                 <p class="text-[9px] text-slate-600 font-bold tracking-widest uppercase mb-2 ml-4">External Link</p>
                 <a href="https://tdlid.github.io" target="_blank" class="flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-colors bg-slate-900/50 rounded-xl border border-slate-800">
@@ -74,6 +93,7 @@
             </div>
         </div>
     </aside>
+
     <main class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden p-4 lg:p-10">
         <div class="max-w-[1400px] w-full mx-auto">
             <div id="contentFrame" class="animate-fadeIn">
@@ -84,79 +104,119 @@
             <div id="footerContainer" class="mt-12 opacity-50"></div>
         </div>
     </main>
-    <script>
+
+ <script>
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser) { location.href = "index.html"; }
+        
         const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        if (loggedInUser) {
-            if (document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+        
+        if(loggedInUser) {
+            if(document.getElementById('desktopUser')) document.getElementById('desktopUser').innerText = "Staff: " + loggedInUser;
+            
             firebase.database().ref('users/' + loggedInUser).on('value', snap => {
                 const userData = snap.val();
                 const profileImg = userData?.profileImg || '1.webp';
                 const emojiContainer = document.getElementById('navEmojiContainer');
-                if (emojiContainer) {
-                    emojiContainer.innerHTML = `<img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl">`;
+                
+                if(emojiContainer) {
+                    emojiContainer.innerHTML = `
+                        <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl">
+                    `;
                 }
             });
         }
-        function switchTab(type) {
-            const tabs = {
-                'dash': document.getElementById('tabDash'),
-                'schedule': document.getElementById('tabSchedule'),
-                'leave': document.getElementById('tabLeave'),
-                'work': document.getElementById('tabWork'),
-                'statistic': document.getElementById('tabStatistic'),
-                'game': document.getElementById('tabGame'), // 추가
-                'setting': document.getElementById('tabSetting')
-            };
-            Object.values(tabs).forEach(tab => {
-                if (tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
-            });
-            if (tabs[type]) {
-                tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
-                tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-            const urls = {
-                'dash': 'staff_main.html',
-                'schedule': 'staff_calendar.html',
-                'leave': 'staff_leave.html',
-                'work': 'staff_report.html',
-                'statistic': 'staff_statistic.html',
-                'game': 'staff_game_bricks.html', // 추가한 게임 파일명
-                'setting': 'staff_setting.html',
-                'all': 'staff_allatt.html'
-            };
-            loadHTML(urls[type], function () {
-                if (type === 'leave' && typeof window.initLeavePage === 'function') {
-                    window.initLeavePage();
-                } else if (type === 'dash' && typeof window.initDashboard === 'function') {
-                    window.initDashboard();
-                }
-            });
+
+function switchTab(type) {
+    const tabs = {
+        'dash': document.getElementById('tabDash'),
+        'schedule': document.getElementById('tabSchedule'),
+        'leave': document.getElementById('tabLeave'),
+        'work': document.getElementById('tabWork'),
+        'statistic': document.getElementById('tabStatistic'),
+        'setting': document.getElementById('tabSetting')
+    };
+    
+    // 모든 탭 비활성화 스타일 적용
+    Object.values(tabs).forEach(tab => {
+        if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
+    });
+    
+    // 선택된 탭 활성화 스타일 적용
+    if(tabs[type]) {
+        tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
+        tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    
+    const urls = {
+        'dash': 'staff_main.html',
+        'schedule': 'staff_calendar.html',
+        'leave': 'staff_leave.html',
+        'work': 'staff_report.html',
+        'statistic': 'staff_statistic.html',
+        'setting': 'staff_setting.html',
+'all': 'staff_allatt.html' // <--- 이 줄을 반드시 추가하세요!
+    };
+
+    // [수정 핵심] loadHTML이 완료된 후 각 페이지의 초기화 함수를 실행
+    loadHTML(urls[type], function() {
+        if (type === 'leave' && typeof window.initLeavePage === 'function') {
+            window.initLeavePage();
+        } else if (type === 'dash' && typeof window.initDashboard === 'function') {
+            // 다른 탭들도 초기화 함수가 있다면 여기에 추가
+            window.initDashboard();
         }
-        async function loadHTML(url, callback) {
-            try {
-                if (!url) { console.error("Error: URL is undefined or empty"); return; }
-                const frame = document.getElementById('contentFrame');
-                const response = await fetch(url);
-                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
-                const text = await response.text();
-                frame.innerHTML = text;
-                const footerContainer = document.getElementById('footerContainer');
-                if (!footerContainer.innerHTML) {
-                    const footerRes = await fetch('staff_footer.html');
-                    const footerText = await footerRes.text();
-                    footerContainer.innerHTML = footerText;
-                    executeScripts(footerContainer);
-                }
-                executeScripts(frame);
-                if (typeof callback === 'function') { callback(); }
-            } catch (e) {
-                console.error("Failed to load page:", e);
-                document.getElementById('contentFrame').innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
-            }
+        // 추가로 필요한 페이지별 초기화 로직...
+    });
+}
+
+
+async function loadHTML(url, callback) { // 1. callback 인자 추가
+    try {
+        // 2. url이 undefined이거나 비어있을 경우 예외 처리
+        if (!url) {
+            console.error("Error: URL is undefined or empty");
+            return;
         }
+
+        const frame = document.getElementById('contentFrame');
+        const response = await fetch(url);
+        
+        // 3. fetch 결과가 성공적이지 않을 때 처리
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        frame.innerHTML = text;
+        
+        const footerContainer = document.getElementById('footerContainer');
+        if (!footerContainer.innerHTML) {
+            const footerRes = await fetch('staff_footer.html');
+            const footerText = await footerRes.text();
+            footerContainer.innerHTML = footerText;
+            executeScripts(footerContainer);
+        }
+
+        executeScripts(frame);
+
+        // 4. 페이지 로드 및 스크립트 실행 후 콜백 함수가 있으면 실행
+        if (typeof callback === 'function') {
+            callback();
+        }
+        
+    } catch (e) { 
+        console.error("Failed to load page:", e); 
+        // 사용자에게 에러 표시 (선택 사항)
+        document.getElementById('contentFrame').innerHTML = 
+            `<div class="p-10 text-center text-rose-500 font-bold uppercase">
+                File Not Found: ${url}
+            </div>`;
+    }
+}
+
+
         function executeScripts(container) {
             const scripts = container.querySelectorAll('script');
             scripts.forEach(oldScript => {
@@ -170,33 +230,41 @@
                 document.head.appendChild(newScript).parentNode.removeChild(newScript);
             });
         }
-        function logout() {
-            if (confirm("정말 로그아웃 하시겠습니까?")) {
-                sessionStorage.clear();
-                location.href = "index.html";
+
+        function logout() { 
+            if(confirm("정말 로그아웃 하시겠습니까?")) {
+                sessionStorage.clear(); 
+                location.href = "index.html"; 
             }
         }
-        (function () {
+
+        (function() {
             let timeoutTimer;
-            const INACTIVITY_TIME = 10 * 60 * 1000;
+            const INACTIVITY_TIME = 10 * 60 * 1000; 
+
             function autoLogout() {
                 alert("일정 시간 동안 활동이 없어 보안을 위해 자동 로그아웃됩니다.");
                 sessionStorage.clear();
                 location.href = "index.html";
             }
+
             function resetTimer() {
                 clearTimeout(timeoutTimer);
                 timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
             }
+
             window.onload = resetTimer;
             window.onmousemove = resetTimer;
-            window.onmousedown = resetTimer;
+            window.onmousedown = resetTimer; 
             window.ontouchstart = resetTimer;
             window.onclick = resetTimer;
             window.onkeypress = resetTimer;
             window.addEventListener('scroll', resetTimer, true);
         })();
+
         switchTab('dash');
     </script>
+<script src="https://cdn.tailwindcss.com"></script>
+
 </body>
 </html>
