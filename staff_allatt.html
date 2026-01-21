@@ -52,29 +52,68 @@
         </div>
     </div>
 </div>
+
 <script>
     (function() {
         const db = firebase.database();
         let viewDate = new Date();
+
         function formatTime(timeStr) {
             if (!timeStr) return "";
             const parts = timeStr.split(':');
             if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
             return timeStr;
         }
+
         window.changeAllMonth = function(offset) {
             viewDate.setMonth(viewDate.getMonth() + offset);
             renderAllStaffCalendar();
         };
+
         window.goTodayAll = function() {
             viewDate = new Date();
             renderAllStaffCalendar();
         };
+
+        // 날짜 셀 생성을 위한 헬퍼 함수
+        function createAllStaffDateCell(dateNum, year, month, attData, users, todayStr, isMobile, parentElement) {
+            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
+            const isToday = dStr === todayStr;
+            const dayOfWeek = new Date(year, month, dateNum).getDay(); // 0:일, 6:토
+            
+            let cell = document.createElement('td');
+            cell.className = isMobile ? `mobile-date-card ${isToday ? 'today-highlight' : ''}` : `border border-slate-800 md:min-h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''}`;
+            
+            let content = `<div class="flex justify-between items-center mb-2"><span class="text-[11px] font-black ${isToday ? 'text-blue-400' : (dayOfWeek===0?'text-rose-500':dayOfWeek===6?'text-blue-500':'text-slate-500')}">${dateNum}</span>${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">TODAY</span>' : ''}</div>`;
+            
+            const dayRecords = attData[dStr] || {};
+            Object.keys(users).forEach(uid => {
+                if (users[uid].role === 'admin' || uid.toLowerCase() === 'admin') return;
+                const info = dayRecords[uid];
+                if(info) {
+                    let attHtml = '';
+                    if (typeof info === 'string') {
+                        attHtml = `<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-black text-[9px] border border-amber-500/20">${info}</span>`;
+                    } else {
+                        const attend = info.attend || "";
+                        const leave = info.leave || "";
+                        const sClass = attend.includes("LATE") ? "text-rose-500" : (attend.includes("ATT") ? "text-emerald-500" : "text-slate-500");
+                        attHtml = `<div class="flex flex-col items-end gap-0"><span class="${sClass} font-black tracking-tighter scale-90 origin-right">☀️ ${formatTime(attend)}</span><span class="text-slate-400 font-black tracking-tighter scale-90 origin-right">🌙 ${formatTime(leave) || '--:--'}</span></div>`;
+                    }
+                    content += `<div class="attendance-record-item flex justify-between items-center text-[10px] mb-1 bg-slate-800/40 p-1.5 rounded-xl border border-slate-700/30 gap-2"><span class="truncate font-black text-slate-300" style="max-width: 45%">${uid}</span>${attHtml}</div>`;
+                }
+            });
+            cell.innerHTML = content;
+            parentElement.appendChild(cell);
+        }
+
         window.renderAllStaffCalendar = function() {
             const monthLabel = document.getElementById('allMonthYear');
             const tbody = document.getElementById('allStaffCalendarBody');
             if (!monthLabel || !tbody) return;
+            
             monthLabel.innerText = viewDate.toLocaleString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+            
             Promise.all([
                 db.ref('users').once('value'),
                 db.ref('attendance').once('value')
@@ -82,50 +121,42 @@
                 const users = userSnap.val() || {};
                 const attData = attSnap.val() || {};
                 tbody.innerHTML = '';
+                
                 const year = viewDate.getFullYear(), month = viewDate.getMonth();
-                const firstDay = new Date(year, month, 1).getDay();
                 const lastDate = new Date(year, month + 1, 0).getDate();
-                const todayStr = new Date().toISOString().split('T')[0];
+                
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                const isCurrentMonth = (now.getFullYear() === year && now.getMonth() === month);
                 const isMobile = window.innerWidth <= 768;
-                let dateNum = 1;
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
-                        if (i === 0 && j < firstDay || dateNum > lastDate) { 
-                            row.appendChild(cell); 
-                        } else {
-                            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-                            const isToday = dStr === todayStr;
-                            cell.className = isMobile ? `mobile-date-card ${isToday ? 'today-highlight' : ''}` : `border border-slate-800 md:min-h-32 p-2 vertical-top align-top transition-all ${isToday ? 'today-highlight' : ''}`;
-                            let content = `<div class="flex justify-between items-center mb-2"><span class="text-[11px] font-black ${isToday ? 'text-blue-400' : (j===0?'text-rose-500':j===6?'text-blue-500':'text-slate-500')}">${dateNum}</span>${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">TODAY</span>' : ''}</div>`;
-                            const dayRecords = attData[dStr] || {};
-                            Object.keys(users).forEach(uid => {
-                                if (users[uid].role === 'admin' || uid.toLowerCase() === 'admin') return;
-                                const info = dayRecords[uid];
-                                if(info) {
-                                    let attHtml = '';
-                                    if (typeof info === 'string') {
-                                        attHtml = `<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-black text-[9px] border border-amber-500/20">${info}</span>`;
-                                    } else {
-                                        const attend = info.attend || "";
-                                        const leave = info.leave || "";
-                                        const sClass = attend.includes("LATE") ? "text-rose-500" : (attend.includes("ATT") ? "text-emerald-500" : "text-slate-500");
-                                        attHtml = `<div class="flex flex-col items-end gap-0"><span class="${sClass} font-black tracking-tighter scale-90 origin-right">☀️ ${formatTime(attend)}</span><span class="text-slate-400 font-black tracking-tighter scale-90 origin-right">🌙 ${formatTime(leave) || '--:--'}</span></div>`;
-                                    }
-                                    content += `<div class="attendance-record-item flex justify-between items-center text-[10px] mb-1 bg-slate-800/40 p-1.5 rounded-xl border border-slate-700/30 gap-2"><span class="truncate font-black text-slate-300" style="max-width: 45%">${uid}</span>${attHtml}</div>`;
-                                }
-                            });
-                            cell.innerHTML = content;
-                            row.appendChild(cell);
-                            dateNum++;
-                        }
+
+                if (isMobile) {
+                    // 모바일: 오늘(또는 말일)부터 역순 표시, 미래 날짜 숨김
+                    let startDay = isCurrentMonth ? now.getDate() : lastDate;
+                    for (let d = startDay; d >= 1; d--) {
+                        createAllStaffDateCell(d, year, month, attData, users, todayStr, true, tbody);
                     }
-                    tbody.appendChild(row);
-                    if (dateNum > lastDate) break;
+                } else {
+                    // 데스크톱: 표준 그리드 (1일부터 표시)
+                    const firstDay = new Date(year, month, 1).getDay();
+                    let dateNum = 1;
+                    for (let i = 0; i < 6; i++) {
+                        let row = document.createElement('tr');
+                        for (let j = 0; j < 7; j++) {
+                            if (i === 0 && j < firstDay || dateNum > lastDate) { 
+                                row.appendChild(document.createElement('td')); 
+                            } else {
+                                createAllStaffDateCell(dateNum, year, month, attData, users, todayStr, false, row);
+                                dateNum++;
+                            }
+                        }
+                        tbody.appendChild(row);
+                        if (dateNum > lastDate) break;
+                    }
                 }
             });
         };
+
         window.renderAllStaffCalendar();
         window.addEventListener('resize', window.renderAllStaffCalendar);
     })();
