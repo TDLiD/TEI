@@ -60,11 +60,19 @@
             </div>
             <div id="adminLeaveCalendarContainer" class="overflow-x-auto"></div>
         </div>
-        <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
-            <h3 class="text-sm font-black text-white mb-4 uppercase italic flex items-center gap-2">
-                <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                Staff Leave Statistics (Current Year)
-            </h3>
+
+<div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-sm font-black text-white uppercase italic flex items-center gap-2">
+            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+            <span id="statsTitle">Staff Leave Statistics (Yearly)</span>
+        </h3>
+        <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+            <button onclick="toggleStatsMode('year')" id="btnStatYear" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all bg-indigo-600 text-white">YEAR</button>
+            <button onclick="toggleStatsMode('month')" id="btnStatMonth" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all text-slate-400 hover:text-white">MONTH</button>
+        </div>
+    </div>
+
             <div id="staffStatsContainer" class="overflow-x-auto">
                 <table class="stats-table">
                     <thead>
@@ -129,16 +137,29 @@
             const db = firebase.database();
             window.adminDb = db;
             let currentViewDate = new Date();
+
+let statsMode = 'year'; // 'year' 또는 'month'
+
+window.toggleStatsMode = function(mode) {
+    statsMode = mode;
+    // 버튼 스타일 업데이트
+    getEl('btnStatYear').className = mode === 'year' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+    getEl('btnStatMonth').className = mode === 'month' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+    
+    // 달력 렌더링 시 통계도 다시 계산됨
+    renderAdminCalendar();
+};
+
             let currentEditRef = null;
             let currentLeaveData = null;       
             let currentUid = null;        
             const leaveTypes = ["PEL", "ANL", "HAL", "SIL", "SPL"];
             const getEl = (id) => document.getElementById(id);
-            window.initAdminLeave = function() {
-                if (!getEl('adminLeaveCalendarContainer')) return;
-                loadPendingRequests();
-                renderAdminCalendar();
-            };
+window.initAdminLeave = function() {
+    if (!getEl('adminLeaveCalendarContainer')) return;
+    loadPendingRequests();
+    toggleStatsMode('year'); // 초기 통계 모드 설정 및 렌더링 호출
+};
             window.goToToday = function() {
                 currentViewDate = new Date();
                 renderAdminCalendar();
@@ -255,28 +276,42 @@
                     console.error("Calendar Render Error:", error);
                 }
             };
-            function calculateStats(attData, year) {
-                const statsBody = getEl('staffStatsBody');
-                if (!statsBody) return;
-                let stats = {};
-                Object.entries(attData).forEach(([date, dayLogs]) => {
-                    if (date.startsWith(year.toString())) {
-                        Object.entries(dayLogs).forEach(([staffName, status]) => {
-                            if (leaveTypes.includes(status)) {
-                                if (!stats[staffName]) stats[staffName] = { PEL:0, ANL:0, HAL:0, SIL:0, SPL:0, total:0 };
-                                stats[staffName][status]++;
-                                stats[staffName].total++;
-                            }
-                        });
-                    }
-                });
-                statsBody.innerHTML = Object.entries(stats).map(([name, s]) => `
-                    <tr class="hover:bg-white/5 transition border-b border-slate-800/50">
-                        <td class="font-bold text-white py-3">${name}</td>
-                        <td>${s.PEL}</td><td>${s.ANL}</td><td>${s.HAL}</td><td>${s.SIL}</td><td>${s.SPL}</td>
-                        <td class="font-black text-indigo-400">${s.total}</td>
-                    </tr>`).join('');
-            }
+
+function calculateStats(attData, year) {
+    const statsBody = getEl('staffStatsBody');
+    const statsTitle = getEl('statsTitle');
+    if (!statsBody) return;
+
+    const currentMonth = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+    const filterPrefix = statsMode === 'year' ? year.toString() : `${year}-${currentMonth}`;
+    
+    // 제목 업데이트
+    statsTitle.innerText = statsMode === 'year' ? `Staff Leave Statistics (${year})` : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
+
+    let stats = {};
+    Object.entries(attData).forEach(([date, dayLogs]) => {
+        // 모드에 따라 년도(YYYY) 또는 년-월(YYYY-MM)로 필터링
+        if (date.startsWith(filterPrefix)) {
+            Object.entries(dayLogs).forEach(([staffName, status]) => {
+                if (leaveTypes.includes(status)) {
+                    if (!stats[staffName]) stats[staffName] = { PEL:0, ANL:0, HAL:0, SIL:0, SPL:0, total:0 };
+                    stats[staffName][status]++;
+                    stats[staffName].total++;
+                }
+            });
+        }
+    });
+
+    statsBody.innerHTML = Object.keys(stats).length > 0 
+        ? Object.entries(stats).map(([name, s]) => `
+            <tr class="hover:bg-white/5 transition border-b border-slate-800/50">
+                <td class="font-bold text-white py-3">${name}</td>
+                <td>${s.PEL}</td><td>${s.ANL}</td><td>${s.HAL}</td><td>${s.SIL}</td><td>${s.SPL}</td>
+                <td class="font-black text-indigo-400">${s.total}</td>
+            </tr>`).join('')
+        : `<tr><td colspan="7" class="py-8 text-center text-slate-600 font-bold italic text-xs">No data for this ${statsMode}.</td></tr>`;
+}
+
             window.openLeaveAdminModal = function(uid, year, id, data) {
                 const modal = getEl('leaveAdminModal');
                 if (!modal) return;
