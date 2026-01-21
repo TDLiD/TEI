@@ -4,11 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Login - Daily Report System</title>
+    
+    <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    
     <style>
-        body { font-family: "Pretendard", sans-serif; color: #f1f5f9; -webkit-tap-highlight-color: transparent; margin: 0; overflow-x: hidden; background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat; transition: background 0.5s ease-in-out; }
+        body { 
+            font-family: "Pretendard", sans-serif; 
+            color: #f1f5f9; 
+            -webkit-tap-highlight-color: transparent; 
+            margin: 0; 
+            overflow-x: hidden; 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            background-repeat: no-repeat; 
+            transition: background 0.5s ease-in-out;
+            opacity: 0;
+        }
+        body.loaded { opacity: 1; transition: opacity 0.5s ease-in; }
         #video-bg { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -2; transform: translate(-50%, -50%); object-fit: cover; display: none; }
         .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: -1; }
         select, input { background-color: rgba(30, 41, 59, 0.7) !important; backdrop-filter: blur(10px); color: white !important; border-color: rgba(51, 65, 85, 0.5) !important; font-size: 16px !important; }
@@ -22,6 +38,7 @@
         <source src="images/gif/jennie.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
+
     <div class="text-center mb-8 md:mb-12 animate-fadeIn w-full max-w-lg">
         <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
             <img src="images/login/login.gif" alt="Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain">
@@ -35,6 +52,7 @@
             </div>
         </div>
     </div>
+
     <div class="login-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-[440px] animate-fadeIn" style="animation-delay: 0.2s;">
         <div class="mb-8 text-center md:text-left">
             <p class="text-slate-200 text-xl md:text-2xl font-bold">Welcome back</p>
@@ -66,8 +84,13 @@
             </div>
         </div>
     </div>
+
     <script>
         (function() {
+            window.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('loaded');
+            });
+
             const setResponsiveBackground = () => {
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 const videoEl = document.getElementById('video-bg');
@@ -82,15 +105,20 @@
                     document.body.style.backgroundImage = 'none';
                 }
             };
+
             setResponsiveBackground();
+
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
+            
             const userSelect = document.getElementById('userName');
             const passwordInput = document.getElementById('password');
+
             passwordInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
             });
+
             database.ref('users').once('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!userSelect) return;
@@ -106,6 +134,7 @@
                     userSelect.appendChild(fragment);
                 }
             });
+
             window.handleLogin = function() {
                 const name = document.getElementById('userName').value;
                 const pw = document.getElementById('password').value;
@@ -120,6 +149,7 @@
                     } else { alert("Incorrect password."); }
                 });
             };
+
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;
                 if (!name) return alert("Please select your name from the list first.");
@@ -136,6 +166,5 @@
             };
         })();
     </script>
-    <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
 </body>
 </html>

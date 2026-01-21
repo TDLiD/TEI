@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - DAILY SYSTEM</title>
-<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
-
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
@@ -105,7 +106,7 @@
         </div>
     </main>
 
- <script>
+    <script>
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser) { location.href = "index.html"; }
         
@@ -128,94 +129,83 @@
             });
         }
 
-function switchTab(type) {
-    const tabs = {
-        'dash': document.getElementById('tabDash'),
-        'schedule': document.getElementById('tabSchedule'),
-        'leave': document.getElementById('tabLeave'),
-        'work': document.getElementById('tabWork'),
-        'statistic': document.getElementById('tabStatistic'),
-        'setting': document.getElementById('tabSetting')
-    };
-    
-    // 모든 탭 비활성화 스타일 적용
-    Object.values(tabs).forEach(tab => {
-        if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
-    });
-    
-    // 선택된 탭 활성화 스타일 적용
-    if(tabs[type]) {
-        tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
-        tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-    
-    const urls = {
-        'dash': 'staff_main.html',
-        'schedule': 'staff_calendar.html',
-        'leave': 'staff_leave.html',
-        'work': 'staff_report.html',
-        'statistic': 'staff_statistic.html',
-        'setting': 'staff_setting.html',
-'all': 'staff_allatt.html' // <--- 이 줄을 반드시 추가하세요!
-    };
+        function switchTab(type) {
+            const tabs = {
+                'dash': document.getElementById('tabDash'),
+                'schedule': document.getElementById('tabSchedule'),
+                'leave': document.getElementById('tabLeave'),
+                'work': document.getElementById('tabWork'),
+                'statistic': document.getElementById('tabStatistic'),
+                'setting': document.getElementById('tabSetting')
+            };
+            
+            Object.values(tabs).forEach(tab => {
+                if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
+            });
+            
+            if(tabs[type]) {
+                tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
+                tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+            
+            const urls = {
+                'dash': 'staff_main.html',
+                'schedule': 'staff_calendar.html',
+                'leave': 'staff_leave.html',
+                'work': 'staff_report.html',
+                'statistic': 'staff_statistic.html',
+                'setting': 'staff_setting.html',
+                'all': 'staff_allatt.html'
+            };
 
-    // [수정 핵심] loadHTML이 완료된 후 각 페이지의 초기화 함수를 실행
-    loadHTML(urls[type], function() {
-        if (type === 'leave' && typeof window.initLeavePage === 'function') {
-            window.initLeavePage();
-        } else if (type === 'dash' && typeof window.initDashboard === 'function') {
-            // 다른 탭들도 초기화 함수가 있다면 여기에 추가
-            window.initDashboard();
-        }
-        // 추가로 필요한 페이지별 초기화 로직...
-    });
-}
-
-
-async function loadHTML(url, callback) { // 1. callback 인자 추가
-    try {
-        // 2. url이 undefined이거나 비어있을 경우 예외 처리
-        if (!url) {
-            console.error("Error: URL is undefined or empty");
-            return;
+            loadHTML(urls[type], function() {
+                if (type === 'leave' && typeof window.initLeavePage === 'function') {
+                    window.initLeavePage();
+                } else if (type === 'dash' && typeof window.initDashboard === 'function') {
+                    window.initDashboard();
+                }
+            });
         }
 
-        const frame = document.getElementById('contentFrame');
-        const response = await fetch(url);
-        
-        // 3. fetch 결과가 성공적이지 않을 때 처리
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        async function loadHTML(url, callback) {
+            try {
+                if (!url) {
+                    console.error("Error: URL is undefined or empty");
+                    return;
+                }
+
+                const frame = document.getElementById('contentFrame');
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const text = await response.text();
+                frame.innerHTML = text;
+                
+                const footerContainer = document.getElementById('footerContainer');
+                if (!footerContainer.innerHTML) {
+                    const footerRes = await fetch('staff_footer.html');
+                    const footerText = await footerRes.text();
+                    footerContainer.innerHTML = footerText;
+                    executeScripts(footerContainer);
+                }
+
+                executeScripts(frame);
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
+                
+            } catch (e) { 
+                console.error("Failed to load page:", e); 
+                document.getElementById('contentFrame').innerHTML = 
+                    `<div class="p-10 text-center text-rose-500 font-bold uppercase">
+                        File Not Found: ${url}
+                    </div>`;
+            }
         }
-
-        const text = await response.text();
-        frame.innerHTML = text;
-        
-        const footerContainer = document.getElementById('footerContainer');
-        if (!footerContainer.innerHTML) {
-            const footerRes = await fetch('staff_footer.html');
-            const footerText = await footerRes.text();
-            footerContainer.innerHTML = footerText;
-            executeScripts(footerContainer);
-        }
-
-        executeScripts(frame);
-
-        // 4. 페이지 로드 및 스크립트 실행 후 콜백 함수가 있으면 실행
-        if (typeof callback === 'function') {
-            callback();
-        }
-        
-    } catch (e) { 
-        console.error("Failed to load page:", e); 
-        // 사용자에게 에러 표시 (선택 사항)
-        document.getElementById('contentFrame').innerHTML = 
-            `<div class="p-10 text-center text-rose-500 font-bold uppercase">
-                File Not Found: ${url}
-            </div>`;
-    }
-}
-
 
         function executeScripts(container) {
             const scripts = container.querySelectorAll('script');
@@ -232,7 +222,7 @@ async function loadHTML(url, callback) { // 1. callback 인자 추가
         }
 
         function logout() { 
-            if(confirm("정말 로그아웃 하시겠습니까?")) {
+            if(confirm("Are you sure you want to log out?")) {
                 sessionStorage.clear(); 
                 location.href = "index.html"; 
             }
@@ -243,7 +233,7 @@ async function loadHTML(url, callback) { // 1. callback 인자 추가
             const INACTIVITY_TIME = 10 * 60 * 1000; 
 
             function autoLogout() {
-                alert("일정 시간 동안 활동이 없어 보안을 위해 자동 로그아웃됩니다.");
+                alert("You have been automatically logged out due to inactivity for security reasons.");
                 sessionStorage.clear();
                 location.href = "index.html";
             }
@@ -264,7 +254,5 @@ async function loadHTML(url, callback) { // 1. callback 인자 추가
 
         switchTab('dash');
     </script>
-<script src="https://cdn.tailwindcss.com"></script>
-
 </body>
 </html>
