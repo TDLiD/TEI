@@ -22,13 +22,19 @@
             .mobile-header { display: flex !important; }
             .mobile-nav { display: grid !important; }
         }
+        /* 프로필 이미지 선택기 스타일 */
+        .profile-picker-item { transition: all 0.2s; border: 2px solid transparent; }
+        .profile-picker-item:hover { transform: scale(1.05); border-color: #3b82f6; }
     </style>
 </head>
 <body class="flex min-h-screen">
     <header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-                <img src="images/profile/admin.gif" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+            <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
+                <div class="w-8 h-8 rounded-full border border-slate-700 overflow-hidden bg-slate-800">
+<img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[6px] shadow-lg">✏️</div>
             </div>
             <h1 class="text-md font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
         </div>
@@ -42,12 +48,17 @@
         <div class="mb-10">
             <h1 class="text-2xl font-black italic mb-6">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
             <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-lg shadow-blue-500/10">
-                    <img src="images/profile/admin.gif" alt="Admin" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                <div class="relative group cursor-pointer shadow-lg" onclick="openProfileImagePicker()">
+                    <div class="w-12 h-12 rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-blue-500/10 transition-transform group-hover:scale-105">
+<img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                    </div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[10px] shadow-lg group-hover:bg-blue-500 transition-colors">
+                        ✏️
+                    </div>
                 </div>
                 <div class="overflow-hidden">
                     <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
-                    <div class="text-sm font-black text-white truncate">MASTER MANAGER</div>
+                    <div class="text-sm font-black text-white truncate uppercase">Master Manager</div>
                     <div class="inline-flex items-center gap-1.5 mt-1">
                         <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                         <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
@@ -94,6 +105,7 @@
     </div>
 
     <script>
+        // 1. Firebase Initialize
         (function () {
             if (!window.firebase) return;
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
@@ -101,6 +113,7 @@
             if (!window.db) window.db = firebase.database();
         })();
 
+        // 2. Modal Functions
         (function () {
             const openFn = function (titleHtml, bodyHtml) {
                 const modal = document.getElementById('adminCustomModal');
@@ -121,17 +134,73 @@
             Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false });
         })();
 
+// 3. Profile Image Selection & Save Function
+const PROFILE_IMAGES = [
+    '1.gif', '1.webp', 
+    '2.gif', '2.webp', 
+    '3.gif', '3.webp', 
+    '4.gif', '5.gif', '6.gif'
+];
+
+        window.openProfileImagePicker = function() {
+            let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
+            PROFILE_IMAGES.forEach(img => {
+                gridHtml += `
+                    <div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md">
+                        <img src="images/profile/admin/${img}" class="w-full h-full object-cover aspect-square" alt="profile">
+                    </div>`;
+            });
+            gridHtml += `</div>`;
+            openAdminCustomModal('Select Admin Profile', gridHtml);
+        };
+
+        window.saveAdminProfile = function(imgName) {
+            const path = `images/profile/admin/${imgName}`;
+            if(!confirm("Would you like to change your admin profile to this image?")) return;
+
+            db.ref('admin_settings/profile').update({
+                profileImg: path,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                closeAdminCustomModal();
+                alert("Your profile has been successfully changed.");
+            }).catch(e => {
+                console.error(e);
+                alert("저장 실패");
+            });
+        };
+
+        // 4. Real-time Profile Sync
+        (function initProfileSync() {
+            setTimeout(() => {
+                if (window.db) {
+                    db.ref('admin_settings/profile/profileImg').on('value', snap => {
+                        const imgUrl = snap.val();
+                        if (imgUrl) {
+                            document.querySelectorAll('.admin-profile-img').forEach(img => {
+                                img.src = imgUrl;
+                            });
+                        }
+                    });
+                }
+            }, 500);
+        })();
+
+        // 5. Tab Switching Logic
         async function switchAdminTab(tab) {
             try {
                 document.body.style.overflow = '';
                 if (window.closeAdminCustomModal) window.closeAdminCustomModal();
             } catch (e) { }
+            
             if (window.db) {
                 ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { try { db.ref(p).off(); } catch (e) { } });
             }
+
             const area = document.getElementById('adminContent');
             if (!area) return;
             area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+            
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
             document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
             document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
@@ -152,6 +221,7 @@
                 if (!res.ok) throw new Error("File not found.");
                 const html = await res.text();
                 area.innerHTML = html;
+                
                 const scripts = area.querySelectorAll('script');
                 for (const oldScript of scripts) {
                     const newScript = document.createElement('script');
@@ -165,6 +235,7 @@
                     }
                     if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
                 }
+                
                 setTimeout(() => {
                     const initFuncs = {
                         dashboard: 'initAdminDashboard',
@@ -187,17 +258,18 @@
         window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
 
         function adminLogout() {
-            if (confirm("시스템을 로그아웃 하시겠습니까?")) {
-                alert("성공적으로 로그아웃되었습니다.");
+            if (confirm("Would you like to log out of the system?")) {
+                alert("You have been logged out successfully.");
                 location.href = "index.html";
             }
         }
 
+        // Auto Logout Logic (30 min)
         (function () {
             let timeoutTimer;
             const INACTIVITY_TIME = 30 * 60 * 1000;
             function autoLogout() {
-                alert("보안을 위해 30분간 활동이 없는 관리자 세션을 자동으로 종료합니다.");
+                alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity..");
                 sessionStorage.clear();
                 location.href = "index.html";
             }
