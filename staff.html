@@ -50,7 +50,7 @@
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
 
-    <aside class="w-full lg:w-72 lg:h-screen bg-black/50 border-b lg:border-b-0 lg:border-r border-slate-800 backdrop-blur-xl sticky top-0 z-[100] flex-shrink-0">
+    <aside class="w-full lg:w-72 lg:h-screen bg-black/50 border-b lg:border-b-0 lg:border-r border-slate-800 backdrop-blur-xl sticky top-0 z-[1000] flex-shrink-0">
         <div class="p-4 lg:p-8 flex flex-col h-full">
             <div class="flex lg:flex-col justify-between items-center lg:items-start gap-4 mb-6 lg:mb-12">
                 <div class="w-full">
@@ -110,152 +110,129 @@
         </div>
     </main>
 
-    <script>
-        const loggedInUser = sessionStorage.getItem('loggedInUser');
-        if (!loggedInUser) { location.href = "index.html"; }
-        
-        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        
-        // 1. 유저 정보 로드 및 레벨 시스템 실행
-        if(loggedInUser) {
-            document.getElementById('desktopUser').innerText = loggedInUser;
-            
-            firebase.database().ref('users/' + loggedInUser).on('value', snap => {
-                const userData = snap.val();
-                const profileImg = userData?.profileImg || '1.webp';
-                const emojiContainer = document.getElementById('navEmojiContainer');
-                
-                if(emojiContainer) {
-                    emojiContainer.innerHTML = `<img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">`;
-                }
-
-                // 레벨 시스템 안전하게 시작
-                startLevelSystem();
-            });
-        }
-
-        // 레벨 시스템 스크립트가 로드되었는지 확인 후 실행하는 함수
-        function startLevelSystem() {
-            if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
-                window.LevelSystem.init(loggedInUser);
-            } else {
-                // 파일 로딩 대기를 위해 재시도
-                setTimeout(startLevelSystem, 300);
+<script>
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+    if (!loggedInUser) { location.href = "index.html"; }
+    
+    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    
+    if(loggedInUser) {
+        document.getElementById('desktopUser').innerText = loggedInUser;
+        firebase.database().ref('users/' + loggedInUser).on('value', snap => {
+            const userData = snap.val();
+            const profileImg = userData?.profileImg || '1.webp';
+            const emojiContainer = document.getElementById('navEmojiContainer');
+            if(emojiContainer) {
+                emojiContainer.innerHTML = `<img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">`;
             }
+            startLevelSystem();
+        });
+    }
+
+    function startLevelSystem() {
+        if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
+            window.LevelSystem.init(loggedInUser);
+        } else {
+            setTimeout(startLevelSystem, 300);
         }
+    }
 
-        // 2. 탭 전환 로직
-        function switchTab(type) {
-            const tabs = {
-                'dash': document.getElementById('tabDash'),
-                'schedule': document.getElementById('tabSchedule'),
-                'leave': document.getElementById('tabLeave'),
-                'work': document.getElementById('tabWork'),
-                'statistic': document.getElementById('tabStatistic'),
-                'setting': document.getElementById('tabSetting')
-            };
-            
-            Object.values(tabs).forEach(tab => {
-                if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
-            });
-            
-            if(tabs[type]) {
-                tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
-                tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-            
-            const urls = {
-                'dash': 'staff_main.html',
-                'schedule': 'staff_calendar.html',
-                'leave': 'staff_leave.html',
-                'work': 'staff_report.html',
-                'statistic': 'staff_statistic.html',
-                'setting': 'staff_setting.html',
-'all': 'staff_allatt.html' // 👈 이 줄을 반드시 추가하세요!
-            };
+    // 탭 전환 로직
+    window.switchTab = function(type) {
+        const tabs = {
+            'dash': document.getElementById('tabDash'),
+            'schedule': document.getElementById('tabSchedule'),
+            'leave': document.getElementById('tabLeave'),
+            'work': document.getElementById('tabWork'),
+            'statistic': document.getElementById('tabStatistic'),
+            'setting': document.getElementById('tabSetting')
+        };
+        
+        Object.values(tabs).forEach(tab => {
+            if(tab) tab.className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-inactive';
+        });
+        
+        if(tabs[type]) {
+            tabs[type].className = 'tab-btn px-4 py-3 text-xs md:text-sm uppercase tracking-widest tab-active';
+            tabs[type].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+        
+        const urls = {
+            'dash': 'staff_main.html',
+            'schedule': 'staff_calendar.html',
+            'leave': 'staff_leave.html',
+            'work': 'staff_report.html',
+            'statistic': 'staff_statistic.html',
+            'setting': 'staff_setting.html',
+            'all': 'staff_allatt.html' 
+        };
 
+        if (urls[type]) {
             loadHTML(urls[type], function() {
                 if (type === 'leave' && typeof window.initLeavePage === 'function') { window.initLeavePage(); }
                 else if (type === 'dash' && typeof window.initDashboard === 'function') { window.initDashboard(); }
             });
         }
+    }
 
-        // 3. 페이지 로더
-        async function loadHTML(url, callback) {
-            try {
-                if (!url) return;
-                const frame = document.getElementById('contentFrame');
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                const text = await response.text();
-                frame.innerHTML = text;
-                
-                const footerContainer = document.getElementById('footerContainer');
-                if (!footerContainer.innerHTML) {
+    window.loadHTML = async function(url, callback) {
+        try {
+            if (!url) return;
+            const frame = document.getElementById('contentFrame');
+            frame.innerHTML = `<div class="flex items-center justify-center h-64"><div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const text = await response.text();
+            frame.innerHTML = text;
+            
+            const footerContainer = document.getElementById('footerContainer');
+            if (footerContainer && !footerContainer.innerHTML) {
+                try {
                     const footerRes = await fetch('staff_footer.html');
-                    const footerText = await footerRes.text();
-                    footerContainer.innerHTML = footerText;
-                    executeScripts(footerContainer);
-                }
-
-                executeScripts(frame);
-                if (typeof callback === 'function') callback();
-                
-            } catch (e) { 
-                console.error("Failed to load page:", e); 
-                document.getElementById('contentFrame').innerHTML = 
-                    `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
+                    if(footerRes.ok) {
+                        const footerText = await footerRes.text();
+                        footerContainer.innerHTML = footerText;
+                        executeScripts(footerContainer);
+                    }
+                } catch(e) { console.log("Footer load failed"); }
             }
+            executeScripts(frame);
+            if (typeof callback === 'function') callback();
+        } catch (e) { 
+            console.error("Failed to load page:", e); 
+            document.getElementById('contentFrame').innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
         }
+    }
 
-        function executeScripts(container) {
-            const scripts = container.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                if (oldScript.src) {
-                    newScript.src = oldScript.src;
-                    newScript.async = false;
-                } else {
-                    newScript.textContent = oldScript.textContent;
-                }
-                document.head.appendChild(newScript).parentNode.removeChild(newScript);
-            });
+    function executeScripts(container) {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+                newScript.async = false;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+            document.head.appendChild(newScript).parentNode.removeChild(newScript);
+        });
+    }
+
+    window.logout = function() { 
+        if (confirm("Are you sure you want to log out?")) {
+            sessionStorage.clear();
+            localStorage.removeItem('loggedInUser');
+            window.location.replace("index.html");
         }
+    }
 
-        // 4. 로그아웃
-        function logout() { 
-            if (confirm("Are you sure you want to log out?")) {
-                sessionStorage.clear();
-                localStorage.removeItem('loggedInUser');
-                window.location.replace("index.html");
-            }
-        }
+    // 초기 실행 보장
+    window.addEventListener('load', () => switchTab('dash'));
+</script>
 
-        // 5. 자동 로그아웃 (보안)
-        (function() {
-            let timeoutTimer;
-            const INACTIVITY_TIME = 15 * 60 * 1000; 
 
-            function autoLogout() {
-                sessionStorage.clear();
-                location.href = "index.html";
-            }
 
-            function resetTimer() {
-                clearTimeout(timeoutTimer);
-                timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
-            }
-
-            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(evt => {
-                window.addEventListener(evt, resetTimer, true);
-            });
-            resetTimer();
-        })();
-
-        // 초기 대시보드 로드
-        switchTab('dash');
-    </script>
 </body>
 </html>
