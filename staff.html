@@ -36,7 +36,6 @@
             border: 2px solid #334155;
             object-fit: cover;
             display: block;
-            margin-bottom: 8px;
             transition: all 0.3s ease;
         }
 
@@ -46,6 +45,29 @@
                 height: 100px !important;
             }
         }
+
+        /* 프로필 이미지 선택기 스타일 */
+        .profile-picker-item { transition: all 0.2s; border: 2px solid transparent; cursor: pointer; border-radius: 0.75rem; overflow: hidden; background: #1e293b; }
+        .profile-picker-item:hover { transform: scale(1.05); border-color: #3b82f6; }
+        
+        /* 연필 아이콘 애니메이션 */
+        .edit-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 0;
+            background: #3b82f6;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000;
+            font-size: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+        }
+        .group:hover .edit-badge { background: #2563eb; transform: scale(1.1); }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
@@ -57,7 +79,8 @@
                     <h1 class="text-xl lg:text-2xl font-black tracking-tighter text-white uppercase">Daily <span class="text-blue-500">System</span></h1>
                     
                     <div class="flex items-center gap-3 mt-4">
-                        <div id="navEmojiContainer"></div>
+                        <div id="navEmojiContainer" class="cursor-pointer relative group inline-block" onclick="openProfileImagePicker()">
+                            </div>
                         <div class="flex flex-col">
                             <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
                             <span class="text-[8px] text-emerald-500 font-bold">● ONLINE</span>
@@ -110,21 +133,94 @@
         </div>
     </main>
 
+    <div id="profileCustomModal" class="hidden fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-fadeIn">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-white uppercase tracking-tighter">Select Profile Image</h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-white text-3xl transition-colors">&times;</button>
+            </div>
+            <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+                </div>
+        </div>
+    </div>
+
 <script>
     const loggedInUser = sessionStorage.getItem('loggedInUser');
     if (!loggedInUser) { location.href = "index.html"; }
     
     const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 1. 이미지 목록 업데이트 (제공해주신 파일명 기준)
+    const PROFILE_IMAGES = [
+        'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
+        'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif',
+        'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif',
+        'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif',
+        'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif',
+        'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif',
+        'image-26.gif', 'image-27.gif'
+    ];
+
+    // 2. 모달 제어
+    window.openProfileModal = function(title, bodyHtml) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        document.getElementById('profileCustomModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeProfileModal = function() {
+        document.getElementById('profileCustomModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    // 3. 프로필 이미지 선택 창 (그리드 생성)
+    window.openProfileImagePicker = function() {
+        let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">`;
+        PROFILE_IMAGES.forEach(img => {
+            gridHtml += `
+                <div onclick="saveStaffProfile('${img}')" class="profile-picker-item aspect-square shadow-lg">
+                    <img src="images/profile/${img}" class="w-full h-full object-cover" alt="profile option">
+                </div>`;
+        });
+        gridHtml += `</div>`;
+        openProfileModal('Change My Profile', gridHtml);
+    };
+
+    // 4. 파이어베이스 저장 및 반영
+    window.saveStaffProfile = function(imgName) {
+        if(!confirm("Change your profile picture to this image?")) return;
+
+        db.ref('users/' + loggedInUser).update({
+            profileImg: imgName,
+            profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            closeProfileModal();
+        }).catch(e => {
+            console.error(e);
+            alert("Failed to update profile.");
+        });
+    };
     
     if(loggedInUser) {
         document.getElementById('desktopUser').innerText = loggedInUser;
-        firebase.database().ref('users/' + loggedInUser).on('value', snap => {
+        
+        // 실시간 데이터 감시
+        db.ref('users/' + loggedInUser).on('value', snap => {
             const userData = snap.val();
-            const profileImg = userData?.profileImg || '1.webp';
+            const profileImg = userData?.profileImg || 'image-001.webp'; // 기본값 설정
             const emojiContainer = document.getElementById('navEmojiContainer');
+            
             if(emojiContainer) {
-                emojiContainer.innerHTML = `<img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">`;
+                // 연필 아이콘 ✏️ 포함하여 렌더링
+                emojiContainer.innerHTML = `
+                    <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">
+                    <div class="edit-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </div>
+                `;
             }
             startLevelSystem();
         });
@@ -138,7 +234,7 @@
         }
     }
 
-    // 탭 전환 로직
+    // 기존 탭 전환 및 HTML 로드 로직 (그대로 유지)
     window.switchTab = function(type) {
         const tabs = {
             'dash': document.getElementById('tabDash'),
@@ -164,8 +260,7 @@
             'leave': 'staff_leave.html',
             'work': 'staff_report.html',
             'statistic': 'staff_statistic.html',
-            'setting': 'staff_setting.html',
-            'all': 'staff_allatt.html' 
+            'setting': 'staff_setting.html'
         };
 
         if (urls[type]) {
@@ -228,11 +323,8 @@
         }
     }
 
-    // 초기 실행 보장
     window.addEventListener('load', () => switchTab('dash'));
 </script>
-
-
 
 </body>
 </html>
