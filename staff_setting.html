@@ -27,20 +27,23 @@
         const hiddenInput = document.getElementById('selectedEmoji');
         const user = sessionStorage.getItem('loggedInUser');
 
-        // 1. 이미지 리스트 생성
-        const emojis = [];
-        
-        // 정적 이미지 추가 (image-001.webp ~ image-036.webp)
-        for (let i = 1; i <= 36; i++) {
-            const imgNumber = String(i).padStart(3, '0');
-            emojis.push(`image-${imgNumber}.webp`);
-        }
+// 1. 이미지 리스트 생성
+const emojis = [];
 
-        // 애니메이션 이미지 추가 (image-001.gif ~ image-042.gif)
-        for (let i = 1; i <= 42; i++) {
-            const imgNumber = String(i).padStart(3, '0');
-            emojis.push(`image-${imgNumber}.gif`);
-        }
+// 정적 이미지 추가 (image-001.webp ~ image-005.webp)
+// 파일 목록에 5번까지만 있으므로 범위를 5로 수정합니다.
+for (let i = 1; i <= 5; i++) {
+    const imgNumber = String(i).padStart(3, '0'); // 3자리 (001, 002...)
+    emojis.push(`image-${imgNumber}.webp`);
+}
+
+// 애니메이션 이미지 추가 (image-01.gif ~ image-27.gif)
+// 파일 목록 형식이 2자리(01, 02...)이므로 padStart(2, '0')으로 수정합니다.
+for (let i = 1; i <= 27; i++) {
+    const imgNumber = String(i).padStart(2, '0'); // 2자리 (01, 02...)
+    emojis.push(`image-${imgNumber}.gif`);
+}
+
         
         firebase.database().ref('users/' + user).once('value', snap => {
             const currentImg = snap.val()?.profileImg || 'image-001.webp';
