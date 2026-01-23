@@ -69,7 +69,19 @@
         <div class="chart-container"><canvas id="overallChart"></canvas></div>
     </section>
 </div>
+
+
 <script>
+    // 1. 외부(HTML 버튼)에서 호출할 전역 함수를 먼저 선언
+    window.switchAdminStatTab = function(mode) {
+        // IIFE 내부에서 준비된 실제 로직(_switchLogic)이 있으면 실행
+        if (typeof window._switchLogic === 'function') {
+            window._switchLogic(mode);
+        } else {
+            console.error("Statistics logic is not yet loaded.");
+        }
+    };
+
     (function() {
         const db = firebase.database();
         let monthViewDate = new Date(); 
@@ -78,8 +90,34 @@
         const typeColors = { 'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308', 'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569', 'LEAVE': '#6366f1' };
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
+
+        // 2. 실제 로직을 담은 내부 함수 (이름을 바꿔서 전역에 연결)
+        window._switchLogic = function(mode) {
+            currentMode = mode;
+            
+            // 버튼 활성화 스타일 제어
+            const tabAtt = document.getElementById('tabAtt');
+            const tabLeave = document.getElementById('tabLeave');
+            if(tabAtt) tabAtt.classList.toggle('active', mode === 'att');
+            if(tabLeave) tabLeave.classList.toggle('active', mode === 'leave');
+
+            const isAtt = mode === 'att';
+            // 레이블 텍스트 변경
+            const lblMonth = document.getElementById('labelMonth');
+            const lblYear = document.getElementById('labelYear');
+            const lblOverall = document.getElementById('labelOverall');
+            
+            if(lblMonth) lblMonth.innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Times';
+            if(lblYear) lblYear.innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Times';
+            if(lblOverall) lblOverall.innerText = isAtt ? 'Records' : 'Leave Records';
+
+            processAndRender();
+        };
+
+        // 기존 exportToExcel 함수
         window.exportToExcel = function(periodType) {
             if (!cachedData) return alert("No data loaded.");
+            // ... (이하 기존 코드와 동일) ...
             let filterKey = "";
             let fileNameSuffix = "";
             if (periodType === 'month') { filterKey = monthViewDate.toISOString().substring(0, 7); fileNameSuffix = filterKey; }
@@ -134,21 +172,13 @@
             XLSX.utils.book_append_sheet(wb, ws, "Performance Report");
             XLSX.writeFile(wb, fileName);
         };
-        window.switchAdminStatTab = function(mode) {
-            currentMode = mode;
-            document.getElementById('tabAtt').classList.toggle('active', mode === 'att');
-            document.getElementById('tabLeave').classList.toggle('active', mode === 'leave');
-            const isAtt = mode === 'att';
-            document.getElementById('labelMonth').innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Times';
-            document.getElementById('labelYear').innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Times';
-            document.getElementById('labelOverall').innerText = isAtt ? 'Records' : 'Leave Records';
-            processAndRender();
-        };
+
         window.changeStatPeriod = function(type, offset) {
             if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
             else if(type === 'year') yearViewDate.setFullYear(yearViewDate.getFullYear() + offset);
             processAndRender();
         };
+
         window.initAdminStats = async function() {
             try {
                 const snap = await db.ref('attendance').once('value');
@@ -156,12 +186,17 @@
                 processAndRender();
             } catch (e) { console.error(e); }
         };
+
         function processAndRender() {
             if (!cachedData || !document.getElementById('monthlyChart')) return;
             const mKey = monthViewDate.toISOString().substring(0, 7);
             const yKey = yearViewDate.getFullYear().toString();
-            document.getElementById('txtMonth').innerText = monthViewDate.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-            document.getElementById('txtYear').innerText = yKey;
+            
+            const txtMonth = document.getElementById('txtMonth');
+            const txtYear = document.getElementById('txtYear');
+            if(txtMonth) txtMonth.innerText = monthViewDate.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+            if(txtYear) txtYear.innerText = yKey;
+
             const stats = { month: {}, year: {}, overall: {} };
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 Object.entries(dayData).forEach(([user, record]) => {
@@ -181,6 +216,7 @@
             renderChart('yearlyChart', 'year', stats.year);
             renderChart('overallChart', 'overall', stats.overall);
         }
+
         function renderChart(canvasId, chartType, chartData) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
@@ -195,9 +231,10 @@
                 charts[chartType] = new Chart(ctx, { type: 'bar', data: { labels: users, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, indexAxis: isMobile ? 'y' : 'x', scales: { y: { beginAtZero: true, ticks: { color: '#64748b' } }, x: { ticks: { color: '#94a3b8' } } } } });
             } else {
                 const ds = Object.entries(chartData).map(([u, p], i) => ({ label: u, data: p.sort((a,b)=>a.x.localeCompare(b.x)), borderColor: `hsl(${(i*137.5)%360},70%,60%)`, borderWidth: 2, tension: 0.3, fill: false }));
-                charts[chartType] = new Chart(ctx, { type: 'line', data: { datasets: ds }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { min: 17.5, max: 23.0, afterBuildTicks: a => { let t = []; for(let v=17.5; v<=19.5; v+=1/6) t.push({value:v}); for(let v=19.5+1/3; v<=23; v+=1/3) t.push({value:v}); a.ticks=t; }, ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => { let h=Math.floor(v); let m=Math.round((v-h)*60); return `${h}:${m.toString().padStart(2,'0')}`; } } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } } });
+                charts[chartType] = new Chart(ctx, { type: 'line', data: { datasets: ds }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { min: 17.5, max: 23.0, ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => { let h=Math.floor(v); let m=Math.round((v-h)*60); return `${h}:${m.toString().padStart(2,'0')}`; } } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } } });
             }
         }
+
         window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
         setTimeout(initAdminStats, 300);
     })();
