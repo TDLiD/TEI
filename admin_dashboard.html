@@ -51,27 +51,31 @@
     </div>
 </div>
 
-    <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div>
-            <div class="flex items-end gap-2">
-                <div id="stat_attendance" class="text-2xl font-black text-white">0/0</div>
-                <div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div>
-            </div>
-        </div>
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Pending Reports</div>
-            <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
-        </div>
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div>
-            <div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div>
-        </div>
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div>
-            <div id="stat_late" class="text-2xl font-black text-rose-500">0</div>
+<div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div>
+        <div class="flex items-end gap-2">
+            <div id="stat_attendance" class="text-2xl font-black text-white">0/0</div>
+            <div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div>
         </div>
     </div>
+
+    <div onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('reports'); } else if(window.switchAdminTab) { switchAdminTab('reports'); }" 
+         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div>
+        <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
+    </div>
+
+    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div>
+        <div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div>
+    </div>
+
+    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div>
+        <div id="stat_late" class="text-2xl font-black text-rose-500">0</div>
+    </div>
+</div>
 
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6">
@@ -296,11 +300,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount;
             });
         });
-        db.ref(`reports/${todayStr}`).on('value', snap => {
-            const data = snap.val() || {};
-            const pendingCount = Object.values(data).filter(r => r.status === 'Pending').length;
-            if (document.getElementById('stat_pending')) document.getElementById('stat_pending').innerText = pendingCount;
-        });
+
+// 기존 updateQuickStats 함수 내부의 리포트 관련 로직 수정
+db.ref(`reports/${todayStr}`).on('value', snap => {
+    const data = snap.val() || {};
+    const reportsArray = Object.entries(data);
+    
+    // 1. 개수 계산
+    const pendingCount = reportsArray.filter(([_, r]) => r.status === 'Pending').length;
+    const totalCount = reportsArray.length;
+
+    // 2. 스태프 정보 요약 생성 (예: Tom, Jane, ...)
+    const staffNames = reportsArray.map(([name, _]) => name).join(', ');
+    const summaryText = totalCount > 0 ? staffNames : "No reports today";
+
+    // 3. UI 업데이트
+    const statPendingEl = document.getElementById('stat_pending');
+    if (statPendingEl) {
+        // 숫자 표시 (Pending 개수 / 전체 개수)
+        statPendingEl.innerText = `${pendingCount}/${totalCount}`;
+        
+        // 하단에 스태프 이름들을 작은 텍스트로 추가
+        let infoEl = document.getElementById('stat_pending_detail');
+        if (!infoEl) {
+            infoEl = document.createElement('div');
+            infoEl.id = 'stat_pending_detail';
+            infoEl.className = "text-[9px] text-slate-500 font-bold mt-1 truncate w-full";
+            statPendingEl.parentNode.appendChild(infoEl);
+        }
+        infoEl.innerText = summaryText;
+        infoEl.title = staffNames; // 마우스 호버 시 전체 이름 표시
+    }
+});
+
+
         db.ref('shared_schedules').on('value', snap => {
             const data = snap.val() || {};
             let ongoingCount = 0;
