@@ -1,0 +1,108 @@
+=============================================
+Staff and Admin Daily Report System Quick User Guide
+=============================================
+
+This system is optimized for mobile/PC.
+
+Staff Quick User Guide
+------------------------------
+
+1. Attendance Check (Time Clock)
+Clock-In: Click the [ATTENDANCE] button when you arrive.
+Clock-Out: Click the [LEAVE] button before you go home.
+Check Status: Your daily working hours and "Late" status are updated in real-time on the dashboard calendar.
+
+2. Daily Report
+Write Report: Select a date on the calendar and click [Write Report].
+Contents: Fill in "Today's To-Do" and "Work Summary."
+Save: Click [Save Report] to submit. Reports are linked to your attendance data for the day.
+
+3. Leave Request (Vacation)
+Request: Go to the [LEAVE] tab and click a date on the calendar.
+Details: Choose the leave type (Annual, Sick, etc.) and write the reason.
+Auto-Exclude: The system automatically excludes weekends from your request.
+Status: You can track if your request is "Pending" or "Approved" on the leave calendar.
+
+4. Shared Schedule
+View Events: Go to the [CALENDAR] tab to see team schedules and office events.
+Add Event: Click a date to add a personal or shared schedule.
+Sync: All staff members see the same master calendar for better coordination.
+
+5. Statistics & Settings
+My Stats: View your attendance rate, late count, and average work hours in the [STATS] tab.
+Level System: Check your current rank (e.g., Gold, Master) based on your performance points.
+Profile: Change your password and update your profile image in the [SETTING] tab.
+
+[Tip]
+Missing Records: If you see a "Missing Records" popup, please fill in the unrecorded times immediately.
+Mobile Friendly: This system is optimized for mobile; you can easily check and report via your smartphone.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Panduan Cepat Penggunaan (Untuk Staf)
+-----------------------------------------------------
+
+1. Cek Kehadiran (Absensi)
+Clock-In (Masuk): Klik tombol [ATTENDANCE] saat Anda tiba di kantor.
+Clock-Out (Pulang): Klik tombol [LEAVE] sebelum Anda pulang.
+Cek Status: Jam kerja harian dan status "Terlambat" akan diperbarui otomatis di kalender dashboard.
+
+2. Laporan Harian (Daily Report)
+Tulis Laporan: Pilih tanggal di kalender dan klik [Write Report].
+Isi Laporan: Lengkapi bagian "Today's To-Do" (Rencana) dan "Work Summary" (Hasil Kerja).
+Simpan: Klik [Save Report]. Laporan ini akan terhubung dengan data absensi Anda.
+
+3. Pengajuan Cuti (Leave Request)
+Ajukan Cuti: Buka tab [LEAVE] dan klik tanggal pada kalender.
+Detail: Pilih tipe cuti (Tahunan, Sakit, dll.) dan tulis alasannya.
+Tanpa Akhir Pekan: Sistem akan otomatis menghapus hari Sabtu dan Minggu dari total pengajuan.
+Status: Pantau apakah status cuti Anda "Pending" (Menunggu) atau "Approved" (Disetujui) di kalender cuti.
+
+4. Berbagi Jadwal (Shared Schedule)
+Lihat Jadwal: Buka tab [CALENDAR] untuk melihat jadwal tim dan acara kantor.
+Tambah Jadwal: Klik pada tanggal untuk menambah jadwal pribadi atau bersama.
+Sinkronisasi: Semua staf melihat kalender yang sama untuk koordinasi yang lebih baik.
+
+5. Statistik & Pengaturan
+Statistik Saya: Lihat tingkat kehadiran, jumlah terlambat, dan rata-rata jam kerja di tab [STATS].
+Sistem Level: Cek peringkat Anda (contoh: Gold, Master) berdasarkan poin performa kerja.
+Profil: Ubah kata sandi (password) dan foto profil Anda di tab [SETTING].
+
+[Tips Tambahan]
+Data Kosong: Jika muncul pop-up "Missing Records", segera isi waktu absensi yang terlewat.
+Ramah Ponsel: Sistem ini optimal untuk HP; Anda bisa absen dan melapor dengan mudah lewat smartphone.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+관리자 퀵 사용 매뉴얼 (Admin Guide)
+
+1. 대시보드 및 현황 모니터링
+실시간 요약: 메인 대시보드에서 전 직원의 출근율, 미처리 휴가 신청, 최근 업무 보고를 한눈에 확인하고 클릭해서 수정 가능합니다.
+알림 배너: 승인 대기 중인 휴가 신청이 있을 경우 상단 배너를 통해 즉시 확인하고 이동할 수 있습니다.
+
+2. 근태 및 업무 보고 관리
+근태 수정: [ATTENDANCE] 메뉴에서 직원의 누락된 출퇴근 시간을 직접 입력하거나 잘못된 기록을 수정합니다.
+보고서 검토: [REPORT] 메뉴에서 직원들이 제출한 일일 보고서를 날짜별로 확인하고, 필요시 관리자 전용 메모를 남깁니다.
+
+3. 휴가 승인 프로세스
+신청 확인: [LEAVE] 메뉴에서 'Pending(대기)' 상태인 신청 건을 클릭합니다.
+승인 및 반려: 사유를 확인한 후 [Approve] 또는 [Reject] 버튼을 눌러 결재합니다. 승인 시 해당 직원의 근태 기록에 휴가 정보가 자동 반영됩니다.
+
+4. 마스터 스케줄 관리
+일정 등록: [CALENDAR] 메뉴에서 팀 전체가 공유해야 할 전사 일정이나 사무실 행사를 등록합니다.
+드래그 앤 드롭: 등록된 일정은 마우스로 끌어서 간편하게 날짜를 변경할 수 있습니다. 
+보라색 아이콘은 관리자가 작성한 중요 메모가 포함된 일정입니다.
+
+5. 통계 분석 및 시스템 설정
+데이터 시각화: [STATS] 메뉴에서 직원의 지각 횟수, 평균 근무 시간, 월별 근태 추이를 그래프로 분석합니다.
+직원 관리: [SETTING] 메뉴에서 새로운 직원을 추가하거나, 비밀번호 재설정 및 권한(Role)을 변경합니다.
+백업 및 복구: 전체 시스템 데이터를 JSON 파일로 내보내어 안전하게 보관하거나, 필요시 복구할 수 있습니다.
+
+[관리자 운영 팁]
+자동 로그아웃: 보안을 위해 30분 동안 활동이 없으면 세션이 자동으로 종료됩니다.
+데이터 엑셀 출력: 통계 페이지의 엑셀 버튼을 활용하여 월간 근태 및 통계 자료를 간편하게 문서화할 수 있습니다.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+*************  If you find any defects or improvements while using it, please give us feedback.
+
