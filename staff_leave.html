@@ -46,8 +46,8 @@
         </div>
     </div>
 </div>
-<div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn">
+<div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden overflow-y-auto pt-4 pb-20 px-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8 relative">
         <h3 id="modalTitle" class="text-xl font-black text-white mb-6 uppercase italic">New Leave Request</h3>
         <div class="space-y-4">
             <div>
@@ -159,7 +159,11 @@
         const memoContainer = document.getElementById('adminMemoContainer'), memoText = document.getElementById('adminMemoText'), leaveTypeInput = document.getElementById('leaveType');
         const leaveReasonInput = document.getElementById('leaveReason'), dateInput = document.getElementById('leaveDateRange'), modalTitle = document.getElementById('modalTitle');
         if (!modal) return;
-        modal.classList.remove('hidden');
+
+modal.classList.remove('hidden');
+        modal.classList.add('block'); // flex 대신 block 사용
+        document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+
         if (id && data) {
             modalTitle.innerText = "Edit Leave Request"; leaveTypeInput.value = data.type;
             if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
@@ -187,7 +191,13 @@
             if (memoContainer) memoContainer.classList.add('hidden');
         }
     };
-    window.closeLeaveModal = function() { document.getElementById('leaveModal').classList.add('hidden'); };
+// [수정] 모달 닫기 함수 내부
+    window.closeLeaveModal = function() { 
+        const modal = document.getElementById('leaveModal');
+        modal.classList.add('hidden'); 
+        modal.classList.remove('block');
+        document.body.style.overflow = ''; // 배경 스크롤 복구
+    };
     window.submitLeaveRequest = function() {
         if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
         const type = document.getElementById('leaveType').value, range = datePicker.selectedDates, reason = document.getElementById('leaveReason').value.trim();

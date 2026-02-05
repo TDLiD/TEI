@@ -44,12 +44,14 @@
         </table>
     </div>
 </div>
-<div id="eventModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2rem] p-8 shadow-2xl">
+<div id="eventModal" class="hidden fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto pt-4 pb-20 px-4">
+    <div class="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2rem] p-6 sm:p-8 shadow-2xl mx-auto my-4">
+        
         <div class="flex justify-between items-center mb-6">
             <h3 id="modalTitle" class="text-xl font-black text-white uppercase tracking-tighter">Schedule Detail</h3>
-            <button onclick="closeModal()" class="text-slate-500 hover:text-white text-2xl">&times;</button>
+            <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl bg-slate-800 rounded-full transition-all">&times;</button>
         </div>
+
         <div id="modalForm" class="space-y-4">
             <div>
                 <label class="text-[10px] text-slate-500 font-black uppercase mb-1 block">Title</label>
@@ -58,10 +60,6 @@
             <div>
                 <label class="text-[10px] text-slate-500 font-black uppercase mb-1 block">Description</label>
                 <textarea id="evDesc" class="modal-input min-h-[80px] resize-none"></textarea>
-            </div>
-            <div id="adminMemoArea" class="hidden">
-                <label class="text-[10px] text-purple-400 font-black uppercase mb-1 block tracking-widest">Admin Memo</label>
-                <div id="evAdminMemo" class="text-sm text-slate-300 italic p-3 rounded-xl bg-purple-500/10 border border-purple-500/20"></div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -73,19 +71,21 @@
                     <input type="text" id="evEnd" class="modal-input cursor-pointer">
                 </div>
             </div>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer mt-2">
                 <input type="checkbox" id="evAllDay" onchange="toggleTimePicker(this.checked)"> 
                 <span class="text-xs font-bold text-slate-400">All Day Event</span>
             </label>
         </div>
+
         <div class="flex gap-3 mt-8" id="modalButtons">
             <button id="btnDel" onclick="deleteEvent()" class="hidden flex-1 bg-rose-900/20 text-rose-500 py-4 rounded-xl font-black text-xs hover:bg-rose-900/40 transition">DELETE</button>
             <button id="btnSave" onclick="saveEvent()" class="flex-[2] bg-blue-600 text-white py-4 rounded-xl font-black text-xs hover:bg-blue-500 shadow-lg shadow-blue-900/20 transition uppercase tracking-widest">Save</button>
         </div>
     </div>
 </div>
+
 <script>
-    (function() {
+(function() {
         const db = firebase.database();
         const user = sessionStorage.getItem('loggedInUser');
         const userRole = sessionStorage.getItem('userRole');
@@ -97,7 +97,16 @@
         let touchTimer = null;
         const todayObj = new Date();
         const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
-        window.closeModal = () => { document.getElementById('eventModal').classList.add('hidden'); };
+
+        window.closeModal = () => { 
+            const modal = document.getElementById('eventModal');
+            if(modal) {
+                modal.classList.add('hidden'); 
+                modal.classList.remove('block');
+            }
+            document.body.style.overflow = '';
+        };
+
         window.toggleTimePicker = (isAllDay) => {
             const config = {
                 enableTime: !isAllDay,
@@ -110,37 +119,71 @@
             if (startPicker) startPicker.set(config);
             if (endPicker) endPicker.set(config);
         };
+
         window.openAddModal = (dateStr) => {
-            selectedId = null; currentEventData = null;
+            selectedId = null; 
+            currentEventData = null;
+
             document.getElementById('evTitle').value = "";
             document.getElementById('evDesc').value = "";
-            document.getElementById('adminMemoArea').classList.add('hidden');
+            
+            // [오류 해결] 요소가 존재할 때만 classList 조작
+            const memoArea = document.getElementById('adminMemoArea');
+            if (memoArea) memoArea.classList.add('hidden');
+            
             document.getElementById('evAllDay').checked = false; 
             window.toggleTimePicker(false);
+            
             startPicker.setDate(dateStr + "T09:00");
             endPicker.setDate(dateStr + "T10:00");
+            
             document.getElementById('btnDel').classList.add('hidden');
             document.getElementById('btnSave').classList.remove('hidden');
-            document.getElementById('eventModal').classList.replace('hidden', 'flex');
+
+            const modal = document.getElementById('eventModal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('block'); 
+            }
+            document.body.style.overflow = 'hidden'; 
         };
+
         window.openEditModal = (id, ev) => {
-            selectedId = id; currentEventData = ev;
+            selectedId = id; 
+            currentEventData = ev;
             const canEdit = (ev.author === user || userRole === 'admin');
+            
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evDesc').value = ev.desc || "";
+            
+            // [오류 해결] 관리자 메모 영역 안전하게 처리
             const memoArea = document.getElementById('adminMemoArea');
-            if (ev.adminMemo) {
-                memoArea.classList.remove('hidden');
-                document.getElementById('evAdminMemo').innerText = ev.adminMemo;
-            } else { memoArea.classList.add('hidden'); }
+            const memoText = document.getElementById('evAdminMemo');
+            if (memoArea) {
+                if (ev.adminMemo) {
+                    memoArea.classList.remove('hidden');
+                    if (memoText) memoText.innerText = ev.adminMemo;
+                } else { 
+                    memoArea.classList.add('hidden'); 
+                }
+            }
+            
             window.toggleTimePicker(ev.allDay);
             document.getElementById('evAllDay').checked = ev.allDay;
             startPicker.setDate(ev.start);
             endPicker.setDate(ev.end);
+            
             document.getElementById('btnSave').classList.toggle('hidden', !canEdit);
             document.getElementById('btnDel').classList.toggle('hidden', !canEdit);
-            document.getElementById('eventModal').classList.replace('hidden', 'flex');
+
+            const modal = document.getElementById('eventModal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('block');
+            }
+            document.body.style.overflow = 'hidden';
         };
+
         window.saveEvent = () => {
             const title = document.getElementById('evTitle').value;
             if(!title) return alert("Title required");
