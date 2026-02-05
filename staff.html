@@ -149,11 +149,21 @@
     const loggedInUser = sessionStorage.getItem('loggedInUser');
     if (!loggedInUser) { location.href = "index.html"; }
     
-    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+    // Firebase 설정
+    const firebaseConfig = {
+        apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
+        authDomain: "tdlid-dailyreport.firebaseapp.com",
+        databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+        projectId: "tdlid-dailyreport",
+        storageBucket: "tdlid-dailyreport.firebasestorage.app",
+        messagingSenderId: "922333077514",
+        appId: "1:922333077514:web:8914e5b06ac1f417707ff3",
+        measurementId: "G-1TVZQYHWDL"
+    };
+
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. 이미지 목록 업데이트 (제공해주신 파일명 기준)
     const PROFILE_IMAGES = [
         'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
         'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif',
@@ -164,20 +174,29 @@
         'image-26.gif', 'image-27.gif'
     ];
 
-    // 2. 모달 제어
+    // 2. 모달 제어 (방어 코드 추가)
     window.openProfileModal = function(title, bodyHtml) {
-        document.getElementById('modalTitle').innerText = title;
-        document.getElementById('modalBody').innerHTML = bodyHtml;
-        document.getElementById('profileCustomModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        const modal = document.getElementById('profileCustomModal');
+        const mTitle = document.getElementById('modalTitle');
+        const mBody = document.getElementById('modalBody');
+
+        if (modal && mTitle && mBody) {
+            mTitle.innerText = title;
+            mBody.innerHTML = bodyHtml;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
     };
 
     window.closeProfileModal = function() {
-        document.getElementById('profileCustomModal').classList.add('hidden');
-        document.body.style.overflow = '';
+        const modal = document.getElementById('profileCustomModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
     };
 
-    // 3. 프로필 이미지 선택 창 (그리드 생성)
+    // 3. 프로필 이미지 선택 창
     window.openProfileImagePicker = function() {
         let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">`;
         PROFILE_IMAGES.forEach(img => {
@@ -190,7 +209,7 @@
         openProfileModal('Change My Profile', gridHtml);
     };
 
-    // 4. 파이어베이스 저장 및 반영
+    // 4. 파이어베이스 저장
     window.saveStaffProfile = function(imgName) {
         if(!confirm("Change your profile picture to this image?")) return;
 
@@ -206,16 +225,19 @@
     };
     
     if(loggedInUser) {
-        document.getElementById('desktopUser').innerText = loggedInUser;
+        const desktopUserEl = document.getElementById('desktopUser');
+        if (desktopUserEl) desktopUserEl.innerText = loggedInUser;
         
-        // 실시간 데이터 감시
+        // 실시간 데이터 감시 및 UI 업데이트 (방어 코드 강화)
         db.ref('users/' + loggedInUser).on('value', snap => {
             const userData = snap.val();
-            const profileImg = userData?.profileImg || 'image-001.webp'; // 기본값 설정
+            if (!userData) return;
+
+            const profileImg = userData.profileImg || 'image-001.webp';
             const emojiContainer = document.getElementById('navEmojiContainer');
             
+            // 핵심: 요소가 존재하는지 확인 후 업데이트
             if(emojiContainer) {
-                // 연필 아이콘 ✏️ 포함하여 렌더링
                 emojiContainer.innerHTML = `
                     <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">
                     <div class="edit-badge">
@@ -223,7 +245,12 @@
                     </div>
                 `;
             }
-            startLevelSystem();
+            
+            // 레벨 시스템 표시 영역 확인 후 실행
+            const levelContainer = document.getElementById('levelDisplayContainer');
+            if (levelContainer) {
+                startLevelSystem();
+            }
         });
     }
 
@@ -231,11 +258,11 @@
         if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
             window.LevelSystem.init(loggedInUser);
         } else {
+            // LevelSystem이 아직 로드되지 않았을 경우 재시도
             setTimeout(startLevelSystem, 300);
         }
     }
 
-    // 기존 탭 전환 및 HTML 로드 로직 (그대로 유지)
     window.switchTab = function(type) {
         const tabs = {
             'dash': document.getElementById('tabDash'),
@@ -262,7 +289,7 @@
             'work': 'staff_report.html',
             'statistic': 'staff_statistic.html',
             'setting': 'staff_setting.html',
-            'all': 'staff_allatt.html' // 이 줄을 추가하여 버튼 클릭 시 staff_allatt.html이 로드되도록 합니다.
+            'all': 'staff_allatt.html'
         };
 
         if (urls[type]) {
@@ -277,6 +304,8 @@
         try {
             if (!url) return;
             const frame = document.getElementById('contentFrame');
+            if (!frame) return;
+
             frame.innerHTML = `<div class="flex items-center justify-center h-64"><div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>`;
             
             const response = await fetch(url);
@@ -299,31 +328,28 @@
             if (typeof callback === 'function') callback();
         } catch (e) { 
             console.error("Failed to load page:", e); 
-            document.getElementById('contentFrame').innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
+            const frame = document.getElementById('contentFrame');
+            if (frame) frame.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
         }
     }
 
-function executeScripts(container) {
-    const scripts = container.querySelectorAll('script');
-    scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
+    function executeScripts(container) {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
 
-        // === 이 위치에 추가하세요 ===
-        Array.from(oldScript.attributes).forEach(attr => {
-            newScript.setAttribute(attr.name, attr.value);
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+                newScript.async = false;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+            document.head.appendChild(newScript).parentNode.removeChild(newScript);
         });
-        // ========================
-
-        if (oldScript.src) {
-            newScript.src = oldScript.src;
-            newScript.async = false;
-        } else {
-            newScript.textContent = oldScript.textContent;
-        }
-        document.head.appendChild(newScript).parentNode.removeChild(newScript);
-    });
-}
-
+    }
 
     window.logout = function() { 
         if (confirm("Are you sure you want to log out?")) {
