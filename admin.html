@@ -125,13 +125,11 @@
         </div>
     </div>
 
-  <script>
-    // 1. Firebase Initialize
+<script>
+    // 1. Firebase Initialize & Auth State Sync
     (function () {
         if (!window.firebase) return;
 
-        // [수정 포인트] 인증 및 앱 초기화를 위해 전체 설정값이 필요합니다.
-        // 제공해주신 staff.html의 정보를 바탕으로 구성했습니다.
         const firebaseConfig = {
             apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
             authDomain: "tdlid-dailyreport.firebaseapp.com",
@@ -148,6 +146,18 @@
         }
         
         if (!window.db) window.db = firebase.database();
+
+        // [개선] Firebase Auth 인증 상태 감시 (강력한 세션 관리)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                // 로그인이 안 되어 있거나 세션이 만료된 경우 index.html로 강제 이동
+                console.log("No active admin session.");
+                window.location.replace("index.html");
+            } else {
+                console.log("Admin verified:", user.email);
+                // 세션 유지를 위해 필요한 경우 추가 로직 처리
+            }
+        });
     })();
 
     // 2. Modal Functions
@@ -171,13 +181,8 @@
         Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false });
     })();
 
-    // 3. Profile Image Selection & Save Function
-    const PROFILE_IMAGES = [
-        '1.gif', '1.webp', 
-        '2.gif', '2.webp', 
-        '3.gif', '3.webp', 
-        '4.gif', '5.gif', '6.gif'
-    ];
+    // 3. Profile Image Selection
+    const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
 
     window.openProfileImagePicker = function() {
         let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
@@ -209,7 +214,6 @@
 
     // 4. Real-time Profile Sync
     (function initProfileSync() {
-        // DB가 초기화될 시간을 벌기 위해 setTimeout을 사용하거나 즉시 확인
         const checkDB = setInterval(() => {
             if (window.db) {
                 clearInterval(checkDB);
@@ -266,8 +270,6 @@
             const scripts = area.querySelectorAll('script');
             for (const oldScript of scripts) {
                 const newScript = document.createElement('script');
-
-                // 속성 복사
                 Array.from(oldScript.attributes).forEach(attr => {
                     newScript.setAttribute(attr.name, attr.value);
                 });
@@ -307,32 +309,50 @@
         }
     }
 
-    window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
-    window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
-
-    function adminLogout() {
+    // 6. [개선] 모바일 호환 로그아웃 및 Firebase Auth 연동
+    window.adminLogout = function() {
         if (confirm("Would you like to log out of the system?")) {
-            alert("You have been logged out successfully.");
-            location.href = "index.html";
+            firebase.auth().signOut().then(() => {
+                // Firebase 로그아웃 성공 시
+                sessionStorage.clear();
+                localStorage.clear();
+                // replace를 사용하여 히스토리를 덮어써 뒤로가기 방지
+                window.location.replace("index.html");
+            }).catch((error) => {
+                console.error("Logout error:", error);
+                // Auth 오류 시에도 강제 리다이렉트
+                window.location.replace("index.html");
+            });
         }
-    }
+    };
 
-    // Auto Logout Logic (30 min)
+    // 7. [개선] 활동 기반 자동 로그아웃 (Auth 연동)
     (function () {
         let timeoutTimer;
-        const INACTIVITY_TIME = 30 * 60 * 1000;
+        const INACTIVITY_TIME = 30 * 60 * 1000; 
+
         function autoLogout() {
-            alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity..");
-            sessionStorage.clear();
-            location.href = "index.html";
+            alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity.");
+            firebase.auth().signOut().then(() => {
+                sessionStorage.clear();
+                window.location.replace("index.html");
+            });
         }
+
         function resetTimer() {
             clearTimeout(timeoutTimer);
             timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
         }
+
         window.onload = resetTimer;
-        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => window.addEventListener(e, resetTimer, true));
+        // 모바일 터치 및 스크롤 감지 추가
+        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => 
+            window.addEventListener(e, resetTimer, true)
+        );
     })();
+
+    window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
+    window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
 </script>
 
 
