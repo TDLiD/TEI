@@ -12,7 +12,15 @@
     .today-cell { background-color: rgba(99, 102, 241, 0.1) !important; border: 2px solid #6366f1 !important; box-shadow: inset 0 0 10px rgba(99, 102, 241, 0.1); }
     .today-cell .leave-day-num { color: #6366f1; font-weight: 900; }
     .today-mark { background: #6366f1; color: white; padding: 1px 4px; border-radius: 4px; font-size: 8px; font-weight: 900; margin-left: 5px; vertical-align: middle; display: inline-block; }
+    
+    /* 애니메이션 추가 */
+    @keyframes modalZoom {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-zoomIn { animation: modalZoom 0.2s ease-out forwards; }
 </style>
+
 <div class="animate-fadeIn space-y-6 pb-20">
     <div class="flex justify-between items-center bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
         <div>
@@ -21,6 +29,7 @@
         </div>
         <button onclick="openLeaveModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs transition-all active:scale-95 shadow-lg shadow-indigo-500/20">NEW REQUEST</button>
     </div>
+
     <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] border border-slate-800 backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6 px-2">
             <h3 id="calendarMonthTitle" class="text-lg font-black text-white uppercase italic tracking-tighter">Month Year</h3>
@@ -32,6 +41,7 @@
         </div>
         <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar"></div>
     </div>
+
     <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
         <h3 class="text-sm font-black text-white mb-6 flex items-center gap-2 uppercase tracking-tighter"><span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>My Annual Leave History</h3>
         <div class="overflow-x-auto">
@@ -46,9 +56,14 @@
         </div>
     </div>
 </div>
-<div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden overflow-y-auto pt-4 pb-20 px-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8 relative">
-        <h3 id="modalTitle" class="text-xl font-black text-white mb-6 uppercase italic">New Leave Request</h3>
+
+<div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] hidden overflow-y-auto pt-4 pb-20 px-4">
+    <div class="relative bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="modalTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">New Leave Request</h3>
+            <button onclick="closeLeaveModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl bg-slate-800 rounded-full transition-all">&times;</button>
+        </div>
+        
         <div class="space-y-4">
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Leave Type</label>
@@ -73,49 +88,64 @@
                 <div id="adminMemoText" class="w-full bg-rose-500/5 border border-rose-500/20 p-4 rounded-2xl text-rose-200 text-sm italic min-h-[60px]"></div>
             </div>
         </div>
+
         <div class="grid grid-cols-2 gap-3 mt-8">
-            <button onclick="closeLeaveModal()" class="bg-slate-800 text-slate-400 font-bold py-4 rounded-2xl hover:bg-slate-700 transition">CANCEL</button>
-            <button id="saveLeaveBtn" onclick="submitLeaveRequest()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition">SUBMIT</button>
+            <button onclick="closeLeaveModal()" class="bg-slate-800 text-slate-400 font-bold py-4 rounded-2xl hover:bg-slate-700 transition uppercase text-xs tracking-widest">Cancel</button>
+            <button id="saveLeaveBtn" onclick="submitLeaveRequest()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition uppercase text-xs tracking-widest">Submit</button>
         </div>
-        <button id="deleteLeaveBtn" onclick="deleteLeave()" class="w-full mt-3 text-rose-500 text-[10px] font-bold uppercase tracking-widest hidden">Delete this request</button>
+        <button id="deleteLeaveBtn" onclick="deleteLeave()" class="w-full mt-4 text-rose-500 text-[10px] font-black uppercase tracking-widest hidden hover:underline">Delete this request</button>
     </div>
 </div>
+
 <script>
 (function() {
     const db = firebase.database();
-    const user = sessionStorage.getItem('loggedInUser') || sessionStorage.getItem('user_id');
+    const user = sessionStorage.getItem('loggedInUser');
     let datePicker, editingId = null, editingData = null, currentViewDate = new Date();
+
     window.initLeavePage = function() {
         if (!user || user === "null") {
-            alert("No user information. Please log in again..");
+            alert("Login required.");
             return;
         }
         initFlatpickr();
         loadLeaveHistory();
         renderCalendar();
     };
+
     function initFlatpickr() {
         datePicker = flatpickr("#leaveDateRange", {
-            mode: "range", dateFormat: "Y-m-d", theme: "dark", minDate: "today", locale: { rangeSeparator: ' ~ ' }
+            mode: "range", dateFormat: "Y-m-d", theme: "dark", minDate: "today", 
+            locale: { rangeSeparator: ' ~ ' }, static: true, disableMobile: true
         });
     }
+
     window.renderCalendar = function() {
         const container = document.getElementById('leaveCalendarContainer');
         const title = document.getElementById('calendarMonthTitle');
         const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
         title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-        const firstDay = new Date(year, month, 1).getDay(), lastDate = new Date(year, month + 1, 0).getDate();
-        const today = new Date(), todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
         db.ref(`leaves/${user}/${year}`).once('value', snap => {
             const leaves = snap.val() || {};
             let html = `<table class="leave-calendar-table"><thead><tr>`;
             ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => html += `<th>${day}</th>`);
             html += `</tr></thead><tbody><tr>`;
+            
             for(let i=0; i<firstDay; i++) html += `<td></td>`;
+            
             for(let d=1; d<=lastDate; d++) {
                 if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const isToday = dateStr === todayStr, tdClass = isToday ? 'today-cell' : '', todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
+                const isToday = dateStr === todayStr;
+                const tdClass = isToday ? 'today-cell' : '';
+                const todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
+                
                 let badges = '';
                 Object.entries(leaves).forEach(([id, item]) => {
                     if(dateStr >= item.startDate && dateStr <= item.endDate) {
@@ -129,100 +159,151 @@
                 html += `<td class="${tdClass}"><div class="leave-day-num">${d}${todayBadge}</div>${badges}</td>`;
             }
             html += `</tr></tbody></table>`;
-            container.innerHTML = html;
+            if(container) container.innerHTML = html;
         });
     };
+
     window.changeLeaveMonth = function(val) { currentViewDate.setMonth(currentViewDate.getMonth() + val); renderCalendar(); };
     window.goToToday = function() { currentViewDate = new Date(); renderCalendar(); };
+
     function loadLeaveHistory() {
         const year = new Date().getFullYear();
         const historyRef = db.ref(`leaves/${user}/${year}`);
-        historyRef.off();
         historyRef.on('value', snap => {
             const tbody = document.getElementById('leaveHistoryBody');
-            if (!tbody) { historyRef.off(); return; }
+            if (!tbody) return;
             tbody.innerHTML = '';
-            Object.entries(snap.val() || {}).sort((a,b) => b[1].requestedAt - a[1].requestedAt).forEach(([id, data]) => {
+            const dataList = Object.entries(snap.val() || {}).sort((a,b) => b[1].requestedAt - a[1].requestedAt);
+            
+            dataList.forEach(([id, data]) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-white/5 transition-colors cursor-pointer";
                 tr.onclick = () => openLeaveModal(id, data);
                 const statusColor = data.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
-                const adminMemoHTML = data.adminMemo ? `<div class="flex items-center gap-1.5 text-amber-500/80 italic overflow-hidden"><span class="text-[10px]">💬</span><span class="truncate max-w-[100px]">${data.adminMemo}</span></div>` : `<span class="text-slate-700">-</span>`;
-                tr.innerHTML = `<td class="py-4 font-black text-indigo-400">${data.type}</td><td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td><td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td><td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td><td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td><td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>`;
+                const adminMemoHTML = data.adminMemo ? `<div class="flex items-center gap-1.5 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[100px]">${data.adminMemo}</span></div>` : `-`;
+                
+                tr.innerHTML = `
+                    <td class="py-4 font-black text-indigo-400">${data.type}</td>
+                    <td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td>
+                    <td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td>
+                    <td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td>
+                    <td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td>
+                    <td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>
+                `;
                 tbody.appendChild(tr);
             });
         });
     }
+
     window.openLeaveModal = function(id = null, data = null) {
         editingId = id; editingData = data;
-        const modal = document.getElementById('leaveModal'), deleteBtn = document.getElementById('deleteLeaveBtn'), saveBtn = document.getElementById('saveLeaveBtn');
-        const memoContainer = document.getElementById('adminMemoContainer'), memoText = document.getElementById('adminMemoText'), leaveTypeInput = document.getElementById('leaveType');
-        const leaveReasonInput = document.getElementById('leaveReason'), dateInput = document.getElementById('leaveDateRange'), modalTitle = document.getElementById('modalTitle');
+        const modal = document.getElementById('leaveModal');
         if (!modal) return;
 
-modal.classList.remove('hidden');
-        modal.classList.add('block'); // flex 대신 block 사용
-        document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        // 초기화 및 표시
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        const deleteBtn = document.getElementById('deleteLeaveBtn');
+        const saveBtn = document.getElementById('saveLeaveBtn');
+        const memoContainer = document.getElementById('adminMemoContainer');
+        const memoText = document.getElementById('adminMemoText');
+        const leaveTypeInput = document.getElementById('leaveType');
+        const leaveReasonInput = document.getElementById('leaveReason');
+        const dateInput = document.getElementById('leaveDateRange');
+        const modalTitle = document.getElementById('modalTitle');
 
         if (id && data) {
-            modalTitle.innerText = "Edit Leave Request"; leaveTypeInput.value = data.type;
+            modalTitle.innerText = "Edit Leave Request";
+            leaveTypeInput.value = data.type;
             if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
             leaveReasonInput.value = data.reason || "";
+            
             if (data.status === 'Approved') {
-                deleteBtn.classList.add('hidden'); saveBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
+                saveBtn.classList.add('hidden');
                 leaveTypeInput.disabled = leaveReasonInput.disabled = true;
                 if(dateInput) dateInput.disabled = true;
                 modalTitle.innerText = "View Approved Leave";
             } else {
-                deleteBtn.classList.remove('hidden'); saveBtn.classList.remove('hidden');
+                deleteBtn.classList.remove('hidden');
+                saveBtn.classList.remove('hidden');
                 leaveTypeInput.disabled = leaveReasonInput.disabled = false;
                 if(dateInput) dateInput.disabled = false;
             }
-            if (memoContainer && memoText) {
-                if (data.adminMemo) { memoContainer.classList.remove('hidden'); memoText.innerText = data.adminMemo; }
-                else { memoContainer.classList.add('hidden'); }
+            
+            if (data.adminMemo) {
+                memoContainer.classList.remove('hidden');
+                memoText.innerText = data.adminMemo;
+            } else {
+                memoContainer.classList.add('hidden');
             }
         } else {
-            modalTitle.innerText = "New Leave Request"; leaveTypeInput.selectedIndex = 0;
+            modalTitle.innerText = "New Leave Request";
+            leaveTypeInput.selectedIndex = 0;
             if (datePicker) datePicker.clear();
-            leaveReasonInput.value = ""; deleteBtn.classList.add('hidden'); saveBtn.classList.remove('hidden');
+            leaveReasonInput.value = "";
+            deleteBtn.classList.add('hidden');
+            saveBtn.classList.remove('hidden');
             leaveTypeInput.disabled = leaveReasonInput.disabled = false;
             if(dateInput) dateInput.disabled = false;
-            if (memoContainer) memoContainer.classList.add('hidden');
+            memoContainer.classList.add('hidden');
         }
     };
-// [수정] 모달 닫기 함수 내부
+
     window.closeLeaveModal = function() { 
         const modal = document.getElementById('leaveModal');
-        modal.classList.add('hidden'); 
-        modal.classList.remove('block');
-        document.body.style.overflow = ''; // 배경 스크롤 복구
+        if(modal) modal.classList.add('hidden'); 
+        document.body.style.overflow = '';
     };
+
     window.submitLeaveRequest = function() {
         if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
-        const type = document.getElementById('leaveType').value, range = datePicker.selectedDates, reason = document.getElementById('leaveReason').value.trim();
+        const type = document.getElementById('leaveType').value;
+        const range = datePicker.selectedDates;
+        const reason = document.getElementById('leaveReason').value.trim();
+        
         if (range.length === 0) return alert("Please select dates.");
-        const start = new Date(range[0]), end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
+        
+        const start = new Date(range[0]);
+        const end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
+        
         let validDates = [], tempDate = new Date(start);
         while (tempDate <= end) {
             if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) validDates.push(new Date(tempDate));
             tempDate.setDate(tempDate.getDate() + 1);
         }
-        if (validDates.length === 0) return alert("The selected range only contains weekends. Please pick weekdays.");
-        const startDate = validDates[0].toLocaleDateString('en-CA'), endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA'), year = new Date(startDate).getFullYear();
-        const leaveData = { type, startDate, endDate, reason, status: "Pending", requestedAt: firebase.database.ServerValue.TIMESTAMP, totalWeekdays: validDates.length };
+        
+        if (validDates.length === 0) return alert("Weekends are excluded. Please select weekdays.");
+        
+        const startDate = validDates[0].toLocaleDateString('en-CA');
+        const endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA');
+        const year = new Date(startDate).getFullYear();
+        
+        const leaveData = {
+            type, startDate, endDate, reason,
+            status: "Pending",
+            requestedAt: firebase.database.ServerValue.TIMESTAMP,
+            totalWeekdays: validDates.length
+        };
+
         const ref = editingId ? db.ref(`leaves/${user}/${year}/${editingId}`) : db.ref(`leaves/${user}/${year}`).push();
         ref.set(leaveData).then(() => {
-            alert(`Request processed.\nTotal: ${validDates.length} weekday(s) (Weekends excluded).`);
-            closeLeaveModal(); renderCalendar();
+            alert("Request submitted successfully.");
+            closeLeaveModal();
         });
     };
+
     window.deleteLeave = function() {
         if (!editingId || !editingData || editingData.status === 'Approved') return;
-        if (!confirm("Are you sure you want to cancel this request?")) return;
+        if (!confirm("Cancel this request?")) return;
         const year = new Date(editingData.startDate).getFullYear();
-        db.ref(`leaves/${user}/${year}/${editingId}`).remove().then(() => { alert("Deleted."); closeLeaveModal(); renderCalendar(); });
+        db.ref(`leaves/${user}/${year}/${editingId}`).remove().then(() => {
+            alert("Deleted.");
+            closeLeaveModal();
+        });
     };
+
     initLeavePage();
 })();
 </script>
