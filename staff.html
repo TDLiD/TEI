@@ -210,19 +210,30 @@
     };
 
     // 4. 파이어베이스 저장
-    window.saveStaffProfile = function(imgName) {
-        if(!confirm("Change your profile picture to this image?")) return;
+ window.saveStaffProfile = function(imgName) {
+    if(!confirm("이 이미지로 프로필 사진을 변경하시겠습니까?")) return;
 
-        db.ref('users/' + loggedInUser).update({
-            profileImg: imgName,
-            profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            closeProfileModal();
-        }).catch(e => {
-            console.error(e);
-            alert("Failed to update profile.");
-        });
-    };
+    db.ref('users/' + loggedInUser).update({
+        profileImg: imgName,
+        profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        // [추가] DB 저장 성공 시, 새로고침 없이 UI의 이미지 경로만 즉시 교체
+        const profileImgEl = document.querySelector('.nav-profile-img');
+        if (profileImgEl) {
+            // 브라우저 캐시 방지를 위해 타임스탬프를 살짝 붙여줍니다.
+            profileImgEl.src = `images/profile/${imgName}?t=${new Date().getTime()}`;
+        }
+        
+        closeProfileModal();
+        // 성공 메시지를 띄우고 싶다면 추가 (선택사항)
+        // console.log("Profile updated successfully");
+    }).catch(e => {
+        console.error(e);
+        alert("Failed to update profile.");
+    });
+};
+
+
     
     if(loggedInUser) {
         const desktopUserEl = document.getElementById('desktopUser');
