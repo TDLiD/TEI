@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - DAILY SYSTEM</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
 
     <script src="staff-level.js"></script>
 
@@ -145,14 +146,44 @@
     </div>
 
 <script>
-    const loggedInUser = sessionStorage.getItem('loggedInUser');
-    if (!loggedInUser) { location.href = "index.html"; }
-    
-    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+    /**
+     * 1. Firebase 설정 및 초기화
+     */
+    const firebaseConfig = {
+        apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
+        authDomain: "tdlid-dailyreport.firebaseapp.com",
+        databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+        projectId: "tdlid-dailyreport",
+        storageBucket: "tdlid-dailyreport.firebasestorage.app",
+        messagingSenderId: "922333077514",
+        appId: "1:922333077514:web:8914e5b06ac1f417707ff3"
+    };
+
+    // 중복 방지 초기화
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
 
-    // 1. 이미지 목록 업데이트 (제공해주신 파일명 기준)
+    /**
+     * 2. 인증 상태 관리 및 세션 보안
+     */
+    const loggedInUser = sessionStorage.getItem('loggedInUser');
+
+    // 실시간 인증 감시 (Firebase Auth 세션 기반)
+    auth.onAuthStateChanged((user) => {
+        if (!user || !loggedInUser) {
+            console.warn("세션이 만료되었거나 권한이 없습니다. 로그인 페이지로 이동합니다.");
+            window.location.replace("index.html");
+            return;
+        }
+        console.log("인증 확인됨:", user.email || loggedInUser);
+        // 인증 성공 시 사용자 프로필 데이터 로드 시작
+        initUserProfile();
+    });
+
+    /**
+     * 3. 프로필 이미지 관련 설정
+     */
     const PROFILE_IMAGES = [
         'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
         'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif',
@@ -163,58 +194,18 @@
         'image-26.gif', 'image-27.gif'
     ];
 
-    // 2. 모달 제어
-    window.openProfileModal = function(title, bodyHtml) {
-        document.getElementById('modalTitle').innerText = title;
-        document.getElementById('modalBody').innerHTML = bodyHtml;
-        document.getElementById('profileCustomModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closeProfileModal = function() {
-        document.getElementById('profileCustomModal').classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-
-    // 3. 프로필 이미지 선택 창 (그리드 생성)
-    window.openProfileImagePicker = function() {
-        let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">`;
-        PROFILE_IMAGES.forEach(img => {
-            gridHtml += `
-                <div onclick="saveStaffProfile('${img}')" class="profile-picker-item aspect-square shadow-lg">
-                    <img src="images/profile/${img}" class="w-full h-full object-cover" alt="profile option">
-                </div>`;
-        });
-        gridHtml += `</div>`;
-        openProfileModal('Change My Profile', gridHtml);
-    };
-
-    // 4. 파이어베이스 저장 및 반영
-    window.saveStaffProfile = function(imgName) {
-        if(!confirm("Change your profile picture to this image?")) return;
-
-        db.ref('users/' + loggedInUser).update({
-            profileImg: imgName,
-            profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            closeProfileModal();
-        }).catch(e => {
-            console.error(e);
-            alert("Failed to update profile.");
-        });
-    };
-    
-    if(loggedInUser) {
+    function initUserProfile() {
+        if (!loggedInUser) return;
+        
         document.getElementById('desktopUser').innerText = loggedInUser;
         
-        // 실시간 데이터 감시
+        // 사용자 데이터 실시간 감시 (프로필 이미지 등)
         db.ref('users/' + loggedInUser).on('value', snap => {
             const userData = snap.val();
-            const profileImg = userData?.profileImg || 'image-001.webp'; // 기본값 설정
+            const profileImg = userData?.profileImg || 'image-001.webp';
             const emojiContainer = document.getElementById('navEmojiContainer');
             
             if(emojiContainer) {
-                // 연필 아이콘 ✏️ 포함하여 렌더링
                 emojiContainer.innerHTML = `
                     <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">
                     <div class="edit-badge">
@@ -226,15 +217,9 @@
         });
     }
 
-    function startLevelSystem() {
-        if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
-            window.LevelSystem.init(loggedInUser);
-        } else {
-            setTimeout(startLevelSystem, 300);
-        }
-    }
-
-    // 기존 탭 전환 및 HTML 로드 로직 (그대로 유지)
+    /**
+     * 4. 탭 전환 및 HTML 로드 로직
+     */
     window.switchTab = function(type) {
         const tabs = {
             'dash': document.getElementById('tabDash'),
@@ -261,7 +246,7 @@
             'work': 'staff_report.html',
             'statistic': 'staff_statistic.html',
             'setting': 'staff_setting.html',
-            'all': 'staff_allatt.html' // 이 줄을 추가하여 버튼 클릭 시 staff_allatt.html이 로드되도록 합니다.
+            'all': 'staff_allatt.html'
         };
 
         if (urls[type]) {
@@ -270,7 +255,7 @@
                 else if (type === 'dash' && typeof window.initDashboard === 'function') { window.initDashboard(); }
             });
         }
-    }
+    };
 
     window.loadHTML = async function(url, callback) {
         try {
@@ -300,7 +285,7 @@
             console.error("Failed to load page:", e); 
             document.getElementById('contentFrame').innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">File Not Found: ${url}</div>`;
         }
-    }
+    };
 
     function executeScripts(container) {
         const scripts = container.querySelectorAll('script');
@@ -316,16 +301,72 @@
         });
     }
 
-    window.logout = function() { 
-        if (confirm("Are you sure you want to log out?")) {
-            sessionStorage.clear();
-            localStorage.removeItem('loggedInUser');
-            window.location.replace("index.html");
+    /**
+     * 5. UI 제어 및 기타 함수
+     */
+    window.openProfileModal = function(title, bodyHtml) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        document.getElementById('profileCustomModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeProfileModal = function() {
+        document.getElementById('profileCustomModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    window.openProfileImagePicker = function() {
+        let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">`;
+        PROFILE_IMAGES.forEach(img => {
+            gridHtml += `
+                <div onclick="saveStaffProfile('${img}')" class="profile-picker-item aspect-square shadow-lg">
+                    <img src="images/profile/${img}" class="w-full h-full object-cover" alt="profile option">
+                </div>`;
+        });
+        gridHtml += `</div>`;
+        openProfileModal('Change My Profile', gridHtml);
+    };
+
+    window.saveStaffProfile = function(imgName) {
+        if(!confirm("Change your profile picture to this image?")) return;
+        db.ref('users/' + loggedInUser).update({
+            profileImg: imgName,
+            profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            closeProfileModal();
+        }).catch(e => {
+            console.error(e);
+            alert("Failed to update profile.");
+        });
+    };
+
+    function startLevelSystem() {
+        if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
+            window.LevelSystem.init(loggedInUser);
+        } else {
+            setTimeout(startLevelSystem, 300);
         }
     }
 
+    window.logout = function() { 
+        if (confirm("Are you sure you want to log out?")) {
+            auth.signOut().then(() => {
+                sessionStorage.clear();
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('userRole');
+                window.location.replace("index.html");
+            }).catch((e) => {
+                console.error("Logout error", e);
+                window.location.replace("index.html");
+            });
+        }
+    }
+
+    // 초기 로드 시 대시보드 표시
     window.addEventListener('load', () => switchTab('dash'));
 </script>
+
 
 </body>
 </html>

@@ -26,6 +26,15 @@
         .mobile-record-list { display: flex; flex-direction: column; gap: 8px; }
         .attendance-record-item { background: rgba(15, 23, 42, 0.6) !important; padding: 12px !important; border-radius: 14px !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
     }
+/* 대량 리스트 렌더링 시 브라우저 최적화 힌트 */
+.attendance-record-item {
+    contain: layout style; /* 해당 요소의 변화가 외부 레이아웃에 영향을 주지 않음을 명시 */
+    will-change: transform; /* 레이어 분리 유도 */
+}
+
+.calendar-wrapper {
+    content-visibility: auto; /* 화면 밖에 있는 요소의 렌더링을 생략 (최신 브라우저 가상 스크롤 효과) */
+}
 </style>
 
 <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2.5rem] md:rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm max-w-full overflow-hidden">
@@ -78,57 +87,15 @@
             return timeStr.replace(/(\d{1,2}:\d{1,2}):\d{1,2}/, '$1');
         };
 
+        // --- 모달 및 데이터 수정/삭제 함수 (기존과 동일) ---
         window.openEditAttendance = function (name, date, infoEncoded) {
             const info = JSON.parse(decodeURIComponent(infoEncoded));
             const isSpecial = typeof info === 'string';
             const currentAttend = isSpecial ? "" : normalizeTime(info.attend || "");
             const currentLeave = isSpecial ? "" : normalizeTime(info.leave || "");
             const currentSpecial = isSpecial ? info : "";
-
-            const titleHtml = `
-                <div class="flex flex-col">
-                    <span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span>
-                    <span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm">(${date})</span></span>
-                </div>`;
-
-            const bodyHtml = `
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Status</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In</span>
-                                <input type="time" id="editAttend" value="${currentAttend}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/50">
-                            </div>
-                            <div class="space-y-1">
-                                <span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out</span>
-                                <input type="time" id="editLeave" value="${currentLeave}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="relative py-4">
-                        <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div>
-                        <div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div>
-                    </div>
-                    <div>
-                        <select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none">
-                            <option value="" ${currentSpecial === "" ? "selected" : ""}>--- NO SPECIAL STATUS ---</option>
-                            <option value="WO" ${currentSpecial === "WO" ? "selected" : ""}>WO (Work Out)</option>
-                            <option value="PEL" ${currentSpecial === "PEL" ? "selected" : ""}>PEL (Personal Leave)</option>
-                            <option value="ANL" ${currentSpecial === "ANL" ? "selected" : ""}>ANL (Annual Leave)</option>
-                            <option value="SIL" ${currentSpecial === "SIL" ? "selected" : ""}>SIL (Sick Leave)</option>
-                            <option value="OFF" ${currentSpecial === "OFF" ? "selected" : ""}>OFF (Day Off)</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-2 pt-4">
-                        <button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="window.deleteAttendance('${name}', '${date}')" class="text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/10 transition-all uppercase tracking-widest">Delete</button>
-                            <button onclick="window.closeAdminCustomModal()" class="text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
-                        </div>
-                    </div>
-                </div>`;
-
+            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">Edit Attendance</span><span class="text-lg font-black text-white">${name} <span class="text-slate-500 text-sm">(${date})</span></span></div>`;
+            const bodyHtml = `<div class="space-y-4"><div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Standard Status</label><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In</span><input type="time" id="editAttend" value="${currentAttend}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/50"></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out</span><input type="time" id="editLeave" value="${currentLeave}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500/50"></div></div></div><div class="relative py-4"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer appearance-none"><option value="" ${currentSpecial === "" ? "selected" : ""}>--- NO SPECIAL STATUS ---</option><option value="WO" ${currentSpecial === "WO" ? "selected" : ""}>WO (Work Out)</option><option value="PEL" ${currentSpecial === "PEL" ? "selected" : ""}>PEL (Personal Leave)</option><option value="ANL" ${currentSpecial === "ANL" ? "selected" : ""}>ANL (Annual Leave)</option><option value="SIL" ${currentSpecial === "SIL" ? "selected" : ""}>SIL (Sick Leave)</option><option value="OFF" ${currentSpecial === "OFF" ? "selected" : ""}>OFF (Day Off)</option></select></div><div class="flex flex-col gap-2 pt-4"><button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button><div class="grid grid-cols-2 gap-2"><button onclick="window.deleteAttendance('${name}', '${date}')" class="text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/10 transition-all uppercase tracking-widest">Delete</button><button onclick="window.closeAdminCustomModal()" class="text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button></div></div></div>`;
             if (window.openAdminCustomModal) window.openAdminCustomModal(titleHtml, bodyHtml);
             else alert("Modal function not found.");
         };
@@ -138,7 +105,6 @@
             const leave = document.getElementById('editLeave').value.trim();
             const special = document.getElementById('editSpecial').value;
             let updateData = special ? special : { attend: attend, leave: leave };
-
             if (confirm(`Update record for ${name} on ${date}?`)) {
                 db.ref(`attendance/${date}/${name}`).set(updateData).then(() => {
                     if (window.closeAdminCustomModal) window.closeAdminCustomModal();
@@ -154,40 +120,50 @@
             }
         };
 
-window.renderAttendanceFull = function () {
+        // --- 개선된 메인 렌더링 함수 ---
+        window.renderAttendanceFull = function () {
             const monthLabel = document.getElementById('full_att_month');
             const tbody = document.getElementById('full_att_calendar_body');
             if (!monthLabel || !tbody) { setTimeout(window.renderAttendanceFull, 100); return; }
-            
+
             monthLabel.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-            const attRef = db.ref('attendance');
+            
+            const year = viewDate.getFullYear(), month = viewDate.getMonth();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+            const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDate).padStart(2, '0')}`;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // 최적화 1: 필요한 월의 범위만 쿼리
+            const attRef = db.ref('attendance').orderByKey().startAt(startDateStr).endAt(endDateStr);
+            
             attRef.off();
             attRef.on('value', snap => {
                 const data = snap.val() || {};
-                const currentTbody = document.getElementById('full_att_calendar_body');
-                if (!currentTbody) { attRef.off(); return; }
-                currentTbody.innerHTML = '';
-                
-                const year = viewDate.getFullYear(), month = viewDate.getMonth();
-                const lastDate = new Date(year, month + 1, 0).getDate();
-                
-                // 오늘 날짜 정보
-                const now = new Date();
-                const todayStr = now.toISOString().split('T')[0];
-                const isCurrentMonth = (now.getFullYear() === year && now.getMonth() === month);
-                
                 const isMobile = window.innerWidth <= 768;
+                tbody.innerHTML = ''; 
 
                 if (isMobile) {
-                    // 모바일: 오늘 날짜부터 역순으로 표시
-                    // 이번 달을 보고 있다면 '오늘'부터 시작, 이전 달을 보고 있다면 '말일'부터 시작
-                    let startDay = isCurrentMonth ? now.getDate() : lastDate;
+                    // 최적화 2: 모바일 비동기 분할 렌더링 (Batch)
+                    const now = new Date();
+                    const startDay = (now.getFullYear() === year && now.getMonth() === month) ? now.getDate() : lastDate;
+                    let currentDay = startDay;
+                    const batchSize = 5; 
 
-                    for (let d = startDay; d >= 1; d--) {
-                        createDateCell(d, year, month, data, todayStr, true, currentTbody);
+                    function renderBatch() {
+                        const fragment = document.createDocumentFragment(); 
+                        for (let i = 0; i < batchSize && currentDay >= 1; i++) {
+                            // dStr과 오늘여부를 내부에서 계산하도록 인자 조정
+                            createDateCell(currentDay, year, month, data, fragment, true, todayStr);
+                            currentDay--;
+                        }
+                        tbody.appendChild(fragment); 
+                        if (currentDay >= 1) requestAnimationFrame(renderBatch); 
                     }
+                    renderBatch();
                 } else {
-                    // 데스크톱: 표준 그리드 (1일부터 표시)
+                    // 최적화 3: 데스크톱 Fragment 사용
+                    const fragment = document.createDocumentFragment();
                     const firstDay = new Date(year, month, 1).getDay();
                     let dateNum = 1;
                     for (let i = 0; i < 6; i++) {
@@ -196,19 +172,20 @@ window.renderAttendanceFull = function () {
                             if (i === 0 && j < firstDay || dateNum > lastDate) {
                                 row.appendChild(document.createElement('td'));
                             } else {
-                                createDateCell(dateNum, year, month, data, todayStr, false, row);
+                                createDateCell(dateNum, year, month, data, row, false, todayStr);
                                 dateNum++;
                             }
                         }
-                        currentTbody.appendChild(row);
+                        fragment.appendChild(row);
                         if (dateNum > lastDate) break;
                     }
+                    tbody.appendChild(fragment);
                 }
             });
         };
 
-        // Helper function to create the cell content to avoid duplication
-        function createDateCell(dateNum, year, month, data, todayStr, isMobile, parentElement) {
+        // Helper function (수정됨: parentElement와 렌더링 모드 최적화)
+        function createDateCell(dateNum, year, month, data, parentElement, isMobile, todayStr) {
             const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
             const isToday = dStr === todayStr;
             const dayOfWeek = new Date(year, month, dateNum).toLocaleString('en-US', { weekday: 'long' });

@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     
     <style>
@@ -87,6 +89,26 @@
 
     <script>
         (function() {
+            // 1. Firebase 상세 설정
+            const firebaseConfig = {
+                apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
+                authDomain: "tdlid-dailyreport.firebaseapp.com",
+                databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+                projectId: "tdlid-dailyreport",
+                storageBucket: "tdlid-dailyreport.firebasestorage.app",
+                messagingSenderId: "922333077514",
+                appId: "1:922333077514:web:8914e5b06ac1f417707ff3"
+            };
+
+            // Firebase 초기화
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            const auth = firebase.auth();
+
+            // 세션 지속성 설정 (로컬 스토리지에 유지)
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+            // 초기 UI 및 배경 설정
             window.addEventListener('DOMContentLoaded', () => {
                 document.body.classList.add('loaded');
             });
@@ -95,23 +117,32 @@
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 const videoEl = document.getElementById('video-bg');
                 if (isMobile) {
-                    videoEl.style.display = 'none';
+                    if(videoEl) videoEl.style.display = 'none';
                     const day = new Date().getDay();
                     const dailyImages = { 1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif", 4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif", 0: "jennie-7.gif" };
                     const bgImage = dailyImages[day] || "jennie-1.gif";
                     document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('images/gif/${bgImage}')`;
                 } else {
-                    videoEl.style.display = 'block';
+                    if(videoEl) videoEl.style.display = 'block';
                     document.body.style.backgroundImage = 'none';
                 }
             };
-
             setResponsiveBackground();
 
-            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
-            
+// [수정] 인증 상태 감시 로직을 더 안전하게 변경
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        const savedName = localStorage.getItem('loggedInUser');
+        const savedRole = localStorage.getItem('userRole');
+        
+        // 현재 페이지가 index.html일 때만 리다이렉트 수행 (중복 실행 방지)
+        if (savedName && savedRole && window.location.pathname.includes('index.html')) {
+            console.log("세션 확인됨, 대시보드로 이동:", savedName);
+            redirectUser(savedName, savedRole);
+        }
+    }
+});
+
             const userSelect = document.getElementById('userName');
             const passwordInput = document.getElementById('password');
 
@@ -119,39 +150,58 @@
                 if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
             });
 
+            // 사용자 목록 로드
             database.ref('users').once('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!userSelect) return;
                 userSelect.innerHTML = '<option value="" disabled selected>Select Name</option>';
                 if (users) {
-                    const fragment = document.createDocumentFragment();
-                    Object.keys(users).forEach(name => {
+                    const sortedNames = Object.keys(users).sort();
+                    sortedNames.forEach(name => {
                         const option = document.createElement('option');
                         option.value = name;
                         option.textContent = name + (users[name].role === 'admin' ? ' (Manager)' : '');
-                        fragment.appendChild(option);
+                        userSelect.appendChild(option);
                     });
-                    userSelect.appendChild(fragment);
                 }
             });
 
+            // 로그인 실행
             window.handleLogin = function() {
-                const name = document.getElementById('userName').value;
-                const pw = document.getElementById('password').value;
-                if(!name || !pw) return alert("Please check your credentials.");
+                const name = userSelect.value;
+                const pw = passwordInput.value;
+                
+                if(!name || !pw) return alert("Please select your name and enter password.");
+
                 database.ref('users/' + name).once('value', (snapshot) => {
                     const userData = snapshot.val();
                     if (!userData) return alert("User not found.");
+
                     if (userData.password === pw) {
-                        sessionStorage.setItem('loggedInUser', name);
-                        sessionStorage.setItem('userRole', userData.role);
-                        location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
-                    } else { alert("Incorrect password."); }
+                        // Firebase Auth 익명 로그인으로 세션 생성
+                        auth.signInAnonymously()
+                            .then(() => {
+                                localStorage.setItem('loggedInUser', name);
+                                localStorage.setItem('userRole', userData.role);
+                                redirectUser(name, userData.role);
+                            })
+                            .catch((error) => {
+                                console.error("Auth Error:", error);
+                                alert("Failed to create login session.");
+                            });
+                    } else { 
+                        alert("Incorrect password."); 
+                    }
                 });
             };
 
+            function redirectUser(name, role) {
+                location.href = (role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
+            }
+
+            // 비밀번호 힌트
             window.findPassword = function() {
-                const name = document.getElementById('userName').value;
+                const name = userSelect.value;
                 if (!name) return alert("Please select your name from the list first.");
                 if (confirm(`Do you want to see a password hint for '${name}'?`)) {
                     database.ref('users/' + name).once('value', (snapshot) => {

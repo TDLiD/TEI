@@ -84,20 +84,28 @@
         </div>
     </div>
 </div>
-<script>
+
+<script type="module">
+    // 1. 공통 모듈 가져오기
+    import { Core } from './core.js';
+
     (function() {
         const db = firebase.database();
+        const auth = firebase.auth();
         const user = sessionStorage.getItem('loggedInUser');
         const userRole = sessionStorage.getItem('userRole');
+        
         let calViewDate = new Date();
         let selectedId = null;
         let currentEventData = null;
         let startPicker, endPicker;
         let draggedId = null;
-        let touchTimer = null;
-        const todayObj = new Date();
-        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
-        window.closeModal = () => { document.getElementById('eventModal').classList.add('hidden'); };
+
+        // --- 2. 모달 및 UI 제어 ---
+        window.closeModal = () => { 
+            document.getElementById('eventModal').classList.add('hidden'); 
+        };
+
         window.toggleTimePicker = (isAllDay) => {
             const config = {
                 enableTime: !isAllDay,
@@ -110,117 +118,169 @@
             if (startPicker) startPicker.set(config);
             if (endPicker) endPicker.set(config);
         };
+
+        // --- 3. 일정 추가/수정 모달 오픈 ---
         window.openAddModal = (dateStr) => {
-            selectedId = null; currentEventData = null;
+            selectedId = null; 
+            currentEventData = null;
             document.getElementById('evTitle').value = "";
             document.getElementById('evDesc').value = "";
             document.getElementById('adminMemoArea').classList.add('hidden');
             document.getElementById('evAllDay').checked = false; 
+            
             window.toggleTimePicker(false);
             startPicker.setDate(dateStr + "T09:00");
             endPicker.setDate(dateStr + "T10:00");
+            
             document.getElementById('btnDel').classList.add('hidden');
             document.getElementById('btnSave').classList.remove('hidden');
             document.getElementById('eventModal').classList.replace('hidden', 'flex');
         };
+
         window.openEditModal = (id, ev) => {
-            selectedId = id; currentEventData = ev;
+            selectedId = id; 
+            currentEventData = ev;
+            // 권한 체크: 작성자 본인이거나 관리자일 때만 수정 가능
             const canEdit = (ev.author === user || userRole === 'admin');
+            
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evDesc').value = ev.desc || "";
+            
             const memoArea = document.getElementById('adminMemoArea');
             if (ev.adminMemo) {
                 memoArea.classList.remove('hidden');
                 document.getElementById('evAdminMemo').innerText = ev.adminMemo;
-            } else { memoArea.classList.add('hidden'); }
+            } else { 
+                memoArea.classList.add('hidden'); 
+            }
+            
             window.toggleTimePicker(ev.allDay);
             document.getElementById('evAllDay').checked = ev.allDay;
             startPicker.setDate(ev.start);
             endPicker.setDate(ev.end);
+            
+            // 버튼 표시 여부 제어
             document.getElementById('btnSave').classList.toggle('hidden', !canEdit);
             document.getElementById('btnDel').classList.toggle('hidden', !canEdit);
             document.getElementById('eventModal').classList.replace('hidden', 'flex');
         };
+
+        // --- 4. 데이터 저장 및 삭제 ---
         window.saveEvent = () => {
             const title = document.getElementById('evTitle').value;
             if(!title) return alert("Title required");
+            
             const data = {
-                title: title, desc: document.getElementById('evDesc').value || "",
+                title: title, 
+                desc: document.getElementById('evDesc').value || "",
                 start: document.getElementById('evStart').value,
                 end: document.getElementById('evEnd').value,
                 allDay: document.getElementById('evAllDay').checked,
                 author: selectedId ? currentEventData.author : user,
                 timestamp: Date.now()
             };
+            
             if (selectedId && currentEventData.adminMemo) data.adminMemo = currentEventData.adminMemo;
+            
             const ref = db.ref('shared_schedules');
             const promise = selectedId ? ref.child(selectedId).update(data) : ref.push(data);
             promise.then(window.closeModal);
         };
-        window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(window.closeModal); };
-        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
-        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
-        window.handleDragStart = (e, id) => { draggedId = id; e.target.classList.add('dragging'); e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; };
-        window.handleDragEnd = (e) => { e.target.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); };
-        window.handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
-        window.handleDragLeave = (e) => { e.currentTarget.classList.remove('drag-over'); };
-        window.handleDrop = (e, targetDate) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = draggedId || e.dataTransfer.getData('text/plain'); if (id) moveEvent(id, targetDate); };
-        window.handleTouchStart = (e, id) => { const el = e.currentTarget; touchTimer = setTimeout(() => { draggedId = id; el.classList.add('touch-ready'); if (navigator.vibrate) navigator.vibrate(50); }, 600); };
-        window.handleTouchEnd = (e, id, dateStr) => { clearTimeout(touchTimer); const el = e.currentTarget; if (el.classList.contains('touch-ready')) { const touch = e.changedTouches[0]; const targetEl = document.elementFromPoint(touch.clientX, touch.clientY); const targetTd = targetEl ? targetEl.closest('td') : null; if (targetTd && targetTd.dataset.date && targetTd.dataset.date !== dateStr) moveEvent(id, targetTd.dataset.date); } el.classList.remove('touch-ready'); draggedId = null; };
+
+        window.deleteEvent = () => { 
+            if(confirm("Are you sure you want to delete this event?")) {
+                db.ref('shared_schedules/' + selectedId).remove().then(window.closeModal); 
+            }
+        };
+
+        // --- 5. 드래그 앤 드롭 (이동) ---
+        window.handleDragStart = (e, id) => { 
+            draggedId = id; 
+            e.target.classList.add('opacity-40'); 
+            e.dataTransfer.setData('text/plain', id); 
+        };
+        window.handleDragEnd = (e) => { 
+            e.target.classList.remove('opacity-40'); 
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); 
+        };
+        window.handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('bg-blue-500/10'); };
+        window.handleDragLeave = (e) => { e.currentTarget.classList.remove('bg-blue-500/10'); };
+        window.handleDrop = (e, targetDate) => { 
+            e.preventDefault(); 
+            e.currentTarget.classList.remove('bg-blue-500/10'); 
+            const id = draggedId || e.dataTransfer.getData('text/plain'); 
+            if (id) moveEvent(id, targetDate); 
+        };
+
         function moveEvent(id, newStartDateStr) {
             const ref = db.ref('shared_schedules/' + id);
             ref.once('value').then(snap => {
                 const ev = snap.val();
-                if (!ev || (ev.author !== user && userRole !== 'admin')) return;
-                const oldStart = new Date(ev.start);
-                const oldEnd = new Date(ev.end);
-                const durationMs = oldEnd.getTime() - oldStart.getTime();
+                if (!ev || (ev.author !== user && userRole !== 'admin')) {
+                    return alert("You don't have permission to move this event.");
+                }
+                
+                const durationMs = new Date(ev.end) - new Date(ev.start);
                 let nextStart, nextEnd;
+                
                 if (ev.allDay) {
                     nextStart = new Date(newStartDateStr);
                     nextEnd = new Date(nextStart.getTime() + durationMs);
-                    const formatYMD = (d) => d.toISOString().split('T')[0];
-                    ref.update({ start: formatYMD(nextStart), end: formatYMD(nextEnd) });
+                    ref.update({ 
+                        start: Core.formatDate(nextStart), 
+                        end: Core.formatDate(nextEnd) 
+                    });
                 } else {
                     const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
                     nextStart = new Date(newStartDateStr + 'T' + timePart);
                     nextEnd = new Date(nextStart.getTime() + durationMs);
-                    const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
-                    ref.update({ start: formatFull(nextStart), end: formatFull(nextEnd) });
+                    ref.update({ 
+                        start: nextStart.toISOString().split('.')[0].slice(0, 16), 
+                        end: nextEnd.toISOString().split('.')[0].slice(0, 16) 
+                    });
                 }
             });
         }
+
+        // --- 6. 렌더링 ---
         function renderSchedule() {
             const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
+            const { firstDay, lastDate } = Core.getCalendarGrid(year, month);
+            
             const monthYearEl = document.getElementById('calMonthYear');
-            if (monthYearEl) { monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); }
+            if (monthYearEl) { 
+                monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); 
+            }
+            
             const scheduleRef = db.ref('shared_schedules');
             scheduleRef.off(); 
             scheduleRef.on('value', snap => {
                 const events = snap.val() || {};
                 const tbody = document.getElementById('scheduleBody');
-                if (!tbody) { scheduleRef.off(); return; }
+                if (!tbody) return;
                 tbody.innerHTML = ''; 
+                
                 const sortedEvents = Object.keys(events).map(id => ({
                     id, ...events[id],
                     sDate: events[id].start.split('T')[0],
                     eDate: events[id].end.split('T')[0]
-                })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
+                })).sort((a, b) => a.sDate.localeCompare(b.sDate));
+
                 const eventSlots = {};
                 const dayOccupancy = {};
+
+                // 슬롯 계산 로직
                 sortedEvents.forEach(ev => {
                     let slot = 0;
                     while (true) {
                         let ok = true;
                         for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                            const dStr = d.toISOString().split('T')[0];
+                            const dStr = Core.formatDate(d);
                             if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
                         }
                         if (ok) {
                             for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                                const dStr = d.toISOString().split('T')[0];
+                                const dStr = Core.formatDate(d);
                                 if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
                                 dayOccupancy[dStr].add(slot);
                             }
@@ -229,38 +289,60 @@
                         slot++;
                     }
                 });
+
                 let dateNum = 1;
                 for (let i = 0; i < 6; i++) {
                     const tr = document.createElement('tr');
                     let weekDates = [];
                     let maxSlotsInWeek = 0;
+
                     for (let j = 0; j < 7; j++) {
-                        if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); }
-                        else { weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`); dateNum++; }
+                        if ((i === 0 && j < firstDay) || dateNum > lastDate) { 
+                            weekDates.push(null); 
+                        } else { 
+                            weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`); 
+                            dateNum++; 
+                        }
                     }
+
                     weekDates.forEach(dStr => {
                         if (dStr && dayOccupancy[dStr]) {
                             const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
                             if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
                         }
                     });
-                    const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
-                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
+
+                    tr.style.height = Math.max(140, 40 + (maxSlotsInWeek * 28) + 15) + 'px';
+
                     weekDates.forEach((dStr, j) => {
                         const td = document.createElement('td');
+                        td.className = "border-slate-800 relative";
                         if (dStr) {
                             td.dataset.date = dStr;
                             td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
-                            const isToday = (dStr === (new Date().toISOString().split('T')[0]));
-                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
+                            td.ondragover = window.handleDragOver;
+                            td.ondragleave = window.handleDragLeave;
+                            td.ondrop = (e) => window.handleDrop(e, dStr);
+
+                            const isToday = (dStr === Core.formatDate(new Date()));
+                            let html = `<div class="date-wrapper">
+                                <span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span>
+                            </div>`;
+
                             sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
                                 if (dStr === ev.sDate || j === 0) {
                                     const slot = eventSlots[ev.id];
-                                    const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
+                                    const span = Math.min(Core.getEventSpan(dStr, ev.eDate, '2099-12-31'), 7 - j);
                                     const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                                    const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
                                     const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                                    html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"><span class="ev-title-text">${isCont ? '' : ev.title}</span><span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span></div>`;
+                                    
+                                    html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
+                                                  draggable="true" ondragstart="window.handleDragStart(event, '${ev.id}')" ondragend="window.handleDragEnd(event)"
+                                                  class="event-item ${isCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" 
+                                                  style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
+                                                <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+                                                <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+                                            </div>`;
                                 }
                             });
                             td.innerHTML = html;
@@ -272,9 +354,23 @@
                 }
             });
         }
-        const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true, disableMobile: true };
+
+        // --- 7. 초기화 ---
+        const baseConfig = { 
+            enableTime: true, 
+            dateFormat: "Y-m-d\\TH:i", 
+            altInput: true, 
+            altFormat: "Y-m-d h:i K", 
+            static: true, 
+            disableMobile: true 
+        };
         startPicker = flatpickr("#evStart", baseConfig);
         endPicker = flatpickr("#evEnd", baseConfig);
+
+        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
+        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
+
+        // 시작
         renderSchedule();
     })();
 </script>

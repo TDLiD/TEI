@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - DAILY SYSTEM</title>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
 <script src="staff-level.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
@@ -124,182 +127,214 @@
         </div>
     </div>
 
-    <script>
-        // 1. Firebase Initialize
-        (function () {
-            if (!window.firebase) return;
-            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            if (!window.db) window.db = firebase.database();
-        })();
+<script>
+// 1. Firebase Initialize & Auth Guard
+    (function () {
+        // 상세 설정값 추가
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
+            authDomain: "tdlid-dailyreport.firebaseapp.com",
+            databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+            projectId: "tdlid-dailyreport",
+            storageBucket: "tdlid-dailyreport.firebasestorage.app",
+            messagingSenderId: "922333077514",
+            appId: "1:922333077514:web:8914e5b06ac1f417707ff3"
+        };
 
-        // 2. Modal Functions
-        (function () {
-            const openFn = function (titleHtml, bodyHtml) {
-                const modal = document.getElementById('adminCustomModal');
-                const tBox = document.getElementById('modalTitle');
-                const bBox = document.getElementById('modalBody');
-                if (!modal) return;
-                if (tBox) tBox.innerHTML = titleHtml;
-                if (bBox) bBox.innerHTML = bodyHtml;
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            };
-            const closeFn = function () {
-                const modal = document.getElementById('adminCustomModal');
-                if (modal) modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-            Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false });
-            Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false });
-        })();
+        // 초기화 (중복 방지)
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        window.db = firebase.database();
+        const auth = firebase.auth();
+
+        // 관리자 인증 상태 실시간 감시
+        auth.onAuthStateChanged((user) => {
+            const savedRole = localStorage.getItem('userRole') || sessionStorage.getItem('userRole');
+            const savedName = localStorage.getItem('loggedInUser') || sessionStorage.getItem('loggedInUser');
+
+            // 1. Firebase 인증 세션이 없거나
+            // 2. 로컬에 저장된 역할이 admin이 아니거나
+            // 3. 이름 정보가 없으면 로그인 페이지로 튕김
+            if (!user || savedRole !== 'admin' || !savedName) {
+                console.warn("Unauthorized access. Redirecting to login...");
+                location.replace("index.html");
+                return;
+            }
+            console.log("Admin Session Verified:", savedName);
+        });
+    })();
+
+// 2. 모달 제어 함수 (공통)
+    window.openAdminCustomModal = function(title, bodyHtml) {
+        const modal = document.getElementById('adminCustomModal');
+        if(!modal) return;
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeAdminCustomModal = function() {
+        const modal = document.getElementById('adminCustomModal');
+        if(modal) modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
 
 // 3. Profile Image Selection & Save Function
-const PROFILE_IMAGES = [
-    '1.gif', '1.webp', 
-    '2.gif', '2.webp', 
-    '3.gif', '3.webp', 
-    '4.gif', '5.gif', '6.gif'
-];
+    const PROFILE_IMAGES = [
+        '1.gif', '1.webp', 
+        '2.gif', '2.webp', 
+        '3.gif', '3.webp', 
+        '4.gif', '5.gif', '6.gif'
+    ];
 
-        window.openProfileImagePicker = function() {
-            let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
-            PROFILE_IMAGES.forEach(img => {
-                gridHtml += `
-                    <div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md">
-                        <img src="images/profile/admin/${img}" class="w-full h-full object-cover aspect-square" alt="profile">
-                    </div>`;
-            });
-            gridHtml += `</div>`;
-            openAdminCustomModal('Select Admin Profile', gridHtml);
-        };
+    window.openProfileImagePicker = function() {
+        let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
+        PROFILE_IMAGES.forEach(img => {
+            gridHtml += `
+                <div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md">
+                    <img src="images/profile/admin/${img}" class="w-full h-full object-cover aspect-square" alt="profile">
+                </div>`;
+        });
+        gridHtml += `</div>`;
+        openAdminCustomModal('Select Admin Profile', gridHtml);
+    };
 
-        window.saveAdminProfile = function(imgName) {
-            const path = `images/profile/admin/${imgName}`;
-            if(!confirm("Would you like to change your admin profile to this image?")) return;
+    window.saveAdminProfile = function(imgName) {
+        const path = `images/profile/admin/${imgName}`;
+        if(!confirm("Would you like to change your admin profile to this image?")) return;
 
-            db.ref('admin_settings/profile').update({
-                profileImg: path,
-                updatedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                closeAdminCustomModal();
-                alert("Your profile has been successfully changed.");
-            }).catch(e => {
-                console.error(e);
-                alert("저장 실패");
-            });
-        };
+        db.ref('admin_settings/profile').update({
+            profileImg: path,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            closeAdminCustomModal();
+            alert("Your profile has been successfully changed.");
+        }).catch(e => {
+            console.error(e);
+            alert("Save Failed");
+        });
+    };
 
-        // 4. Real-time Profile Sync
-        (function initProfileSync() {
-            setTimeout(() => {
-                if (window.db) {
-                    db.ref('admin_settings/profile/profileImg').on('value', snap => {
-                        const imgUrl = snap.val();
-                        if (imgUrl) {
-                            document.querySelectorAll('.admin-profile-img').forEach(img => {
-                                img.src = imgUrl;
-                            });
-                        }
-                    });
-                }
-            }, 500);
-        })();
-
-        // 5. Tab Switching Logic
-        async function switchAdminTab(tab) {
-            try {
-                document.body.style.overflow = '';
-                if (window.closeAdminCustomModal) window.closeAdminCustomModal();
-            } catch (e) { }
-            
+// 4. Real-time Profile Sync
+    (function initProfileSync() {
+        // DB 로드 대기 후 실행
+        const checkDB = setInterval(() => {
             if (window.db) {
-                ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { try { db.ref(p).off(); } catch (e) { } });
-            }
-
-            const area = document.getElementById('adminContent');
-            if (!area) return;
-            area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
-            
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
-            document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
-            document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
-            document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
-
-            const map = {
-                dashboard: 'admin_dashboard.html',
-                attendance: 'admin_attendance.html',
-                reports: 'admin_report.html',
-                leave: 'admin_leave.html',
-                schedule: 'admin_calendar.html',
-                statistic: 'admin_statistic.html',
-                settings: 'admin_setting.html'
-            };
-
-            try {
-                const res = await fetch(map[tab]);
-                if (!res.ok) throw new Error("File not found.");
-                const html = await res.text();
-                area.innerHTML = html;
-                
-                const scripts = area.querySelectorAll('script');
-                for (const oldScript of scripts) {
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) {
-                        newScript.src = oldScript.src;
-                        newScript.async = false;
-                        await new Promise(r => { newScript.onload = r; newScript.onerror = r; document.head.appendChild(newScript); });
-                    } else {
-                        newScript.textContent = oldScript.textContent;
-                        document.head.appendChild(newScript);
+                clearInterval(checkDB);
+                db.ref('admin_settings/profile/profileImg').on('value', snap => {
+                    const imgUrl = snap.val();
+                    if (imgUrl) {
+                        document.querySelectorAll('.admin-profile-img').forEach(img => {
+                            img.src = imgUrl;
+                        });
                     }
-                    if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
+                });
+            }
+        }, 500);
+    })();
+
+// 5. Tab Switching Logic
+    async function switchAdminTab(tab) {
+        try {
+            document.body.style.overflow = '';
+            closeAdminCustomModal();
+        } catch (e) { }
+        
+        if (window.db) {
+            // 탭 이동 시 이전 탭의 실시간 리스너 해제 (메모리 관리)
+            ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
+                try { db.ref(p).off(); } catch (e) { } 
+            });
+        }
+
+        const area = document.getElementById('adminContent');
+        if (!area) return;
+        area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+        
+        // 탭 UI 활성화 표시
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
+        document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+        document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
+        document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
+
+        const map = {
+            dashboard: 'admin_dashboard.html',
+            attendance: 'admin_attendance.html',
+            reports: 'admin_report.html',
+            leave: 'admin_leave.html',
+            schedule: 'admin_calendar.html',
+            statistic: 'admin_statistic.html',
+            settings: 'admin_setting.html'
+        };
+
+        try {
+            const res = await fetch(map[tab]);
+            if (!res.ok) throw new Error("File not found.");
+            const html = await res.text();
+            area.innerHTML = html;
+            
+            const scripts = area.querySelectorAll('script');
+            for (const oldScript of scripts) {
+                const newScript = document.createElement('script');
+                if (oldScript.src) {
+                    newScript.src = oldScript.src;
+                    newScript.async = false;
+                    await new Promise(r => { 
+                        newScript.onload = r; 
+                        newScript.onerror = r; 
+                        document.head.appendChild(newScript); 
+                    });
+                } else {
+                    newScript.textContent = oldScript.textContent;
+                    document.head.appendChild(newScript);
                 }
-                
-                setTimeout(() => {
-                    const initFuncs = {
-                        dashboard: 'initAdminDashboard',
-                        attendance: 'renderAttendanceFull',
-                        reports: 'renderWorkFull',
-                        leave: 'initAdminLeave',
-                        schedule: 'renderScheduleFull',
-                        statistic: 'initAdminStatistic',
-                        settings: 'initAdminSettings'
-                    };
-                    const fn = window[initFuncs[tab]];
-                    if (typeof fn === 'function') fn();
-                }, 100);
-            } catch (e) {
-                area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
+                if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
             }
+            
+            // 각 페이지별 초기화 함수 실행
+            setTimeout(() => {
+                const initFuncs = {
+                    dashboard: 'initAdminDashboard',
+                    attendance: 'renderAttendanceFull',
+                    reports: 'renderWorkFull',
+                    leave: 'initAdminLeave',
+                    schedule: 'renderScheduleFull',
+                    statistic: 'initAdminStatistic',
+                    settings: 'initAdminSettings'
+                };
+                const fn = window[initFuncs[tab]];
+                if (typeof fn === 'function') fn();
+            }, 150);
+        } catch (e) {
+            area.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold uppercase">ERROR: ${e.message}</div>`;
         }
+    }
 
-        window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
-        window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
-
-        function adminLogout() {
-            if (confirm("Would you like to log out of the system?")) {
-                alert("You have been logged out successfully.");
-                location.href = "index.html";
-            }
-        }
-
-        // Auto Logout Logic (30 min)
-        (function () {
-            let timeoutTimer;
-            const INACTIVITY_TIME = 30 * 60 * 1000;
-            function autoLogout() {
-                alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity..");
+// 6. Logout & Session
+    function adminLogout() {
+        if (confirm("Would you like to log out of the system?")) {
+            firebase.auth().signOut().then(() => {
                 sessionStorage.clear();
-                location.href = "index.html";
-            }
-            function resetTimer() {
-                clearTimeout(timeoutTimer);
-                timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
-            }
-            window.onload = resetTimer;
-            ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => window.addEventListener(e, resetTimer, true));
-        })();
-    </script>
+                localStorage.removeItem('loggedInUser');
+                localStorage.removeItem('userRole');
+                alert("You have been logged out successfully.");
+                location.replace("index.html");
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+                location.replace("index.html");
+            });
+        }
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => { 
+        switchAdminTab('dashboard'); 
+    });
+</script>
+
+
 </body>
 </html>
