@@ -217,16 +217,9 @@ window.saveStaffProfile = function(imgName) {
         profileImg: imgName,
         profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
     }).then(() => {
-        // [추가] DB 저장 성공 시, 새로고침 없이 UI의 이미지 경로만 즉시 교체
-        const profileImgEl = document.querySelector('.nav-profile-img');
-        if (profileImgEl) {
-            // 브라우저 캐시 방지를 위해 타임스탬프를 살짝 붙여줍니다.
-            profileImgEl.src = `images/profile/${imgName}?t=${new Date().getTime()}`;
-        }
-        
+        // 직접 DOM을 수정하지 말고 모달만 닫습니다. 
+        // 하단의 .on('value') 리스너가 감지하여 이미지를 바꿔줄 것입니다.
         closeProfileModal();
-        // 성공 메시지를 띄우고 싶다면 추가 (선택사항)
-        // console.log("Profile updated successfully");
     }).catch(e => {
         console.error(e);
         alert("Failed to update profile.");
@@ -238,22 +231,28 @@ window.saveStaffProfile = function(imgName) {
         if (desktopUserEl) desktopUserEl.innerText = loggedInUser;
         
         // 실시간 데이터 감시 및 UI 업데이트 (방어 코드 강화)
-        db.ref('users/' + loggedInUser).on('value', snap => {
-            const userData = snap.val();
-            if (!userData) return;
+// 기존 if(loggedInUser) { ... } 내부의 db.ref().on 부분입니다.
+db.ref('users/' + loggedInUser).on('value', snap => {
+    const userData = snap.val();
+    if (!userData) return;
 
-            const profileImg = userData.profileImg || 'image-001.webp';
-            const emojiContainer = document.getElementById('navEmojiContainer');
-            
-            // 핵심: 요소가 존재하는지 확인 후 업데이트
-            if(emojiContainer) {
-                emojiContainer.innerHTML = `
-                    <img src="images/profile/${profileImg}" class="nav-profile-img shadow-xl shadow-blue-500/10">
-                    <div class="edit-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                    </div>
-                `;
-            }
+    const profileImg = userData.profileImg || 'image-001.webp';
+    const emojiContainer = document.getElementById('navEmojiContainer');
+    
+    // 캐시 방지를 위한 타임스탬프 생성
+    const timestamp = new Date().getTime();
+    
+    if(emojiContainer) {
+        emojiContainer.innerHTML = `
+            <img src="images/profile/${profileImg}?t=${timestamp}" class="nav-profile-img shadow-xl shadow-blue-500/10">
+            <div class="edit-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </div>
+        `;
+    }
+    
+    // (이후 레벨 시스템 코드 유지...)
+});
             
             // 레벨 시스템 표시 영역 확인 후 실행
             const levelContainer = document.getElementById('levelDisplayContainer');
