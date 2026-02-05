@@ -147,15 +147,27 @@
         
         if (!window.db) window.db = firebase.database();
 
-        // [개선] Firebase Auth 인증 상태 감시 (강력한 세션 관리)
+// [핵심 수정] 무조건 쫓아내지 않고, 인증 상태를 신중하게 확인
+        let authChecked = false;
+
         firebase.auth().onAuthStateChanged((user) => {
+            authChecked = true;
             if (!user) {
-                // 로그인이 안 되어 있거나 세션이 만료된 경우 index.html로 강제 이동
-                console.log("No active admin session.");
-                window.location.replace("index.html");
+                // 세션이 정말 없는 경우에만 리다이렉트
+                console.log("No active admin session found.");
+                // 약간의 지연을 주어 index.html에서 넘어온 직후 튕기는 현상 방지
+                setTimeout(() => {
+                    if(!firebase.auth().currentUser) {
+                        window.location.replace("index.html");
+                    }
+                }, 1000);
             } else {
-                console.log("Admin verified:", user.email);
-                // 세션 유지를 위해 필요한 경우 추가 로직 처리
+                console.log("Admin verified:", user.uid);
+                // 로그인 유지 시 필요한 세션 정보 복구
+                if(!sessionStorage.getItem('loggedInUser')) {
+                    sessionStorage.setItem('loggedInUser', 'Admin');
+                    sessionStorage.setItem('userRole', 'admin');
+                }
             }
         });
     })();
@@ -229,44 +241,65 @@
         }, 100);
     })();
 
-    // 5. Tab Switching Logic
+// 5. Tab Switching Logic (개선 버전)
     async function switchAdminTab(tab) {
         try {
+            // 탭 이동 시 body 스크롤 복구 및 모달 닫기
             document.body.style.overflow = '';
             if (window.closeAdminCustomModal) window.closeAdminCustomModal();
-        } catch (e) { }
-        
-        if (window.db) {
-            ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
-                try { db.ref(p).off(); } catch (e) { } 
+
+            // [추가] 보안 체크: 인증되지 않은 사용자가 탭 전환을 시도할 경우 차단
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser && !location.hostname.includes('localhost')) {
+                console.warn("Session expired or invalid. Redirecting to login...");
+                window.location.replace("index.html");
+                return;
+            }
+
+            // 기존 Firebase 리스너 해제 (메모리 누수 및 중복 실행 방지)
+            if (window.db) {
+                ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
+                    try { db.ref(p).off(); } catch (e) { } 
+                });
+            }
+
+            const area = document.getElementById('adminContent');
+            if (!area) return;
+
+            // 로딩 스피너 표시
+            area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+            
+            // UI 상태 변경 (사이드바 및 모바일 네비게이션 활성화 표시)
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('tab-inactive');
             });
-        }
+            document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+            document.getElementById(`btn-${tab}`)?.classList.remove('tab-inactive');
 
-        const area = document.getElementById('adminContent');
-        if (!area) return;
-        area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
-        
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
-        document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
-        document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
-        document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
+            document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
+            document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
 
-        const map = {
-            dashboard: 'admin_dashboard.html',
-            attendance: 'admin_attendance.html',
-            reports: 'admin_report.html',
-            leave: 'admin_leave.html',
-            schedule: 'admin_calendar.html',
-            statistic: 'admin_statistic.html',
-            settings: 'admin_setting.html'
-        };
+            const map = {
+                dashboard: 'admin_dashboard.html',
+                attendance: 'admin_attendance.html',
+                reports: 'admin_report.html',
+                leave: 'admin_leave.html',
+                schedule: 'admin_calendar.html',
+                statistic: 'admin_statistic.html',
+                settings: 'admin_setting.html'
+            };
 
-        try {
-            const res = await fetch(map[tab]);
-            if (!res.ok) throw new Error("File not found.");
+            // [개선] 캐시 방지를 위해 타임스탬프 추가
+            const targetUrl = `${map[tab]}?t=${new Date().getTime()}`;
+            
+            const res = await fetch(targetUrl);
+            if (!res.ok) throw new Error(`Page Load Failed: ${res.statusText}`);
+            
             const html = await res.text();
             area.innerHTML = html;
             
+            // 삽입된 HTML 내의 스크립트 실행 로직
             const scripts = area.querySelectorAll('script');
             for (const oldScript of scripts) {
                 const newScript = document.createElement('script');
@@ -291,6 +324,7 @@
                 }
             }
             
+            // 각 페이지별 초기화 함수 실행
             setTimeout(() => {
                 const initFuncs = {
                     dashboard: 'initAdminDashboard',
@@ -301,13 +335,23 @@
                     statistic: 'initAdminStatistic',
                     settings: 'initAdminSettings'
                 };
-                const fn = window[initFuncs[tab]];
-                if (typeof fn === 'function') fn();
-            }, 100);
+                const fnName = initFuncs[tab];
+                if (fnName && typeof window[fnName] === 'function') {
+                    window[fnName]();
+                }
+            }, 150); // 스크립트 로드 완료 후 안정적인 실행을 위해 150ms 대기
+
         } catch (e) {
-            area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
+            console.error("Tab switch error:", e);
+            area.innerHTML = `
+                <div class="p-10 text-center">
+                    <div class="text-rose-500 text-xl font-bold mb-2">⚠️ Error Loading Page</div>
+                    <div class="text-slate-400 text-sm">${e.message}</div>
+                    <button onclick="switchAdminTab('${tab}')" class="mt-4 px-4 py-2 bg-slate-800 rounded-lg text-xs">Retry</button>
+                </div>`;
         }
     }
+
 
     // 6. [개선] 모바일 호환 로그아웃 및 Firebase Auth 연동
     window.adminLogout = function() {
