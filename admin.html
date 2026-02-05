@@ -242,19 +242,36 @@ const PROFILE_IMAGES = [
                 const html = await res.text();
                 area.innerHTML = html;
                 
-                const scripts = area.querySelectorAll('script');
-                for (const oldScript of scripts) {
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) {
-                        newScript.src = oldScript.src;
-                        newScript.async = false;
-                        await new Promise(r => { newScript.onload = r; newScript.onerror = r; document.head.appendChild(newScript); });
-                    } else {
-                        newScript.textContent = oldScript.textContent;
-                        document.head.appendChild(newScript);
-                    }
-                    if (newScript.parentNode) newScript.parentNode.removeChild(newScript);
-                }
+// ... 기존 코드 생략 ...
+const scripts = area.querySelectorAll('script');
+for (const oldScript of scripts) {
+    const newScript = document.createElement('script');
+
+    // === 이 위치에 추가하세요 ===
+    Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value);
+    });
+    // ========================
+
+if (oldScript.src) {
+        newScript.src = oldScript.src;
+        newScript.async = false;
+        await new Promise((resolve) => {
+            newScript.onload = resolve;
+            newScript.onerror = resolve;
+            document.head.appendChild(newScript);
+        });
+    } else {
+        newScript.textContent = oldScript.textContent;
+        document.head.appendChild(newScript);
+        
+        // [추가 권장] 실행 직후 헤드에서 제거 (메모리 관리 및 중복 방지)
+        // 단, 모듈 타입은 비동기로 작동하므로 일반 스크립트일 때만 즉시 삭제
+        if (newScript.type !== 'module') {
+            document.head.removeChild(newScript);
+        }
+    }
+}
                 
                 setTimeout(() => {
                     const initFuncs = {

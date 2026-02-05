@@ -302,19 +302,27 @@
         }
     }
 
-    function executeScripts(container) {
-        const scripts = container.querySelectorAll('script');
-        scripts.forEach(oldScript => {
-            const newScript = document.createElement('script');
-            if (oldScript.src) {
-                newScript.src = oldScript.src;
-                newScript.async = false;
-            } else {
-                newScript.textContent = oldScript.textContent;
-            }
-            document.head.appendChild(newScript).parentNode.removeChild(newScript);
+function executeScripts(container) {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+
+        // === 이 위치에 추가하세요 ===
+        Array.from(oldScript.attributes).forEach(attr => {
+            newScript.setAttribute(attr.name, attr.value);
         });
-    }
+        // ========================
+
+        if (oldScript.src) {
+            newScript.src = oldScript.src;
+            newScript.async = false;
+        } else {
+            newScript.textContent = oldScript.textContent;
+        }
+        document.head.appendChild(newScript).parentNode.removeChild(newScript);
+    });
+}
+
 
     window.logout = function() { 
         if (confirm("Are you sure you want to log out?")) {
