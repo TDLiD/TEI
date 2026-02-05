@@ -147,32 +147,38 @@
         
         if (!window.db) window.db = firebase.database();
 
-// [핵심 수정] 무조건 쫓아내지 않고, 인증 상태를 신중하게 확인
-        let authChecked = false;
+        // 인증 상태 체크 완료 여부 플래그
+        let isAuthResolved = false;
 
         firebase.auth().onAuthStateChanged((user) => {
-            authChecked = true;
+            isAuthResolved = true;
             if (!user) {
-                // 세션이 정말 없는 경우에만 리다이렉트
-                console.log("No active admin session found.");
-                // 약간의 지연을 주어 index.html에서 넘어온 직후 튕기는 현상 방지
+                // 로컬 호스트가 아니고 실제 서버일 때 세션이 없으면 0.8초 후 리다이렉트
+                // (매우 짧은 통신 지연으로 인해 currentUser가 일시적으로 null일 수 있음 방지)
                 setTimeout(() => {
-                    if(!firebase.auth().currentUser) {
+                    if(!firebase.auth().currentUser && !location.hostname.includes('localhost')) {
+                        console.log("No session found. Redirecting...");
                         window.location.replace("index.html");
                     }
-                }, 1000);
+                }, 800);
             } else {
                 console.log("Admin verified:", user.uid);
-                // 로그인 유지 시 필요한 세션 정보 복구
+                // 로그인 세션 정보 강제 갱신
                 if(!sessionStorage.getItem('loggedInUser')) {
                     sessionStorage.setItem('loggedInUser', 'Admin');
                     sessionStorage.setItem('userRole', 'admin');
+                }
+                
+                // 인증이 완료된 후 아직 콘텐츠가 비어있다면 대시보드 로드
+                const area = document.getElementById('adminContent');
+                if (area && !area.innerHTML.trim()) {
+                    switchAdminTab('dashboard');
                 }
             }
         });
     })();
 
-    // 2. Modal Functions
+    // 2. Modal Functions (UI 제어)
     (function () {
         const openFn = function (titleHtml, bodyHtml) {
             const modal = document.getElementById('adminCustomModal');
@@ -241,22 +247,19 @@
         }, 100);
     })();
 
-// 5. Tab Switching Logic (개선 버전)
+    // 5. Tab Switching Logic (중요: 인증 대기 로직 포함)
     async function switchAdminTab(tab) {
         try {
-            // 탭 이동 시 body 스크롤 복구 및 모달 닫기
             document.body.style.overflow = '';
             if (window.closeAdminCustomModal) window.closeAdminCustomModal();
 
-            // [추가] 보안 체크: 인증되지 않은 사용자가 탭 전환을 시도할 경우 차단
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser && !location.hostname.includes('localhost')) {
-                console.warn("Session expired or invalid. Redirecting to login...");
-                window.location.replace("index.html");
+            // 보안 체크: Firebase 인증 객체가 로드되지 않았으면 중단 (리다이렉트는 AuthChangeListener가 담당)
+            if (!firebase.auth().currentUser && !location.hostname.includes('localhost')) {
+                console.warn("Auth not ready yet...");
                 return;
             }
 
-            // 기존 Firebase 리스너 해제 (메모리 누수 및 중복 실행 방지)
+            // 기존 Firebase 리스너 해제 (메모리 누수 방지)
             if (window.db) {
                 ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
                     try { db.ref(p).off(); } catch (e) { } 
@@ -266,17 +269,16 @@
             const area = document.getElementById('adminContent');
             if (!area) return;
 
-            // 로딩 스피너 표시
+            // 로딩 스피너
             area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
             
-            // UI 상태 변경 (사이드바 및 모바일 네비게이션 활성화 표시)
+            // UI 상태 업데이트
             document.querySelectorAll('.tab-btn').forEach(b => {
                 b.classList.remove('tab-active');
                 b.classList.add('tab-inactive');
             });
             document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
             document.getElementById(`btn-${tab}`)?.classList.remove('tab-inactive');
-
             document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
             document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
 
@@ -290,22 +292,20 @@
                 settings: 'admin_setting.html'
             };
 
-            // [개선] 캐시 방지를 위해 타임스탬프 추가
-            const targetUrl = `${map[tab]}?t=${new Date().getTime()}`;
+            // 캐시 방지용 타임스탬프
+            const targetUrl = `${map[tab]}?v=${new Date().getTime()}`;
             
             const res = await fetch(targetUrl);
-            if (!res.ok) throw new Error(`Page Load Failed: ${res.statusText}`);
+            if (!res.ok) throw new Error(`Page Not Found: ${map[tab]}`);
             
             const html = await res.text();
             area.innerHTML = html;
             
-            // 삽입된 HTML 내의 스크립트 실행 로직
+            // HTML 내 포함된 스크립트 강제 실행
             const scripts = area.querySelectorAll('script');
             for (const oldScript of scripts) {
                 const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
-                });
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
 
                 if (oldScript.src) {
                     newScript.src = oldScript.src;
@@ -324,7 +324,7 @@
                 }
             }
             
-            // 각 페이지별 초기화 함수 실행
+            // 초기화 함수 실행 대기
             setTimeout(() => {
                 const initFuncs = {
                     dashboard: 'initAdminDashboard',
@@ -339,38 +339,29 @@
                 if (fnName && typeof window[fnName] === 'function') {
                     window[fnName]();
                 }
-            }, 150); // 스크립트 로드 완료 후 안정적인 실행을 위해 150ms 대기
+            }, 150);
 
         } catch (e) {
             console.error("Tab switch error:", e);
-            area.innerHTML = `
-                <div class="p-10 text-center">
-                    <div class="text-rose-500 text-xl font-bold mb-2">⚠️ Error Loading Page</div>
-                    <div class="text-slate-400 text-sm">${e.message}</div>
-                    <button onclick="switchAdminTab('${tab}')" class="mt-4 px-4 py-2 bg-slate-800 rounded-lg text-xs">Retry</button>
-                </div>`;
+            area.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold">${e.message}</div>`;
         }
     }
 
-
-    // 6. [개선] 모바일 호환 로그아웃 및 Firebase Auth 연동
+    // 6. 로그아웃 (Auth 연동)
     window.adminLogout = function() {
         if (confirm("Would you like to log out of the system?")) {
             firebase.auth().signOut().then(() => {
-                // Firebase 로그아웃 성공 시
                 sessionStorage.clear();
                 localStorage.clear();
-                // replace를 사용하여 히스토리를 덮어써 뒤로가기 방지
                 window.location.replace("index.html");
             }).catch((error) => {
                 console.error("Logout error:", error);
-                // Auth 오류 시에도 강제 리다이렉트
                 window.location.replace("index.html");
             });
         }
     };
 
-    // 7. [개선] 활동 기반 자동 로그아웃 (Auth 연동)
+    // 7. 자동 로그아웃 (30분 미활동 시)
     (function () {
         let timeoutTimer;
         const INACTIVITY_TIME = 30 * 60 * 1000; 
@@ -389,16 +380,21 @@
         }
 
         window.onload = resetTimer;
-        // 모바일 터치 및 스크롤 감지 추가
         ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => 
             window.addEventListener(e, resetTimer, true)
         );
     })();
 
+    // 8. 초기 로드 이벤트 (인증 상태를 기다린 후 로드하도록 DOMContentLoaded에서는 조건부 실행)
     window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
-    window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
+    
+    window.addEventListener('DOMContentLoaded', () => { 
+        // sessionStorage가 이미 있다면 미리 탭을 띄우고, 없다면 Auth 감지 후 띄움
+        if (sessionStorage.getItem('loggedInUser')) {
+            switchAdminTab('dashboard');
+        }
+    });
 </script>
-
 
 </body>
 </html>
