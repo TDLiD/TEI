@@ -119,7 +119,7 @@
                 if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
             });
 
-            database.ref('users').once('value', (snapshot) => {
+            database.ref('users').limitToFirst(50).once('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!userSelect) return;
                 userSelect.innerHTML = '<option value="" disabled selected>Select Name</option>';

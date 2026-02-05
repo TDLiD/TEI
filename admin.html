@@ -213,7 +213,7 @@
         const checkDB = setInterval(() => {
             if (window.db) {
                 clearInterval(checkDB);
-                db.ref('admin_settings/profile/profileImg').on('value', snap => {
+                db.ref('admin_settings/profile/profileImg').once('value', snap => {
                     const imgUrl = snap.val();
                     if (imgUrl) {
                         document.querySelectorAll('.admin-profile-img').forEach(img => {

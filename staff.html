@@ -229,7 +229,7 @@
         if (desktopUserEl) desktopUserEl.innerText = loggedInUser;
         
         // 실시간 데이터 감시 및 UI 업데이트 (방어 코드 강화)
-        db.ref('users/' + loggedInUser).on('value', snap => {
+        db.ref('users/' + loggedInUser).once('value', snap => {
             const userData = snap.val();
             if (!userData) return;
 
@@ -359,7 +359,8 @@
         }
     }
 
-    window.addEventListener('load', () => switchTab('dash'));
+setTimeout(() => switchTab('dash'), 300);
+
 </script>
 
 </body>
