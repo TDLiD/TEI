@@ -125,11 +125,13 @@
         </div>
     </div>
 
-<script>
-    // 1. Firebase Initialize & Auth State Sync
+  <script>
+    // 1. Firebase Initialize
     (function () {
         if (!window.firebase) return;
 
+        // [수정 포인트] 인증 및 앱 초기화를 위해 전체 설정값이 필요합니다.
+        // 제공해주신 staff.html의 정보를 바탕으로 구성했습니다.
         const firebaseConfig = {
             apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
             authDomain: "tdlid-dailyreport.firebaseapp.com",
@@ -146,40 +148,9 @@
         }
         
         if (!window.db) window.db = firebase.database();
-
-        window.isFirebaseInit = false;
-        let initialTabLoaded = false; // 중복 실행 방지 플래그
-
-        firebase.auth().onAuthStateChanged((user) => {
-            window.isFirebaseInit = true; // 인증 프로세스 완료됨을 표시
-            
-            if (!user) {
-                // 로컬 환경이 아닐 때만 리다이렉트 (테스트 편의성)
-                setTimeout(() => {
-                    if(!firebase.auth().currentUser && !location.hostname.includes('localhost')) {
-                        console.log("No session found. Redirecting...");
-                        window.location.replace("index.html");
-                    }
-                }, 1500); // 네트워크 지연을 고려해 1.5초 대기
-            } else {
-                console.log("Admin verified:", user.uid);
-                
-                // 세션 스토리지 복구
-                if(!sessionStorage.getItem('loggedInUser')) {
-                    sessionStorage.setItem('loggedInUser', 'Admin');
-                    sessionStorage.setItem('userRole', 'admin');
-                }
-                
-                // [핵심] 인증이 확인된 이 시점에 최초 1회만 대시보드를 로드합니다.
-                if (!initialTabLoaded) {
-                    initialTabLoaded = true;
-                    switchAdminTab('dashboard');
-                }
-            }
-        });
     })();
 
-    // 2. Modal Functions (UI 제어)
+    // 2. Modal Functions
     (function () {
         const openFn = function (titleHtml, bodyHtml) {
             const modal = document.getElementById('adminCustomModal');
@@ -200,8 +171,13 @@
         Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false });
     })();
 
-    // 3. Profile Image Selection
-    const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
+    // 3. Profile Image Selection & Save Function
+    const PROFILE_IMAGES = [
+        '1.gif', '1.webp', 
+        '2.gif', '2.webp', 
+        '3.gif', '3.webp', 
+        '4.gif', '5.gif', '6.gif'
+    ];
 
     window.openProfileImagePicker = function() {
         let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
@@ -218,6 +194,7 @@
     window.saveAdminProfile = function(imgName) {
         const path = `images/profile/admin/${imgName}`;
         if(!confirm("Would you like to change your admin profile to this image?")) return;
+
         db.ref('admin_settings/profile').update({
             profileImg: path,
             updatedAt: firebase.database.ServerValue.TIMESTAMP
@@ -232,6 +209,7 @@
 
     // 4. Real-time Profile Sync
     (function initProfileSync() {
+        // DB가 초기화될 시간을 벌기 위해 setTimeout을 사용하거나 즉시 확인
         const checkDB = setInterval(() => {
             if (window.db) {
                 clearInterval(checkDB);
@@ -249,62 +227,51 @@
 
     // 5. Tab Switching Logic
     async function switchAdminTab(tab) {
-        // Firebase 인증 상태가 아직 결정되지 않았다면 대기 (무한루프 방지를 위해 콘솔 출력 제거)
-        if (!window.isFirebaseInit) {
-            setTimeout(() => switchAdminTab(tab), 200);
-            return;
-        }
-
         try {
             document.body.style.overflow = '';
             if (window.closeAdminCustomModal) window.closeAdminCustomModal();
-
-            // 인증되지 않은 상태에서 탭 전환 시도 시 차단
-            if (!firebase.auth().currentUser && !location.hostname.includes('localhost')) {
-                return; 
-            }
-
-            if (window.db) {
-                ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
-                    try { db.ref(p).off(); } catch (e) { } 
-                });
-            }
-
-            const area = document.getElementById('adminContent');
-            if (!area) return;
-
-            area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
-            
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('tab-active');
-                b.classList.add('tab-inactive');
+        } catch (e) { }
+        
+        if (window.db) {
+            ['attendance', 'reports', 'users', 'shared_schedules', 'leaves'].forEach(p => { 
+                try { db.ref(p).off(); } catch (e) { } 
             });
-            document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
-            document.getElementById(`btn-${tab}`)?.classList.remove('tab-inactive');
-            document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
-            document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
+        }
 
-            const map = {
-                dashboard: 'admin_dashboard.html',
-                attendance: 'admin_attendance.html',
-                reports: 'admin_report.html',
-                leave: 'admin_leave.html',
-                schedule: 'admin_calendar.html',
-                statistic: 'admin_statistic.html',
-                settings: 'admin_setting.html'
-            };
+        const area = document.getElementById('adminContent');
+        if (!area) return;
+        area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
+        document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+        document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('mobile-tab-active'));
+        document.querySelector(`.m-btn-${tab}`)?.classList.add('mobile-tab-active');
 
-            const targetUrl = `${map[tab]}?v=${new Date().getTime()}`;
-            const res = await fetch(targetUrl);
-            if (!res.ok) throw new Error(`Page Not Found: ${map[tab]}`);
-            
+        const map = {
+            dashboard: 'admin_dashboard.html',
+            attendance: 'admin_attendance.html',
+            reports: 'admin_report.html',
+            leave: 'admin_leave.html',
+            schedule: 'admin_calendar.html',
+            statistic: 'admin_statistic.html',
+            settings: 'admin_setting.html'
+        };
+
+        try {
+            const res = await fetch(map[tab]);
+            if (!res.ok) throw new Error("File not found.");
             const html = await res.text();
             area.innerHTML = html;
             
             const scripts = area.querySelectorAll('script');
             for (const oldScript of scripts) {
                 const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+
+                // 속성 복사
+                Array.from(oldScript.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+
                 if (oldScript.src) {
                     newScript.src = oldScript.src;
                     newScript.async = false;
@@ -316,65 +283,56 @@
                 } else {
                     newScript.textContent = oldScript.textContent;
                     document.head.appendChild(newScript);
-                    if (newScript.type !== 'module') document.head.removeChild(newScript);
+                    if (newScript.type !== 'module') {
+                        document.head.removeChild(newScript);
+                    }
                 }
             }
             
             setTimeout(() => {
                 const initFuncs = {
-                    dashboard: 'initAdminDashboard', attendance: 'renderAttendanceFull',
-                    reports: 'renderWorkFull', leave: 'initAdminLeave',
-                    schedule: 'renderScheduleFull', statistic: 'initAdminStatistic',
+                    dashboard: 'initAdminDashboard',
+                    attendance: 'renderAttendanceFull',
+                    reports: 'renderWorkFull',
+                    leave: 'initAdminLeave',
+                    schedule: 'renderScheduleFull',
+                    statistic: 'initAdminStatistic',
                     settings: 'initAdminSettings'
                 };
-                const fnName = initFuncs[tab];
-                if (fnName && typeof window[fnName] === 'function') window[fnName]();
-            }, 150);
-
+                const fn = window[initFuncs[tab]];
+                if (typeof fn === 'function') fn();
+            }, 100);
         } catch (e) {
-            console.error("Tab switch error:", e);
-            const area = document.getElementById('adminContent');
-            if(area) area.innerHTML = `<div class="p-10 text-center text-rose-500 font-bold">${e.message}</div>`;
+            area.innerHTML = `<div class="p-10 text-center text-rose-500">${e.message}</div>`;
         }
     }
 
-    // 6. Logout
-    window.adminLogout = function() {
-        if (confirm("Would you like to log out of the system?")) {
-            firebase.auth().signOut().then(() => {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.replace("index.html");
-            }).catch(() => window.location.replace("index.html"));
-        }
-    };
+    window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
+    window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
 
-    // 7. Auto Logout
+    function adminLogout() {
+        if (confirm("Would you like to log out of the system?")) {
+            alert("You have been logged out successfully.");
+            location.href = "index.html";
+        }
+    }
+
+    // Auto Logout Logic (30 min)
     (function () {
         let timeoutTimer;
-        const INACTIVITY_TIME = 30 * 60 * 1000; 
+        const INACTIVITY_TIME = 30 * 60 * 1000;
         function autoLogout() {
-            alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity.");
-            firebase.auth().signOut().then(() => {
-                sessionStorage.clear();
-                window.location.replace("index.html");
-            });
+            alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity..");
+            sessionStorage.clear();
+            location.href = "index.html";
         }
         function resetTimer() {
             clearTimeout(timeoutTimer);
             timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
         }
         window.onload = resetTimer;
-        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => 
-            window.addEventListener(e, resetTimer, true)
-        );
+        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => window.addEventListener(e, resetTimer, true));
     })();
-
-    // 8. Event Listeners
-    window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
-    
-    // [중요] DOMContentLoaded에서 switchAdminTab을 직접 호출하지 않습니다.
-    // 대신 Firebase 인증 콜백(onAuthStateChanged) 내부에서 호출하도록 하여 타이밍 문제를 해결했습니다.
 </script>
 
 

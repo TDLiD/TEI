@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Quick User Guide - Staff & Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f3f4f6; color: #1f2937; margin: 0; padding: 0; }
+        .page { 
+            width: 210mm; 
+            min-height: 296mm; 
+            padding: 15mm 20mm; 
+            margin: 10mm auto; 
+            background: white; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            page-break-after: always;
+            position: relative;
+        }
+        .header { border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+        .section-title { background: #1e40af; color: white; padding: 8px 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-weight: 900; font-size: 1.2rem; }
+        .item-title { font-weight: 800; color: #1e40af; font-size: 1rem; margin-top: 15px; display: block; }
+        .content-text { font-size: 0.95rem; line-height: 1.7; color: #374151; margin-left: 4px; margin-bottom: 10px; }
+        .tip-box { background: #fef3c7; border: 1px solid #fcd34d; padding: 15px; border-radius: 12px; margin-top: 30px; font-size: 0.9rem; }
+        
+        @media print {
+            body { background: white; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
+            .no-print { display: none; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print text-center py-5">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition">인쇄 또는 PDF로 저장하기</button>
+        <p class="text-xs text-gray-500 mt-2">※ 인쇄 설정에서 '배경 그래픽'을 체크해야 디자인이 유지됩니다.</p>
+    </div>
+
+    <div class="page">
+        <div class="header">
+            <h1 class="text-2xl font-black text-gray-900">Staff/Admin Daily Report System User Guide</h1>
+            <p class="text-blue-600 font-bold mt-1 underline">https://tdlid.github.io/TEI</p>
+            <p class="text-gray-500 text-xs italic mt-1">Optimized for mobile/PC. Created by Alex in Jan 26th.</p>
+        </div>
+
+        <h2 class="section-title tracking-tight uppercase">Staff Quick User Guide (English)</h2>
+        
+        <div class="space-y-6">
+            <div>
+                <span class="item-title text-blue-800">1. Attendance Check (Time Clock)</span>
+                <p class="content-text"><b>Clock-In:</b> Click the [ATTENDANCE] button when you arrive.<br>
+                <b>Clock-Out:</b> Click the [LEAVE] button before you go home.<br>
+                <b>Check Status:</b> Your daily working hours and "Late" status are updated in real-time on the dashboard calendar.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800">2. Daily Report</span>
+                <p class="content-text"><b>Write Report:</b> Select a date on the calendar and click [Write Report].<br>
+                <b>Contents:</b> Fill in "Today's To-Do" and "Work Summary."<br>
+                <b>Save:</b> Click [Save Report] to submit. Reports are linked to your attendance data for the day.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800">3. Leave Request (Vacation)</span>
+                <p class="content-text"><b>Request:</b> Go to the [LEAVE] tab and click a date on the calendar.<br>
+                <b>Details:</b> Choose the leave type (Annual, Sick, etc.) and write the reason.<br>
+                <b>Auto-Exclude:</b> The system automatically excludes weekends from your request.<br>
+                <b>Status:</b> You can track if your request is "Pending" or "Approved" on the leave calendar.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800">4. Shared Schedule</span>
+                <p class="content-text"><b>View Events:</b> Go to the [CALENDAR] tab to see team schedules and office events.<br>
+                <b>Add Event:</b> Click a date to add a personal or shared schedule.<br>
+                <b>Sync:</b> All staff members see the same master calendar for better coordination.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800">5. Statistics & Settings</span>
+                <p class="content-text"><b>My Stats:</b> View your attendance rate, late count, and average work hours in the [STATS] tab.<br>
+                <b>Level System:</b> Check your current rank (e.g., Gold, Master) based on your performance points.<br>
+                <b>Profile:</b> Change your password and update your profile image in the [SETTING] tab.</p>
+            </div>
+        </div>
+
+        <div class="tip-box">
+            <p><b>[Tip]</b><br>
+            • Missing Records: If you see a "Missing Records" popup, please fill in the unrecorded times immediately.<br>
+            • Mobile Friendly: This system is optimized for mobile; you can easily check and report via your smartphone.</p>
+        </div>
+
+        <div class="absolute bottom-10 left-0 right-0 text-center text-gray-400 text-xs font-bold">PAGE 1 / 4</div>
+    </div>
+
+    <div class="page">
+        <h2 class="section-title tracking-tight uppercase mt-10">Panduan Cepat Penggunaan (Untuk Staf / Indonesian)</h2>
+        
+        <div class="space-y-6">
+            <div>
+                <span class="item-title text-blue-800 font-bold">1. Cek Kehadiran (Absensi)</span>
+                <p class="content-text"><b>Clock-In (Masuk):</b> Klik tombol [ATTENDANCE] saat Anda tiba di kantor.<br>
+                <b>Clock-Out (Pulang):</b> Klik tombol [LEAVE] sebelum Anda pulang.<br>
+                <b>Cek Status:</b> Jam kerja harian và status "Terlambat" akan diperbarui otomatis di kalender dashboard.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800 font-bold">2. Laporan Harian (Daily Report)</span>
+                <p class="content-text"><b>Tulis Laporan:</b> Pilih tanggal di kalender dan klik [Write Report].<br>
+                <b>Isi Laporan:</b> Lengkapi bagian "Today's To-Do" (Rencana) dan "Work Summary" (Hasil Kerja).<br>
+                <b>Simpan:</b> Klik [Save Report]. Laporan ini akan terhubung dengan data absensi Anda.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800 font-bold">3. Pengajuan Cuti (Leave Request)</span>
+                <p class="content-text"><b>Ajukan Cuti:</b> Buka tab [LEAVE] dan klik tanggal pada kalender.<br>
+                <b>Detail:</b> Pilih tipe cuti (Tahunan, Sakit, dll.) dan tulis alasannya.<br>
+                <b>Tanpa Akhir Pekan:</b> Sistem akan otomatis menghapus hari Sabtu dan Minggu dari total pengajuan.<br>
+                <b>Status:</b> Pantau apakah status cuti Anda "Pending" (Menunggu) atau "Approved" (Disetujui) di kalender cuti.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800 font-bold">4. Berbagi Jadwal (Shared Schedule)</span>
+                <p class="content-text"><b>Lihat Jadwal:</b> Buka tab [CALENDAR] untuk melihat jadwal tim dan acara kantor.<br>
+                <b>Tambah Jadwal:</b> Klik pada tanggal untuk menambah jadwal pribadi atau bersama.<br>
+                <b>Sinkronisasi:</b> Semua staf melihat kalender yang sama untuk koordinasi yang lebih baik.</p>
+            </div>
+
+            <div>
+                <span class="item-title text-blue-800 font-bold">5. Statistik & Pengaturan</span>
+                <p class="content-text"><b>Statistik Saya:</b> Lihat tingkat kehadiran, jumlah terlambat, và rata-rata jam kerja di tab [STATS].<br>
+                <b>Sistem Level:</b> Cek peringkat Anda (contoh: Gold, Master) berdasarkan poin performa kerja.<br>
+                <b>Profil:</b> Ubah kata sandi (password) và foto profil Anda di tab [SETTING].</p>
+            </div>
+        </div>
+
+        <div class="tip-box bg-slate-50 border-slate-200">
+            <p><b>[Tips Tambahan]</b><br>
+            • Data Kosong: Jika muncul pop-up "Missing Records", segera isi waktu absensi yang terlewat.<br>
+            • Ramah Ponsel: Sistem ini optimal untuk HP; Anda bisa absen và melapor dengan mudah lewat smartphone.</p>
+        </div>
+
+        <div class="absolute bottom-10 left-0 right-0 text-center text-gray-400 text-xs font-bold">PAGE 2 / 4</div>
+    </div>
+
+    <div class="page">
+        <h2 class="section-title tracking-tight uppercase mt-10">관리자 퀵 사용 매뉴얼 (Admin Guide - Korean)</h2>
+        <div class="space-y-8 mt-6">
+            <div class="border-l-4 border-blue-100 pl-4">
+                <span class="item-title text-blue-800">1. 대시보드 및 현황 모니터링</span>
+                <p class="content-text">전 직원의 출근율, 미처리 휴가, 최근 업무 보고를 한눈에 확인하고 클릭해서 수정 가능합니다. 상단 알림 배너로 승인 대기 건을 즉시 확인합니다.</p>
+            </div>
+            <div class="border-l-4 border-blue-100 pl-4">
+                <span class="item-title text-blue-800">2. 근태 및 업무 보고 관리</span>
+                <p class="content-text">[ATTENDANCE] 메뉴에서 누락된 시간을 직접 수정하고, [REPORT] 메뉴에서 직원들의 일일 보고서를 날짜별로 확인하며 관리자 전용 메모를 남깁니다.</p>
+            </div>
+            <div class="border-l-4 border-blue-100 pl-4">
+                <span class="item-title text-blue-800">3. 휴가 승인 프로세스</span>
+                <p class="content-text">[LEAVE] 메뉴에서 'Pending' 건의 사유를 확인한 후 [Approve] 또는 [Reject] 버튼으로 결재합니다. 승인 시 근태 기록에 자동 반영됩니다.</p>
+            </div>
+            <div class="border-l-4 border-blue-100 pl-4">
+                <span class="item-title text-blue-800">4. 마스터 스케줄 관리</span>
+                <p class="content-text">[CALENDAR]에서 전사 일정을 등록합니다. 드래그 앤 드롭으로 날짜 변경이 가능하며, 보라색 아이콘은 관리자 중요 메모 포함 일정입니다.</p>
+            </div>
+            <div class="border-l-4 border-blue-100 pl-4">
+                <span class="item-title text-blue-800">5. 통계 및 설정</span>
+                <p class="content-text">[STATS]에서 지각 횟수 등 추이를 그래프로 분석하고, [SETTING]에서 직원 추가 및 권한 변경, JSON 파일로 데이터 백업/복구가 가능합니다.</p>
+            </div>
+            <p class="bg-blue-50 p-4 rounded-lg font-bold text-sm text-blue-900 border border-blue-100">
+                ※ 관리자 운영 팁: 보안을 위해 30분 미활동 시 자동 로그아웃됩니다. 엑셀 버튼으로 월간 근태 데이터를 내려받으세요.
+            </p>
+        </div>
+
+        <div class="absolute bottom-10 left-0 right-0 text-center text-gray-400 text-xs font-bold">PAGE 3 / 4</div>
+    </div>
+
+    <div class="page">
+        <h2 class="section-title tracking-tight uppercase mt-10">Admin Quick User Guide (English)</h2>
+        <div class="space-y-6 mt-6">
+            <div>
+                <span class="item-title text-blue-800">1. Dashboard & Monitoring</span>
+                <p class="content-text">View attendance rates, pending leave requests, and recent work reports at a glance. Alert banners notify you of requests waiting for approval.</p>
+            </div>
+            <div>
+                <span class="item-title text-blue-800">2. Attendance & Report Management</span>
+                <p class="content-text">Manually enter missing times in [ATTENDANCE] and browse daily reports by date in [REPORT] with admin-only notes.</p>
+            </div>
+            <div>
+                <span class="item-title text-blue-800">3. Leave Approval Process</span>
+                <p class="content-text">Review "Pending" requests in [LEAVE] and click [Approve] or [Reject]. Approved leave is automatically synced to attendance records.</p>
+            </div>
+            <div>
+                <span class="item-title text-blue-800">4. Master Schedule Management</span>
+                <p class="content-text">Register company-wide events in [CALENDAR]. Supports drag & drop. Purple icons indicate events with important admin notes.</p>
+            </div>
+            <div>
+                <span class="item-title text-blue-800">5. Statistics & System Settings</span>
+                <p class="content-text">Analyze late counts and work trends in [STATS]. Manage staff, reset passwords, and export/import JSON backups in [SETTING].</p>
+            </div>
+            <p class="bg-blue-50 p-4 rounded-lg font-bold text-sm text-blue-900 border border-blue-100">
+                ※ Admin Pro-Tips: Auto logout after 30 mins of inactivity. Use the Excel button for monthly data documentation.
+            </p>
+        </div>
+
+        <div class="mt-20 pt-10 border-t border-gray-100 text-center">
+            <p class="text-sm font-black text-blue-600 italic"> ♥ If you find any defects or improvements while using it, please give me feedback.</p>
+            <p class="text-[10px] text-gray-400 mt-2 uppercase font-bold tracking-widest">© 2026 TDLiD. All rights reserved.</p>
+        </div>
+
+        <div class="absolute bottom-10 left-0 right-0 text-center text-gray-400 text-xs font-bold">PAGE 4 / 4</div>
+    </div>
+</body>
+</html>
