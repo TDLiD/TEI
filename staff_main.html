@@ -31,6 +31,49 @@
     .animate-blink { animation: blink 1s infinite; }
     @keyframes pulse-border { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: pulse-border 2s infinite; }
+
+/* 오늘의 한마디 말풍선 스타일 */
+.fortune-bubble {
+    position: relative;
+    background: #1e293b; /* 슬레이트 800 */
+    border: 1px solid #334155;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    display: inline-block;
+    margin-left: 15px;
+    animation: float 3s ease-in-out infinite; /* 둥둥 떠있는 효과 */
+}
+
+/* 말풍선 꼬리 */
+.fortune-bubble::after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid #334155;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* 모바일 대응: 너무 길면 아래로 내려가도록 */
+@media (max-width: 640px) {
+    .fortune-bubble {
+        margin-left: 0;
+        margin-top: 10px;
+        display: block;
+        width: fit-content;
+    }
+    .fortune-bubble::after { display: none; }
+}
+
 </style>
 
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
@@ -150,6 +193,64 @@
 
 
 <script>
+
+function showFortune() {
+    const fortunes = [
+        "Waktunya istirahat kopi sejenak! ☕",
+        "Item Keberuntungan: Pulpen biru 🖋️",
+        "Fokus Anda luar biasa hari ini! 🔥",
+        "Sapa rekan kerja Anda hari ini! 😊",
+        "Manjakan diri dengan makan siang yang enak! 🍱",
+        "Bagaimana kalau peregangan sejenak? 🧘",
+        "Senyum Anda mencerahkan tim ini! ✨",
+        "Rencanakan sesuatu yang seru setelah kerja! 🎈",
+        "Kesuksesan sedang menuju ke arah Anda! 🚀",
+        "Dengarkan lagu favorit Anda sekarang 🎵",
+        "Anda melakukan pekerjaan yang luar biasa! 👍",
+        "Jangan lupa minum air putih agar tetap terhidrasi 💧",
+        "Ada kejutan kecil menanti Anda 🎁",
+        "Percayalah pada potensi Anda! 🌟",
+        "Tarik napas dalam-dalam dan santai sejenak 🌬️",
+        "Warna Keberuntungan: Hijau Zamrud 🟢",
+        "Kerja keras Anda akan membuahkan hasil! 💰",
+        "Tetap positif, kerja keras, buat itu terjadi! ✨",
+        "Efisiensi adalah nama tengah Anda hari ini ⏱️",
+        "Seseorang berterima kasih atas bantuan Anda! ❤️",
+        "Hari ini hari yang sempurna untuk awal yang baru 🌅",
+        "Yang terbaik masih akan datang! 🌈",
+        "Jangan lupa berkedip! Istirahatkan mata Anda 👀",
+        "Kreativitas Anda tidak ada batasnya 🎨",
+        "Teruslah melangkah, Anda hampir sampai! 🏁",
+        "Kata-kata baik sangat berarti bagi orang lain 🗣️",
+        "Keberuntungan memihak mereka yang berani! 💪",
+        "Keajaiban terjadi di luar zona nyaman Anda ✨",
+        "Anda lebih mampu dari yang Anda kira 🧠",
+        "JACKPOT! Anda menemukan keberuntungan super langka! 🎰"
+    ];
+
+    const randomIdx = Math.floor(Math.random() * fortunes.length);
+    const welcomeMsg = document.getElementById('mainWelcomeMsg');
+
+    if (!welcomeMsg) return;
+
+    // Hapus bubble lama jika ada
+    const oldBubble = document.querySelector('.fortune-bubble');
+    if (oldBubble) oldBubble.remove();
+
+    const bubble = document.createElement('div');
+    bubble.className = 'fortune-bubble font-bold';
+    bubble.style.display = 'inline-block';
+    bubble.innerHTML = fortunes[randomIdx];
+
+    welcomeMsg.appendChild(bubble);
+}
+
+// Panggil fungsi setelah loading data Firebase (sekitar 1 detik)
+setTimeout(() => {
+    showFortune();
+}, 1000);
+
+
     function getJakartaDate() {
         const now = new Date();
         const jakartaStr = now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
@@ -567,6 +668,19 @@
                 </div>`;
             document.body.appendChild(overlay);
         }
+
+// 페이지가 로드되자마자 실행하거나, 이름이 표시된 직후 실행
+document.addEventListener('DOMContentLoaded', () => {
+    // 0.5초 정도 여유를 두고 실행 (사용자 이름이 DB에서 로드되는 시간을 고려)
+    setTimeout(() => {
+        showFortune();
+    }, 500);
+});
+
+// 만약 이미 기존에 window.onload나 데이터를 불러오는 로직이 있다면 
+// 그 로직의 맨 마지막 줄에 showFortune(); 만 한 줄 추가해주셔도 됩니다.
+
+
         renderCalendar();
     })();
 </script>
