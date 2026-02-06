@@ -166,90 +166,118 @@
     window.changeLeaveMonth = function(val) { currentViewDate.setMonth(currentViewDate.getMonth() + val); renderCalendar(); };
     window.goToToday = function() { currentViewDate = new Date(); renderCalendar(); };
 
-    function loadLeaveHistory() {
-        const year = new Date().getFullYear();
-        const historyRef = db.ref(`leaves/${user}/${year}`);
-        historyRef.on('value', snap => {
-            const tbody = document.getElementById('leaveHistoryBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            const dataList = Object.entries(snap.val() || {}).sort((a,b) => b[1].requestedAt - a[1].requestedAt);
-            
-            dataList.forEach(([id, data]) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-white/5 transition-colors cursor-pointer";
-                tr.onclick = () => openLeaveModal(id, data);
-                const statusColor = data.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
-                const adminMemoHTML = data.adminMemo ? `<div class="flex items-center gap-1.5 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[100px]">${data.adminMemo}</span></div>` : `-`;
-                
-                tr.innerHTML = `
-                    <td class="py-4 font-black text-indigo-400">${data.type}</td>
-                    <td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td>
-                    <td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td>
-                    <td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td>
-                    <td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td>
-                    <td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-    }
+function loadLeaveHistory() {
+    const year = new Date().getFullYear();
+    const historyRef = db.ref(`leaves/${user}/${year}`);
+    
+    // 이전에 걸려있던 리스너가 있다면 해제 (중복 실행 방지)
+    historyRef.off(); 
 
-    window.openLeaveModal = function(id = null, data = null) {
-        editingId = id; editingData = data;
-        const modal = document.getElementById('leaveModal');
-        if (!modal) return;
-
-        // 초기화 및 표시
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-
-        const deleteBtn = document.getElementById('deleteLeaveBtn');
-        const saveBtn = document.getElementById('saveLeaveBtn');
-        const memoContainer = document.getElementById('adminMemoContainer');
-        const memoText = document.getElementById('adminMemoText');
-        const leaveTypeInput = document.getElementById('leaveType');
-        const leaveReasonInput = document.getElementById('leaveReason');
-        const dateInput = document.getElementById('leaveDateRange');
-        const modalTitle = document.getElementById('modalTitle');
-
-        if (id && data) {
-            modalTitle.innerText = "Edit Leave Request";
-            leaveTypeInput.value = data.type;
-            if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
-            leaveReasonInput.value = data.reason || "";
-            
-            if (data.status === 'Approved') {
-                deleteBtn.classList.add('hidden');
-                saveBtn.classList.add('hidden');
-                leaveTypeInput.disabled = leaveReasonInput.disabled = true;
-                if(dateInput) dateInput.disabled = true;
-                modalTitle.innerText = "View Approved Leave";
-            } else {
-                deleteBtn.classList.remove('hidden');
-                saveBtn.classList.remove('hidden');
-                leaveTypeInput.disabled = leaveReasonInput.disabled = false;
-                if(dateInput) dateInput.disabled = false;
-            }
-            
-            if (data.adminMemo) {
-                memoContainer.classList.remove('hidden');
-                memoText.innerText = data.adminMemo;
-            } else {
-                memoContainer.classList.add('hidden');
-            }
-        } else {
-            modalTitle.innerText = "New Leave Request";
-            leaveTypeInput.selectedIndex = 0;
-            if (datePicker) datePicker.clear();
-            leaveReasonInput.value = "";
-            deleteBtn.classList.add('hidden');
-            saveBtn.classList.remove('hidden');
-            leaveTypeInput.disabled = leaveReasonInput.disabled = false;
-            if(dateInput) dateInput.disabled = false;
-            memoContainer.classList.add('hidden');
+    historyRef.on('value', snap => {
+        const tbody = document.getElementById('leaveHistoryBody');
+        
+        // 중요: tbody가 현재 화면에 없으면 함수를 즉시 종료하여 에러 방지
+        if (!tbody) {
+            console.warn("leaveHistoryBody not found. Skipping render.");
+            return;
         }
-    };
+
+        tbody.innerHTML = '';
+        const data = snap.val();
+        if (!data) return;
+
+        const dataList = Object.entries(data).sort((a,b) => b[1].requestedAt - a[1].requestedAt);
+        
+        dataList.forEach(([id, data]) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-white/5 transition-colors cursor-pointer";
+            
+            // 클릭 이벤트 내에서도 요소 존재 여부 확인 후 모달 열기
+            tr.onclick = () => {
+                if (typeof window.openLeaveModal === 'function') {
+                    window.openLeaveModal(id, data);
+                }
+            };
+
+            const statusColor = data.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
+            const adminMemoHTML = data.adminMemo ? 
+                `<div class="flex items-center gap-1.5 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[100px]">${data.adminMemo}</span></div>` : `-`;
+            
+            tr.innerHTML = `
+                <td class="py-4 font-black text-indigo-400">${data.type}</td>
+                <td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td>
+                <td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td>
+                <td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td>
+                <td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td>
+                <td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+
+window.openLeaveModal = function(id = null, data = null) {
+    editingId = id; editingData = data;
+    const modal = document.getElementById('leaveModal');
+    if (!modal) return; // 모달 자체가 없으면 실행 중단
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    const deleteBtn = document.getElementById('deleteLeaveBtn');
+    const saveBtn = document.getElementById('saveLeaveBtn');
+    const memoContainer = document.getElementById('adminMemoContainer');
+    const memoText = document.getElementById('adminMemoText');
+    const leaveTypeInput = document.getElementById('leaveType');
+    const leaveReasonInput = document.getElementById('leaveReason');
+    const dateInput = document.getElementById('leaveDateRange');
+    const modalTitle = document.getElementById('modalTitle');
+
+    if (id && data) {
+        if (modalTitle) modalTitle.innerText = "Edit Leave Request";
+        if (leaveTypeInput) leaveTypeInput.value = data.type;
+        if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
+        if (leaveReasonInput) leaveReasonInput.value = data.reason || "";
+        
+        if (data.status === 'Approved') {
+            if (deleteBtn) deleteBtn.classList.add('hidden');
+            if (saveBtn) saveBtn.classList.add('hidden');
+            if (leaveTypeInput) leaveTypeInput.disabled = true;
+            if (leaveReasonInput) leaveReasonInput.disabled = true;
+            if (dateInput) dateInput.disabled = true;
+            if (modalTitle) modalTitle.innerText = "View Approved Leave";
+        } else {
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+            if (saveBtn) saveBtn.classList.remove('hidden');
+            if (leaveTypeInput) leaveTypeInput.disabled = false;
+            if (leaveReasonInput) leaveReasonInput.disabled = false;
+            if (dateInput) dateInput.disabled = false;
+        }
+        
+        if (data.adminMemo) {
+            if (memoContainer) memoContainer.classList.remove('hidden');
+            if (memoText) memoText.innerText = data.adminMemo;
+        } else {
+            if (memoContainer) memoContainer.classList.add('hidden');
+        }
+    } else {
+        if (modalTitle) modalTitle.innerText = "New Leave Request";
+        if (leaveTypeInput) {
+            leaveTypeInput.selectedIndex = 0;
+            leaveTypeInput.disabled = false;
+        }
+        if (datePicker) datePicker.clear();
+        if (leaveReasonInput) {
+            leaveReasonInput.value = "";
+            leaveReasonInput.disabled = false;
+        }
+        if (dateInput) dateInput.disabled = false;
+        if (deleteBtn) deleteBtn.classList.add('hidden');
+        if (saveBtn) saveBtn.classList.remove('hidden');
+        if (memoContainer) memoContainer.classList.add('hidden');
+    }
+};
 
     window.closeLeaveModal = function() { 
         const modal = document.getElementById('leaveModal');
