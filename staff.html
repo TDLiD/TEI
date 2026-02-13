@@ -10,7 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
 
-    <script src="staff-level.js"></script>
+<script src="staff-level.js" defer></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
@@ -254,13 +254,17 @@
         });
     }
 
-    function startLevelSystem() {
-        if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
-            window.LevelSystem.init(loggedInUser);
-        } else {
-            setTimeout(startLevelSystem, 300);
-        }
+// 수정된 startLevelSystem 함수
+function startLevelSystem(userData) {
+    if (window.LevelSystem && typeof window.LevelSystem.init === 'function') {
+        // userData를 함께 넘겨주면 JS 내부에서 다시 DB를 조회할 필요가 없어 성능이 좋아집니다.
+        window.LevelSystem.init(loggedInUser, userData); 
+    } else {
+        // 아직 로드되지 않았다면 200ms 후 다시 시도
+        console.warn("LevelSystem not ready, retrying...");
+        setTimeout(() => startLevelSystem(userData), 200);
     }
+}
 
     window.switchTab = function(type) {
         const tabs = {
