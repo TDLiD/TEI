@@ -38,6 +38,16 @@
             margin-left: 5px;
             vertical-align: middle;
         }
+/* 주말 전용 스타일 추가 */
+        .sunday-cell { background-color: rgba(244, 63, 94, 0.05) !important; }
+        .saturday-cell { background-color: rgba(59, 130, 246, 0.05) !important; }
+        
+        .text-sunday { color: #fb7185 !important; } /* 연한 빨강 */
+        .text-saturday { color: #60a5fa !important; } /* 연한 파랑 */
+        
+        /* 헤더 색상 명확화 */
+        .admin-leave-table th:first-child { color: #fb7185; } /* Sun */
+        .admin-leave-table th:last-child { color: #60a5fa; }  /* Sat */
     </style>
 </head>
 <body class="bg-slate-950">
@@ -206,76 +216,110 @@ window.initAdminLeave = function() {
                     }
                 });
             }
-            window.renderAdminCalendar = async function() {
-                const container = getEl('adminLeaveCalendarContainer');
-                const title = getEl('leaveMonthTitle');
-                if (!container || !title) return;
-                const year = currentViewDate.getFullYear();
-                const month = currentViewDate.getMonth();
-                title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-                try {
-                    const [leavesSnap, attSnap] = await Promise.all([
-                        db.ref('leaves').once('value'),
-                        db.ref('attendance').once('value') 
-                    ]);
-                    const allLeavesData = leavesSnap.val() || {};
-                    const attData = attSnap.val() || {};
-                    const firstDay = new Date(year, month, 1).getDay();
-                    const lastDate = new Date(year, month + 1, 0).getDate();
-                    const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-                    let html = `<table class="admin-leave-table"><thead><tr>`;
-                    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => html += `<th>${day}</th>`);
-                    html += `</tr></thead><tbody><tr>`;
-                    for(let i=0; i<firstDay; i++) html += `<td></td>`;
-                    for(let d=1; d<=lastDate; d++) {
-                        if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
-                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                        const currentDayNum = new Date(dateStr).getDay();
-                        const isToday = dateStr === todayStr;
-                        let badges = '';
-                        let displayedStaffInLeaves = new Set();
-                        Object.entries(allLeavesData).forEach(([uid, years]) => {
-                            const leaves = (years && years[year]) || {};
-                            Object.entries(leaves).forEach(([id, item]) => {
-                                if(dateStr >= item.startDate && dateStr <= item.endDate) {
-                                    if (currentDayNum !== 0 && currentDayNum !== 6) { 
-                                        displayedStaffInLeaves.add(uid);
-                                        let sClass = 'badge-pending'; 
-                                        let icon = '📄';
-                                        if (item.status === 'Approved') { sClass = 'badge-approved'; icon = '✅'; }
-                                        else if (item.status === 'Rejected') { sClass = 'bg-rose-500/50 line-through'; icon = '🚫'; }
-                                        badges += `<div class="leave-badge ${sClass}" onclick='openLeaveAdminModal("${uid}","${year}","${id}", ${JSON.stringify(item).replace(/"/g, '&quot;')})'>${icon} ${uid.substring(0,5)}: ${item.type}</div>`;
-                                    }
-                                }
-                            });
-                        });
-                        if (attData[dateStr]) {
-                            Object.entries(attData[dateStr]).forEach(([staffName, status]) => {
-                                if (displayedStaffInLeaves.has(staffName) || status === 'WO') return;
-                                if (typeof status === 'string' && status !== "") {
-                                    if (leaveTypes.includes(status)) {
-                                        badges += `<div class="leave-badge bg-indigo-500/80 border border-indigo-400 cursor-default">🏥 ${staffName}: ${status}</div>`;
-                                    } else {
-                                        badges += `<div class="leave-badge bg-slate-800 text-slate-500 border border-slate-700/50 cursor-default">🕒 ${staffName}: ${status}</div>`;
-                                    }
-                                }
-                            });
+window.renderAdminCalendar = async function() {
+    const container = getEl('adminLeaveCalendarContainer');
+    const title = getEl('leaveMonthTitle');
+    if (!container || !title) return;
+
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
+    title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    try {
+        const [leavesSnap, attSnap] = await Promise.all([
+            db.ref('leaves').once('value'),
+            db.ref('attendance').once('value') 
+        ]);
+        const allLeavesData = leavesSnap.val() || {};
+        const attData = attSnap.val() || {};
+        
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+        let html = `<table class="admin-leave-table"><thead><tr>`;
+        // 헤더(요일)에도 주말 색상 반영
+        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
+            let colorClass = idx === 0 ? 'text-rose-400' : (idx === 6 ? 'text-blue-400' : '');
+            html += `<th class="${colorClass}">${day}</th>`;
+        });
+        html += `</tr></thead><tbody><tr>`;
+
+        for(let i=0; i<firstDay; i++) html += `<td></td>`;
+
+        for(let d=1; d<=lastDate; d++) {
+            if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
+            
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const currentDayNum = new Date(dateStr).getDay(); // 0: 일요일, 6: 토요일
+            const isToday = dateStr === todayStr;
+
+            // --- 주말 및 오늘 날짜 스타일 결정 ---
+            let cellClass = "";
+            let dateTextClass = "text-slate-500"; // 기본 평일 날짜 색상
+
+            if (isToday) {
+                cellClass = "today-cell";
+                dateTextClass = "text-white font-black";
+            } else if (currentDayNum === 0) { // 일요일
+                cellClass = "bg-rose-500/5"; 
+                dateTextClass = "text-rose-500";
+            } else if (currentDayNum === 6) { // 토요일
+                cellClass = "bg-blue-500/5";
+                dateTextClass = "text-blue-400";
+            }
+
+            let badges = '';
+            let displayedStaffInLeaves = new Set();
+
+            // 휴가 데이터 처리
+            Object.entries(allLeavesData).forEach(([uid, years]) => {
+                const leaves = (years && years[year]) || {};
+                Object.entries(leaves).forEach(([id, item]) => {
+                    if(dateStr >= item.startDate && dateStr <= item.endDate) {
+                        // 주말(토,일)이 아닐 때만 카운트 및 배지 표시 (기존 로직 유지)
+                        if (currentDayNum !== 0 && currentDayNum !== 6) { 
+                            displayedStaffInLeaves.add(uid);
+                            let sClass = 'badge-pending'; 
+                            let icon = '📄';
+                            if (item.status === 'Approved') { sClass = 'badge-approved'; icon = '✅'; }
+                            else if (item.status === 'Rejected') { sClass = 'bg-rose-500/50 line-through'; icon = '🚫'; }
+                            badges += `<div class="leave-badge ${sClass}" onclick='openLeaveAdminModal("${uid}","${year}","${id}", ${JSON.stringify(item).replace(/"/g, '&quot;')})'>${icon} ${uid.substring(0,5)}: ${item.type}</div>`;
                         }
-                        html += `<td class="${isToday ? 'today-cell' : ''}">
-                                    <div class="text-[10px] font-black text-slate-500 mb-1">
-                                        ${d}${isToday ? '<span class="today-mark">TODAY</span>' : ''}
-                                    </div>
-                                    ${badges}
-                                 </td>`;
                     }
-                    html += `</tr></tbody></table>`;
-                    container.innerHTML = html;
-                    calculateStats(attData, year);
-                } catch (error) {
-                    console.error("Calendar Render Error:", error);
-                }
-            };
+                });
+            });
+
+            // 근태 기록 처리
+            if (attData[dateStr]) {
+                Object.entries(attData[dateStr]).forEach(([staffName, status]) => {
+                    if (displayedStaffInLeaves.has(staffName) || status === 'WO') return;
+                    if (typeof status === 'string' && status !== "") {
+                        if (leaveTypes.includes(status)) {
+                            badges += `<div class="leave-badge bg-indigo-500/80 border border-indigo-400 cursor-default">🏥 ${staffName}: ${status}</div>`;
+                        } else {
+                            badges += `<div class="leave-badge bg-slate-800 text-slate-500 border border-slate-700/50 cursor-default">🕒 ${staffName}: ${status}</div>`;
+                        }
+                    }
+                });
+            }
+
+            html += `<td class="${cellClass}">
+                        <div class="text-[10px] font-black ${dateTextClass} mb-1">
+                            ${d}${isToday ? '<span class="today-mark">TODAY</span>' : ''}
+                        </div>
+                        ${badges}
+                     </td>`;
+        }
+        html += `</tr></tbody></table>`;
+        container.innerHTML = html;
+        calculateStats(attData, year);
+    } catch (error) {
+        console.error("Calendar Render Error:", error);
+    }
+};
+
 
 function calculateStats(attData, year) {
     const statsBody = getEl('staffStatsBody');

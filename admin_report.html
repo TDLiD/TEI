@@ -11,6 +11,17 @@
     label { font-weight: 800; letter-spacing: -0.025em; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     #currentReportMonthYear { min-width: 150px; }
+/* 주말 전용 배경색 */
+    .report-table td.sunday-cell { background-color: rgba(244, 63, 94, 0.03); }
+    .report-table td.saturday-cell { background-color: rgba(59, 130, 246, 0.03); }
+    
+    /* 호버 시 주말 색상 유지 및 강조 */
+    .report-table td.sunday-cell:hover { background-color: rgba(244, 63, 94, 0.08); }
+    .report-table td.saturday-cell:hover { background-color: rgba(59, 130, 246, 0.08); }
+
+    /* 주말 날짜 숫자 색상 */
+    .text-sunday-bright { color: #fb7185 !important; } /* 연한 빨강 */
+    .text-saturday-bright { color: #60a5fa !important; } /* 연한 파랑 */
 </style>
 
 <div class="flex flex-col lg:flex-row gap-8 animate-fadeIn">
@@ -175,30 +186,54 @@
         monthInput.setAttribute('lang', 'en-US');
     }
 
-    function drawReportCalendar() {
+function drawReportCalendar() {
         const y = reportViewDate.getFullYear();
         const m = reportViewDate.getMonth();
         const first = new Date(y, m, 1).getDay();
         const last = new Date(y, m + 1, 0).getDate();
+        
         reportDb.ref("reports").once("value", snap => {
             const body = document.getElementById("reportCalendarBody");
             if (!body) return;
             const data = snap.val() || {};
             body.innerHTML = "";
             let d = 1;
+            
             for (let i = 0; i < 6; i++) {
                 const tr = document.createElement("tr");
                 for (let j = 0; j < 7; j++) {
                     const td = document.createElement("td");
+                    
                     if (i === 0 && j < first || d > last) {
                         tr.appendChild(td);
                         continue;
                     }
+                    
                     const date = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     const reports = data[date] || {};
                     const isToday = new Date().toISOString().split('T')[0] === date;
-                    if (isToday) td.classList.add('bg-blue-500/5');
-                    let html = `<div class="font-black text-[10px] ${isToday ? 'text-blue-500' : 'text-slate-600'} mb-1">${d}</div>`;
+                    
+                    // --- 주말 및 오늘 날짜 스타일 로직 추가 ---
+                    if (isToday) {
+                        td.classList.add('bg-blue-500/5');
+                    } else if (j === 0) { // 일요일
+                        td.classList.add('sunday-cell');
+                    } else if (j === 6) { // 토요일
+                        td.classList.add('saturday-cell');
+                    }
+                    
+                    // 날짜 숫자 색상 결정
+                    let dateColorClass = 'text-slate-600';
+                    if (isToday) {
+                        dateColorClass = 'text-blue-500';
+                    } else if (j === 0) {
+                        dateColorClass = 'text-sunday-bright';
+                    } else if (j === 6) {
+                        dateColorClass = 'text-saturday-bright';
+                    }
+                    // ------------------------------------------
+
+                    let html = `<div class="font-black text-[10px] ${dateColorClass} mb-1">${d}</div>`;
                     html += `<div class="flex flex-col gap-1 overflow-hidden">`;
                     html += Object.keys(reports).map(n => `
                         <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')">
@@ -206,6 +241,7 @@
                         </div>
                     `).join('');
                     html += `</div>`;
+                    
                     td.innerHTML = html;
                     td.onclick = () => {
                         const firstStaff = Object.keys(reports)[0];

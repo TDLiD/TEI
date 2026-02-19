@@ -25,6 +25,19 @@
         .mobile-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .mobile-record-list { display: flex; flex-direction: column; gap: 8px; }
         .attendance-record-item { background: rgba(15, 23, 42, 0.6) !important; padding: 12px !important; border-radius: 14px !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
+/* 주말 배경색 클래스 추가 */
+    .sunday-bg { background-color: rgba(244, 63, 94, 0.05) !important; }
+    .saturday-bg { background-color: rgba(59, 130, 246, 0.05) !important; }
+    
+    /* 오늘 날짜 하이라이트와 주말 색상이 겹칠 때 오늘 날짜를 우선함 */
+    .today-highlight { 
+        border: 2px solid #3b82f6 !important; 
+        background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important; 
+    }
+
+    /* 요일 헤더 색상 */
+    .text-sunday { color: #f43f5e !important; }
+    .text-saturday { color: #3b82f6 !important; }
     }
 </style>
 
@@ -51,7 +64,7 @@
         <table class="calendar-table">
             <thead>
                 <tr class="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
-                    <th class="py-4">Sun</th><th class="py-4">Mon</th><th class="py-4">Tue</th><th class="py-4">Wed</th><th class="py-4">Thu</th><th class="py-4">Fri</th><th class="py-4">Sat</th>
+<th class="py-4 text-sunday">Sun</th>  <th class="py-4">Mon</th>  <th class="py-4">Tue</th>  <th class="py-4">Wed</th>  <th class="py-4">Thu</th>  <th class="py-4">Fri</th>       <th class="py-4 text-saturday">Sat</th>
                 </tr>
             </thead>
             <tbody id="full_att_calendar_body"></tbody>
@@ -208,15 +221,40 @@ window.renderAttendanceFull = function () {
         };
 
         // Helper function to create the cell content to avoid duplication
-        function createDateCell(dateNum, year, month, data, todayStr, isMobile, parentElement) {
+function createDateCell(dateNum, year, month, data, todayStr, isMobile, parentElement) {
+            const dateObj = new Date(year, month, dateNum);
             const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
             const isToday = dStr === todayStr;
-            const dayOfWeek = new Date(year, month, dateNum).toLocaleString('en-US', { weekday: 'long' });
+            const dayOfWeekIdx = dateObj.getDay(); // 0: 일요일, 6: 토요일
+            const dayOfWeek = dateObj.toLocaleString('en-US', { weekday: 'long' });
             
             let cell = document.createElement('td');
-            cell.className = isMobile ? `mobile-date-card ${isToday ? 'today-highlight' : ''}` : `transition-all ${isToday ? 'today-highlight' : ''}`;
             
-            let content = `<div class="${isMobile ? 'mobile-card-header' : 'flex justify-between items-center mb-3'}"><div class="flex items-baseline gap-2"><span class="text-lg font-black ${isToday ? 'text-blue-400' : 'text-white'}">${dateNum}</span>${isMobile ? `<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${dayOfWeek}</span>` : ''}</div>${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}</div>`;
+            // 주말 색상 결정
+            let weekendClass = "";
+            let dateColorClass = isToday ? 'text-blue-400' : 'text-white';
+            
+            if (dayOfWeekIdx === 0) {
+                weekendClass = "sunday-bg";
+                if (!isToday) dateColorClass = "text-rose-500";
+            } else if (dayOfWeekIdx === 6) {
+                weekendClass = "saturday-bg";
+                if (!isToday) dateColorClass = "text-blue-500";
+            }
+
+            // 클래스 할당
+            cell.className = isMobile 
+                ? `mobile-date-card ${isToday ? 'today-highlight' : weekendClass}` 
+                : `transition-all ${isToday ? 'today-highlight' : weekendClass}`;
+            
+            let content = `
+                <div class="${isMobile ? 'mobile-card-header' : 'flex justify-between items-center mb-3'}">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-lg font-black ${dateColorClass}">${dateNum}</span>
+                        ${isMobile ? `<span class="text-[10px] font-bold ${dayOfWeekIdx === 0 ? 'text-rose-500/70' : (dayOfWeekIdx === 6 ? 'text-blue-500/70' : 'text-slate-500')} uppercase tracking-widest">${dayOfWeek}</span>` : ''}
+                    </div>
+                    ${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}
+                </div>`;
             
             const dayRecords = data[dStr] || {};
             content += isMobile ? `<div class="mobile-record-list">` : `<div>`;
