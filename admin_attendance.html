@@ -146,18 +146,54 @@
             else alert("Modal function not found.");
         };
 
-        window.saveAttendanceEdit = function (name, date) {
-            let attend = document.getElementById('editAttend').value.trim();
-            const leave = document.getElementById('editLeave').value.trim();
-            const special = document.getElementById('editSpecial').value;
-            let updateData = special ? special : { attend: attend, leave: leave };
+window.saveAttendanceEdit = function (name, date) {
+    const attendVal = document.getElementById('editAttend').value.trim();
+    const leaveVal = document.getElementById('editLeave').value.trim();
+    const special = document.getElementById('editSpecial').value;
 
-            if (confirm(`Update record for ${name} on ${date}?`)) {
-                db.ref(`attendance/${date}/${name}`).set(updateData).then(() => {
-                    if (window.closeAdminCustomModal) window.closeAdminCustomModal();
-                });
+    if (!confirm(`Update record for ${name} on ${date}?`)) return;
+
+    // 1. 특별 상태(휴가 등)가 선택된 경우 문자열 그대로 저장
+    if (special) {
+        db.ref(`attendance/${date}/${name}`).set(special).then(() => {
+            if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+        });
+        return;
+    }
+
+    // 2. 출석 시간 판단 (설정된 기준 시간 참조)
+    db.ref('settings/config/stdAttendance').once('value', snap => {
+        const standardTime = (snap.val() || "08:30").trim();
+        let finalAttend = attendVal;
+
+        if (attendVal) {
+            // 시간 비교를 위해 숫자로 변환 (예: "08:30" -> 830)
+            const toNum = (t) => {
+                const parts = t.split(':');
+                return parseInt(parts[0], 10) * 100 + parseInt(parts[1], 10);
+            };
+
+            const inputNum = toNum(attendVal);
+            const standardNum = toNum(standardTime);
+
+            // 지각 여부 판별 및 형식 강제
+            if (inputNum > standardNum) {
+                finalAttend = `LATE(${attendVal})`;
+            } else {
+                finalAttend = `ATT(${attendVal})`;
             }
+        }
+
+        const updateData = {
+            attend: finalAttend,
+            leave: leaveVal
         };
+
+        db.ref(`attendance/${date}/${name}`).set(updateData).then(() => {
+            if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+        });
+    });
+};
 
         window.deleteAttendance = function (name, date) {
             if (confirm(`Delete ${name}'s record for ${date}?`)) {
