@@ -1,131 +1,175 @@
-<div class="animate-fadeIn max-w-md">
+<div class="animate-fadeIn max-w-md mx-auto">
     <h3 class="text-xl font-bold text-white mb-6">Account Settings</h3>
     
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-8">
-
-<div>
-    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Change Password</label>
-    <div class="relative">
-        <input type="password" id="settingNewPw" 
-               class="w-full bg-slate-800 border border-slate-700 p-3 pr-12 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500" 
-               placeholder="Enter new password" 
-               autocomplete="new-password">
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-6">
         
-        <button type="button" id="togglePwBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
-            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-            </svg>
-        </button>
-    </div>
-</div>
+        <div class="pb-6 border-b border-slate-800/50">
+            <div class="flex items-center gap-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                <div id="currentAvatarDisplay" class="w-12 h-12 rounded-full border border-slate-700 bg-slate-900 overflow-hidden flex items-center justify-center">
+                    <div class="animate-pulse w-full h-full bg-slate-800"></div>
+                </div>
+                <div>
+                    <div id="displayUserName" class="text-white font-bold text-base uppercase tracking-tight">Loading...</div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Staff Member</div>
+                </div>
+            </div>
+        </div>
 
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Password</label>
+                <div class="relative">
+                    <input type="password" id="settingNewPw" 
+                           class="w-full bg-slate-800 border border-slate-700 p-3 pr-12 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                           placeholder="Loading password..."
+                           autocomplete="new-password">
+                    
+                    <button type="button" id="togglePwBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors z-10">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 pointer-events-none">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Confirm Password</label>
+                <input type="password" id="confirmPw" 
+                       class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                       placeholder="Re-type password to verify"
+                       autocomplete="new-password">
+                <p id="pwMatchMessage" class="text-[10px] mt-2 font-bold hidden"></p>
+            </div>
+        </div>
 
         <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-3">Profile Icon</label>
-<div id="emojiGrid" class="grid grid-cols-5 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 max-h-64 overflow-y-auto no-scrollbar">
-            </div>
-            <input type="hidden" id="selectedEmoji" value="1.webp">
+            <div id="emojiGrid" class="grid grid-cols-5 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 max-h-48 overflow-y-auto no-scrollbar"></div>
+            <input type="hidden" id="selectedEmoji">
         </div>
         
-        <button onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg active:scale-95">
-            SAVE CHANGES
-        </button>
+        <div class="space-y-3 pt-4">
+            <button id="saveBtn" onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                SAVE CHANGES
+            </button>
+            <button onclick="handleLogout()" class="w-full bg-slate-800 text-rose-500 py-3 rounded-xl font-bold text-xs hover:bg-rose-500/10 transition border border-rose-500/20">
+                LOGOUT
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
-    (function() {
-        const grid = document.getElementById('emojiGrid');
-        const hiddenInput = document.getElementById('selectedEmoji');
-        const user = sessionStorage.getItem('loggedInUser');
-
-// 1. 이미지 리스트 생성
-const emojis = [];
-
-// 정적 이미지 추가 (image-001.webp ~ image-005.webp)
-// 파일 목록에 5번까지만 있으므로 범위를 5로 수정합니다.
-for (let i = 1; i <= 5; i++) {
-    const imgNumber = String(i).padStart(3, '0'); // 3자리 (001, 002...)
-    emojis.push(`image-${imgNumber}.webp`);
-}
-
-// 애니메이션 이미지 추가 (image-01.gif ~ image-27.gif)
-// 파일 목록 형식이 2자리(01, 02...)이므로 padStart(2, '0')으로 수정합니다.
-for (let i = 1; i <= 27; i++) {
-    const imgNumber = String(i).padStart(2, '0'); // 2자리 (01, 02...)
-    emojis.push(`image-${imgNumber}.gif`);
-}
-
-        
-        firebase.database().ref('users/' + user).once('value', snap => {
-            const currentImg = snap.val()?.profileImg || 'image-001.webp';
-            hiddenInput.value = currentImg;
-
-            emojis.forEach(imgName => {
-                const imgWrap = document.createElement('div');
-                const isSelected = currentImg === imgName;
-                
-                imgWrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
-                
-                // 모든 이미지가 images/profile/ 폴더 안에 있으므로 경로를 통일합니다.
-                imgWrap.innerHTML = `<img src="images/profile/${imgName}" class="w-full h-auto rounded-md object-cover aspect-square" alt="profile">`;
-                
-                imgWrap.onclick = () => {
-                    Array.from(grid.children).forEach(child => {
-                        child.classList.remove('border-blue-500', 'bg-blue-500/20');
-                        child.classList.add('border-transparent');
-                    });
-                    imgWrap.classList.remove('border-transparent');
-                    imgWrap.classList.add('border-blue-500', 'bg-blue-500/20');
-                    
-                    hiddenInput.value = imgName;
-                };
-                grid.appendChild(imgWrap);
-            });
-        });
-
-// 눈 아이콘 토글 기능
 (function() {
     const pwInput = document.getElementById('settingNewPw');
+    const confirmInput = document.getElementById('confirmPw');
+    const pwMessage = document.getElementById('pwMatchMessage');
+    const saveBtn = document.getElementById('saveBtn');
+    const grid = document.getElementById('emojiGrid');
+    const hiddenInput = document.getElementById('selectedEmoji');
     const toggleBtn = document.getElementById('togglePwBtn');
     const eyeIcon = document.getElementById('eyeIcon');
+    
+    const user = sessionStorage.getItem('loggedInUser');
 
-    // 눈이 감긴 모양의 SVG 경로 (비밀번호 숨김 상태일 때 보여줄 모양)
-    const eyeOffPath = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />`;
-    // 눈이 뜬 모양의 SVG 경로 (기본값)
+    // 1. 눈 아이콘 토글 로직
     const eyeOnPath = `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
+    const eyeOffPath = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />`;
 
-    toggleBtn.addEventListener('click', () => {
-        const isPassword = pwInput.type === 'password';
+    toggleBtn.onclick = function() {
+        const isPw = pwInput.type === 'password';
+        pwInput.type = isPw ? 'text' : 'password';
+        confirmInput.type = isPw ? 'text' : 'password';
+        eyeIcon.innerHTML = isPw ? eyeOffPath : eyeOnPath;
+    };
+
+    // 2. 비밀번호 실시간 일치 체크
+    function checkMatch() {
+        const p1 = pwInput.value;
+        const p2 = confirmInput.value;
+        if (!p2) { pwMessage.classList.add('hidden'); saveBtn.disabled = false; return; }
         
-        // 타입 변경
-        pwInput.type = isPassword ? 'text' : 'password';
+        pwMessage.classList.remove('hidden');
+        if (p1 === p2) {
+            pwMessage.textContent = "✓ Passwords match";
+            pwMessage.className = "text-[10px] mt-2 font-bold text-emerald-500";
+            saveBtn.disabled = false;
+        } else {
+            pwMessage.textContent = "✕ Passwords do not match";
+            pwMessage.className = "text-[10px] mt-2 font-bold text-rose-500";
+            saveBtn.disabled = true;
+        }
+    }
+    pwInput.oninput = checkMatch;
+    confirmInput.oninput = checkMatch;
+
+    // 3. 데이터 로드 및 기존 비밀번호 주입 (자동완성 방지 로직 포함)
+    if (user) {
+        firebase.database().ref('users/' + user).once('value').then(snap => {
+            const data = snap.val();
+            if (data) {
+                // 브라우저의 자동완성(tdlid2026!)이 스크립트 실행 직후 덮어쓰는 것을 막기 위해 지연 주입
+                setTimeout(() => {
+                    pwInput.value = data.password || "";
+                    console.log("Firebase Password Loaded Successfully");
+                }, 150);
+
+                pwInput.placeholder = "Enter password";
+                document.getElementById('displayUserName').textContent = data.name || user;
+                
+                const currentImg = data.profileImg || 'image-001.webp';
+                hiddenInput.value = currentImg;
+                document.getElementById('currentAvatarDisplay').innerHTML = `<img src="images/profile/${currentImg}" class="w-full h-full object-cover">`;
+                
+                renderGrid(currentImg);
+            }
+        });
+    }
+
+    // 4. 이모지 그리드 생성
+    function renderGrid(currentImg) {
+        grid.innerHTML = "";
+        const emojis = [];
+        for (let i = 1; i <= 5; i++) emojis.push(`image-${String(i).padStart(3, '0')}.webp`);
+        for (let i = 1; i <= 27; i++) emojis.push(`image-${String(i).padStart(2, '0')}.gif`);
+
+        emojis.forEach(name => {
+            const wrap = document.createElement('div');
+            const active = name === currentImg;
+            wrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${active ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
+            wrap.innerHTML = `<img src="images/profile/${name}" class="w-full h-auto rounded-md object-cover aspect-square">`;
+            wrap.onclick = () => {
+                const kids = grid.children;
+                for(let k of kids) { k.classList.remove('border-blue-500', 'bg-blue-500/20'); k.classList.add('border-transparent'); }
+                wrap.classList.remove('border-transparent');
+                wrap.classList.add('border-blue-500', 'bg-blue-500/20');
+                hiddenInput.value = name;
+                document.getElementById('currentAvatarDisplay').innerHTML = `<img src="images/profile/${name}" class="w-full h-full object-cover">`;
+            };
+            grid.appendChild(wrap);
+        });
+    }
+
+    // 5. 업데이트 및 로그아웃
+    window.updateUserAccount = function() {
+        const passValue = pwInput.value.trim();
+        if(!passValue) return alert("Password cannot be empty.");
         
-        // 아이콘 변경
-        eyeIcon.innerHTML = isPassword ? eyeOffPath : eyeOnPath;
-        
-        // 포커스 유지 (사용자 편의성)
-        pwInput.focus();
-    });
+        firebase.database().ref('users/' + user).update({
+            password: passValue,
+            profileImg: hiddenInput.value
+        }).then(() => {
+            alert("Changes saved successfully!");
+            location.reload();
+        }).catch(err => alert("Error: " + err.message));
+    };
+
+    window.handleLogout = function() {
+        if(confirm("Are you sure you want to logout?")) {
+            sessionStorage.clear();
+            location.href = 'index.html';
+        }
+    };
 })();
-
-
-        // 2. 통합 저장 함수 (기존 유지)
-        window.updateUserAccount = function() {
-            const pwInput = document.getElementById('settingNewPw');
-            const newPw = pwInput.value.trim();
-            const profileImg = hiddenInput.value;
-            const updates = { profileImg: profileImg };
-            if(newPw !== "") { updates.password = newPw; }
-            
-            firebase.database().ref('users/' + user).update(updates).then(() => {
-                alert("Account updated successfully!");
-                pwInput.value = ""; 
-            }).catch(e => {
-                console.error(e);
-                alert("Update failed.");
-            });
-        };
-    })();
 </script>
