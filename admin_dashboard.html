@@ -2,115 +2,48 @@
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
-
 <div class="space-y-8 animate-fadeIn">
     <div id="leave_alert_banner" class="hidden mb-6 cursor-pointer group" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }"> 
         <div class="bg-amber-500/10 border-2 border-amber-500/50 p-4 rounded-[2rem] flex items-center justify-between backdrop-blur-md animate-blink">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-amber-500 font-black text-sm uppercase tracking-tighter">New Leave Request Pending</h3>
-                    <p id="leave_alert_text" class="text-[11px] text-amber-200/70 font-bold">There are new leave applications waiting for your approval.</p>
-                </div>
+                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                <div><h3 class="text-amber-500 font-black text-sm uppercase tracking-tighter">New Leave Request Pending</h3><p id="leave_alert_text" class="text-[11px] text-amber-200/70 font-bold">There are new leave applications waiting for your approval.</p></div>
             </div>
             <div class="bg-amber-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase group-hover:bg-amber-400 transition-colors">Review Now</div>
         </div>
     </div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fadeIn">
-    <div onclick="if(window.LevelSystem) { LevelSystem.init('Admin'); setTimeout(() => LevelSystem.showStaffPopup(), 500); }" 
-         class="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:from-blue-600/30 hover:to-indigo-600/30 transition-all group flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-                <span class="text-2xl">🏆</span>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fadeIn">
+        <div onclick="if(window.LevelSystem) { LevelSystem.init('Admin'); setTimeout(() => LevelSystem.showStaffPopup(), 500); }" class="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:from-blue-600/30 hover:to-indigo-600/30 transition-all group flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform"><span class="text-2xl">🏆</span></div>
+                <div><h2 class="text-sm font-black text-blue-400 uppercase tracking-tighter">Staff Leaderboard</h2><p class="text-[10px] text-slate-400 font-bold uppercase">View Rankings & Points</p></div>
             </div>
-            <div>
-                <h2 class="text-sm font-black text-blue-400 uppercase tracking-tighter">Staff Leaderboard</h2>
-                <p class="text-[10px] text-slate-400 font-bold uppercase">View Rankings & Points</p>
+            <span class="text-[10px] font-black text-blue-500 group-hover:translate-x-1 transition-transform">VIEW ALL →</span>
+        </div>
+        <div id="weekly_leave_section" class="hidden h-full">
+            <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group h-full flex flex-col justify-center" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-[11px] font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter"><span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Vacationers</h2>
+                    <div id="week_range_text" class="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-full"></div>
+                </div>
+                <div id="weekly_leave_container" class="flex flex-wrap gap-1.5 overflow-hidden max-h-[40px]"></div>
             </div>
         </div>
-        <span class="text-[10px] font-black text-blue-500 group-hover:translate-x-1 transition-transform">VIEW ALL →</span>
     </div>
-
-    <div id="weekly_leave_section" class="hidden h-full">
-        <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group h-full flex flex-col justify-center" 
-             onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-[11px] font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter">
-                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                    Vacationers
-                </h2>
-                <div id="week_range_text" class="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-full"></div>
-            </div>
-            <div id="weekly_leave_container" class="flex flex-wrap gap-1.5 overflow-hidden max-h-[40px]"></div>
-        </div>
+    <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div><div class="flex items-end gap-2"><div id="stat_attendance" class="text-2xl font-black text-white">0/0</div><div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div></div></div>
+        <div onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('reports'); } else if(window.switchAdminTab) { switchAdminTab('reports'); }" class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div><div id="stat_pending" class="text-2xl font-black text-amber-400">0</div></div>
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div><div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div></div>
+        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div><div id="stat_late" class="text-2xl font-black text-rose-500">0</div></div>
     </div>
-</div>
-
-<div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div>
-        <div class="flex items-end gap-2">
-            <div id="stat_attendance" class="text-2xl font-black text-white">0/0</div>
-            <div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div>
-        </div>
-    </div>
-
-    <div onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('reports'); } else if(window.switchAdminTab) { switchAdminTab('reports'); }" 
-         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group">
-        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div>
-        <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
-    </div>
-
-    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div>
-        <div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div>
-    </div>
-
-    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
-        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div>
-        <div id="stat_late" class="text-2xl font-black text-rose-500">0</div>
-    </div>
-</div>
-
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-blue-500">■</span> RECENT ATTENDANCE</h2>
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div>
-        </div>
+        <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-blue-500">■</span> RECENT ATTENDANCE</h2><div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div></div>
         <div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-        <div class="mt-6 pt-4 border-t border-slate-800/50">
-            <div class="flex flex-wrap gap-y-2 gap-x-4">
-                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">ATT: Normal</span></div>
-                <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">LATE: Late Arrival</span></div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-400/80">WO: Work Out</span></div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">PEL: Personal</span></div>
-                <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">ANL: Annual</span></div>
-            </div>
-        </div>
+        <div class="mt-6 pt-4 border-t border-slate-800/50"><div class="flex flex-wrap gap-y-2 gap-x-4"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">ATT: Normal</span></div><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[9px] font-bold text-slate-400 uppercase">LATE: Late Arrival</span></div><div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-400/80">WO: Work Out</span></div><div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">PEL: Personal</span></div><div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500"><span class="bg-slate-800 px-1.5 py-0.5 rounded">ANL: Annual</span></div></div></div>
     </div>
-
-    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-emerald-500">■</span> RECENT WORK REPORTS</h2>
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days Summary</div>
-        </div>
-        <div id="recent_work_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-    </div>
-
-    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-purple-500">■</span> RECENT SCHEDULE</h2>
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Upcoming & Current</div>
-        </div>
-        <div id="recent_sch_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-    </div>
+    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm"><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-emerald-500">■</span> RECENT WORK REPORTS</h2><div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days Summary</div></div><div id="recent_work_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div></div>
+    <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm"><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-purple-500">■</span> RECENT SCHEDULE</h2><div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Upcoming & Current</div></div><div id="recent_sch_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div></div>
 </div>
-
 <div id="customAdminModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity" onclick="window.closeAdminCustomModal()"></div>
     <div class="relative bg-slate-900 w-full max-w-md max-h-[90vh] rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden transform transition-all flex flex-col animate-in zoom-in duration-200">
@@ -119,436 +52,118 @@
         <div id="modalFooterArea" class="p-6 pt-0 flex-shrink-0"></div>
     </div>
 </div>
-
 <style>
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-@keyframes alert-blink {
-    0%, 100% { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 0px rgba(245, 158, 11, 0); }
-    50% { border-color: rgba(245, 158, 11, 1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
-}
+@keyframes alert-blink { 0%, 100% { border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 0 0px rgba(245, 158, 11, 0); } 50% { border-color: rgba(245, 158, 11, 1); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); } }
 .animate-blink { animation: alert-blink 1.5s infinite; }
-
-/* 리더보드 팝업 내 프로필 이미지 스타일 */
-#staffRankPopup img {
-    object-fit: cover;
-    background-color: #1e293b;
-}
-/* 팝업 내부 스크롤바 커스텀 */
+#staffRankPopup img { object-fit: cover; background-color: #1e293b; }
 #staffRankPopup .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 #staffRankPopup .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-
 </style>
-
-
 <script>
 (function() {
     const db = firebase.database();
-    let editStartPicker, editEndPicker; 
-    let attStartPicker, attEndPicker; 
-
+    let editStartPicker, editEndPicker, attStartPicker, attEndPicker; 
     const today = new Date();
     const todayStr = today.toLocaleDateString('sv-SE');
     const last5Days = [];
-    for(let i = -5; i <= 5; i++) {
-        const d = new Date();
-        d.setDate(today.getDate() + i);
-        last5Days.push(d.toLocaleDateString('sv-SE'));
-    }
+    for(let i = -5; i <= 5; i++) { const d = new Date(); d.setDate(today.getDate() + i); last5Days.push(d.toLocaleDateString('sv-SE')); }
     last5Days.sort();
-
     function initEditTimePickers(isAllDay = false) {
         if (typeof flatpickr === 'undefined') return;
-        const config = {
-            enableTime: !isAllDay,
-            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i",
-            altInput: true,
-            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-            monthSelectorType: "static",
-            locale: "ko", 
-            static: true,
-            theme: "dark"
-        };
-        if (editStartPicker) editStartPicker.destroy();
-        if (editEndPicker) editEndPicker.destroy();
-        const startEl = document.getElementById("db_sch_start");
-        const endEl = document.getElementById("db_sch_end");
-        if (startEl) editStartPicker = flatpickr(startEl, config);
-        if (endEl) editEndPicker = flatpickr(endEl, config);
+        const config = { enableTime: !isAllDay, dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i", altInput: true, altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", monthSelectorType: "static", locale: "ko", static: true, theme: "dark" };
+        if (editStartPicker) editStartPicker.destroy(); if (editEndPicker) editEndPicker.destroy();
+        const startEl = document.getElementById("db_sch_start"), endEl = document.getElementById("db_sch_end");
+        if (startEl) editStartPicker = flatpickr(startEl, config); if (endEl) editEndPicker = flatpickr(endEl, config);
     }
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("Dashboard Loading...");
+        if (typeof firebase === 'undefined') { console.error("Firebase SDK가 로드되지 않았습니다."); return; }
+        try { if (window.LevelSystem) { LevelSystem.init('Admin'); } } catch (e) { console.warn("LevelSystem 초기화 실패:", e); }
+        const initFunctions = ['updateQuickStats', 'renderWeeklyLeaves', 'renderRecentAttendance', 'renderRecentWork', 'renderRecentSchedule'];
+        initFunctions.forEach(fnName => {
+            if (typeof window[fnName] === 'function') {
+                try { window[fnName](); } catch (err) { console.error(`${fnName} 실행 중 오류:`, err); }
+            } else { console.warn(`함수를 찾을 수 없음: ${fnName}`); }
+        });
+    });
 
 
-// 스크립트 마지막 부분의 초기화 로직을 다음과 같이 보강하세요.
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Dashboard Loading...");
+window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
+window.openAdminCustomModal = function(titleHtml, bodyHtml) { document.getElementById('modalHeaderArea').innerHTML = titleHtml; document.getElementById('modalBodyArea').innerHTML = bodyHtml; document.getElementById('customAdminModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
+window.closeAdminCustomModal = function() { if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; } if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; } if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; } if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; } document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove()); document.getElementById('customAdminModal').classList.add('hidden'); document.body.style.overflow = ''; };
+window.renderWeeklyLeaves = function() { const container = document.getElementById('weekly_leave_container'), section = document.getElementById('weekly_leave_section'), rangeText = document.getElementById('week_range_text'); if (!container) return; const curr = new Date(), first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1), last = first + 6, monday = new Date(new Date().setDate(first)).toISOString().split('T')[0], sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0]; rangeText.innerText = `${monday} ~ ${sunday}`; db.ref('leaves').on('value', snap => { const allLeaves = snap.val() || {}; container.innerHTML = ''; let hasAnyThisWeek = false; const weeklyStaffMap = new Map(); Object.entries(allLeaves).forEach(([uid, years]) => { Object.values(years).forEach(yearData => { Object.values(yearData).forEach(leave => { if (leave.status === 'Approved' && leave.startDate <= sunday && leave.endDate >= monday) { weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type }); hasAnyThisWeek = true; } }); }); }); if (hasAnyThisWeek) { section.classList.remove('hidden'); let html = ''; weeklyStaffMap.forEach(staff => { html += `<div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl"><span class="text-xs font-black text-white">${staff.name}</span><span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span><span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span></div>`; }); container.innerHTML = html; } else { section.classList.add('hidden'); } }); };
+window.updateQuickStats = function() { db.ref('users').on('value', userSnap => { const usersData = userSnap.val() || {}, totalStaffCount = Object.keys(usersData).filter(name => name.toLowerCase() !== 'admin').length; db.ref(`attendance/${todayStr}`).on('value', attSnap => { const todayAtt = attSnap.val() || {}; let presentCount = 0, lateCount = 0; Object.entries(todayAtt).forEach(([name, info]) => { if (name.toLowerCase() === 'admin') return; if (typeof info === 'string') { if (!['OFF', 'ANL', 'PEL'].includes(info)) presentCount++; } else if (info && info.attend) { presentCount++; if (info.attend.includes("LATE")) lateCount++; } }); if (document.getElementById('stat_attendance')) document.getElementById('stat_attendance').innerText = `${presentCount}/${totalStaffCount}`; if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount; }); }); db.ref(`reports/${todayStr}`).on('value', snap => { const data = snap.val() || {}, reportsArray = Object.entries(data), pendingCount = reportsArray.filter(([_, r]) => r.status === 'Pending').length, totalCount = reportsArray.length, staffNames = reportsArray.map(([name, _]) => name).join(', '), summaryText = totalCount > 0 ? staffNames : "No reports today", statPendingEl = document.getElementById('stat_pending'); if (statPendingEl) { statPendingEl.innerText = `${pendingCount}/${totalCount}`; let infoEl = document.getElementById('stat_pending_detail'); if (!infoEl) { infoEl = document.createElement('div'); infoEl.id = 'stat_pending_detail'; infoEl.className = "text-[9px] text-slate-500 font-bold mt-1 truncate w-full"; statPendingEl.parentNode.appendChild(infoEl); } infoEl.innerText = summaryText; infoEl.title = staffNames; } }); db.ref('shared_schedules').on('value', snap => { const data = snap.val() || {}; let ongoingCount = 0; Object.values(data).forEach(ev => { const s = ev.start ? ev.start.split('T')[0] : (ev.startDate || ""), e = ev.end ? ev.end.split('T')[0] : (ev.endDate || s); if (s && e && todayStr >= s && todayStr <= e) ongoingCount++; }); const el = document.getElementById('stat_schedules'); if (el) { el.innerText = ongoingCount; el.className = ongoingCount > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600"; } }); db.ref('leaves').on('value', snap => { const allLeaves = snap.val() || {}; let leavePendingCount = 0; Object.values(allLeaves).forEach(userLeaves => { Object.values(userLeaves).forEach(yearData => { Object.values(yearData).forEach(request => { if (request.status === 'Pending') leavePendingCount++; }); }); }); const alertBanner = document.getElementById('leave_alert_banner'), alertText = document.getElementById('leave_alert_text'); if (leavePendingCount > 0) { if (alertBanner) { alertBanner.classList.remove('hidden'); alertBanner.onclick = () => (typeof switchAdminTab === 'function' ? switchAdminTab('leave') : window.parent.switchAdminTab('leave')); } if (alertText) alertText.innerText = `There are ${leavePendingCount} new leave application(s) waiting for your approval.`; } else { if (alertBanner) alertBanner.classList.add('hidden'); } }); };
+window.renderRecentAttendance = function() { const container = document.getElementById('recent_att_container'); if(!container) return; const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : ""; db.ref('users').once('value', userSnap => { db.ref('attendance').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { const dayData = data[dStr] || {}; let staffHtml = ''; Object.entries(dayData).forEach(([name, info]) => { const safeInfo = encodeURIComponent(JSON.stringify(info)); let content = typeof info === 'string' ? `<span class="text-amber-400">${info}</span>` : `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${(info.attend?.includes("LATE")?"LATE ":"ATT ")+formatTime(info.attend)}</span>${info.leave ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${formatTime(info.leave)}</span>`:''}</div>`; staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`; }); container.innerHTML += `<div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group"><div class="flex justify-between items-center mb-2"><div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div></div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`; }); }); }); };
+window.renderRecentWork = function() { const container = document.getElementById('recent_work_container'); if(!container) return; db.ref('reports').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { const dayData = data[dStr] || {}; let reportHtml = ''; Object.entries(dayData).forEach(([name, report]) => { const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'); reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">${report.readByAdmin !== true ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : ""}<span class="truncate">${name}</span></div>`; }); container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`; }); }); };
+window.renderRecentSchedule = function() { const container = document.getElementById('recent_sch_container'); if(!container) return; db.ref('shared_schedules').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { let schHtml = ''; Object.entries(data).forEach(([id, ev]) => { const s = ev.start ? ev.start.split('T')[0] : "", e = ev.end ? ev.end.split('T')[0] : s; if (dStr >= s && dStr <= e) schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`; }); container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div></div>`; }); }); };
+window.showWorkDetail = function(name, date) { db.ref(`reports/${date}/${name}`).update({ readByAdmin: true }); db.ref(`reports/${date}/${name}`).once("value", snap => { const r = snap.val() || {}, titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`, bodyHtml = `<div class="space-y-4 text-left"><div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label><select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div><div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div><div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div><div class="flex flex-col gap-3 mt-4"><button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`; window.openAdminCustomModal(titleHtml, bodyHtml); }); };
+window.openEditAttendance = function(name, date, infoEncoded) { const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, isSpecial = typeof info === 'string', isNew = name === ''; db.ref('users').once('value', userSnap => { const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin'); let nameFieldHtml = isNew ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}</select>` : `<span class="text-lg font-black text-white">${name}</span>`, titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`, bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`; window.openAdminCustomModal(titleHtml, bodyHtml); setTimeout(() => { const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: "ko", theme: "dark", disableMobile: "true", static: true }; if (attStartPicker) attStartPicker.destroy(); if (attEndPicker) attEndPicker.destroy(); const attendEl = document.getElementById("editAttend"), leaveEl = document.getElementById("editLeave"); if (attendEl) attStartPicker = flatpickr(attendEl, config); if (leaveEl) attEndPicker = flatpickr(leaveEl, config); }, 100); }); };
+window.processAttendanceSave = function(name, date, isNew) {
+    const finalName = isNew ? document.getElementById('editName').value : name;
+    if (!finalName) return alert("Please select a staff member.");
 
-    // 1. Firebase 초기화 확인 (필요시)
-    if (typeof firebase === 'undefined') {
-        console.error("Firebase SDK가 로드되지 않았습니다.");
+    const special = document.getElementById('editSpecial').value;
+    const attendVal = document.getElementById('editAttend').value.trim();
+    const leaveVal = document.getElementById('editLeave').value.trim();
+
+    // 1. 특별 상태(휴가 등)가 선택된 경우 해당 문자열 저장
+    if (special) {
+        db.ref(`attendance/${date}/${finalName}`).set(special).then(() => {
+            alert(isNew ? "Registered" : "Updated");
+            window.closeAdminCustomModal();
+        });
         return;
     }
 
-    // 2. 레벨 시스템 안전하게 호출
-    try {
-        if (window.LevelSystem) {
-            LevelSystem.init('Admin');
-        }
-    } catch (e) { console.warn("LevelSystem 초기화 실패:", e); }
+    // 2. 출석 시간 판단 및 괄호() 형식 강제 저장
+    db.ref('settings/Standard Attendance Time').once('value', snap => {
+        const standardTime = (snap.val() || "08:30").trim(); 
+        let finalAttend = attendVal;
 
-    // 3. 데이터 렌더링 함수들을 순차적으로 실행
-    // 함수가 존재하는지 체크 후 실행하여 에러로 인한 스크립트 중단 방지
-    const initFunctions = [
-        'updateQuickStats', 
-        'renderWeeklyLeaves', 
-        'renderRecentAttendance', 
-        'renderRecentWork', 
-        'renderRecentSchedule'
-    ];
+        if (attendVal) {
+            // 숫자:숫자 형식만 추출 (이미 ATT(08:20) 형태여도 08:20만 추출함)
+            const timeMatch = attendVal.match(/\d{1,2}:\d{2}/);
+            const timeOnly = timeMatch ? timeMatch[0] : attendVal;
 
-    initFunctions.forEach(fnName => {
-        if (typeof window[fnName] === 'function') {
-            try {
-                window[fnName]();
-            } catch (err) {
-                console.error(`${fnName} 실행 중 오류:`, err);
-            }
-        } else {
-            console.warn(`함수를 찾을 수 없음: ${fnName}`);
-        }
-    });
-});
+            // 시, 분을 숫자로 변환하여 정확한 비교
+            const toNum = (t) => {
+                const parts = t.split(':');
+                return parseInt(parts[0], 10) * 100 + parseInt(parts[1], 10);
+            };
 
+            const inputNum = toNum(timeOnly);
+            const standardNum = toNum(standardTime);
 
-    window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
-
-    window.openAdminCustomModal = function(titleHtml, bodyHtml) {
-        document.getElementById('modalHeaderArea').innerHTML = titleHtml;
-        document.getElementById('modalBodyArea').innerHTML = bodyHtml;
-        document.getElementById('customAdminModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closeAdminCustomModal = function() {
-        if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
-        if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
-        if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
-        if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
-        document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
-        document.getElementById('customAdminModal').classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-
-    window.renderWeeklyLeaves = function() {
-        const container = document.getElementById('weekly_leave_container');
-        const section = document.getElementById('weekly_leave_section');
-        const rangeText = document.getElementById('week_range_text');
-        if (!container) return;
-        const curr = new Date();
-        const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1); 
-        const last = first + 6; 
-        const monday = new Date(new Date().setDate(first)).toISOString().split('T')[0];
-        const sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0];
-        rangeText.innerText = `${monday} ~ ${sunday}`;
-
-        db.ref('leaves').on('value', snap => {
-            const allLeaves = snap.val() || {};
-            container.innerHTML = '';
-            let hasAnyThisWeek = false;
-            const weeklyStaffMap = new Map();
-            Object.entries(allLeaves).forEach(([uid, years]) => {
-                Object.values(years).forEach(yearData => {
-                    Object.values(yearData).forEach(leave => {
-                        if (leave.status === 'Approved' && leave.startDate <= sunday && leave.endDate >= monday) {
-                            weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type });
-                            hasAnyThisWeek = true;
-                        }
-                    });
-                });
-            });
-            if (hasAnyThisWeek) {
-                section.classList.remove('hidden');
-                let html = '';
-                weeklyStaffMap.forEach(staff => {
-                    html += `<div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl"><span class="text-xs font-black text-white">${staff.name}</span><span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span><span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span></div>`;
-                });
-                container.innerHTML = html;
+            // [핵심] 괄호로 시간을 감싸는 형식 강제
+            if (inputNum > standardNum) {
+                finalAttend = "LATE(" + timeOnly + ")";
             } else {
-                section.classList.add('hidden'); 
+                finalAttend = "ATT(" + timeOnly + ")";
             }
-        });
-    };
-
-    window.updateQuickStats = function() {
-        db.ref('users').on('value', userSnap => {
-            const usersData = userSnap.val() || {};
-            const totalStaffCount = Object.keys(usersData).filter(name => name.toLowerCase() !== 'admin').length;
-            db.ref(`attendance/${todayStr}`).on('value', attSnap => {
-                const todayAtt = attSnap.val() || {};
-                let presentCount = 0, lateCount = 0;
-                Object.entries(todayAtt).forEach(([name, info]) => {
-                    if (name.toLowerCase() === 'admin') return;
-                    if (typeof info === 'string') {
-                        if (!['OFF', 'ANL', 'PEL'].includes(info)) presentCount++;
-                    } else if (info && info.attend) {
-                        presentCount++;
-                        if (info.attend.includes("LATE")) lateCount++;
-                    }
-                });
-                if (document.getElementById('stat_attendance')) document.getElementById('stat_attendance').innerText = `${presentCount}/${totalStaffCount}`;
-                if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount;
-            });
-        });
-
-// 기존 updateQuickStats 함수 내부의 리포트 관련 로직 수정
-db.ref(`reports/${todayStr}`).on('value', snap => {
-    const data = snap.val() || {};
-    const reportsArray = Object.entries(data);
-    
-    // 1. 개수 계산
-    const pendingCount = reportsArray.filter(([_, r]) => r.status === 'Pending').length;
-    const totalCount = reportsArray.length;
-
-    // 2. 스태프 정보 요약 생성 (예: Tom, Jane, ...)
-    const staffNames = reportsArray.map(([name, _]) => name).join(', ');
-    const summaryText = totalCount > 0 ? staffNames : "No reports today";
-
-    // 3. UI 업데이트
-    const statPendingEl = document.getElementById('stat_pending');
-    if (statPendingEl) {
-        // 숫자 표시 (Pending 개수 / 전체 개수)
-        statPendingEl.innerText = `${pendingCount}/${totalCount}`;
-        
-        // 하단에 스태프 이름들을 작은 텍스트로 추가
-        let infoEl = document.getElementById('stat_pending_detail');
-        if (!infoEl) {
-            infoEl = document.createElement('div');
-            infoEl.id = 'stat_pending_detail';
-            infoEl.className = "text-[9px] text-slate-500 font-bold mt-1 truncate w-full";
-            statPendingEl.parentNode.appendChild(infoEl);
         }
-        infoEl.innerText = summaryText;
-        infoEl.title = staffNames; // 마우스 호버 시 전체 이름 표시
-    }
-});
-
-
-        db.ref('shared_schedules').on('value', snap => {
-            const data = snap.val() || {};
-            let ongoingCount = 0;
-            Object.values(data).forEach(ev => {
-                const s = ev.start ? ev.start.split('T')[0] : (ev.startDate || "");
-                const e = ev.end ? ev.end.split('T')[0] : (ev.endDate || s);
-                if (s && e && todayStr >= s && todayStr <= e) ongoingCount++;
-            });
-            const el = document.getElementById('stat_schedules');
-            if (el) {
-                el.innerText = ongoingCount;
-                el.className = ongoingCount > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600";
-            }
-        });
-        db.ref('leaves').on('value', snap => {
-            const allLeaves = snap.val() || {};
-            let leavePendingCount = 0;
-            Object.values(allLeaves).forEach(userLeaves => {
-                Object.values(userLeaves).forEach(yearData => {
-                    Object.values(yearData).forEach(request => {
-                        if (request.status === 'Pending') leavePendingCount++;
-                    });
-                });
-            });
-            const alertBanner = document.getElementById('leave_alert_banner');
-            const alertText = document.getElementById('leave_alert_text');
-            if (leavePendingCount > 0) {
-                if (alertBanner) {
-                    alertBanner.classList.remove('hidden');
-                    alertBanner.onclick = () => (typeof switchAdminTab === 'function' ? switchAdminTab('leave') : window.parent.switchAdminTab('leave'));
-                }
-                if (alertText) alertText.innerText = `There are ${leavePendingCount} new leave application(s) waiting for your approval.`;
-            } else {
-                if (alertBanner) alertBanner.classList.add('hidden');
-            }
-        });
-    };
-
-    window.renderRecentAttendance = function() {
-        const container = document.getElementById('recent_att_container');
-        if(!container) return;
-        const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : "";
-        db.ref('users').once('value', userSnap => {
-            db.ref('attendance').on('value', snap => {
-                const data = snap.val() || {};
-                container.innerHTML = '';
-                last5Days.forEach(dStr => {
-                    const dayData = data[dStr] || {};
-                    let staffHtml = '';
-                    Object.entries(dayData).forEach(([name, info]) => {
-                        const safeInfo = encodeURIComponent(JSON.stringify(info));
-                        let content = typeof info === 'string' ? `<span class="text-amber-400">${info}</span>` : `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${(info.attend?.includes("LATE")?"LATE ":"ATT ")+formatTime(info.attend)}</span>${info.leave ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${formatTime(info.leave)}</span>`:''}</div>`;
-                        staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`;
-                    });
-                    container.innerHTML += `<div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group"><div class="flex justify-between items-center mb-2"><div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div></div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`;
-                });
-            });
-        });
-    };
-
-    window.renderRecentWork = function() {
-        const container = document.getElementById('recent_work_container');
-        if(!container) return;
-        db.ref('reports').on('value', snap => {
-            const data = snap.val() || {};
-            container.innerHTML = '';
-            last5Days.forEach(dStr => {
-                const dayData = data[dStr] || {};
-                let reportHtml = '';
-                Object.entries(dayData).forEach(([name, report]) => {
-                    const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30');
-                    reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">${report.readByAdmin !== true ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : ""}<span class="truncate">${name}</span></div>`;
-                });
-                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`;
-            });
-        });
-    };
-
-    window.renderRecentSchedule = function() {
-        const container = document.getElementById('recent_sch_container');
-        if(!container) return;
-        db.ref('shared_schedules').on('value', snap => {
-            const data = snap.val() || {};
-            container.innerHTML = '';
-            last5Days.forEach(dStr => {
-                let schHtml = '';
-                Object.entries(data).forEach(([id, ev]) => {
-                    const s = ev.start ? ev.start.split('T')[0] : "";
-                    const e = ev.end ? ev.end.split('T')[0] : s;
-                    if (dStr >= s && dStr <= e) schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`;
-                });
-                container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div></div>`;
-            });
-        });
-    };
-
-    window.showWorkDetail = function(name, date) {
-        db.ref(`reports/${date}/${name}`).update({ readByAdmin: true });
-        db.ref(`reports/${date}/${name}`).once("value", snap => {
-            const r = snap.val() || {};
-            const titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left"><div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label><select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div><div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div><div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div><div class="flex flex-col gap-3 mt-4"><button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-        });
-    };
-
-    window.openEditAttendance = function(name, date, infoEncoded) {
-        const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {};
-        const isSpecial = typeof info === 'string';
-        const isNew = name === '';
-        db.ref('users').once('value', userSnap => {
-            const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-            let nameFieldHtml = isNew ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}</select>` : `<span class="text-lg font-black text-white">${name}</span>`;
-            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-            setTimeout(() => {
-                const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: "ko", theme: "dark", disableMobile: "true", static: true };
-                if (attStartPicker) attStartPicker.destroy();
-                if (attEndPicker) attEndPicker.destroy();
-                const attendEl = document.getElementById("editAttend");
-                const leaveEl = document.getElementById("editLeave");
-                if (attendEl) attStartPicker = flatpickr(attendEl, config);
-                if (leaveEl) attEndPicker = flatpickr(leaveEl, config);
-            }, 100);
-        });
-    };
-
-    window.processAttendanceSave = function(name, date, isNew) {
-        const finalName = isNew ? document.getElementById('editName').value : name;
-        if(!finalName) return alert("Please select a staff member.");
-        const special = document.getElementById('editSpecial').value;
-        const updateData = special || { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
-        db.ref(`attendance/${date}/${finalName}`).set(updateData).then(() => { alert(isNew ? "Registered" : "Updated"); window.closeAdminCustomModal(); });
-    };
-
-    window.showSchDetail = function(id) {
-        db.ref(`shared_schedules/${id}`).once("value", snap => {
-            const ev = snap.val(); if(!ev) return;
-            const isAllDay = ev.allDay || (!ev.start.includes(':'));
-            const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
-            const bodyHtml = `<div class="space-y-4 pt-2 text-left"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label><input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none"></div><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label><input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label><input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div></div><div class="flex items-center gap-2 ml-1"><input type="checkbox" id="db_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950"><label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label><textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodeURIComponent(ev.desc || '')}</textarea></div><div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3"><label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label><textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodeURIComponent(ev.adminMemo || '')}</textarea></div><div class="flex flex-col gap-2"><button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
-            window.openAdminCustomModal(titleHtml, bodyHtml);
-            setTimeout(() => {
-                initEditTimePickers(isAllDay);
-                if (editStartPicker) editStartPicker.setDate(ev.start.replace('T', ' '));
-                if (editEndPicker) editEndPicker.setDate(ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' '));
-            }, 100);
-        });
-    };
-
-window.saveDashboardReport = function(date, staff) {
-        const updateData = {
-            status: document.getElementById('db_rp_status').value,
-            todo: document.getElementById('db_rp_todo').value,
-            summary: document.getElementById('db_rp_summary').value,
-            adminMemo: document.getElementById('db_rp_memo').value,
-            lastModified: new Date().toISOString()
-        };
-        db.ref(`reports/${date}/${staff}`).update(updateData).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
-    };
-
-    window.deleteDashboardReport = function(date, staff) {
-        if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
-    };
-
-    window.saveAttendanceEdit = function(name, date) {
-        const special = document.getElementById('editSpecial').value;
-        const updateData = special ? special : { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
-        db.ref(`attendance/${date}/${name}`).set(updateData).then(() => { alert("Updated"); window.closeAdminCustomModal(); });
-    };
-
-    window.deleteAttendance = function(name, date) {
-        if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
-    };
-
-    window.saveDashboardSchedule = function(id) {
-        const title = document.getElementById('db_sch_title').value;
-        const start = document.getElementById('db_sch_start').value;
-        const end = document.getElementById('db_sch_end').value;
-        const allDay = document.getElementById('db_sch_allday').checked;
-        const desc = document.getElementById('db_sch_desc').value;
-        const adminMemo = document.getElementById('db_sch_memo').value;
-
-        if(!title || !start) return alert('Title and Start Date are required.');
 
         const updateData = {
-            title,
-            start: start.replace(' ', 'T'),
-            end: end ? end.replace(' ', 'T') : start.replace(' ', 'T'),
-            allDay: allDay,
-            desc: desc,
-            adminMemo: adminMemo,
-            lastModified: Date.now()
+            attend: finalAttend,
+            leave: leaveVal
         };
 
-        db.ref(`shared_schedules/${id}`).update(updateData).then(() => {
+        db.ref(`attendance/${date}/${finalName}`).set(updateData).then(() => {
+            alert(isNew ? "Registered" : "Updated");
             window.closeAdminCustomModal();
         });
-    };
-
-    window.deleteDashboardSchedule = function(id) {
-        if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); });
-    };
-
-    window.initAdminDashboard = function() {
-        window.updateQuickStats();
-        window.renderRecentAttendance();
-        window.renderRecentWork();
-        window.renderRecentSchedule();
-        window.renderWeeklyLeaves();
-    };
-
-    if (document.getElementById('quick_stats_container')) {
-        setTimeout(window.initAdminDashboard, 100);
-    }
+    });
+};
+window.showSchDetail = function(id) { db.ref(`shared_schedules/${id}`).once("value", snap => { const ev = snap.val(); if(!ev) return; const isAllDay = ev.allDay || (!ev.start.includes(':')), titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`, bodyHtml = `<div class="space-y-4 pt-2 text-left"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label><input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none"></div><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label><input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label><input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div></div><div class="flex items-center gap-2 ml-1"><input type="checkbox" id="db_sch_allday" ${isAllDay ? 'checked' : ''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950"><label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label><textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodeURIComponent(ev.desc || '')}</textarea></div><div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3"><label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label><textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodeURIComponent(ev.adminMemo || '')}</textarea></div><div class="flex flex-col gap-2"><button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`; window.openAdminCustomModal(titleHtml, bodyHtml); setTimeout(() => { initEditTimePickers(isAllDay); if (editStartPicker) editStartPicker.setDate(ev.start.replace('T', ' ')); if (editEndPicker) editEndPicker.setDate(ev.end ? ev.end.replace('T', ' ') : ev.start.replace('T', ' ')); }, 100); }); };
+window.saveDashboardReport = function(date, staff) { const updateData = { status: document.getElementById('db_rp_status').value, todo: document.getElementById('db_rp_todo').value, summary: document.getElementById('db_rp_summary').value, adminMemo: document.getElementById('db_rp_memo').value, lastModified: new Date().toISOString() }; db.ref(`reports/${date}/${staff}`).update(updateData).then(() => { alert("Saved"); window.closeAdminCustomModal(); }); };
+window.deleteDashboardReport = function(date, staff) { if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
+window.saveAttendanceEdit = function(name, date) { const special = document.getElementById('editSpecial').value, updateData = special ? special : { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() }; db.ref(`attendance/${date}/${name}`).set(updateData).then(() => { alert("Updated"); window.closeAdminCustomModal(); }); };
+window.deleteAttendance = function(name, date) { if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
+window.saveDashboardSchedule = function(id) { const title = document.getElementById('db_sch_title').value, start = document.getElementById('db_sch_start').value, end = document.getElementById('db_sch_end').value, allDay = document.getElementById('db_sch_allday').checked, desc = document.getElementById('db_sch_desc').value, adminMemo = document.getElementById('db_sch_memo').value; if(!title || !start) return alert('Title and Start Date are required.'); const updateData = { title, start: start.replace(' ', 'T'), end: end ? end.replace(' ', 'T') : start.replace(' ', 'T'), allDay: allDay, desc: desc, adminMemo: adminMemo, lastModified: Date.now() }; db.ref(`shared_schedules/${id}`).update(updateData).then(() => { window.closeAdminCustomModal(); }); };
+window.deleteDashboardSchedule = function(id) { if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
+window.initAdminDashboard = function() { window.updateQuickStats(); window.renderRecentAttendance(); window.renderRecentWork(); window.renderRecentSchedule(); window.renderWeeklyLeaves(); };
+if (document.getElementById('quick_stats_container')) { setTimeout(window.initAdminDashboard, 100); }
 })();
 </script>
