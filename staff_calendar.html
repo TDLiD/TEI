@@ -20,6 +20,20 @@
 .event-item.touch-ready { filter: brightness(1.5); box-shadow: 0 0 20px rgba(255,255,255,0.6); transform: scale(1.05); }
 .flatpickr-mobile { display: none !important; }
 .flatpickr-calendar.static { position: absolute !important; top: 100% !important; }
+/* 일요일 열 배경색 (첫 번째 td) */
+.schedule-cal tr td:first-child {
+    background-color: rgba(244, 63, 94, 0.05);
+}
+
+/* 토요일 열 배경색 (일곱 번째 td) */
+.schedule-cal tr td:last-child {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* 오늘 날짜가 주말일 때 배경색이 겹치지 않게 하려면 */
+.schedule-cal td.today-highlight { 
+    background-color: rgba(168, 85, 247, 0.1) !important; 
+}
 </style>
 <div class="animate-fadeIn">
     <div class="flex justify-between items-center mb-8">
@@ -289,27 +303,39 @@
                     });
                     const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
                     tr.style.height = Math.max(140, calculatedHeight) + 'px';
-                    weekDates.forEach((dStr, j) => {
-                        const td = document.createElement('td');
-                        if (dStr) {
-                            td.dataset.date = dStr;
-                            td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
-                            const isToday = (dStr === (new Date().toISOString().split('T')[0]));
-                            let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-600')}">${parseInt(dStr.split('-')[2])}</span></div>`;
-                            sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                                if (dStr === ev.sDate || j === 0) {
-                                    const slot = eventSlots[ev.id];
-                                    const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
-                                    const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                                    const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
-                                    const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                                    html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"><span class="ev-title-text">${isCont ? '' : ev.title}</span><span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span></div>`;
-                                }
-                            });
-                            td.innerHTML = html;
-                        }
-                        tr.appendChild(td);
-                    });
+weekDates.forEach((dStr, j) => {
+    const td = document.createElement('td');
+    if (dStr) {
+        td.dataset.date = dStr;
+        td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+
+        // --- [추가] 주말 배경색 로직 ---
+        if (j === 0) { // 일요일
+            td.style.backgroundColor = 'rgba(244, 63, 94, 0.08)'; // 아주 연한 레드
+        } else if (j === 6) { // 토요일
+            td.style.backgroundColor = 'rgba(59, 130, 246, 0.08)'; // 아주 연한 블루
+        }
+        // ----------------------------
+
+        const isToday = (dStr === (new Date().toISOString().split('T')[0]));
+        
+        // 날짜 텍스트 클래스 수정 (j === 0: 레드, j === 6: 블루)
+        let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-400')}">${parseInt(dStr.split('-')[2])}</span></div>`;
+        
+        sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+            if (dStr === ev.sDate || j === 0) {
+                const slot = eventSlots[ev.id];
+                const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
+                const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
+                const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
+                const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+                html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"><span class="ev-title-text">${isCont ? '' : ev.title}</span><span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span></div>`;
+            }
+        });
+        td.innerHTML = html;
+    }
+    tr.appendChild(td);
+});
                     tbody.appendChild(tr);
                     if (dateNum > lastDate) break;
                 }

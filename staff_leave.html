@@ -120,7 +120,7 @@
         });
     }
 
-    window.renderCalendar = function() {
+window.renderCalendar = function() {
         const container = document.getElementById('leaveCalendarContainer');
         const title = document.getElementById('calendarMonthTitle');
         const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
@@ -134,29 +134,55 @@
         db.ref(`leaves/${user}/${year}`).once('value', snap => {
             const leaves = snap.val() || {};
             let html = `<table class="leave-calendar-table"><thead><tr>`;
-            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => html += `<th>${day}</th>`);
+            
+            // 헤더 요일 색상 구분 (일요일/토요일)
+            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
+                let colorClass = idx === 0 ? 'text-rose-500' : (idx === 6 ? 'text-blue-500' : 'text-slate-500');
+                html += `<th class="${colorClass}">${day}</th>`;
+            });
+            
             html += `</tr></thead><tbody><tr>`;
             
-            for(let i=0; i<firstDay; i++) html += `<td></td>`;
+            for(let i=0; i<firstDay; i++) {
+                // 빈 칸도 주말인 경우 배경색 적용 (선택 사항)
+                html += `<td></td>`;
+            }
             
             for(let d=1; d<=lastDate; d++) {
-                if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
+                const dayOfWeek = (firstDay + d - 1) % 7;
+                if(dayOfWeek === 0 && d > 1) html += `</tr><tr>`;
+                
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const isToday = dateStr === todayStr;
+                
+                // --- 주말 배경색 및 숫자 색상 설정 ---
+                let tdStyle = "";
+                let dayNumClass = "leave-day-num";
+                
+                if (dayOfWeek === 0) { // 일요일
+                    tdStyle = "background-color: rgba(244, 63, 94, 0.08);";
+                    dayNumClass += " text-rose-500";
+                } else if (dayOfWeek === 6) { // 토요일
+                    tdStyle = "background-color: rgba(59, 130, 246, 0.08);";
+                    dayNumClass += " text-blue-500";
+                }
+
                 const tdClass = isToday ? 'today-cell' : '';
                 const todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
                 
                 let badges = '';
                 Object.entries(leaves).forEach(([id, item]) => {
                     if(dateStr >= item.startDate && dateStr <= item.endDate) {
-                        const currentDay = new Date(dateStr).getDay();
-                        if (currentDay !== 0 && currentDay !== 6) {
-                            const sClass = item.status === 'Approved' ? 'badge-approved' : 'badge-pending';
-                            badges += `<div class="leave-badge ${sClass}">${item.type}</div>`;
-                        }
+                        // 휴가 데이터는 평일에만 표시 (기존 로직 유지)
+                        const sClass = item.status === 'Approved' ? 'badge-approved' : 'badge-pending';
+                        badges += `<div class="leave-badge ${sClass}">${item.type}</div>`;
                     }
                 });
-                html += `<td class="${tdClass}"><div class="leave-day-num">${d}${todayBadge}</div>${badges}</td>`;
+
+                html += `<td class="${tdClass}" style="${tdStyle}">
+                            <div class="${dayNumClass}">${d}${todayBadge}</div>
+                            ${badges}
+                         </td>`;
             }
             html += `</tr></tbody></table>`;
             if(container) container.innerHTML = html;

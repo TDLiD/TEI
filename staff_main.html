@@ -466,71 +466,96 @@ setTimeout(() => {
         window.changeMonth = function (offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 
 
-        function renderCalendar() {
-            const year = viewDate.getFullYear(), month = viewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const monthYearElem = document.getElementById('currentMonthYear');
-            if (monthYearElem) {
-                monthYearElem.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-            }
-            db.ref('attendance').off();
-            db.ref('attendance').on('value', (snap) => {
-                const tbody = document.getElementById('calendarBody');
-                if (!tbody) return;
-                const data = snap.val() || {};
-                updateAttendanceStats(data);
-                if (!hasCheckedMissing) {
-                    checkMissingRecords(data);
-                    hasCheckedMissing = true;
-                }
-                tbody.innerHTML = '';
-                let dateCounter = 1;
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
-                        if (i === 0 && j < firstDay || dateCounter > lastDate) {
-                            row.appendChild(cell);
+function renderCalendar() {
+    const year = viewDate.getFullYear(), month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const monthYearElem = document.getElementById('currentMonthYear');
+
+    if (monthYearElem) {
+        monthYearElem.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    }
+
+    db.ref('attendance').off();
+    db.ref('attendance').on('value', (snap) => {
+        const tbody = document.getElementById('calendarBody');
+        if (!tbody) return;
+        
+        const data = snap.val() || {};
+        updateAttendanceStats(data);
+        
+        if (!hasCheckedMissing) {
+            checkMissingRecords(data);
+            hasCheckedMissing = true;
+        }
+
+        tbody.innerHTML = '';
+        let dateCounter = 1;
+
+        for (let i = 0; i < 6; i++) {
+            let row = document.createElement('tr');
+            for (let j = 0; j < 7; j++) {
+                let cell = document.createElement('td');
+                
+                if (i === 0 && j < firstDay || dateCounter > lastDate) {
+                    row.appendChild(cell);
+                } else {
+                    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
+                    const rec = data[dStr] ? data[dStr][user] : null;
+
+                    // --- [수정] 주말 배경색 농도 조절 (0.05 -> 0.15) ---
+                    if (j === 0) { // 일요일
+                        cell.style.backgroundColor = 'rgba(244, 63, 94, 0.15)'; 
+                    } else if (j === 6) { // 토요일
+                        cell.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+                    }
+
+                    if (dStr === todayStr) cell.classList.add('today-highlight');
+                    
+                    cell.style.cursor = 'pointer';
+                    cell.onclick = () => openEditPopup(dStr, rec);
+
+                    // --- [수정] 요일에 따른 날짜 숫자 색상 변경 ---
+                    let dateColorClass = "text-slate-500";
+                    if (j === 0) dateColorClass = "text-rose-500";      // 일요일 빨간색
+                    else if (j === 6) dateColorClass = "text-blue-500"; // 토요일 파란색
+
+                    let content = `<div class="${dateColorClass} text-[9px] font-black opacity-80 ml-1 mt-1">${dateCounter}</div>`;
+
+                    if (rec) {
+                        if (typeof rec === 'string') {
+                            content += `<span class="time-label other-color mt-2">${rec}</span>`;
                         } else {
-                            const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
-                            const rec = data[dStr] ? data[dStr][user] : null;
-                            if (dStr === todayStr) cell.classList.add('today-highlight');
-                            cell.style.cursor = 'pointer';
-                            cell.onclick = () => openEditPopup(dStr, rec);
-                            let content = `<div class="text-[9px] font-black text-slate-500 opacity-50 ml-1 mt-1">${dateCounter}</div>`;
-                            if (rec) {
-                                if (typeof rec === 'string') {
-                                    content += `<span class="time-label other-color mt-2">${rec}</span>`;
-                                } else {
-                                    let attendText = rec.attend || "";
-                                    let displayAttend = "";
-                                    if (attendText) {
-                                        const attMatch = attendText.match(/(\d{1,2}:\d{2})/);
-                                        const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
-                                        displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
-                                    }
-                                    let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
-                                    if (displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
-                                    let leaveText = rec.leave || "";
-                                    let displayLeave = "";
-                                    if (leaveText) {
-                                        const leaveMatch = leaveText.match(/(\d{1,2}:\d{2})/);
-                                        displayLeave = leaveMatch ? leaveMatch[1] : leaveText;
-                                    }
-                                    if (displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
-                                }
+                            let attendText = rec.attend || "";
+                            let displayAttend = "";
+                            if (attendText) {
+                                const attMatch = attendText.match(/(\d{1,2}:\d{2})/);
+                                const prefix = attendText.includes("LATE") ? "LATE" : "ATT";
+                                displayAttend = attMatch ? `${prefix}(${attMatch[1]})` : attendText;
                             }
-                            cell.innerHTML = content;
-                            row.appendChild(cell);
-                            dateCounter++;
+                            let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
+                            if (displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
+                            
+                            let leaveText = rec.leave || "";
+                            let displayLeave = "";
+                            if (leaveText) {
+                                const leaveMatch = leaveText.match(/(\d{1,2}:\d{2})/);
+                                displayLeave = leaveMatch ? leaveMatch[1] : leaveText;
+                            }
+                            if (displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                         }
                     }
-                    tbody.appendChild(row);
-                    if (dateCounter > lastDate) break;
+                    
+                    cell.innerHTML = content;
+                    row.appendChild(cell);
+                    dateCounter++;
                 }
-            });
+            }
+            tbody.appendChild(row);
+            if (dateCounter > lastDate) break;
         }
+    });
+}
         window.openEditPopup = function (dateStr, currentRec) {
             if (document.getElementById('editPopup')) return;
             let attVal = "", leaveVal = "", isAttReadOnly = false, isLeaveInfo = false, leaveTypeText = "";

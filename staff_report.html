@@ -1,4 +1,6 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
 <style>
     .mini-cal th { padding: 10px 0; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
@@ -22,6 +24,12 @@
     .year-select { background: transparent; color: #3b82f6; border: none; font-family: inherit; font-weight: 900; cursor: pointer; padding: 0 4px; outline: none; transition: color 0.2s; appearance: none; }
     .year-select:hover { color: #60a5fa; }
     .year-select option { background-color: #0f172a; color: white; padding: 10px; }
+
+/* 에디터 배경색 및 글자색 조정 (다크모드 대응) */
+    .ql-container { font-family: inherit; font-size: 0.875rem; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; background: #1e293b; color: white; }
+    .ql-toolbar { background: #e2e8f0; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .ql-editor.ql-blank::before { color: #64748b !important; font-style: normal; }
+
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -203,26 +211,37 @@
         };
 
         const getTempKey = (date) => `temp_report_${user}_${date}`;
-        window.saveToTemp = function() {
-            const todo = document.getElementById('editTodo')?.value;
-            const summary = document.getElementById('editSummary')?.value;
-            const status = document.getElementById('editStatus')?.value;
-            const tempData = { todo, summary, status, timestamp: new Date().getTime() };
-            localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify(tempData));
-        };
+ window.saveToTemp = function() {
+    const todo = window.quillTodo ? window.quillTodo.root.innerHTML : "";
+    const summary = window.quillSummary ? window.quillSummary.root.innerHTML : "";
+    const status = document.getElementById('editStatus')?.value;
+    
+    // 내용이 아예 비어있을 때(Quill 기본값 <p><br></p>) 처리
+    const cleanTodo = todo === '<p><br></p>' ? '' : todo;
+    const cleanSummary = summary === '<p><br></p>' ? '' : summary;
+
+    const tempData = { todo: cleanTodo, summary: cleanSummary, status, timestamp: new Date().getTime() };
+    localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify(tempData));
+};
+
         window.clearTemp = function(date) { localStorage.removeItem(getTempKey(date)); };
         window.changeViewMonth = function(offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderMiniCalendar(); };
         window.changeViewYear = function(year) { viewDate.setFullYear(parseInt(year)); renderMiniCalendar(); };
         window.goToday = function() { viewDate = new Date(); selectedDateStr = todayStr; loadReport(selectedDateStr); };
 
-        window.saveReport = function() {
-            const todoField = document.getElementById('editTodo');
-            const summaryField = document.getElementById('editSummary');
-            const statusField = document.getElementById('editStatus');
-            if(!todoField.value.trim() && !summaryField.value.trim()) return alert("Please enter at least one content.");
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const saveData = { todo: todoField.value, summary: summaryField.value, status: statusField.value, time: timeStr };
+window.saveReport = function() {
+    const todo = window.quillTodo.root.innerHTML;
+    const summary = window.quillSummary.root.innerHTML;
+    const status = document.getElementById('editStatus').value;
+
+    if (window.quillTodo.getText().trim().length === 0 && window.quillSummary.getText().trim().length === 0) {
+        return alert("Please enter at least one content.");
+    }
+
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    
+    const saveData = { todo, summary, status, time: timeStr };
             if (currentReportData && currentReportData.adminMemo) saveData.adminMemo = currentReportData.adminMemo;
             database.ref('reports/' + selectedDateStr + '/' + user).set(saveData).then(() => {
                 alert("Saved successfully.");
@@ -299,8 +318,12 @@
                         if ((i === 0 && j < firstDay) || date > lastDate) { row.appendChild(cell); } else {
                             const curDate = date;
                             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
-                            let cellHTML = `<div class="date-num text-xs font-bold ${dateStr === todayStr ? 'text-blue-500' : 'text-slate-500'}">${curDate}</div>`;
-                            const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
+// 요일별 색상 처리 예시
+let dayColorClass = "text-slate-500";
+if (j === 0) dayColorClass = "text-rose-500"; // 일요일
+if (j === 6) dayColorClass = "text-blue-500"; // 토요일
+
+let cellHTML = `<div class="date-num text-xs font-bold ${dateStr === todayStr ? 'text-blue-500 underline' : dayColorClass}">${curDate}</div>`;                            const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
                             if (userReport) {
                                 let statusClass = userReport.status === 'Completed' ? "status-completed" : (userReport.status === 'Pending' ? "status-pending" : "status-progress");
                                 let statusText = userReport.status === 'Completed' ? "COMPLETED" : (userReport.status === 'Pending' ? "PENDING" : "PROGRESS");
@@ -335,8 +358,9 @@
                             if (data) {
                                 const todoEl = document.getElementById('editTodo');
                                 const summaryEl = document.getElementById('editSummary');
-                                if(todoEl) todoEl.value = data.todo || "";
-                                if(summaryEl) summaryEl.value = data.summary || data.content || "";
+// 기존 todoEl.value = ... 부분을 아래와 같이 변경
+if(window.quillTodo) window.quillTodo.root.innerHTML = data.todo || "";
+if(window.quillSummary) window.quillSummary.root.innerHTML = data.summary || data.content || "";
                                 window.saveToTemp();
                                 alert("Data copied successfully.");
                             } else { alert("No report found for the selected date."); }
@@ -347,31 +371,87 @@
             window.copyPicker.open();
         };
 
-        window.showEditor = function() {
-            document.getElementById('actionButtons').innerHTML = '';
-            const container = document.getElementById('workCardContainer');
-            const serverReport = currentReportData || { todo: "", summary: "", status: "In Progress", content: "" };
-            const tempRaw = localStorage.getItem(getTempKey(selectedDateStr));
-            let report = serverReport;
-            let hasTemp = false;
-            if (tempRaw) {
-                const tempData = JSON.parse(tempRaw);
-                report = { ...serverReport, todo: tempData.todo || serverReport.todo, summary: tempData.summary || serverReport.summary || serverReport.content, status: tempData.status || serverReport.status };
-                hasTemp = true;
-            }
-            const isNew = !currentReportData; 
-            container.innerHTML = `
-                <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
-                    <div class="flex justify-between items-center mb-5">
-                        <div class="flex flex-col"><span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New Report' : 'Edit Report'}</span>${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}</div>
-                        <div class="flex items-center gap-3"><button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">📋 Copy from date</button><span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span></div>
-                    </div>
-                    <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label><select id="editStatus" onchange="window.saveToTemp()" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 outline-none text-sm"><option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option><option value="Completed" ${report.status === 'Completed' ? 'selected' : ''}>Completed</option><option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option></select></div>
-                    <div class="mb-4"><label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">Today's To-Do</label><textarea id="editTodo" oninput="window.saveToTemp()" placeholder="Enter planned tasks..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[100px] resize-none focus:border-blue-500 transition">${report.todo || ''}</textarea></div>
-                    <div class="mb-5"><label class="block text-[10px] font-bold text-emerald-500 uppercase mb-2">Work Summary</label><textarea id="editSummary" oninput="window.saveToTemp()" placeholder="Enter work results..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${report.summary || report.content || ''}</textarea></div>
-                    <div class="flex flex-col gap-2"><button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Report</button><button onclick="if(confirm('Discard all changes?')){ window.clearTemp('${selectedDateStr}'); window.loadReport('${selectedDateStr}'); }" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-700 transition">Discard Changes</button></div>
-                </div>`;
+window.showEditor = function() {
+    document.getElementById('actionButtons').innerHTML = '';
+    const container = document.getElementById('workCardContainer');
+    const serverReport = currentReportData || { todo: "", summary: "", status: "In Progress", content: "" };
+    const tempRaw = localStorage.getItem(getTempKey(selectedDateStr));
+    let report = serverReport;
+    let hasTemp = false;
+
+    if (tempRaw) {
+        const tempData = JSON.parse(tempRaw);
+        report = { 
+            ...serverReport, 
+            todo: tempData.todo || serverReport.todo, 
+            summary: tempData.summary || serverReport.summary || serverReport.content, 
+            status: tempData.status || serverReport.status 
         };
+        hasTemp = true;
+    }
+    
+    const isNew = !currentReportData; 
+    
+    // 1. HTML 구조 변경 (textarea -> div)
+    container.innerHTML = `
+        <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex flex-col">
+                    <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New Report' : 'Edit Report'}</span>
+                    ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">📋 Copy from date</button>
+                    <span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label>
+                <select id="editStatus" onchange="window.saveToTemp()" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 outline-none text-sm">
+                    <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="Completed" ${report.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">Today's To-Do</label>
+                <div id="editTodo" class="bg-slate-800 text-white rounded-xl border border-slate-700 text-sm min-h-[120px]"></div>
+            </div>
+            <div class="mb-5">
+                <label class="block text-[10px] font-bold text-emerald-500 uppercase mb-2">Work Summary</label>
+                <div id="editSummary" class="bg-slate-800 text-white rounded-xl border border-slate-700 text-sm min-h-[200px]"></div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Report</button>
+                <button onclick="if(confirm('Discard all changes?')){ window.clearTemp('${selectedDateStr}'); window.loadReport('${selectedDateStr}'); }" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-700 transition">Discard Changes</button>
+            </div>
+        </div>`;
+
+    // 2. Quill 에디터 설정
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['clean']
+    ];
+
+    const quillConfig = {
+        theme: 'snow',
+        modules: { toolbar: toolbarOptions },
+        placeholder: 'Enter content here...'
+    };
+
+    // 3. 에디터 초기화 및 기존 데이터 주입
+    window.quillTodo = new Quill('#editTodo', quillConfig);
+    window.quillSummary = new Quill('#editSummary', quillConfig);
+
+    // 저장되어 있던 HTML 데이터를 에디터에 삽입
+    window.quillTodo.root.innerHTML = report.todo || '';
+    window.quillSummary.root.innerHTML = report.summary || report.content || '';
+
+    // 4. 내용 변경 시 임시 저장 이벤트 연결
+    window.quillTodo.on('text-change', () => window.saveToTemp());
+    window.quillSummary.on('text-change', () => window.saveToTemp());
+};
         loadReport(selectedDateStr);
     })();
 </script>
