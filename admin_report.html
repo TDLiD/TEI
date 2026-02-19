@@ -303,33 +303,78 @@ function drawReportCalendar() {
         });
     };
 
-    window.openReportDetail = function(date, staff){
-        if(!staff) return;
-        reportDb.ref(`reports/${date}/${staff}`).once("value", snap => {
-            const r = snap.val() || {};
-            const box = document.getElementById("reportDetail");
-            if(!box) return;
-            box.classList.remove("hidden");
-            box.innerHTML = `
-            <div class="detail-panel p-6 sticky top-0">
-                <div class="flex justify-between items-start mb-6">
-                    <div><h3 class="text-2xl font-black text-white">Report Detail</h3><p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p></div>
-                    <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+// HTML 태그를 제거하는 헬퍼 함수
+function stripHtml(html) {
+    let tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+}
+
+window.openReportDetail = function(date, staff) {
+    if (!staff) return;
+
+    // HTML 태그를 제거하고 순수 텍스트만 추출하는 내부 함수
+    const stripHtml = (html) => {
+        const tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        // <p> 태그 등을 줄바꿈으로 변환하고 싶다면 텍스트 추출 전 처리가 필요할 수 있으나, 
+        // 기본적으로는 아래와 같이 텍스트만 가져오는 것이 가장 깔끔합니다.
+        return tmp.textContent || tmp.innerText || "";
+    };
+
+    reportDb.ref(`reports/${date}/${staff}`).once("value", snap => {
+        const r = snap.val() || {};
+        const box = document.getElementById("reportDetail");
+        if (!box) return;
+
+        // HTML 태그가 섞인 데이터를 깨끗한 텍스트로 변환
+        const cleanTodo = stripHtml(r.todo || '');
+        const cleanSummary = stripHtml(r.summary || '');
+
+        box.classList.remove("hidden");
+        box.innerHTML = `
+        <div class="detail-panel p-6 sticky top-0">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-white">Report Detail</h3>
+                    <p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p>
                 </div>
-                <div class="space-y-4">
-                    <div><label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label><select id="rp_status" class="custom-input font-bold text-blue-400"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div>
-                    <div><label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label><textarea id="rp_todo" class="custom-input h-24 resize-none">${r.todo||''}</textarea></div>
-                    <div><label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label><textarea id="rp_summary" class="custom-input h-32 resize-none">${r.summary||''}</textarea></div>
-                    <div><label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label><textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20">${r.adminMemo||''}</textarea></div>
+                <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label>
+                    <select id="rp_status" class="custom-input font-bold text-blue-400">
+                        <option ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        <option ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                    </select>
                 </div>
-                <div class="grid grid-cols-2 gap-3 mt-8">
-                    <button onclick="saveReport('${date}','${staff}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">SAVE CHANGES</button>
-                    <button onclick="closeReportDetail()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">Cancel</button>
-                    <button onclick="deleteReport('${date}','${staff}')" class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">Delete</button>
+                <div>
+                    <label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label>
+                    <textarea id="rp_todo" class="custom-input h-24 resize-none">${cleanTodo}</textarea>
                 </div>
-            </div>`;
-        });
-    }
+                <div>
+                    <label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label>
+                    <textarea id="rp_summary" class="custom-input h-32 resize-none">${cleanSummary}</textarea>
+                </div>
+                <div>
+                    <label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label>
+                    <textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20">${r.adminMemo || ''}</textarea>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button onclick="saveReport('${date}','${staff}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">SAVE CHANGES</button>
+                <button onclick="closeReportDetail()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">Cancel</button>
+                <button onclick="deleteReport('${date}','${staff}')" class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">Delete</button>
+            </div>
+        </div>`;
+    });
+}
 
     window.closeReportDetail = function() { document.getElementById("reportDetail").classList.add("hidden"); };
     window.saveReport = function(date, staff){
