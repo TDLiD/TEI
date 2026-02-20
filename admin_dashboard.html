@@ -42,11 +42,11 @@
         <div id="stat_leave_yesterday" class="text-2xl font-black text-rose-500"></div>
     </div>
 
-    <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('reports')" 
-         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group">
-        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div>
-        <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
-    </div>
+<div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('reports')" 
+     class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group">
+    <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Today Reports</div>
+    <div id="stat_pending" class="text-2xl font-black text-amber-400">0/0</div>
+</div>
 
     <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('schedule')" 
          class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-purple-500/50 transition-all group">
@@ -239,22 +239,35 @@ window.updateQuickStats = function() {
 
     findLastActiveData(); // 로직 실행
 
-    // C. Pending Reports
-    db.ref(`reports/${todayStr}`).on('value', snap => {
-        const data = snap.val() || {};
-        const rArr = Object.entries(data);
-        const pCnt = rArr.filter(([_, r]) => r.status === 'Pending').length;
-        const sNames = rArr.map(([n]) => n).join(', ');
+// C. Today Reports (기존 Pending Reports 수정본)
+db.ref(`reports/${todayStr}`).on('value', snap => {
+    const reportsData = snap.val() || {};
+    const reportedStaffNames = Object.keys(reportsData).filter(name => name.toLowerCase() !== 'admin');
+    const reportedCount = reportedStaffNames.length;
+
+    // 전체 직원 수 가져오기 (이미 A 섹션에서 allStaff를 구했으므로 그 값을 활용하거나 다시 계산)
+    db.ref('users').once('value', userSnap => {
+        const users = userSnap.val() || {};
+        const allStaffNames = Object.keys(users).filter(n => n.toLowerCase() !== 'admin');
+        const totalStaffCount = allStaffNames.length;
+
         const el = document.getElementById('stat_pending');
-        
         if (el) {
+            // UI 업데이트: x/x 형식 및 하단 이름 표시
             el.innerHTML = `
                 <div class="flex flex-col">
-                    <span class="leading-none">${pCnt}/${rArr.length}</span>
-                    <span id="stat_pending_detail" class="text-[9px] text-slate-500 font-bold mt-1 truncate" title="${sNames}">${rArr.length ? sNames : "No reports today"}</span>
+                    <span class="text-2xl font-black text-amber-400 leading-tight">${reportedCount}/${totalStaffCount}</span>
+                    <span class="text-[9px] text-slate-500 font-bold mt-1 truncate" title="${reportedStaffNames.join(', ')}">
+                        ${reportedCount > 0 ? `(Reported: ${reportedStaffNames.join(', ')})` : "(No Reports Yet)"}
+                    </span>
                 </div>`;
+            
+            // 상단 타이틀도 Today Reports로 변경
+            const titleEl = el.previousElementSibling;
+            if (titleEl) titleEl.innerText = "Today Reports";
         }
-    }); // reports 리스너 닫기
+    });
+});
 
     // D. Ongoing Schedules
     db.ref('shared_schedules').on('value', snap => {
