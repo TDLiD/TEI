@@ -331,36 +331,65 @@ setTimeout(() => {
             if (!t) return false;
             return /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t);
         }
-        window.handleAttendance = function (type) {
-            if (!type || typeof type !== 'string') return;
-            const rawTime = timeInput.value;
-            if (!isValidTime(rawTime)) {
-                alert("Please enter a valid time (HH:mm:ss).");
-                return;
+// handleAttendance 함수 수정 제안
+window.handleAttendance = function (type) {
+    if (!type || typeof type !== 'string') return;
+    
+    const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
+    if (btn.disabled) return; // 이미 처리 중이면 중단
+
+    const rawTime = timeInput.value;
+    if (!isValidTime(rawTime)) {
+        alert("Please enter a valid time (HH:mm:ss).");
+        return;
+    }
+
+    // 버튼 비활성화 (중복 클릭 방지)
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+
+    const timeParts = rawTime.split(':');
+    const storageTime = `${timeParts[0]}:${timeParts[1]}`;
+
+    db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
+        const currentData = snap.val() || {};
+        if (type === 'attend' && currentData.attend) {
+            alert("Attendance time has already been set.");
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            return;
+        }
+
+        let finalVal = storageTime;
+        if (type === 'attend') {
+            if (!standardTime) { 
+                alert("Standard time is loading..."); 
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                return; 
             }
-            const timeParts = rawTime.split(':');
-            const storageTime = `${timeParts[0]}:${timeParts[1]}`;
-            db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
-                const currentData = snap.val() || {};
-                if (type === 'attend' && currentData.attend) {
-                    alert("Attendance time has already been set.");
-                    return;
-                }
-                let finalVal = storageTime;
-                if (type === 'attend') {
-                    if (!standardTime) { alert("Standard time is loading..."); return; }
-                    const [iHH, iMM] = storageTime.split(':').map(Number);
-                    const [sHH, sMM] = standardTime.split(':').map(Number);
-                    const stdMinutes = sHH * 60 + sMM;
-                    const inputMinutes = iHH * 60 + iMM;
-                    finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
-                }
-                if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-                    db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
-                        .then(() => alert("Success."));
-                }
-            });
-        };
+            const [iHH, iMM] = storageTime.split(':').map(Number);
+            const [sHH, sMM] = standardTime.split(':').map(Number);
+            const stdMinutes = sHH * 60 + sMM;
+            const inputMinutes = iHH * 60 + iMM;
+            finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
+        }
+
+        if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+            db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
+                .then(() => {
+                    alert("Success.");
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                });
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+    });
+};
         function updateAttendanceStats(data) {
             const viewYear = viewDate.getFullYear();
             const viewMonth = viewDate.getMonth() + 1;
@@ -423,15 +452,16 @@ setTimeout(() => {
                 }
             }
         }
-        db.ref('settings/standardTime').on('value', (snap) => {
-            const val = snap.val();
-            if (val) {
-                standardTime = val;
-                const stdTimeElem = document.getElementById('displayStdTime');
-                if (stdTimeElem) stdTimeElem.innerText = standardTime;
-                if (btnIn) btnIn.disabled = false;
-            }
-        });
+// 경로를 settings/config/stdAttendance 로 변경
+db.ref('settings/config/stdAttendance').on('value', (snap) => {
+    const val = snap.val();
+    if (val) {
+        standardTime = val; // 변수명은 그대로 사용해도 무방합니다.
+        const stdTimeElem = document.getElementById('displayStdTime');
+        if (stdTimeElem) stdTimeElem.innerText = standardTime;
+        if (btnIn) btnIn.disabled = false;
+    }
+});
         document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', weekday: 'short', timeZone: 'Asia/Jakarta'
         }).toUpperCase();
