@@ -217,23 +217,105 @@
             renderChart('overallChart', 'overall', stats.overall);
         }
 
-        function renderChart(canvasId, chartType, chartData) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const existingChart = Chart.getChart(canvas);
-            if (existingChart) existingChart.destroy();
-            const isMobile = window.innerWidth < 768;
-            const ctx = canvas.getContext('2d');
-            if (currentMode === 'att') {
-                const users = Object.keys(chartData).sort();
-                const types = Object.keys(typeColors).filter(k => k !== 'LEAVE');
-                const ds = types.map(t => ({ label: t, data: users.map(u => chartData[u][t] || 0), backgroundColor: typeColors[t], borderRadius: 4 })).filter(d => d.data.some(v => v > 0));
-                charts[chartType] = new Chart(ctx, { type: 'bar', data: { labels: users, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, indexAxis: isMobile ? 'y' : 'x', scales: { y: { beginAtZero: true, ticks: { color: '#64748b' } }, x: { ticks: { color: '#94a3b8' } } } } });
-            } else {
-                const ds = Object.entries(chartData).map(([u, p], i) => ({ label: u, data: p.sort((a,b)=>a.x.localeCompare(b.x)), borderColor: `hsl(${(i*137.5)%360},70%,60%)`, borderWidth: 2, tension: 0.3, fill: false }));
-                charts[chartType] = new Chart(ctx, { type: 'line', data: { datasets: ds }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } }, y: { min: 17.5, max: 23.0, ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => { let h=Math.floor(v); let m=Math.round((v-h)*60); return `${h}:${m.toString().padStart(2,'0')}`; } } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } } });
+function renderChart(canvasId, chartType, chartData) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    // 1. 기존 차트 객체를 명확하게 찾아서 완전히 파괴 (핵심)
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    const isMobile = window.innerWidth < 768;
+    const ctx = canvas.getContext('2d');
+    
+    // 2. 새로운 차트 설정을 담을 변수
+    let config = {};
+
+    if (currentMode === 'att') {
+        const users = Object.keys(chartData).sort();
+        const types = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+        const ds = types.map(t => ({
+            label: t,
+            data: users.map(u => chartData[u][t] || 0),
+            backgroundColor: typeColors[t],
+            borderRadius: 4
+        })).filter(d => d.data.some(v => v > 0));
+
+        config = {
+            type: 'bar',
+            data: { labels: users, datasets: ds },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: isMobile ? 'y' : 'x',
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#64748b' } },
+                    x: { ticks: { color: '#94a3b8' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f8fafc' } }
+                }
             }
-        }
+        };
+    } else {
+        const ds = Object.entries(chartData).map(([u, p], i) => ({
+            label: u,
+            data: p.sort((a,b) => a.x.localeCompare(b.x)),
+            borderColor: `hsl(${(i*137.5)%360},70%,60%)`,
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }));
+
+        config = {
+            type: 'line',
+            data: { datasets: ds },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { 
+                        type: 'category', 
+                        ticks: { color: '#94a3b8', font: { size: 10 } } 
+                    },
+                    y: { 
+                        min: 17.5, 
+                        max: 23.0, 
+                        ticks: { 
+                            color: '#94a3b8', 
+                            font: { size: 9 }, 
+                            callback: v => { 
+                                let h = Math.floor(v); 
+                                let m = Math.round((v - h) * 60); 
+                                return `${h}:${m.toString().padStart(2, '0')}`; 
+                            } 
+                        } 
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f8fafc' } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let v = context.parsed.y;
+                                let h = Math.floor(v);
+                                let m = Math.round((v - h) * 60);
+                                return `${context.dataset.label}: ${h}:${m.toString().padStart(2, '0')}`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    // 3. 차트 생성 및 전역 객체에 저장
+    charts[chartType] = new Chart(ctx, config);
+}
 
         window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
         setTimeout(initAdminStats, 300);
