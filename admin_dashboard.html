@@ -30,12 +30,31 @@
             </div>
         </div>
     </div>
-    <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Today's Attendance</div><div class="flex items-end gap-2"><div id="stat_attendance" class="text-2xl font-black text-white">0/0</div><div class="text-[10px] text-emerald-500 font-bold mb-1 px-1.5 py-0.5 bg-emerald-500/10 rounded">LIVE</div></div></div>
-        <div onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('reports'); } else if(window.switchAdminTab) { switchAdminTab('reports'); }" class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div><div id="stat_pending" class="text-2xl font-black text-amber-400">0</div></div>
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ongoing Schedules</div><div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div></div>
-        <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm"><div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Count</div><div id="stat_late" class="text-2xl font-black text-rose-500">0</div></div>
+<div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('attendance')" 
+         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-blue-500/50 transition-all group">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-400">Today's Attendance</div>
+        <div id="stat_attendance" class="text-white"></div>
     </div>
+
+    <div class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Yesterday's Leave</div>
+        <div id="stat_leave_yesterday" class="text-2xl font-black text-rose-500"></div>
+    </div>
+
+    <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('reports')" 
+         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-amber-500/50 transition-all group">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-amber-400 transition-colors">Pending Reports</div>
+        <div id="stat_pending" class="text-2xl font-black text-amber-400">0</div>
+    </div>
+
+    <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('schedule')" 
+         class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-purple-500/50 transition-all group">
+        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-purple-400">Ongoing Schedules</div>
+        <div id="stat_schedules" class="text-2xl font-black text-purple-400">0</div>
+    </div>
+</div>
+
     <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
         <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black text-white flex items-center gap-2"><span class="text-blue-500">■</span> RECENT ATTENDANCE</h2><div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-2 py-1 rounded-md">Last 5 Days</div></div>
         <div id="recent_att_container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
@@ -95,12 +114,172 @@ window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
 window.openAdminCustomModal = function(titleHtml, bodyHtml) { document.getElementById('modalHeaderArea').innerHTML = titleHtml; document.getElementById('modalBodyArea').innerHTML = bodyHtml; document.getElementById('customAdminModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
 window.closeAdminCustomModal = function() { if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; } if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; } if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; } if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; } document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove()); document.getElementById('customAdminModal').classList.add('hidden'); document.body.style.overflow = ''; };
 window.renderWeeklyLeaves = function() { const container = document.getElementById('weekly_leave_container'), section = document.getElementById('weekly_leave_section'), rangeText = document.getElementById('week_range_text'); if (!container) return; const curr = new Date(), first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1), last = first + 6, monday = new Date(new Date().setDate(first)).toISOString().split('T')[0], sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0]; rangeText.innerText = `${monday} ~ ${sunday}`; db.ref('leaves').on('value', snap => { const allLeaves = snap.val() || {}; container.innerHTML = ''; let hasAnyThisWeek = false; const weeklyStaffMap = new Map(); Object.entries(allLeaves).forEach(([uid, years]) => { Object.values(years).forEach(yearData => { Object.values(yearData).forEach(leave => { if (leave.status === 'Approved' && leave.startDate <= sunday && leave.endDate >= monday) { weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type }); hasAnyThisWeek = true; } }); }); }); if (hasAnyThisWeek) { section.classList.remove('hidden'); let html = ''; weeklyStaffMap.forEach(staff => { html += `<div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl"><span class="text-xs font-black text-white">${staff.name}</span><span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span><span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span></div>`; }); container.innerHTML = html; } else { section.classList.add('hidden'); } }); };
-window.updateQuickStats = function() { db.ref('users').on('value', userSnap => { const usersData = userSnap.val() || {}, totalStaffCount = Object.keys(usersData).filter(name => name.toLowerCase() !== 'admin').length; db.ref(`attendance/${todayStr}`).on('value', attSnap => { const todayAtt = attSnap.val() || {}; let presentCount = 0, lateCount = 0; Object.entries(todayAtt).forEach(([name, info]) => { if (name.toLowerCase() === 'admin') return; if (typeof info === 'string') { if (!['OFF', 'ANL', 'PEL'].includes(info)) presentCount++; } else if (info && info.attend) { presentCount++; if (info.attend.includes("LATE")) lateCount++; } }); if (document.getElementById('stat_attendance')) document.getElementById('stat_attendance').innerText = `${presentCount}/${totalStaffCount}`; if (document.getElementById('stat_late')) document.getElementById('stat_late').innerText = lateCount; }); }); db.ref(`reports/${todayStr}`).on('value', snap => { const data = snap.val() || {}, reportsArray = Object.entries(data), pendingCount = reportsArray.filter(([_, r]) => r.status === 'Pending').length, totalCount = reportsArray.length, staffNames = reportsArray.map(([name, _]) => name).join(', '), summaryText = totalCount > 0 ? staffNames : "No reports today", statPendingEl = document.getElementById('stat_pending'); if (statPendingEl) { statPendingEl.innerText = `${pendingCount}/${totalCount}`; let infoEl = document.getElementById('stat_pending_detail'); if (!infoEl) { infoEl = document.createElement('div'); infoEl.id = 'stat_pending_detail'; infoEl.className = "text-[9px] text-slate-500 font-bold mt-1 truncate w-full"; statPendingEl.parentNode.appendChild(infoEl); } infoEl.innerText = summaryText; infoEl.title = staffNames; } }); db.ref('shared_schedules').on('value', snap => { const data = snap.val() || {}; let ongoingCount = 0; Object.values(data).forEach(ev => { const s = ev.start ? ev.start.split('T')[0] : (ev.startDate || ""), e = ev.end ? ev.end.split('T')[0] : (ev.endDate || s); if (s && e && todayStr >= s && todayStr <= e) ongoingCount++; }); const el = document.getElementById('stat_schedules'); if (el) { el.innerText = ongoingCount; el.className = ongoingCount > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600"; } }); db.ref('leaves').on('value', snap => { const allLeaves = snap.val() || {}; let leavePendingCount = 0; Object.values(allLeaves).forEach(userLeaves => { Object.values(userLeaves).forEach(yearData => { Object.values(yearData).forEach(request => { if (request.status === 'Pending') leavePendingCount++; }); }); }); const alertBanner = document.getElementById('leave_alert_banner'), alertText = document.getElementById('leave_alert_text'); if (leavePendingCount > 0) { if (alertBanner) { alertBanner.classList.remove('hidden'); alertBanner.onclick = () => (typeof switchAdminTab === 'function' ? switchAdminTab('leave') : window.parent.switchAdminTab('leave')); } if (alertText) alertText.innerText = `There are ${leavePendingCount} new leave application(s) waiting for your approval.`; } else { if (alertBanner) alertBanner.classList.add('hidden'); } }); };
+
+window.updateQuickStats = function() {
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('sv-SE');
+    
+    // 어제 날짜 계산
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
+
+    // 리스너가 꼬이지 않도록 각각의 경로를 독립적으로 리슨합니다.
+    
+    // A. 직원 목록 및 오늘의 근태 현황
+    db.ref('users').on('value', snap => {
+        const users = snap.val() || {};
+        const allStaff = Object.keys(users).filter(n => n.toLowerCase() !== 'admin');
+        
+        db.ref(`attendance/${todayStr}`).on('value', attSnap => {
+            const att = attSnap.val() || {}; 
+            let checkedCount = 0, pNames = [], lNames = [];
+            
+            Object.entries(att).forEach(([n, i]) => {
+                if (n.toLowerCase() === 'admin') return;
+                checkedCount++;
+                pNames.push(n);
+                if (i && i.attend && i.attend.includes("LATE")) lNames.push(n);
+            });
+
+            const miss = allStaff.filter(n => !pNames.includes(n));
+            const mTxt = miss.length ? `(No Check: ${miss.join(', ')})` : "(All Checked)";
+            const lTxt = `Late Count : ${lNames.length}${lNames.length ? ' (' + lNames.join(', ') + ')' : ''}`;
+
+            const attEl = document.getElementById('stat_attendance');
+            if (attEl) attEl.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="text-2xl font-black text-white leading-tight">${checkedCount}/${allStaff.length}</span>
+                    <span class="text-[9px] text-slate-500 font-bold mt-1 truncate" title="${miss.join(', ')}">${mTxt}</span>
+                    <span class="text-[10px] text-rose-400 font-black mt-1.5 uppercase tracking-tighter">${lTxt}</span>
+                </div>`;
+        });
+    }); // users 리스너 닫기
+
+// B. 데이터가 있는 마지막 근무일의 퇴근 정보 찾기
+    const findLastActiveData = () => {
+        let checkDate = new Date(today);
+        let found = false;
+        let attempts = 0;
+        const maxAttempts = 10; // 최대 10일 전까지 추적 (연휴 대비)
+
+        const tryNextDate = (d) => {
+            // 1. 날짜를 하루씩 뒤로 밀기
+            d.setDate(d.getDate() - 1);
+            
+            // 2. 월요일(1)일 경우, 자동으로 금요일(-3)로 가는 대신 
+            // 데이터가 나올 때까지 하루씩 계속 확인하는 로직이 더 안전합니다.
+            // (일요일, 토요일은 보통 데이터가 없으므로 루프가 계속 돌아감)
+            
+            const dStr = d.toLocaleDateString('sv-SE');
+            const dayNum = d.getDate(); // 날짜 숫자 (19th 등을 위함)
+            
+            db.ref(`attendance/${dStr}`).once('value', (snap) => {
+                const data = snap.val();
+                attempts++;
+
+                // 데이터가 존재하고, admin 외의 실제 기록이 있는지 확인
+                const hasData = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
+
+                if (hasData || attempts >= maxAttempts) {
+                    renderLastLeave(data || {}, dStr, dayNum);
+                } else {
+                    tryNextDate(d); // 데이터 없으면 하루 더 전으로
+                }
+            });
+        };
+
+        const renderLastLeave = (yAtt, dStr, dayNum) => {
+            db.ref('users').once('value', userSnap => {
+                const totalStaffCount = Object.keys(userSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
+                let yDisplayHtml = ""; 
+                let count = 0;
+                
+                Object.entries(yAtt).forEach(([n, i]) => {
+                    if (n.toLowerCase() === 'admin') return;
+                    if (i && typeof i === 'object' && i.leave && i.leave.trim() !== "") {
+                        count++;
+                        yDisplayHtml += `<div class="text-[10px] text-slate-400 font-bold leading-tight mt-1">${n} ${i.leave}</div>`;
+                    }
+                });
+
+                // 날짜 뒤에 st, nd, rd, th 붙이기
+                const getOrdinal = (n) => {
+                    if (n > 3 && n < 21) return 'th';
+                    switch (n % 10) {
+                        case 1: return "st";
+                        case 2: return "nd";
+                        case 3: return "rd";
+                        default: return "th";
+                    }
+                };
+
+                const leaveTitleEl = document.querySelector('#stat_leave_yesterday_title'); // 타이틀 ID 추가 권장
+                const leaveEl = document.getElementById('stat_leave_yesterday');
+                
+                // 타이틀 업데이트 (예: Last Leave (19th))
+                const titleText = `Last Leave (${dayNum}${getOrdinal(dayNum)})`;
+                const titleContainer = leaveEl.previousElementSibling; // Yesterday's Leave 텍스트가 있는 곳
+                if (titleContainer) titleContainer.innerText = titleText;
+
+                if (leaveEl) {
+                    leaveEl.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="text-2xl font-black text-rose-500 leading-tight">${count}/${totalStaffCount}</span>
+                            <div class="mt-2 flex flex-col border-t border-slate-800/50 pt-1">
+                                ${count > 0 ? yDisplayHtml : '<span class="text-[9px] text-slate-500 font-bold">(No Records)</span>'}
+                            </div>
+                        </div>`;
+                }
+            });
+        };
+
+        tryNextDate(checkDate);
+    };
+
+    findLastActiveData(); // 로직 실행
+
+    // C. Pending Reports
+    db.ref(`reports/${todayStr}`).on('value', snap => {
+        const data = snap.val() || {};
+        const rArr = Object.entries(data);
+        const pCnt = rArr.filter(([_, r]) => r.status === 'Pending').length;
+        const sNames = rArr.map(([n]) => n).join(', ');
+        const el = document.getElementById('stat_pending');
+        
+        if (el) {
+            el.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="leading-none">${pCnt}/${rArr.length}</span>
+                    <span id="stat_pending_detail" class="text-[9px] text-slate-500 font-bold mt-1 truncate" title="${sNames}">${rArr.length ? sNames : "No reports today"}</span>
+                </div>`;
+        }
+    }); // reports 리스너 닫기
+
+    // D. Ongoing Schedules
+    db.ref('shared_schedules').on('value', snap => {
+        const data = snap.val() || {}; 
+        let cnt = 0;
+        Object.values(data).forEach(ev => { 
+            const s = (ev.start||ev.startDate||"").split('T')[0];
+            const e = (ev.end||ev.endDate||s).split('T')[0]; 
+            if (s && e && todayStr >= s && todayStr <= e) cnt++; 
+        });
+        const el = document.getElementById('stat_schedules');
+        if (el) {
+            el.innerText = cnt;
+            el.className = cnt > 0 ? "text-2xl font-black text-purple-400" : "text-2xl font-black text-slate-600";
+        }
+    }); // schedules 리스너 닫기
+};
+
+
 window.renderRecentAttendance = function() { const container = document.getElementById('recent_att_container'); if(!container) return; const formatTime = (t) => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : ""; db.ref('users').once('value', userSnap => { db.ref('attendance').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { const dayData = data[dStr] || {}; let staffHtml = ''; Object.entries(dayData).forEach(([name, info]) => { const safeInfo = encodeURIComponent(JSON.stringify(info)); let content = typeof info === 'string' ? `<span class="text-amber-400">${info}</span>` : `<div class="flex flex-col items-end gap-0.5"><span class="${info.attend?.includes("LATE")?'text-red-400':'text-emerald-400'} tracking-tighter">☀️ ${(info.attend?.includes("LATE")?"LATE ":"ATT ")+formatTime(info.attend)}</span>${info.leave ? `<span class="text-slate-400 tracking-tighter opacity-80">🌙 ${formatTime(info.leave)}</span>`:''}</div>`; staffHtml += `<div onclick="event.stopPropagation(); window.openEditAttendance('${name}', '${dStr}', '${safeInfo}')" class="flex justify-between items-start text-[10px] font-bold bg-slate-800/50 p-1.5 rounded mb-1 border border-slate-700/30 cursor-pointer hover:bg-slate-700 transition-all active:scale-95"><span class="text-slate-300">${name}</span>${content}</div>`; }); container.innerHTML += `<div onclick="window.openEditAttendance('', '${dStr}', '')" class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50 hover:border-blue-500/50 cursor-pointer transition-colors group"><div class="flex justify-between items-center mb-2"><div class="text-[10px] text-slate-500 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="text-[8px] text-blue-500 font-bold opacity-0 group-hover:opacity-100">+ ADD</div></div>${staffHtml || '<div class="text-[9px] text-slate-600 italic">No Data</div>'}</div>`; }); }); }); };
 window.renderRecentWork = function() { const container = document.getElementById('recent_work_container'); if(!container) return; db.ref('reports').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { const dayData = data[dStr] || {}; let reportHtml = ''; Object.entries(dayData).forEach(([name, report]) => { const statusColor = report.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (report.status === 'Pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'); reportHtml += `<div onclick="window.showWorkDetail('${name}', '${dStr}')" class="text-[9px] font-bold ${statusColor} border p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all flex items-center">${report.readByAdmin !== true ? `<span class="bg-rose-500 text-white text-[7px] px-1 rounded-sm animate-blink mr-1">NEW</span>` : ""}<span class="truncate">${name}</span></div>`; }); container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${reportHtml || '<div class="text-[9px] text-slate-600 italic">No Reports</div>'}</div></div>`; }); }); };
 window.renderRecentSchedule = function() { const container = document.getElementById('recent_sch_container'); if(!container) return; db.ref('shared_schedules').on('value', snap => { const data = snap.val() || {}; container.innerHTML = ''; last5Days.forEach(dStr => { let schHtml = ''; Object.entries(data).forEach(([id, ev]) => { const s = ev.start ? ev.start.split('T')[0] : "", e = ev.end ? ev.end.split('T')[0] : s; if (dStr >= s && dStr <= e) schHtml += `<div onclick="window.showSchDetail('${id}')" class="text-[9px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 p-1.5 rounded mb-1 truncate cursor-pointer hover:scale-[1.02] transition-all"><span class="opacity-70">[${ev.author||'User'}]</span> ${ev.title}</div>`; }); container.innerHTML += `<div class="bg-slate-800/20 p-3 rounded-2xl border border-slate-800/50"><div class="text-[10px] text-slate-500 mb-2 font-black">${dStr === todayStr ? 'TODAY' : dStr}</div><div class="space-y-1">${schHtml || '<div class="text-[9px] text-slate-600 italic">Free</div>'}</div></div>`; }); }); };
 window.showWorkDetail = function(name, date) { db.ref(`reports/${date}/${name}`).update({ readByAdmin: true }); db.ref(`reports/${date}/${name}`).once("value", snap => { const r = snap.val() || {}, titleHtml = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-black text-xs border border-emerald-500/20">${name.charAt(0)}</div><div><div class="text-[11px] text-slate-500 font-bold uppercase">${date}</div><div class="text-lg font-black text-white leading-tight">${name}'s Report</div></div></div>`, bodyHtml = `<div class="space-y-4 text-left"><div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label><select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo || r.content || ''}</textarea></div><div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary || ''}</textarea></div><div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo || ''}</textarea></div><div class="flex flex-col gap-3 mt-4"><button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`; window.openAdminCustomModal(titleHtml, bodyHtml); }); };
 window.openEditAttendance = function(name, date, infoEncoded) { const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, isSpecial = typeof info === 'string', isNew = name === ''; db.ref('users').once('value', userSnap => { const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin'); let nameFieldHtml = isNew ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u => `<option value="${u}">${u}</option>`).join('')}</select>` : `<span class="text-lg font-black text-white">${name}</span>`, titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew ? 'New Registration' : 'Edit Attendance'}</span>${nameFieldHtml} <span class="text-slate-500 text-sm font-normal">(${date})</span></div>`, bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}', '${date}', ${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew ? '' : `<button onclick="deleteAttendance('${name}', '${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`; window.openAdminCustomModal(titleHtml, bodyHtml); setTimeout(() => { const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: "ko", theme: "dark", disableMobile: "true", static: true }; if (attStartPicker) attStartPicker.destroy(); if (attEndPicker) attEndPicker.destroy(); const attendEl = document.getElementById("editAttend"), leaveEl = document.getElementById("editLeave"); if (attendEl) attStartPicker = flatpickr(attendEl, config); if (leaveEl) attEndPicker = flatpickr(leaveEl, config); }, 100); }); };
+
 window.processAttendanceSave = function(name, date, isNew) {
     const finalName = isNew ? document.getElementById('editName').value : name;
     if (!finalName) return alert("Please select a staff member.");
@@ -118,17 +297,15 @@ window.processAttendanceSave = function(name, date, isNew) {
         return;
     }
 
-    // 2. 출석 시간 판단 및 괄호() 형식 강제 저장
-    db.ref('settings/Standard Attendance Time').once('value', snap => {
+    // 2. 출석 시간 판단 (새로운 경로 settings/config/stdAttendance 참조)
+    db.ref('settings/config/stdAttendance').once('value', snap => {
         const standardTime = (snap.val() || "08:30").trim(); 
         let finalAttend = attendVal;
 
         if (attendVal) {
-            // 숫자:숫자 형식만 추출 (이미 ATT(08:20) 형태여도 08:20만 추출함)
             const timeMatch = attendVal.match(/\d{1,2}:\d{2}/);
             const timeOnly = timeMatch ? timeMatch[0] : attendVal;
 
-            // 시, 분을 숫자로 변환하여 정확한 비교
             const toNum = (t) => {
                 const parts = t.split(':');
                 return parseInt(parts[0], 10) * 100 + parseInt(parts[1], 10);
@@ -137,7 +314,6 @@ window.processAttendanceSave = function(name, date, isNew) {
             const inputNum = toNum(timeOnly);
             const standardNum = toNum(standardTime);
 
-            // [핵심] 괄호로 시간을 감싸는 형식 강제
             if (inputNum > standardNum) {
                 finalAttend = "LATE(" + timeOnly + ")";
             } else {
