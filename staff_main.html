@@ -31,51 +31,14 @@
     .animate-blink { animation: blink 1s infinite; }
     @keyframes pulse-border { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-slow { animation: pulse-border 2s infinite; }
-
-/* 오늘의 한마디 말풍선 스타일 */
-.fortune-bubble {
-    position: relative;
-    background: #1e293b; /* 슬레이트 800 */
-    border: 1px solid #334155;
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    display: inline-block;
-    margin-left: 15px;
-    animation: float 3s ease-in-out infinite; /* 둥둥 떠있는 효과 */
-}
-
-/* 말풍선 꼬리 */
-.fortune-bubble::after {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-right: 6px solid #334155;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
-/* 모바일 대응: 너무 길면 아래로 내려가도록 */
-@media (max-width: 640px) {
-    .fortune-bubble {
-        margin-left: 0;
-        margin-top: 10px;
-        display: block;
-        width: fit-content;
+    .fortune-bubble { position: relative; background: #1e293b; border: 1px solid #334155; padding: 8px 12px; border-radius: 12px; font-size: 0.75rem; color: #94a3b8; display: inline-block; margin-left: 15px; animation: float 3s ease-in-out infinite; }
+    .fortune-bubble::after { content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 6px solid #334155; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @media (max-width: 640px) {
+        .fortune-bubble { margin-left: 0; margin-top: 10px; display: block; width: fit-content; }
+        .fortune-bubble::after { display: none; }
     }
-    .fortune-bubble::after { display: none; }
-}
-
 </style>
-
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
     <div class="w-full lg:w-1/3 space-y-3 md:space-y-6">
         <div class="px-1">
@@ -148,13 +111,11 @@
     <div class="flex-1">
         <section class="bg-slate-900 p-3 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl h-full">
             <div class="mb-6 flex justify-center sm:justify-start">
-
-<button onclick="switchTab('all')" class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
-    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
-    <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
-    <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
-</button>
-
+                <button onclick="switchTab('all')" class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
+                    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
+                    <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
+                    <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
+                </button>
             </div>
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 px-1 gap-3">
                 <div class="flex items-center justify-between w-full sm:w-auto gap-3">
@@ -189,11 +150,7 @@
         </section>
     </div>
 </div>
-
-
-
 <script>
-
 function showFortune() {
     const fortunes = [
         "Waktunya istirahat kopi sejenak! ☕",
@@ -210,7 +167,7 @@ function showFortune() {
         "Jangan lupa minum air putih agar tetap terhidrasi 💧",
         "Ada kejutan kecil menanti Anda 🎁",
         "Percayalah pada potensi Anda! 🌟",
-        "Tarik napas dalam-dalam dan santai sejenak 🌬️",
+        "Tarik napas dalam-dalam 및 santai sejenak 🌬️",
         "Warna Keberuntungan: Hijau Zamrud 🟢",
         "Kerja keras Anda akan membuahkan hasil! 💰",
         "Tetap positif, kerja keras, buat itu terjadi! ✨",
@@ -222,175 +179,156 @@ function showFortune() {
         "Kreativitas Anda tidak ada batasnya 🎨",
         "Teruslah melangkah, Anda hampir sampai! 🏁",
         "Kata-kata baik sangat berarti bagi orang lain 🗣️",
-        "Keberuntungan memihak mereka yang berani! 💪",
+        "Keberuntungan memihak mereka yang ber니! 💪",
         "Keajaiban terjadi di luar zona nyaman Anda ✨",
         "Anda lebih mampu dari yang Anda kira 🧠",
         "JACKPOT! Anda menemukan keberuntungan super langka! 🎰"
     ];
-
     const randomIdx = Math.floor(Math.random() * fortunes.length);
     const welcomeMsg = document.getElementById('mainWelcomeMsg');
-
     if (!welcomeMsg) return;
-
-    // Hapus bubble lama jika ada
     const oldBubble = document.querySelector('.fortune-bubble');
     if (oldBubble) oldBubble.remove();
-
     const bubble = document.createElement('div');
     bubble.className = 'fortune-bubble font-bold';
     bubble.style.display = 'inline-block';
     bubble.innerHTML = fortunes[randomIdx];
-
     welcomeMsg.appendChild(bubble);
 }
-
-// Panggil fungsi setelah loading data Firebase (sekitar 1 detik)
 setTimeout(() => {
     showFortune();
 }, 1000);
-
-
-    function getJakartaDate() {
-        const now = new Date();
-        const jakartaStr = now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
-        return new Date(jakartaStr);
+function getJakartaDate() {
+    const now = new Date();
+    const jakartaStr = now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
+    return new Date(jakartaStr);
+}
+(function () {
+    const user = sessionStorage.getItem('loggedInUser');
+    const welcomeMsg = document.getElementById('mainWelcomeMsg');
+    if (welcomeMsg) {
+        welcomeMsg.innerText = user;
     }
-    (function () {
-        const user = sessionStorage.getItem('loggedInUser');
-        const welcomeMsg = document.getElementById('mainWelcomeMsg');
-        if (welcomeMsg) {
-            welcomeMsg.innerText = user;
-        }
-        const db = firebase.database();
-        if (user) {
-            checkLeaveStatus(user);
-        }
-        let now = getJakartaDate();
-        let viewDate = new Date(now);
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const todayStr = `${y}-${m}-${d}`;
-        let standardTime = "";
-        let hasCheckedMissing = false;
-        const btnIn = document.getElementById('btnIn');
-        const timeInput = document.getElementById('manualTime');
-        function checkLeaveStatus(uid) {
-            const currentYear = new Date().getFullYear();
-            db.ref(`leaves/${uid}/${currentYear}`).on('value', (snapshot) => {
-                const leaves = snapshot.val();
-                if (!leaves) return;
-                const leaveArray = Object.values(leaves);
-                const alertTarget = leaveArray.find(l => l.status === 'Pending' || l.status === 'Rejected');
-                const alertDiv = document.getElementById('leaveStatusAlert');
-                const content = document.getElementById('leaveAlertContent');
-                const icon = document.getElementById('leaveAlertIcon');
-                const title = document.getElementById('leaveAlertTitle');
-                const msg = document.getElementById('leaveAlertMsg');
-                if (alertTarget) {
-                    alertDiv.classList.remove('hidden');
-                    if (alertTarget.status === 'Pending') {
-                        content.className = "p-4 rounded-[1.5rem] border border-amber-500/30 bg-amber-500/10 animate-pulse-slow flex items-center justify-between shadow-lg shadow-amber-500/5";
-                        icon.innerText = "⏳";
-                        title.className = "text-[10px] font-black uppercase italic leading-none text-amber-500";
-                        title.innerText = "Leave Request Pending";
-                        msg.innerText = `${alertTarget.type} (${alertTarget.startDate}) is awaiting approval.`;
-                    } else if (alertTarget.status === 'Rejected') {
-                        content.className = "p-4 rounded-[1.5rem] border border-rose-500/30 bg-rose-500/10 flex items-center justify-between shadow-lg shadow-rose-500/5";
-                        icon.innerText = "🚫";
-                        title.className = "text-[10px] font-black uppercase italic leading-none text-rose-500";
-                        title.innerText = "Leave Request Rejected";
-                        msg.innerText = `${alertTarget.type} was rejected. Check admin memo.`;
-                    }
-                } else {
-                    alertDiv.classList.add('hidden');
+    const db = firebase.database();
+    if (user) {
+        checkLeaveStatus(user);
+    }
+    let now = getJakartaDate();
+    let viewDate = new Date(now);
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${y}-${m}-${d}`;
+    let standardTime = "";
+    let hasCheckedMissing = false;
+    const btnIn = document.getElementById('btnIn');
+    const timeInput = document.getElementById('manualTime');
+    function checkLeaveStatus(uid) {
+        const currentYear = new Date().getFullYear();
+        db.ref(`leaves/${uid}/${currentYear}`).on('value', (snapshot) => {
+            const leaves = snapshot.val();
+            if (!leaves) return;
+            const leaveArray = Object.values(leaves);
+            const alertTarget = leaveArray.find(l => l.status === 'Pending' || l.status === 'Rejected');
+            const alertDiv = document.getElementById('leaveStatusAlert');
+            const content = document.getElementById('leaveAlertContent');
+            const icon = document.getElementById('leaveAlertIcon');
+            const title = document.getElementById('leaveAlertTitle');
+            const msg = document.getElementById('leaveAlertMsg');
+            if (alertTarget) {
+                alertDiv.classList.remove('hidden');
+                if (alertTarget.status === 'Pending') {
+                    content.className = "p-4 rounded-[1.5rem] border border-amber-500/30 bg-amber-500/10 animate-pulse-slow flex items-center justify-between shadow-lg shadow-amber-500/5";
+                    icon.innerText = "⏳";
+                    title.className = "text-[10px] font-black uppercase italic leading-none text-amber-500";
+                    title.innerText = "Leave Request Pending";
+                    msg.innerText = `${alertTarget.type} (${alertTarget.startDate}) is awaiting approval.`;
+                } else if (alertTarget.status === 'Rejected') {
+                    content.className = "p-4 rounded-[1.5rem] border border-rose-500/30 bg-rose-500/10 flex items-center justify-between shadow-lg shadow-rose-500/5";
+                    icon.innerText = "🚫";
+                    title.className = "text-[10px] font-black uppercase italic leading-none text-rose-500";
+                    title.innerText = "Leave Request Rejected";
+                    msg.innerText = `${alertTarget.type} was rejected. Check admin memo.`;
                 }
-            });
-        }
-        function updateLiveTime() {
-            if (document.activeElement === timeInput) return;
-            const liveNow = getJakartaDate();
-            const hh = String(liveNow.getHours()).padStart(2, '0');
-            const mm = String(liveNow.getMinutes()).padStart(2, '0');
-            const ss = String(liveNow.getSeconds()).padStart(2, '0');
-            timeInput.value = `${hh}:${mm}:${ss}`;
-        }
-        setInterval(updateLiveTime, 1000);
-        updateLiveTime();
-        timeInput.addEventListener('input', function (e) {
-            let v = e.target.value.replace(/[^0-9]/g, '');
-            if (v.length >= 5) {
-                v = v.substring(0, 2) + ":" + v.substring(2, 4) + ":" + v.substring(4, 6);
-            } else if (v.length >= 3) {
-                v = v.substring(0, 2) + ":" + v.substring(2, 4);
+            } else {
+                alertDiv.classList.add('hidden');
             }
-            e.target.value = v;
         });
-        function isValidTime(t) {
-            if (!t) return false;
-            return /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t);
-        }
-// handleAttendance 함수 수정 제안
-window.handleAttendance = function (type) {
-    if (!type || typeof type !== 'string') return;
-    
-    const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
-    if (btn.disabled) return; // 이미 처리 중이면 중단
-
-    const rawTime = timeInput.value;
-    if (!isValidTime(rawTime)) {
-        alert("Please enter a valid time (HH:mm:ss).");
-        return;
     }
-
-    // 버튼 비활성화 (중복 클릭 방지)
-    btn.disabled = true;
-    btn.style.opacity = "0.5";
-
-    const timeParts = rawTime.split(':');
-    const storageTime = `${timeParts[0]}:${timeParts[1]}`;
-
-    db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
-        const currentData = snap.val() || {};
-        if (type === 'attend' && currentData.attend) {
-            alert("Attendance time has already been set.");
-            btn.disabled = false;
-            btn.style.opacity = "1";
+    function updateLiveTime() {
+        if (document.activeElement === timeInput) return;
+        const liveNow = getJakartaDate();
+        const hh = String(liveNow.getHours()).padStart(2, '0');
+        const mm = String(liveNow.getMinutes()).padStart(2, '0');
+        const ss = String(liveNow.getSeconds()).padStart(2, '0');
+        timeInput.value = `${hh}:${mm}:${ss}`;
+    }
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
+    timeInput.addEventListener('input', function (e) {
+        let v = e.target.value.replace(/[^0-9]/g, '');
+        if (v.length >= 5) {
+            v = v.substring(0, 2) + ":" + v.substring(2, 4) + ":" + v.substring(4, 6);
+        } else if (v.length >= 3) {
+            v = v.substring(0, 2) + ":" + v.substring(2, 4);
+        }
+        e.target.value = v;
+    });
+    function isValidTime(t) {
+        if (!t) return false;
+        return /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t);
+    }
+    window.handleAttendance = function (type) {
+        if (!type || typeof type !== 'string') return;
+        const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
+        if (btn.disabled) return;
+        const rawTime = timeInput.value;
+        if (!isValidTime(rawTime)) {
+            alert("Please enter a valid time (HH:mm:ss).");
             return;
         }
-
-        let finalVal = storageTime;
-        if (type === 'attend') {
-            if (!standardTime) { 
-                alert("Standard time is loading..."); 
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        const timeParts = rawTime.split(':');
+        const storageTime = `${timeParts[0]}:${timeParts[1]}`;
+        db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
+            const currentData = snap.val() || {};
+            if (type === 'attend' && currentData.attend) {
+                alert("Attendance time has already been set.");
                 btn.disabled = false;
                 btn.style.opacity = "1";
-                return; 
+                return;
             }
-            const [iHH, iMM] = storageTime.split(':').map(Number);
-            const [sHH, sMM] = standardTime.split(':').map(Number);
-            const stdMinutes = sHH * 60 + sMM;
-            const inputMinutes = iHH * 60 + iMM;
-            finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
-        }
-
-        if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-            db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
-                .then(() => {
-                    alert("Success.");
-                })
-                .finally(() => {
+            let finalVal = storageTime;
+            if (type === 'attend') {
+                if (!standardTime) { 
+                    alert("Standard time is loading..."); 
                     btn.disabled = false;
                     btn.style.opacity = "1";
-                });
-        } else {
-            btn.disabled = false;
-            btn.style.opacity = "1";
-        }
-    });
-};
-        function updateAttendanceStats(data) {
+                    return; 
+                }
+                const [iHH, iMM] = storageTime.split(':').map(Number);
+                const [sHH, sMM] = standardTime.split(':').map(Number);
+                const stdMinutes = sHH * 60 + sMM;
+                const inputMinutes = iHH * 60 + iMM;
+                finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
+            }
+            if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+                db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
+                    .then(() => {
+                        alert("Success.");
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                    });
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }
+        });
+    };
+function updateAttendanceStats(data) {
             const viewYear = viewDate.getFullYear();
             const viewMonth = viewDate.getMonth() + 1;
             let totalRecords = 0, lateCount = 0, attCount = 0, totalLeaveMinutes = 0, leaveRecordCount = 0;
@@ -452,11 +390,10 @@ window.handleAttendance = function (type) {
                 }
             }
         }
-// 경로를 settings/config/stdAttendance 로 변경
 db.ref('settings/config/stdAttendance').on('value', (snap) => {
     const val = snap.val();
     if (val) {
-        standardTime = val; // 변수명은 그대로 사용해도 무방합니다.
+        standardTime = val;
         const stdTimeElem = document.getElementById('displayStdTime');
         if (stdTimeElem) stdTimeElem.innerText = standardTime;
         if (btnIn) btnIn.disabled = false;
@@ -494,64 +431,47 @@ db.ref('settings/config/stdAttendance').on('value', (snap) => {
         };
         window.goToday = function () { viewDate = getJakartaDate(); renderCalendar(); };
         window.changeMonth = function (offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
-
-
 function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
     const monthYearElem = document.getElementById('currentMonthYear');
-
     if (monthYearElem) {
         monthYearElem.innerText = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
     }
-
     db.ref('attendance').off();
     db.ref('attendance').on('value', (snap) => {
         const tbody = document.getElementById('calendarBody');
         if (!tbody) return;
-        
         const data = snap.val() || {};
         updateAttendanceStats(data);
-        
         if (!hasCheckedMissing) {
             checkMissingRecords(data);
             hasCheckedMissing = true;
         }
-
         tbody.innerHTML = '';
         let dateCounter = 1;
-
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
             for (let j = 0; j < 7; j++) {
                 let cell = document.createElement('td');
-                
                 if (i === 0 && j < firstDay || dateCounter > lastDate) {
                     row.appendChild(cell);
                 } else {
                     const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateCounter).padStart(2, '0')}`;
                     const rec = data[dStr] ? data[dStr][user] : null;
-
-                    // --- [수정] 주말 배경색 농도 조절 (0.05 -> 0.15) ---
-                    if (j === 0) { // 일요일
+                    if (j === 0) {
                         cell.style.backgroundColor = 'rgba(244, 63, 94, 0.15)'; 
-                    } else if (j === 6) { // 토요일
+                    } else if (j === 6) {
                         cell.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
                     }
-
                     if (dStr === todayStr) cell.classList.add('today-highlight');
-                    
                     cell.style.cursor = 'pointer';
                     cell.onclick = () => openEditPopup(dStr, rec);
-
-                    // --- [수정] 요일에 따른 날짜 숫자 색상 변경 ---
                     let dateColorClass = "text-slate-500";
-                    if (j === 0) dateColorClass = "text-rose-500";      // 일요일 빨간색
-                    else if (j === 6) dateColorClass = "text-blue-500"; // 토요일 파란색
-
+                    if (j === 0) dateColorClass = "text-rose-500";
+                    else if (j === 6) dateColorClass = "text-blue-500";
                     let content = `<div class="${dateColorClass} text-[9px] font-black opacity-80 ml-1 mt-1">${dateCounter}</div>`;
-
                     if (rec) {
                         if (typeof rec === 'string') {
                             content += `<span class="time-label other-color mt-2">${rec}</span>`;
@@ -565,7 +485,6 @@ function renderCalendar() {
                             }
                             let attendColor = attendText.includes("ATT") ? "att-color" : (attendText.includes("LATE") ? "late-color" : "other-color");
                             if (displayAttend) content += `<span class="time-label ${attendColor}">☀️ ${displayAttend}</span>`;
-                            
                             let leaveText = rec.leave || "";
                             let displayLeave = "";
                             if (leaveText) {
@@ -575,7 +494,6 @@ function renderCalendar() {
                             if (displayLeave) content += `<span class="time-label out-time">🌙 ${displayLeave}</span>`;
                         }
                     }
-                    
                     cell.innerHTML = content;
                     row.appendChild(cell);
                     dateCounter++;
@@ -586,65 +504,95 @@ function renderCalendar() {
         }
     });
 }
-        window.openEditPopup = function (dateStr, currentRec) {
-            if (document.getElementById('editPopup')) return;
-            let attVal = "", leaveVal = "", isAttReadOnly = false, isLeaveInfo = false, leaveTypeText = "";
-            const leaveCodes = ["PEL", "ANL", "HAL", "SIL", "SPL", "WO"];
-            if (currentRec) {
-                if (typeof currentRec === 'string') {
-                    if (leaveCodes.includes(currentRec)) { isLeaveInfo = true; leaveTypeText = currentRec; }
-                    attVal = currentRec; isAttReadOnly = true;
+window.openEditPopup = function (dateStr, currentRec) {
+    if (document.getElementById('editPopup')) return;
+    let attVal = "", leaveVal = "", isAttReadOnly = false, isLeaveInfo = false, leaveTypeText = "";
+    const leaveCodes = ["PEL", "ANL", "HAL", "SIL", "SPL", "WO"];
+    
+    if (currentRec) {
+        if (typeof currentRec === 'string') {
+            if (leaveCodes.includes(currentRec)) { isLeaveInfo = true; leaveTypeText = currentRec; }
+            attVal = currentRec; isAttReadOnly = true;
+        } else {
+            if (currentRec.attend) {
+                const timeMatch = currentRec.attend.match(/(\d{1,2}:\d{2})/);
+                if (timeMatch) {
+                    const [hh, mm] = timeMatch[1].split(':');
+                    attVal = `${hh.padStart(2, '0')}:${mm}`;
                 } else {
-                    if (currentRec.attend) {
-                        const timeMatch = currentRec.attend.match(/(\d{1,2}:\d{2})/);
-                        if (timeMatch) {
-                            const [hh, mm] = timeMatch[1].split(':');
-                            attVal = `${hh.padStart(2, '0')}:${mm}`;
-                        } else {
-                            if (leaveCodes.includes(currentRec.attend)) { isLeaveInfo = true; leaveTypeText = currentRec.attend; }
-                            attVal = currentRec.attend;
-                        }
-                        isAttReadOnly = true;
-                    }
-                    if (currentRec.leave) {
-                        const leaveMatch = currentRec.leave.match(/(\d{1,2}:\d{2})/);
-                        if (leaveMatch) {
-                            const [hh, mm] = leaveMatch[1].split(':');
-                            leaveVal = `${hh.padStart(2, '0')}:${mm}`;
-                        } else { leaveVal = currentRec.leave; }
-                    }
+                    if (leaveCodes.includes(currentRec.attend)) { isLeaveInfo = true; leaveTypeText = currentRec.attend; }
+                    attVal = currentRec.attend;
                 }
+                isAttReadOnly = true;
             }
-            const overlay = document.createElement('div');
-            overlay.id = 'editPopup';
-            overlay.className = 'edit-modal-overlay animate-fadeIn';
-            let footerButtons = isLeaveInfo ? 
-                `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>` :
-                `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
-                 <button onclick="saveEditRecord('${dateStr}', ${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
-            overlay.innerHTML = `
-                <div class="edit-modal">
-                    <div class="mb-4 text-center">
-                        <p class="text-[10px] font-black ${isLeaveInfo ? 'text-amber-500' : (isAttReadOnly ? 'text-rose-500' : 'text-emerald-500')} uppercase tracking-widest mb-1">
-                            ${isLeaveInfo ? '📅 Leave Information' : (isAttReadOnly ? '⚠️ Attendance Locked' : '✍️ Attendance Missing')}
-                        </p>
-                        <h3 class="text-white font-black text-lg">${dateStr}</h3>
+            if (currentRec.leave) {
+                const leaveMatch = currentRec.leave.match(/(\d{1,2}:\d{2})/);
+                if (leaveMatch) {
+                    const [hh, mm] = leaveMatch[1].split(':');
+                    leaveVal = `${hh.padStart(2, '0')}:${mm}`;
+                } else { leaveVal = currentRec.leave; }
+            }
+        }
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'editPopup';
+    overlay.className = 'edit-modal-overlay animate-fadeIn';
+    
+    let footerButtons = isLeaveInfo ? 
+        `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>` :
+        `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
+         <button onclick="saveEditRecord('${dateStr}', ${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
+
+    overlay.innerHTML = `
+        <div class="edit-modal">
+            <div class="mb-4 text-center">
+                <p class="text-[10px] font-black ${isLeaveInfo ? 'text-amber-500' : (isAttReadOnly ? 'text-rose-500' : 'text-emerald-500')} uppercase tracking-widest mb-1">
+                    ${isLeaveInfo ? '📅 Leave Information' : (isAttReadOnly ? '⚠️ Attendance Locked' : '✍️ Attendance Missing')}
+                </p>
+                <h3 class="text-white font-black text-lg">${dateStr}</h3>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
+                    ${isLeaveInfo ? `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>` :
+                        `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly ? 'readonly' : ''} class="w-full ${isAttReadOnly ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`}
+                </div>
+                ${!isLeaveInfo ? `<div>
+                    <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
+                    <div class="flex gap-2">
+                        <input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
+                        <button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete Leave Time">
+                            🗑️
+                        </button>
                     </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
-                            ${isLeaveInfo ? `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>` :
-                                `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly ? 'readonly' : ''} class="w-full ${isAttReadOnly ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`}
-                        </div>
-                        ${!isLeaveInfo ? `<div>
-                            <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
-                            <input type="time" id="editLeaveTime" value="${leaveVal}" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
-                        </div>` : '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'}
-                        <div class="${isLeaveInfo ? '' : 'grid grid-cols-2'} gap-3 mt-6">${footerButtons}</div>
-                    </div>
-                </div>`;
-            document.body.appendChild(overlay);
-        };
+                </div>` : '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'}
+                <div class="${isLeaveInfo ? '' : 'grid grid-cols-2'} gap-3 mt-6">${footerButtons}</div>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+};
+
+window.deleteLeaveTime = function (dateStr) {
+    if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
+
+    const user = sessionStorage.getItem('loggedInUser');
+    const db = firebase.database();
+    
+    // 해당 날짜의 유저 데이터 경로에서 leave 항목만 삭제
+    db.ref(`attendance/${dateStr}/${user}/leave`).remove()
+        .then(() => {
+            alert("Leave time has been deleted.");
+            // 성공 시 팝업 닫기 (자동으로 달력 리렌더링됨)
+            const popup = document.getElementById('editPopup');
+            if (popup) popup.remove();
+        })
+        .catch((error) => {
+            console.error("Delete failed:", error);
+            alert("Failed to delete record.");
+        });
+};
+
         window.saveEditRecord = function (dateStr, isAttReadOnly) {
             const newAtt = document.getElementById('editAttTime').value;
             const newLeave = document.getElementById('editLeaveTime').value;
@@ -723,19 +671,11 @@ function renderCalendar() {
                 </div>`;
             document.body.appendChild(overlay);
         }
-
-// 페이지가 로드되자마자 실행하거나, 이름이 표시된 직후 실행
 document.addEventListener('DOMContentLoaded', () => {
-    // 0.5초 정도 여유를 두고 실행 (사용자 이름이 DB에서 로드되는 시간을 고려)
     setTimeout(() => {
         showFortune();
     }, 500);
 });
-
-// 만약 이미 기존에 window.onload나 데이터를 불러오는 로직이 있다면 
-// 그 로직의 맨 마지막 줄에 showFortune(); 만 한 줄 추가해주셔도 됩니다.
-
-
         renderCalendar();
     })();
 </script>
