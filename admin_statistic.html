@@ -13,7 +13,14 @@
     .admin-stat-tab { transition: all 0.3s; position: relative; opacity: 0.5; }
     .admin-stat-tab.active { opacity: 1; color: #3b82f6; }
     .admin-stat-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 3px; background: #3b82f6; border-radius: 10px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+
+    /* 모달 스타일 추가 */
+    #statDetailModal { z-index: 9999 !important; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 </style>
+
 <div class="animate-fadeIn space-y-6 md:space-y-8 pb-10 max-w-[1200px] mx-auto px-4">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
         <div class="flex items-center gap-3">
@@ -25,6 +32,7 @@
             <button onclick="switchAdminStatTab('leave')" id="tabLeave" class="admin-stat-tab text-sm font-black tracking-widest uppercase">Leave (Out)</button>
         </div>
     </div>
+
     <section class="stat-card shadow-2xl backdrop-blur-sm border-slate-800/50">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
@@ -42,6 +50,7 @@
         </div>
         <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
     </section>
+
     <section class="stat-card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
@@ -59,6 +68,7 @@
         </div>
         <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
     </section>
+
     <section class="stat-card">
         <div class="flex justify-between items-center mb-6 md:mb-8">
             <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2">
@@ -70,15 +80,34 @@
     </section>
 </div>
 
+<div id="statDetailModal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+            <h3 class="text-xl font-black text-blue-400"><span id="detailUserName" class="text-white"></span>'s Detail Logs</h3>
+            <button onclick="closeStatModal()" class="text-slate-400 hover:text-white text-3xl">&times;</button>
+        </div>
+        <div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="text-xs uppercase text-slate-500 border-b border-slate-700 sticky top-0 bg-slate-800">
+                    <tr>
+                        <th class="py-3 px-2">Date</th>
+                        <th class="py-3 px-2">Status / Time</th>
+                        <th class="py-3 px-2">Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTableBody" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+        </div>
+        <div class="p-4 bg-slate-900/30 border-t border-slate-700 flex justify-end">
+            <button onclick="closeStatModal()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-bold transition">Close</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    // 1. 외부(HTML 버튼)에서 호출할 전역 함수를 먼저 선언
     window.switchAdminStatTab = function(mode) {
-        // IIFE 내부에서 준비된 실제 로직(_switchLogic)이 있으면 실행
         if (typeof window._switchLogic === 'function') {
             window._switchLogic(mode);
-        } else {
-            console.error("Statistics logic is not yet loaded.");
         }
     };
 
@@ -91,22 +120,78 @@
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
 
-        // 2. 실제 로직을 담은 내부 함수 (이름을 바꿔서 전역에 연결)
+        // 팝업 닫기 함수
+        window.closeStatModal = function() {
+            document.getElementById('statDetailModal').classList.add('hidden');
+        };
+
+        // 상세 정보 표시 함수
+        window.showUserDetail = function(userName, periodType) {
+            if (!cachedData) return;
+            const mKey = monthViewDate.toISOString().substring(0, 7);
+            const yKey = yearViewDate.getFullYear().toString();
+            const tbody = document.getElementById('detailTableBody');
+            
+            document.getElementById('detailUserName').innerText = userName;
+            tbody.innerHTML = '';
+
+            // 데이터 필터링 (기간별)
+            const entries = Object.entries(cachedData).filter(([date]) => {
+                if (periodType === 'month') return date.startsWith(mKey);
+                if (periodType === 'year') return date.startsWith(yKey);
+                return true;
+            }).sort((a,b) => b[0].localeCompare(a[0]));
+
+            entries.forEach(([date, dayData]) => {
+                if (dayData[userName]) {
+                    const record = dayData[userName];
+                    let typeDisplay = "";
+                    let note = record.remark || record.reason || "-";
+                    let rowColor = "#475569";
+
+                    if (typeof record === 'string') {
+                        typeDisplay = record;
+                    } else if (record.attend) {
+                        typeDisplay = record.attend;
+                    } else if (record.leave) {
+                        typeDisplay = `Out: ${record.leave}`;
+                    }
+
+                    const typeKey = typeDisplay.includes("ATT") ? "ATT" : (typeDisplay.includes("LATE") ? "LATE" : typeDisplay);
+                    const bgColor = typeColors[typeKey] || "#475569";
+
+                    const tr = `
+                        <tr class="hover:bg-slate-700/30 transition">
+                            <td class="py-3 px-2 font-mono text-xs">${date}</td>
+                            <td class="py-3 px-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white" style="background:${bgColor}">
+                                    ${typeDisplay}
+                                </span>
+                            </td>
+                            <td class="py-3 px-2 text-slate-400 text-xs">${note}</td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', tr);
+                }
+            });
+
+            if (tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="3" class="py-10 text-center text-slate-500">No records found.</td></tr>';
+            }
+            document.getElementById('statDetailModal').classList.remove('hidden');
+        };
+
         window._switchLogic = function(mode) {
             currentMode = mode;
-            
-            // 버튼 활성화 스타일 제어
             const tabAtt = document.getElementById('tabAtt');
             const tabLeave = document.getElementById('tabLeave');
             if(tabAtt) tabAtt.classList.toggle('active', mode === 'att');
             if(tabLeave) tabLeave.classList.toggle('active', mode === 'leave');
 
             const isAtt = mode === 'att';
-            // 레이블 텍스트 변경
             const lblMonth = document.getElementById('labelMonth');
             const lblYear = document.getElementById('labelYear');
             const lblOverall = document.getElementById('labelOverall');
-            
             if(lblMonth) lblMonth.innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Times';
             if(lblYear) lblYear.innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Times';
             if(lblOverall) lblOverall.innerText = isAtt ? 'Records' : 'Leave Records';
@@ -114,18 +199,18 @@
             processAndRender();
         };
 
-        // 기존 exportToExcel 함수
         window.exportToExcel = function(periodType) {
             if (!cachedData) return alert("No data loaded.");
-            // ... (이하 기존 코드와 동일) ...
             let filterKey = "";
             let fileNameSuffix = "";
             if (periodType === 'month') { filterKey = monthViewDate.toISOString().substring(0, 7); fileNameSuffix = filterKey; }
             else if (periodType === 'year') { filterKey = yearViewDate.getFullYear().toString(); fileNameSuffix = filterKey; }
             else { fileNameSuffix = "Overall"; }
+            
             const fileName = `Performance_Report_${fileNameSuffix}.xlsx`;
             let targetStats = {};
             const attendanceTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+            
             Object.entries(cachedData).forEach(([date, dayData]) => {
                 if (filterKey && !date.startsWith(filterKey)) return;
                 Object.entries(dayData).forEach(([user, record]) => {
@@ -144,6 +229,7 @@
                     }
                 });
             });
+
             const rows = [["INDIVIDUAL PERFORMANCE REPORT"]];
             const header = ["Staff Name", ...attendanceTypes.map(t => `${t} (Qty)`), ...attendanceTypes.map(t => `${t} (%)`), "Avg. Leave Time"];
             rows.push(header);
@@ -158,17 +244,8 @@
                 } else { row.push("-"); }
                 rows.push(row);
             });
-            rows.push([], [], ["TOTAL TEAM SUMMARY"], ["Status Type", "Total Qty", "Team Average (%)"]);
-            let teamTotalCount = 0;
-            attendanceTypes.forEach(t => { Object.keys(targetStats).forEach(s => teamTotalCount += targetStats[s][t]); });
-            attendanceTypes.forEach(t => {
-                let typeQty = 0;
-                Object.keys(targetStats).forEach(s => typeQty += targetStats[s][t]);
-                rows.push([t, typeQty, teamTotalCount > 0 ? ((typeQty / teamTotalCount) * 100).toFixed(1) + "%" : "0%"]);
-            });
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(rows);
-            ws['!cols'] = [{wch: 20}, ...header.slice(1).map(() => ({wch: 12}))];
             XLSX.utils.book_append_sheet(wb, ws, "Performance Report");
             XLSX.writeFile(wb, fileName);
         };
@@ -217,105 +294,73 @@
             renderChart('overallChart', 'overall', stats.overall);
         }
 
-function renderChart(canvasId, chartType, chartData) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+        function renderChart(canvasId, chartType, chartData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) existingChart.destroy();
 
-    // 1. 기존 차트 객체를 명확하게 찾아서 완전히 파괴 (핵심)
-    const existingChart = Chart.getChart(canvas);
-    if (existingChart) {
-        existingChart.destroy();
-    }
+            const isMobile = window.innerWidth < 768;
+            const ctx = canvas.getContext('2d');
+            let config = {};
 
-    const isMobile = window.innerWidth < 768;
-    const ctx = canvas.getContext('2d');
-    
-    // 2. 새로운 차트 설정을 담을 변수
-    let config = {};
+            if (currentMode === 'att') {
+                const users = Object.keys(chartData).sort();
+                const types = Object.keys(typeColors).filter(k => k !== 'LEAVE');
+                const ds = types.map(t => ({
+                    label: t,
+                    data: users.map(u => chartData[u][t] || 0),
+                    backgroundColor: typeColors[t],
+                    borderRadius: 4
+                })).filter(d => d.data.some(v => v > 0));
 
-    if (currentMode === 'att') {
-        const users = Object.keys(chartData).sort();
-        const types = Object.keys(typeColors).filter(k => k !== 'LEAVE');
-        const ds = types.map(t => ({
-            label: t,
-            data: users.map(u => chartData[u][t] || 0),
-            backgroundColor: typeColors[t],
-            borderRadius: 4
-        })).filter(d => d.data.some(v => v > 0));
-
-        config = {
-            type: 'bar',
-            data: { labels: users, datasets: ds },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: isMobile ? 'y' : 'x',
-                scales: {
-                    y: { beginAtZero: true, ticks: { color: '#64748b' } },
-                    x: { ticks: { color: '#94a3b8' } }
-                },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
-                }
-            }
-        };
-    } else {
-        const ds = Object.entries(chartData).map(([u, p], i) => ({
-            label: u,
-            data: p.sort((a,b) => a.x.localeCompare(b.x)),
-            borderColor: `hsl(${(i*137.5)%360},70%,60%)`,
-            borderWidth: 2,
-            tension: 0.3,
-            fill: false,
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }));
-
-        config = {
-            type: 'line',
-            data: { datasets: ds },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { 
-                        type: 'category', 
-                        ticks: { color: '#94a3b8', font: { size: 10 } } 
-                    },
-                    y: { 
-                        min: 17.5, 
-                        max: 23.0, 
-                        ticks: { 
-                            color: '#94a3b8', 
-                            font: { size: 9 }, 
-                            callback: v => { 
-                                let h = Math.floor(v); 
-                                let m = Math.round((v - h) * 60); 
-                                return `${h}:${m.toString().padStart(2, '0')}`; 
-                            } 
-                        } 
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let v = context.parsed.y;
-                                let h = Math.floor(v);
-                                let m = Math.round((v - h) * 60);
-                                return `${context.dataset.label}: ${h}:${m.toString().padStart(2, '0')}`;
+                config = {
+                    type: 'bar',
+                    data: { labels: users, datasets: ds },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: isMobile ? 'y' : 'x',
+                        // 클릭 시 팝업 띄우기
+                        onClick: (e, activeEls) => {
+                            if (activeEls.length > 0) {
+                                const index = activeEls[0].index;
+                                const label = charts[chartType].data.labels[index];
+                                showUserDetail(label, chartType);
                             }
-                        }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#64748b' } },
+                            x: { ticks: { color: '#94a3b8' } }
+                        },
+                        plugins: { legend: { labels: { color: '#f8fafc' } } }
                     }
-                }
+                };
+            } else {
+                const ds = Object.entries(chartData).map(([u, p], i) => ({
+                    label: u,
+                    data: p.sort((a,b) => a.x.localeCompare(b.x)),
+                    borderColor: `hsl(${(i*137.5)%360},70%,60%)`,
+                    borderWidth: 2, tension: 0.3, fill: false, pointRadius: 4, pointHoverRadius: 6
+                }));
+                config = {
+                    type: 'line',
+                    data: { datasets: ds },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } },
+                            y: { 
+                                min: 17.5, max: 23.0, 
+                                ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => { let h = Math.floor(v); let m = Math.round((v - h) * 60); return `${h}:${m.toString().padStart(2, '0')}`; } } 
+                            }
+                        },
+                        plugins: { legend: { labels: { color: '#f8fafc' } } }
+                    }
+                };
             }
-        };
-    }
-
-    // 3. 차트 생성 및 전역 객체에 저장
-    charts[chartType] = new Chart(ctx, config);
-}
+            charts[chartType] = new Chart(ctx, config);
+        }
 
         window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
         setTimeout(initAdminStats, 300);
