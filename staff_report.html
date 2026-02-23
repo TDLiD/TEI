@@ -25,6 +25,48 @@
 /* 기존 style 태그 안에 추가 */
 .text-sun { color: #ef4444 !important; } /* Red-500 */
 .text-sat { color: #3b82f6 !important; } /* Blue-500 */
+/* 툴팁 스타일 추가 */
+.mini-cal td .report-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: #f0f0f0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #3b82f6;
+    width: 200px;
+    font-size: 11px;
+    white-space: normal;
+    z-index: 100;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+.mini-cal td:hover .report-tooltip { display: block; }
+.report-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #3b82f6 transparent transparent transparent;
+}
+/* 관리자 메모 알림 점 스타일 */
+.admin-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    background-color: #ef4444; /* Red-500 */
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.8);
+    z-index: 10;
+}
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -69,6 +111,22 @@
 </thead>
                 <tbody id="miniCalBody"></tbody>
             </table>
+
+<div id="productivitySummary" class="mt-4 flex gap-2 justify-center border-t border-slate-800 pt-4">
+    <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center">
+        <p class="text-[9px] font-black text-emerald-500 uppercase mb-1">Completed</p>
+        <p id="countCompleted" class="text-lg font-black text-white">0</p>
+    </div>
+    <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center">
+        <p class="text-[9px] font-black text-amber-500 uppercase mb-1">Pending</p>
+        <p id="countPending" class="text-lg font-black text-white">0</p>
+    </div>
+    <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center">
+        <p class="text-[9px] font-black text-blue-500 uppercase mb-1">In Progress</p>
+        <p id="countProgress" class="text-lg font-black text-white">0</p>
+    </div>
+</div>
+
         </div>
     </div>
 </div>
@@ -281,54 +339,95 @@
             });
         };
 
-        function renderMiniCalendar() {
-            const year = viewDate.getFullYear();
-            const month = viewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const monthName = viewDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
-            let yearOptions = '';
-            for (let y = year - 5; y <= year + 5; y++) { yearOptions += `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`; }
-            document.getElementById('miniCalMonth').innerHTML = `${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
-            database.ref('reports').once('value', (snapshot) => {
-                const allReports = snapshot.val() || {};
-                const tbody = document.getElementById('miniCalBody');
-                tbody.innerHTML = '';
-                let date = 1;
-                for (let i = 0; i < 6; i++) {
-                    let row = document.createElement('tr');
-                    for (let j = 0; j < 7; j++) {
-                        let cell = document.createElement('td');
-                        if ((i === 0 && j < firstDay) || date > lastDate) { row.appendChild(cell); } else {
-                            const curDate = date;
-                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
-// 요일 확인: j=0(일요일), j=6(토요일)
-let dayColorClass = "text-slate-500"; 
-if (j === 0) dayColorClass = "text-sun";
-else if (j === 6) dayColorClass = "text-sat";
+function renderMiniCalendar() {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const monthName = viewDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+    
+    // 연도 선택 셀렉트박스 생성
+    let yearOptions = '';
+    for (let y = year - 5; y <= year + 5; y++) { 
+        yearOptions += `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`; 
+    }
+    document.getElementById('miniCalMonth').innerHTML = `${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
+    
+    database.ref('reports').once('value', (snapshot) => {
+        const allReports = snapshot.val() || {};
+        const tbody = document.getElementById('miniCalBody');
+        tbody.innerHTML = '';
 
-// 오늘 날짜인 경우 파란색 강조가 우선되도록 처리 (필요 시)
-if (dateStr === todayStr) dayColorClass = "text-blue-500";
+        // --- 생산성 요약 카운트 변수 초기화 ---
+        let summaryCount = { "Completed": 0, "Pending": 0, "In Progress": 0 };
+        const currentMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`; // 현재 보고 있는 "YYYY-MM"
 
-let cellHTML = `<div class="date-num text-xs font-bold ${dayColorClass}">${curDate}</div>`;
-                            const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
-                            if (userReport) {
-                                let statusClass = userReport.status === 'Completed' ? "status-completed" : (userReport.status === 'Pending' ? "status-pending" : "status-progress");
-                                let statusText = userReport.status === 'Completed' ? "COMPLETED" : (userReport.status === 'Pending' ? "PENDING" : "PROGRESS");
-                                cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
-                            }
-                            cell.innerHTML = cellHTML;
-                            if (dateStr === selectedDateStr) cell.classList.add('selected-date');
-                            cell.onclick = () => loadReport(dateStr);
-                            row.appendChild(cell);
-                            date++;
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+            let row = document.createElement('tr');
+            for (let j = 0; j < 7; j++) {
+                let cell = document.createElement('td');
+                if ((i === 0 && j < firstDay) || date > lastDate) { 
+                    row.appendChild(cell); 
+                } else {
+                    const curDate = date;
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
+                    
+                    // 요일 색상 설정
+                    let dayColorClass = "text-slate-500"; 
+                    if (j === 0) dayColorClass = "text-sun";
+                    else if (j === 6) dayColorClass = "text-sat";
+                    if (dateStr === todayStr) dayColorClass = "text-blue-500";
+
+                    let cellHTML = `<div class="date-num text-xs font-bold ${dayColorClass}">${curDate}</div>`;
+                    const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
+
+                    if (userReport) {
+                        // --- 해당 월의 상태 카운트 합산 ---
+                        const status = userReport.status || "In Progress";
+                        if (summaryCount.hasOwnProperty(status)) {
+                            summaryCount[status]++;
+                        }
+// [추가 코드] adminMemo가 있으면 빨간 점 표시
+    if (userReport.adminMemo && userReport.adminMemo.trim() !== "") {
+        cellHTML += `<div class="admin-dot" title="Admin feedback available"></div>`;
+    }
+                        let statusClass = status === 'Completed' ? "status-completed" : (status === 'Pending' ? "status-pending" : "status-progress");
+                        let statusText = status === 'Completed' ? "COMPLETED" : (status === 'Pending' ? "PENDING" : "PROGRESS");
+                        
+                        const rawSummary = userReport.summary || userReport.content || "";
+                        const shortSummary = rawSummary.length > 60 ? rawSummary.substring(0, 60) + "..." : rawSummary;
+                        
+                        cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
+                        
+                        if (shortSummary.trim()) {
+                            cellHTML += `<div class="report-tooltip">
+                                <div class="text-blue-400 font-black text-[9px] mb-1 uppercase">Summary Preview</div>
+                                <div class="leading-relaxed">${shortSummary}</div>
+                            </div>`;
                         }
                     }
-                    tbody.appendChild(row);
-                    if (date > lastDate) break;
+                    
+                    cell.innerHTML = cellHTML;
+                    if (dateStr === selectedDateStr) cell.classList.add('selected-date');
+                    cell.onclick = () => loadReport(dateStr);
+                    row.appendChild(cell);
+                    date++;
                 }
-            });
+            }
+            tbody.appendChild(row);
+            if (date > lastDate) break;
         }
+
+        // --- 캘린더 하단 요약 수치 업데이트 (HTML 엘리먼트가 존재할 경우) ---
+        if (document.getElementById('countCompleted')) {
+            document.getElementById('countCompleted').innerText = summaryCount["Completed"];
+            document.getElementById('countPending').innerText = summaryCount["Pending"];
+            document.getElementById('countProgress').innerText = summaryCount["In Progress"];
+        }
+    });
+}
+
 
         window.openCopyFromPicker = function() {
             if (!document.getElementById('hiddenCopyInput')) {
@@ -375,7 +474,9 @@ let cellHTML = `<div class="date-num text-xs font-bold ${dayColorClass}">${curDa
                 <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex flex-col"><span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New Report' : 'Edit Report'}</span>${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}</div>
-                        <div class="flex items-center gap-3"><button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">📋 Copy from date</button><span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span></div>
+                        <div class="flex items-center gap-3">
+<button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">📋 Copy from date</button>
+<span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span></div>
                     </div>
                     <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label><select id="editStatus" onchange="window.saveToTemp()" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 outline-none text-sm"><option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option><option value="Completed" ${report.status === 'Completed' ? 'selected' : ''}>Completed</option><option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option></select></div>
                     <div class="mb-4"><label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">Today's To-Do</label><textarea id="editTodo" oninput="window.saveToTemp()" placeholder="Enter planned tasks..." class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[100px] resize-none focus:border-blue-500 transition">${report.todo || ''}</textarea></div>
