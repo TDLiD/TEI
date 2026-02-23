@@ -34,6 +34,12 @@
 .schedule-cal td.today-highlight { 
     background-color: rgba(168, 85, 247, 0.1) !important; 
 }
+/* 카테고리별 색상 클래스 */
+.bg-cat-default { background-color: #3b82f6 !important; } /* Blue (기본) */
+.bg-cat-vacation { background-color: #10b981 !important; } /* Green (휴가) */
+.bg-cat-urgent { background-color: #ef4444 !important; }   /* Red (긴급) */
+.bg-cat-meeting { background-color: #f59e0b !important; }  /* Yellow (회의) */
+.bg-cat-admin { background-color: #a855f7 !important; }    /* Purple (관리자 메모) */
 </style>
 <div class="animate-fadeIn">
     <div class="flex justify-between items-center mb-8">
@@ -75,6 +81,15 @@
                 <label class="text-[10px] text-slate-500 font-black uppercase mb-1 block">Description</label>
                 <textarea id="evDesc" class="modal-input min-h-[80px] resize-none"></textarea>
             </div>
+<div>
+    <label class="text-[10px] text-slate-500 font-black uppercase mb-1 block">Category</label>
+    <select id="evCategory" class="modal-input">
+        <option value="default">Personal / Task (Blue)</option>
+        <option value="vacation">Vacation (Green)</option>
+        <option value="urgent">Urgent (Red)</option>
+        <option value="meeting">Meeting (Yellow)</option>
+    </select>
+</div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="text-[10px] text-slate-500 font-black uppercase mb-1 block">Start</label>
@@ -140,6 +155,7 @@
 
             document.getElementById('evTitle').value = "";
             document.getElementById('evDesc').value = "";
+document.getElementById('evCategory').value = "default"; // 추가
             
             // [오류 해결] 요소가 존재할 때만 classList 조작
             const memoArea = document.getElementById('adminMemoArea');
@@ -169,6 +185,7 @@
             
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evDesc').value = ev.desc || "";
+document.getElementById('evCategory').value = ev.category || "default"; // 추가
             
             // [오류 해결] 관리자 메모 영역 안전하게 처리
             const memoArea = document.getElementById('adminMemoArea');
@@ -203,6 +220,7 @@
             if(!title) return alert("Title required");
             const data = {
                 title: title, desc: document.getElementById('evDesc').value || "",
+category: document.getElementById('evCategory').value, // 추가
                 start: document.getElementById('evStart').value,
                 end: document.getElementById('evEnd').value,
                 allDay: document.getElementById('evAllDay').checked,
@@ -329,7 +347,13 @@ weekDates.forEach((dStr, j) => {
                 const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
                 const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
                 const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" class="event-item ${isCont} ${willCont} ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'}" style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"><span class="ev-title-text">${isCont ? '' : ev.title}</span><span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span></div>`;
+const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
+html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
+              class="event-item ${isCont} ${willCont} ${catClass}" 
+              style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
+              <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+              <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+         </div>`;
             }
         });
         td.innerHTML = html;
