@@ -125,13 +125,10 @@
         </div>
     </div>
 
-  <script>
+<script>
     // 1. Firebase Initialize
     (function () {
         if (!window.firebase) return;
-
-        // [수정 포인트] 인증 및 앱 초기화를 위해 전체 설정값이 필요합니다.
-        // 제공해주신 staff.html의 정보를 바탕으로 구성했습니다.
         const firebaseConfig = {
             apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
             authDomain: "tdlid-dailyreport.firebaseapp.com",
@@ -142,13 +139,11 @@
             appId: "1:922333077514:web:8914e5b06ac1f417707ff3",
             measurementId: "G-1TVZQYHWDL"
         };
-
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        
         if (!window.db) window.db = firebase.database();
-    })();
+    })(); // <--- 세미콜론 확인
 
     // 2. Modal Functions
     (function () {
@@ -169,17 +164,12 @@
         };
         Object.defineProperty(window, 'openAdminCustomModal', { value: openFn, writable: false });
         Object.defineProperty(window, 'closeAdminCustomModal', { value: closeFn, writable: false });
-    })();
+    })(); // <--- 세미콜론 확인
 
-    // 3. Profile Image Selection & Save Function
-    const PROFILE_IMAGES = [
-        '1.gif', '1.webp', 
-        '2.gif', '2.webp', 
-        '3.gif', '3.webp', 
-        '4.gif', '5.gif', '6.gif'
-    ];
+    // 3. Profile Image Selection
+    const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
 
-window.openProfileImagePicker = function() {
+    window.openProfileImagePicker = function() {
         let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4">`;
         PROFILE_IMAGES.forEach(img => {
             gridHtml += `
@@ -194,48 +184,33 @@ window.openProfileImagePicker = function() {
     window.saveAdminProfile = function(imgName) {
         const path = `images/profile/admin/${imgName}`;
         if(!confirm("Would you like to change your admin profile to this image?")) return;
-
-        // DB 업데이트
         db.ref('admin_settings/profile').update({
             profileImg: path,
             updatedAt: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-            // [추가] 즉시 UI 업데이트 (새로고침 없이 반영)
-            const allAdminImgs = document.querySelectorAll('.admin-profile-img');
-            allAdminImgs.forEach(img => {
-                // 캐시 방지를 위한 타임스탬프 추가
+            document.querySelectorAll('.admin-profile-img').forEach(img => {
                 img.src = `${path}?t=${new Date().getTime()}`;
             });
-            
             closeAdminCustomModal();
-            // alert("Your profile has been successfully changed."); // 흐름을 방해하면 주석 처리 가능
-        }).catch(e => {
-            console.error(e);
-            alert("Save failed");
-        });
+        }).catch(e => { console.error(e); alert("Save failed"); });
     };
 
-    // 4. Real-time Profile Sync (실시간 감시 모드로 변경)
+    // 4. Real-time Profile Sync
     (function initProfileSync() {
         const checkDB = setInterval(() => {
             if (window.db) {
                 clearInterval(checkDB);
-                
-                // [수정] .once 대신 .on을 사용하여 실시간 감시
                 db.ref('admin_settings/profile/profileImg').on('value', snap => {
                     const imgUrl = snap.val();
                     if (imgUrl) {
                         document.querySelectorAll('.admin-profile-img').forEach(img => {
-                            // 현재 이미지와 다를 때만 업데이트하여 불필요한 깜빡임 방지
-                            if(!img.src.includes(imgUrl)) {
-                                img.src = imgUrl;
-                            }
+                            if(!img.src.includes(imgUrl)) img.src = imgUrl;
                         });
                     }
                 });
             }
         }, 100);
-    })();
+    })(); // <--- 세미콜론 확인
 
     // 5. Tab Switching Logic
     async function switchAdminTab(tab) {
@@ -278,12 +253,7 @@ window.openProfileImagePicker = function() {
             const scripts = area.querySelectorAll('script');
             for (const oldScript of scripts) {
                 const newScript = document.createElement('script');
-
-                // 속성 복사
-                Array.from(oldScript.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
-                });
-
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
                 if (oldScript.src) {
                     newScript.src = oldScript.src;
                     newScript.async = false;
@@ -295,9 +265,7 @@ window.openProfileImagePicker = function() {
                 } else {
                     newScript.textContent = oldScript.textContent;
                     document.head.appendChild(newScript);
-                    if (newScript.type !== 'module') {
-                        document.head.removeChild(newScript);
-                    }
+                    if (newScript.type !== 'module') document.head.removeChild(newScript);
                 }
             }
             
@@ -322,29 +290,49 @@ window.openProfileImagePicker = function() {
     window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
     window.addEventListener('DOMContentLoaded', () => { switchAdminTab('dashboard'); });
 
-    function adminLogout() {
+    // 6. Logout & Security
+    window.adminLogout = function() {
         if (confirm("Would you like to log out of the system?")) {
-            alert("You have been logged out successfully.");
-            location.href = "index.html";
+            if(window.firebase && firebase.auth) {
+                firebase.auth().signOut().finally(() => {
+                    sessionStorage.clear();
+                    window.location.replace("index.html");
+                });
+            } else {
+                sessionStorage.clear();
+                window.location.replace("index.html");
+            }
         }
-    }
+    };
 
-    // Auto Logout Logic (30 min)
+    // Auto Logout Logic (30 min) - 오류 방지를 위해 세미콜론 보강
     (function () {
         let timeoutTimer;
         const INACTIVITY_TIME = 30 * 60 * 1000;
+
         function autoLogout() {
-            alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity..");
-            sessionStorage.clear();
-            location.href = "index.html";
+            if(window.firebase && firebase.auth) {
+                firebase.auth().signOut().finally(() => {
+                    alert("For security reasons, administrator sessions are automatically terminated after 30 minutes of inactivity.");
+                    sessionStorage.clear();
+                    window.location.replace("index.html");
+                });
+            } else {
+                sessionStorage.clear();
+                window.location.replace("index.html");
+            }
         }
+
         function resetTimer() {
             clearTimeout(timeoutTimer);
             timeoutTimer = setTimeout(autoLogout, INACTIVITY_TIME);
         }
-        window.onload = resetTimer;
-        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => window.addEventListener(e, resetTimer, true));
-    })();
+
+        window.addEventListener('load', resetTimer);
+        ['mousemove', 'mousedown', 'touchstart', 'click', 'keypress', 'scroll'].forEach(e => 
+            window.addEventListener(e, resetTimer, true)
+        );
+    })(); 
 </script>
 
 
