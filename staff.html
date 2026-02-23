@@ -354,13 +354,26 @@ function startLevelSystem(userData) {
         });
     }
 
-    window.logout = function() { 
-        if (confirm("Are you sure you want to log out?")) {
+// --- 기존 코드의 script 하단에 있는 logout 함수를 아래 내용으로 교체하세요 ---
+
+window.logout = function() { 
+    if (confirm("Are you sure you want to log out?")) {
+        // 1. Firebase 서버 측 세션 로그아웃
+        // firebase-auth-compat.js가 로드되어 있으므로 auth() 호출이 가능합니다.
+        firebase.auth().signOut().then(() => {
+            console.log("Firebase signed out successfully.");
+        }).catch((error) => {
+            console.error("Firebase sign out error:", error);
+        }).finally(() => {
+            // 2. 클라이언트 세션 데이터 및 로컬 저장소 정리
             sessionStorage.clear();
             localStorage.removeItem('loggedInUser');
+
+            // 3. 페이지 이동 (replace를 사용하여 히스토리 삭제)
             window.location.replace("index.html");
-        }
+        });
     }
+}
 
     // 초기 로딩
     setTimeout(() => switchTab('dash'), 300);
