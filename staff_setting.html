@@ -1,3 +1,14 @@
+<style>
+    /* 프로필 교체 시 부드러운 애니메이션 */
+    @keyframes localFadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .fade-in-quick {
+        animation: localFadeIn 0.3s ease-out forwards;
+    }
+</style>
+
 <div class="animate-fadeIn max-w-md mx-auto">
     <h3 class="text-xl font-bold text-white mb-6">Account Settings</h3>
     
@@ -50,9 +61,14 @@
         </div>
         
         <div class="space-y-3 pt-4">
-            <button id="saveBtn" onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
-                SAVE CHANGES
+            <button id="saveBtn" onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2">
+                <span id="saveBtnText">SAVE CHANGES</span>
+                <svg id="saveBtnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </button>
+
             <button onclick="handleLogout()" class="w-full bg-slate-800 text-rose-500 py-3 rounded-xl font-bold text-xs hover:bg-rose-500/10 transition border border-rose-500/20">
                 LOGOUT
             </button>
@@ -73,7 +89,18 @@
     
     const user = sessionStorage.getItem('loggedInUser');
 
-    // 1. 눈 아이콘 토글 로직
+    // 1. 이미지를 부드럽게 업데이트하는 함수
+    function updateAvatarWithFade(imgName) {
+        const display = document.getElementById('currentAvatarDisplay');
+        const newImg = document.createElement('img');
+        newImg.src = `images/profile/${imgName}`;
+        newImg.className = "w-full h-full object-cover fade-in-quick";
+        
+        display.innerHTML = ""; 
+        display.appendChild(newImg);
+    }
+
+    // 2. 눈 아이콘 토글 로직
     const eyeOnPath = `<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />`;
     const eyeOffPath = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />`;
 
@@ -84,7 +111,7 @@
         eyeIcon.innerHTML = isPw ? eyeOffPath : eyeOnPath;
     };
 
-    // 2. 비밀번호 실시간 일치 체크
+    // 3. 비밀번호 실시간 일치 체크
     function checkMatch() {
         const p1 = pwInput.value;
         const p2 = confirmInput.value;
@@ -104,15 +131,13 @@
     pwInput.oninput = checkMatch;
     confirmInput.oninput = checkMatch;
 
-    // 3. 데이터 로드 및 기존 비밀번호 주입 (자동완성 방지 로직 포함)
+    // 4. 데이터 로드 및 초기화
     if (user) {
         firebase.database().ref('users/' + user).once('value').then(snap => {
             const data = snap.val();
             if (data) {
-                // 브라우저의 자동완성(tdlid2026!)이 스크립트 실행 직후 덮어쓰는 것을 막기 위해 지연 주입
                 setTimeout(() => {
                     pwInput.value = data.password || "";
-                    console.log("Firebase Password Loaded Successfully");
                 }, 150);
 
                 pwInput.placeholder = "Enter password";
@@ -120,14 +145,14 @@
                 
                 const currentImg = data.profileImg || 'image-001.webp';
                 hiddenInput.value = currentImg;
-                document.getElementById('currentAvatarDisplay').innerHTML = `<img src="images/profile/${currentImg}" class="w-full h-full object-cover">`;
                 
+                updateAvatarWithFade(currentImg);
                 renderGrid(currentImg);
             }
         });
     }
 
-    // 4. 이모지 그리드 생성
+    // 5. 이모지 그리드 생성
     function renderGrid(currentImg) {
         grid.innerHTML = "";
         const emojis = [];
@@ -144,31 +169,56 @@
                 for(let k of kids) { k.classList.remove('border-blue-500', 'bg-blue-500/20'); k.classList.add('border-transparent'); }
                 wrap.classList.remove('border-transparent');
                 wrap.classList.add('border-blue-500', 'bg-blue-500/20');
+                
                 hiddenInput.value = name;
-                document.getElementById('currentAvatarDisplay').innerHTML = `<img src="images/profile/${name}" class="w-full h-full object-cover">`;
+                updateAvatarWithFade(name);
             };
             grid.appendChild(wrap);
         });
     }
 
-    // 5. 업데이트 및 로그아웃
+    // 6. 업데이트 (페이지 튕김 방지 수정 완료)
     window.updateUserAccount = function() {
         const passValue = pwInput.value.trim();
         if(!passValue) return alert("Password cannot be empty.");
+
+        const btnText = document.getElementById('saveBtnText');
+        const btnSpinner = document.getElementById('saveBtnSpinner');
         
+        saveBtn.disabled = true;
+        btnText.textContent = "SAVING...";
+        btnSpinner.classList.remove('hidden');
+
         firebase.database().ref('users/' + user).update({
             password: passValue,
             profileImg: hiddenInput.value
         }).then(() => {
             alert("Changes saved successfully!");
-            location.reload();
-        }).catch(err => alert("Error: " + err.message));
+            // UI 복구 (location.reload() 제거)
+            saveBtn.disabled = false;
+            btnText.textContent = "SAVE CHANGES";
+            btnSpinner.classList.add('hidden');
+        }).catch(err => {
+            alert("Error: " + err.message);
+            saveBtn.disabled = false;
+            btnText.textContent = "SAVE CHANGES";
+            btnSpinner.classList.add('hidden');
+        });
     };
 
+    // 7. 로그아웃 (Firebase 서버 세션 종료 추가)
     window.handleLogout = function() {
         if(confirm("Are you sure you want to logout?")) {
-            sessionStorage.clear();
-            location.href = 'index.html';
+            // Firebase 인증 로그아웃 호출 (서버 세션 확실히 종료)
+            firebase.auth().signOut().then(() => {
+                sessionStorage.clear();
+                location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+                // 에러가 나더라도 클라이언트 세션은 정리 후 이동
+                sessionStorage.clear();
+                location.href = 'index.html';
+            });
         }
     };
 })();
