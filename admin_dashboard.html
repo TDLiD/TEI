@@ -12,24 +12,31 @@
             <div class="bg-amber-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase group-hover:bg-amber-400 transition-colors">Review Now</div>
         </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fadeIn">
-        <div onclick="if(window.LevelSystem) { LevelSystem.init('Admin'); setTimeout(() => LevelSystem.showStaffPopup(), 500); }" class="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:from-blue-600/30 hover:to-indigo-600/30 transition-all group flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform"><span class="text-2xl">🏆</span></div>
-                <div><h2 class="text-sm font-black text-blue-400 uppercase tracking-tighter">Staff Leaderboard</h2><p class="text-[10px] text-slate-400 font-bold uppercase">View Rankings & Points</p></div>
-            </div>
-            <span class="text-[10px] font-black text-blue-500 group-hover:translate-x-1 transition-transform">VIEW ALL →</span>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 animate-fadeIn">
+    <div onclick="if(window.LevelSystem) { LevelSystem.init('Admin'); setTimeout(() => LevelSystem.showStaffPopup(), 500); }" class="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:from-blue-600/30 hover:to-indigo-600/30 transition-all group flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform"><span class="text-2xl">🏆</span></div>
+            <div><h2 class="text-sm font-black text-blue-400 uppercase tracking-tighter">Staff Leaderboard</h2><p class="text-[10px] text-slate-400 font-bold uppercase">View Rankings & Points</p></div>
         </div>
-        <div id="weekly_leave_section" class="hidden h-full">
-            <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group h-full flex flex-col justify-center" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-[11px] font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter"><span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Vacationers</h2>
-                    <div id="week_range_text" class="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-full"></div>
-                </div>
-                <div id="weekly_leave_container" class="flex flex-wrap gap-1.5 overflow-hidden max-h-[40px]"></div>
+        <span class="text-[10px] font-black text-blue-500 group-hover:translate-x-1 transition-transform">VIEW ALL →</span>
+    </div>
+
+    <div id="weekly_leave_section" class="h-full">
+        <div class="bg-indigo-900/20 border border-indigo-500/30 p-6 rounded-[2.5rem] backdrop-blur-md cursor-pointer hover:bg-indigo-900/30 transition-all group h-full flex flex-col justify-center" onclick="if(window.parent && window.parent.switchAdminTab) { window.parent.switchAdminTab('leave'); } else if(window.switchAdminTab) { switchAdminTab('leave'); }">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-[11px] font-black text-indigo-400 flex items-center gap-2 uppercase tracking-tighter">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                    Staff Vacationers (This Week)
+                </h2>
+                <div id="week_range_text" class="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-full"></div>
+            </div>
+            <div id="weekly_leave_container" class="flex flex-wrap gap-1.5 overflow-y-auto max-h-[60px] custom-scrollbar">
+                <p class="text-[10px] text-slate-600 italic">Checking for vacations...</p>
             </div>
         </div>
     </div>
+</div>
+
 <div id="quick_stats_container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <div onclick="(window.switchAdminTab || window.parent.switchAdminTab)('attendance')" 
          class="bg-slate-900/50 p-5 rounded-3xl border border-slate-800 backdrop-blur-sm cursor-pointer hover:bg-slate-800 hover:border-blue-500/50 transition-all group">
@@ -113,7 +120,59 @@
 window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
 window.openAdminCustomModal = function(titleHtml, bodyHtml) { document.getElementById('modalHeaderArea').innerHTML = titleHtml; document.getElementById('modalBodyArea').innerHTML = bodyHtml; document.getElementById('customAdminModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
 window.closeAdminCustomModal = function() { if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; } if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; } if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; } if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; } document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove()); document.getElementById('customAdminModal').classList.add('hidden'); document.body.style.overflow = ''; };
-window.renderWeeklyLeaves = function() { const container = document.getElementById('weekly_leave_container'), section = document.getElementById('weekly_leave_section'), rangeText = document.getElementById('week_range_text'); if (!container) return; const curr = new Date(), first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1), last = first + 6, monday = new Date(new Date().setDate(first)).toISOString().split('T')[0], sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0]; rangeText.innerText = `${monday} ~ ${sunday}`; db.ref('leaves').on('value', snap => { const allLeaves = snap.val() || {}; container.innerHTML = ''; let hasAnyThisWeek = false; const weeklyStaffMap = new Map(); Object.entries(allLeaves).forEach(([uid, years]) => { Object.values(years).forEach(yearData => { Object.values(yearData).forEach(leave => { if (leave.status === 'Approved' && leave.startDate <= sunday && leave.endDate >= monday) { weeklyStaffMap.set(`${uid}-${leave.type}`, { name: uid, type: leave.type }); hasAnyThisWeek = true; } }); }); }); if (hasAnyThisWeek) { section.classList.remove('hidden'); let html = ''; weeklyStaffMap.forEach(staff => { html += `<div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-2xl"><span class="text-xs font-black text-white">${staff.name}</span><span class="w-1 h-1 bg-indigo-500/50 rounded-full"></span><span class="text-[10px] font-bold text-indigo-400/80 uppercase">${staff.type}</span></div>`; }); container.innerHTML = html; } else { section.classList.add('hidden'); } }); };
+window.renderWeeklyLeaves = function() {
+    const container = document.getElementById('weekly_leave_container');
+    const section = document.getElementById('weekly_leave_section');
+    const rangeText = document.getElementById('week_range_text');
+    if (!container) return;
+
+    // 이번 주 월요일 ~ 일요일 계산
+    const curr = new Date();
+    const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1);
+    const last = first + 6;
+    const monday = new Date(new Date().setDate(first)).toISOString().split('T')[0];
+    const sunday = new Date(new Date().setDate(last)).toISOString().split('T')[0];
+    
+    if (rangeText) rangeText.innerText = `${monday} ~ ${sunday}`;
+
+    db.ref('leaves').on('value', snap => {
+        const allLeaves = snap.val() || {};
+        container.innerHTML = '';
+        let hasAnyThisWeek = false;
+        let html = '';
+
+        Object.entries(allLeaves).forEach(([uid, years]) => {
+            if (!years) return;
+            Object.values(years).forEach(yearData => {
+                Object.values(yearData).forEach(leave => {
+                    // 승인된 휴가 중 이번 주 날짜와 겹치는 경우
+if ((leave.status === 'Approved' || leave.status === 'Pending') && 
+        ((leave.startDate <= sunday && leave.endDate >= monday))) {                        
+                        hasAnyThisWeek = true;
+                        // 날짜 포맷 (MM.DD 형식으로 간소화 가능)
+                        const dateRange = `${leave.startDate.substring(5)}~${leave.endDate.substring(5)}`;
+                        
+                        html += `
+                            <div class="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-xl transition-transform hover:scale-95">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] font-black text-white">${uid}</span>
+                                    <span class="text-[8px] text-slate-500 font-mono">${dateRange}</span>
+                                </div>
+                                <span class="w-[1px] h-4 bg-indigo-500/30"></span>
+                                <span class="text-[9px] font-black text-indigo-400 uppercase">${leave.type}</span>
+                            </div>`;
+                    }
+                });
+            });
+        });
+
+        if (hasAnyThisWeek) {
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p class="text-[10px] text-slate-600 font-bold italic py-2">No vacations this week.</p>';
+        }
+    });
+};
 
 window.updateQuickStats = function() {
     const today = new Date();
