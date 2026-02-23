@@ -1,4 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
     .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; }
     .chart-container { position: relative; height: 300px; width: 100%; }
@@ -6,6 +7,18 @@
     .stat-tab-btn { transition: all 0.3s; position: relative; }
     .stat-tab-btn.active { color: #facc15; }
     .stat-tab-btn.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #facc15; border-radius: 2px; }
+
+    /* 모달이 메뉴 바(Sidebar) 등 모든 요소를 덮도록 z-index를 최대로 설정 */
+    #statDetailModal {
+        z-index: 9999 !important;
+        position: fixed !important;
+        inset: 0 !important;
+    }
+
+    /* 스크롤바 커스텀 (모달 내부) */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 </style>
 
 <div class="animate-fadeIn space-y-8 pb-10">
@@ -58,6 +71,33 @@
     </section>
 </div>
 
+<div id="statDetailModal" class="hidden flex items-center justify-center bg-slate-900/95 backdrop-blur-md p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+            <h3 class="text-xl font-black text-yellow-400">
+                <span id="detailUserName" class="text-white"></span>'s Detail Log
+            </h3>
+            <button onclick="closeStatModal()" class="text-slate-400 hover:text-white text-3xl transition-transform hover:rotate-90">&times;</button>
+        </div>
+        <div class="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="text-xs uppercase text-slate-500 border-b border-slate-700 sticky top-0 bg-slate-800">
+                    <tr>
+                        <th class="py-3 px-2">Date</th>
+                        <th class="py-3 px-2">Status / Time</th>
+                        <th class="py-3 px-2">Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTableBody" class="divide-y divide-slate-700/50">
+                    </tbody>
+            </table>
+        </div>
+        <div class="p-4 bg-slate-900/30 border-t border-slate-700 flex justify-end">
+            <button onclick="closeStatModal()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-bold transition">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
         const db = firebase.database();
@@ -88,6 +128,60 @@
             if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
             else if(type === 'year') yearViewDate.setFullYear(yearViewDate.getFullYear() + offset);
             processAndRender();
+        };
+
+        // --- 추가 기능: 모달 닫기 ---
+        window.closeStatModal = function() {
+            document.getElementById('statDetailModal').classList.add('hidden');
+        };
+
+        // --- 추가 기능: 상세 정보 표시 로직 ---
+        window.showUserDetail = function(userName, periodType) {
+            const monthKey = monthViewDate.toISOString().substring(0, 7);
+            const yearKey = yearViewDate.getFullYear().toString();
+            const tbody = document.getElementById('detailTableBody');
+            
+            document.getElementById('detailUserName').innerText = userName;
+            tbody.innerHTML = '';
+
+            // cachedData에서 해당 사용자의 기록만 필터링 및 정렬 (최신순)
+            const logs = Object.entries(cachedData)
+                .filter(([date]) => {
+                    if (periodType === 'month') return date.startsWith(monthKey);
+                    if (periodType === 'year') return date.startsWith(yearKey);
+                    return true; // overall
+                })
+                .filter(([_, dayData]) => dayData[userName])
+                .sort((a, b) => b[0].localeCompare(a[0]));
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500">No records found.</td></tr>';
+            }
+
+            logs.forEach(([date, dayData]) => {
+                const record = dayData[userName];
+                // 근태 타입 추출
+                let type = (typeof record === 'string') ? record : (record.attend || record.leave || '-');
+                // 비고/사유 추출 (데이터 구조에 따라 remark 또는 reason 사용)
+                let note = (record.remark || record.reason || '-');
+                
+                // 간단한 타입 정규화 (배지 색상용)
+                const typeKey = type.includes('LATE') ? 'LATE' : (type.includes('ATT') ? 'ATT' : type);
+
+                const row = `
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition">
+                        <td class="py-3 px-2 font-mono text-xs">${date}</td>
+                        <td class="py-3 px-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white" style="background:${typeColors[typeKey] || '#475569'}">
+                                ${type}
+                            </span>
+                        </td>
+                        <td class="py-3 px-2 text-slate-400 text-xs">${note}</td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            document.getElementById('statDetailModal').classList.remove('hidden');
         };
 
         async function initStats() {
@@ -169,6 +263,14 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        // --- 추가 코드: 클릭 이벤트 핸들러 ---
+                        onClick: (e, elements) => {
+                            if (elements.length > 0 && currentTab === 'att') {
+                                const index = elements[0].index;
+                                const userName = charts[chartType].data.labels[index];
+                                showUserDetail(userName, chartType);
+                            }
+                        },
                         scales: {
                             x: { stacked: false, ticks: { color: '#94a3b8', font: { size: 10 } } },
                             y: { 
