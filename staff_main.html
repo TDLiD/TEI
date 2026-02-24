@@ -618,109 +618,140 @@ window.openEditPopup = function (dateStr, currentRec) {
     document.body.appendChild(overlay);
 };
 
-window.deleteLeaveTime = function (dateStr) {
-    if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
+// --- 기존 코드 수정 및 통합 ---
 
-    const user = sessionStorage.getItem('loggedInUser');
-    const db = firebase.database();
-    
-    // 해당 날짜의 유저 데이터 경로에서 leave 항목만 삭제
-    db.ref(`attendance/${dateStr}/${user}/leave`).remove()
-        .then(() => {
-            alert("Leave time has been deleted.");
-            // 성공 시 팝업 닫기 (자동으로 달력 리렌더링됨)
-            const popup = document.getElementById('editPopup');
-            if (popup) popup.remove();
-        })
-        .catch((error) => {
-            console.error("Delete failed:", error);
-            alert("Failed to delete record.");
-        });
-};
+    window.deleteLeaveTime = function (dateStr) {
+        if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
 
-        window.saveEditRecord = function (dateStr, isAttReadOnly) {
-            const newAtt = document.getElementById('editAttTime').value;
-            const newLeave = document.getElementById('editLeaveTime').value;
-            const updateData = {};
-            if (!isAttReadOnly && newAtt) {
-                if (!standardTime) { alert("Standard time loading..."); return; }
-                const [iHH, iMM] = newAtt.split(':').map(Number);
-                const [sHH, sMM] = standardTime.split(':').map(Number);
-                const stdMinutes = sHH * 60 + sMM;
-                const inputMinutes = iHH * 60 + iMM;
-                updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
-            }
-            if (newLeave) updateData.leave = newLeave;
-            if (Object.keys(updateData).length === 0) { alert("No changes to save."); return; }
-            if (confirm(`Save changes for ${dateStr}?`)) {
-                db.ref('attendance/' + dateStr + '/' + user).update(updateData)
-                    .then(() => {
-                        alert("Record updated successfully.");
-                        document.getElementById('editPopup').remove();
-                    }).catch(err => alert("Error: " + err.message));
-            }
-        };
-        function checkMissingRecords(data) {
-            if (!user) return;
-            const today = getJakartaDate(), currentYear = today.getFullYear(), currentMonth = today.getMonth(), todayDate = today.getDate();
-            let missingInfo = [];
-            for (let day = 1; day < todayDate; day++) {
-                const checkDate = new Date(currentYear, currentMonth, day);
-                const dayOfWeek = checkDate.getDay();
-                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                    const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dayData = data[dStr];
-                    if (dayData) {
-                        const myRec = dayData[user];
-                        let missingStatus = [];
-                        if (!myRec) missingStatus.push("Attendance", "Leave");
-                        else if (typeof myRec === 'object') {
-                            if (!myRec.attend) missingStatus.push("Attendance");
-                            if (!myRec.leave) missingStatus.push("Leave");
-                        } else if (typeof myRec === 'string') continue;
-                        if (missingStatus.length > 0) {
-                            const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
-                            missingInfo.push({ date: `${dStr} (${dayName})`, status: missingStatus.join(' & ') });
-                        }
-                    }
+        const user = sessionStorage.getItem('loggedInUser');
+        const db = firebase.database();
+        
+        db.ref(`attendance/${dateStr}/${user}/leave`).remove()
+            .then(() => {
+                alert("Leave time has been deleted.");
+                const popup = document.getElementById('editPopup');
+                if (popup) popup.remove();
+                // 캘린더 리렌더링 로직 필요 시 추가
+                if (typeof renderCalendar === 'function') renderCalendar();
+            })
+            .catch((error) => {
+                console.error("Delete failed:", error);
+                alert("Failed to delete record.");
+            });
+    };
+
+    window.saveEditRecord = function (dateStr, isAttReadOnly) {
+        const user = sessionStorage.getItem('loggedInUser');
+        const newAtt = document.getElementById('editAttTime').value;
+        const newLeave = document.getElementById('editLeaveTime').value;
+        const updateData = {};
+        
+        if (!isAttReadOnly && newAtt) {
+            if (typeof standardTime === 'undefined') { alert("Standard time loading..."); return; }
+            const [iHH, iMM] = newAtt.split(':').map(Number);
+            const [sHH, sMM] = standardTime.split(':').map(Number);
+            const stdMinutes = sHH * 60 + sMM;
+            const inputMinutes = iHH * 60 + iMM;
+            updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
+        }
+        if (newLeave) updateData.leave = newLeave;
+        
+        if (Object.keys(updateData).length === 0) { alert("No changes to save."); return; }
+        
+        if (confirm(`Save changes for ${dateStr}?`)) {
+            firebase.database().ref('attendance/' + dateStr + '/' + user).update(updateData)
+                .then(() => {
+                    alert("Record updated successfully.");
+                    document.getElementById('editPopup').remove();
+                    if (typeof renderCalendar === 'function') renderCalendar();
+                }).catch(err => alert("Error: " + err.message));
+        }
+    };
+
+    // --- 수정된 Work Report 누락 체크 로직 (최근 3일) ---
+    async function checkMissingRecords() {
+        const user = sessionStorage.getItem('loggedInUser');
+        if (!user) return;
+
+        const missingInfo = [];
+        const today = getJakartaDate();
+        const db = firebase.database();
+
+        // 최근 3일간 검사 (1일전 ~ 6일전)
+        for (let i = 1; i <= 6; i++) {
+            const checkDate = new Date(today);
+            checkDate.setDate(today.getDate() - i);
+            
+            const dayOfWeek = checkDate.getDay(); // 0:일, 6:토
+            if (dayOfWeek === 0 || dayOfWeek === 6) continue; // 주말 제외
+
+            const y = checkDate.getFullYear();
+            const m = String(checkDate.getMonth() + 1).padStart(2, '0');
+            const d = String(checkDate.getDate()).padStart(2, '0');
+            const dStr = `${y}-${m}-${d}`;
+
+            try {
+                // reports/{날짜}/{유저ID} 경로 확인
+                const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
+                if (!snap.exists()) {
+                    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+                    missingInfo.push({ 
+                        date: `${dStr} (${dayName})`, 
+                        status: "Work Report" 
+                    });
                 }
+            } catch (err) {
+                console.error("Report check error:", err);
             }
-            if (missingInfo.length > 0) showMissingPopup(missingInfo);
         }
-        function showMissingPopup(missingInfo) {
-            if (document.getElementById('missingPopup')) return;
-            const overlay = document.createElement('div');
-            overlay.id = 'missingPopup';
-            overlay.className = 'missing-modal-overlay animate-fadeIn';
-            let listHtml = missingInfo.map(info => `
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
-                    <div class="text-left">
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
-                        <p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${info.status}</span></p>
-                    </div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-                </div>`).join('');
-            overlay.innerHTML = `
-                <div class="missing-modal text-center">
-                    <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                        <span class="text-2xl">⚠️</span>
-                    </div>
-                    <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Records</h3>
-                    <p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">The following dates have incomplete logs:</p>
-                    <div class="flex items-center gap-2 mb-6">
-                        <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">WARNING</span>
-                        <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please fill in the times for the unrecorded dates below</span>
-                    </div>
-                    <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
-                    <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20">I UNDERSTAND</button>
-                </div>`;
-            document.body.appendChild(overlay);
+
+        if (missingInfo.length > 0) {
+            showMissingPopup(missingInfo);
         }
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        showFortune();
-    }, 500);
-});
-        renderCalendar();
+    }
+
+    function showMissingPopup(missingInfo) {
+        if (document.getElementById('missingPopup')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'missingPopup';
+        overlay.className = 'missing-modal-overlay animate-fadeIn';
+        
+        let listHtml = missingInfo.map(info => `
+            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
+                <div class="text-left">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
+                    <p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${info.status}</span></p>
+                </div>
+                <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+            </div>`).join('');
+
+        overlay.innerHTML = `
+            <div class="missing-modal text-center">
+                <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                    <span class="text-2xl">✍️</span>
+                </div>
+                <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3>
+                <p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p>
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span>
+                    <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span>
+                </div>
+                <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
+                <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button>
+            </div>`;
+        document.body.appendChild(overlay);
+    }
+
+    // --- 실행부 ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // 데이터 로드 후 누락 리포트 체크 실행
+        setTimeout(() => {
+            if (typeof showFortune === 'function') showFortune();
+            checkMissingRecords(); // 리포트 체크 함수 호출
+        }, 800);
+    });
+
+    if (typeof renderCalendar === 'function') renderCalendar();
+
     })();
 </script>
