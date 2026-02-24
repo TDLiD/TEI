@@ -8,27 +8,64 @@
             <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-2xl transition-all active:scale-95 uppercase text-[11px] tracking-widest">Import JSON (Restore)</button>
             <input type="file" id="importFile" class="hidden" accept=".json" onchange="window.importFullData(event)">
         </div>
-        <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">* WARNING: Restoring will overwrite all current database records. Use with caution.</p>
+        <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">* WARNING: Restoring will overwrite all current database records. Admin password required.</p>
     </div>
-    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
-            <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>SYSTEM CONFIGURATION (24H)
-        </h2>
-        <div class="flex flex-col md:flex-row items-start md:items-end gap-6">
-            <div class="w-full md:w-auto">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-3 ml-1 tracking-widest">Standard Attendance Time</label>
-                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
-                    <select id="select_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
-                    <span class="text-xl font-bold text-slate-500">:</span>
-                    <select id="select_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
-                </div>
-            </div>
-            <div class="flex-1 w-full">
-                <button onclick="window.saveSystemConfig()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">Save Configuration</button>
+
+
+
+<div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+    <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
+        <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>SYSTEM CONFIGURATION (24H)
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="space-y-3">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Standard Attendance Time (Attend)</label>
+            <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
+                <select id="select_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                <span class="text-xl font-bold text-slate-500">:</span>
+                <select id="select_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
             </div>
         </div>
-        <p id="current_time_display" class="mt-4 text-[11px] text-amber-500/70 font-bold italic ml-1">Current Setting: Loading...</p>
+
+        <div class="space-y-3 relative group">
+            <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest cursor-help">
+                Auto Leave Time (Leave)
+                <i class="far fa-question-circle opacity-50"></i>
+            </label>
+
+            <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                <div class="flex items-center gap-2 mb-2 text-amber-500">
+                    <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                    <span class="font-black uppercase tracking-tighter">Usage Information</span>
+                </div>
+                <ul class="space-y-2 leading-relaxed">
+                    <li class="flex gap-2">
+                        <span class="text-amber-500">•</span>
+                        <span>This time is used as the <strong class="text-white">default checkout time</strong> for the automated system.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-amber-500">•</span>
+                        <span>If a staff member <strong class="text-white">misses their checkout</strong> record yesterday, the system will automatically apply this time.</span>
+                    </li>
+                </ul>
+                <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
+                <select id="leave_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                <span class="text-xl font-bold text-slate-500">:</span>
+                <select id="leave_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+            </div>
+        </div>
     </div>
+
+    <div class="mt-8">
+        <button onclick="window.saveSystemConfig()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">Save Configuration</button>
+    </div>
+    <p id="current_time_display" class="mt-4 text-[11px] text-amber-500/70 font-bold italic ml-1">Current Setting: Loading...</p>
+</div>
+
+
     <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
         <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
             <div class="w-1.5 h-6 bg-blue-500 rounded-full"></div>STAFF MANAGEMENT
@@ -44,7 +81,12 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Password</label>
-                    <input type="text" id="add_staff_pw" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition">
+                    <div class="relative">
+                        <input type="password" id="add_staff_pw" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition pr-10">
+                        <button type="button" onclick="window.toggleViewPw('add_staff_pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                            <i class="far fa-eye text-sm"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Role</label>
@@ -74,7 +116,12 @@
         </div>
     </div>
 </div>
+
 <style>
+    /* 아이콘 폰트 (FontAwesome)가 로드되지 않았을 경우를 대비한 대체 아이콘 스타일 */
+    .fa-eye::before { content: "👁"; }
+    .fa-eye-slash::before { content: "🙈"; }
+
     @media (max-width: 767px) {
         #staff_list_body tr { display: flex; flex-direction: column; padding: 1rem; background: rgba(15, 23, 42, 0.4); position: relative; margin-bottom: 1px; }
         #staff_list_body td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border: none; }
@@ -85,58 +132,198 @@
         #staff_list_body select, #staff_list_body input { max-width: 160px !important; }
     }
     select { background-image: none; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+/* 기존 코드에 추가/확인 */
+.group:hover .group-hover\:block {
+    display: block !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
+
 <script>
 (function() {
     const db = firebase.database();
     const hSelect = document.getElementById('select_hour');
     const mSelect = document.getElementById('select_minute');
-    function initSelectors() {
-        hSelect.innerHTML = Array.from({length: 24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
-        mSelect.innerHTML = Array.from({length: 60}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+const lhSelect = document.getElementById('leave_hour');   // <--- Added
+    const lmSelect = document.getElementById('leave_minute'); // <--- Added
+
+// --- 유틸리티: Admin 비밀번호 확인 (커스텀 모달 버전) ---
+async function verifyAdmin() {
+    return new Promise((resolve) => {
+        // 모달 HTML 구조 생성
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fadeIn";
+        
+        modalOverlay.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-[24px] shadow-2xl w-full max-w-sm transform transition-all scale-100">
+                <h3 class="text-white font-black text-sm mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-1.5 h-4 bg-red-500 rounded-full"></span> Admin Verification
+                </h3>
+                <p class="text-slate-400 text-[11px] mb-4">Enter Admin Password to confirm changes:</p>
+                
+                <div class="relative mb-4">
+                    <input type="password" id="modal_admin_pw" 
+                        class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-white text-sm outline-none focus:border-red-500 transition pr-12"
+                        placeholder="Password">
+                    <button type="button" onclick="window.toggleViewPw('modal_admin_pw', this)" 
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                        <i class="far fa-eye text-sm"></i>
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button id="modal_cancel" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold py-3 rounded-xl text-[11px] transition">CANCEL</button>
+                    <button id="modal_confirm" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-xl text-[11px] transition shadow-lg shadow-red-500/20">CONFIRM</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+        const input = document.getElementById('modal_admin_pw');
+        input.focus();
+
+        // 확인 버튼 로직
+        const handleConfirm = async () => {
+            const enteredPw = input.value.trim();
+            if (!enteredPw) return;
+
+            try {
+                const snap = await db.ref('users/Admin/password').once('value');
+                const actualPw = snap.val();
+
+                if (String(enteredPw) === String(actualPw)) {
+                    cleanup(true);
+                } else {
+                    alert("Verification failed. Access denied.");
+                    cleanup(false);
+                }
+            } catch (error) {
+                alert("Auth Error: " + error.message);
+                cleanup(false);
+            }
+        };
+
+        // 삭제 및 종료 로직
+        const cleanup = (result) => {
+            document.body.removeChild(modalOverlay);
+            resolve(result);
+        };
+
+        // 이벤트 리스너
+        document.getElementById('modal_confirm').onclick = handleConfirm;
+        document.getElementById('modal_cancel').onclick = () => cleanup(false);
+        input.onkeydown = (e) => { if(e.key === 'Enter') handleConfirm(); };
+    });
+}
+
+// --- 수정된 비밀번호 토글 함수 (에러 방지 및 아이콘 연동) ---
+window.toggleViewPw = function(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+        console.warn(`Input with ID "${inputId}" not found.`);
+        return;
     }
+
+    // 1. 아이콘 요소 찾기 (전달받은 버튼 내부의 i 태그)
+    let icon = null;
+    if (btnEl) {
+        icon = btnEl.querySelector('i');
+    } else {
+        // btnEl이 없을 경우를 대비한 대체 로직
+        const btn = document.querySelector(`button[onclick*='${inputId}']`);
+        if (btn) icon = btn.querySelector('i');
+    }
+
+    // 2. 타입 토글 및 아이콘 클래스 변경
+    if (input.type === "password") {
+        input.type = "text";
+        if (icon) {
+            // font-awesome 클래스 교체 (눈 감은 아이콘)
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    } else {
+        input.type = "password";
+        if (icon) {
+            // font-awesome 클래스 교체 (눈 뜬 아이콘)
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+};
+
+// 셀렉트 박스 옵션 초기화 함수 수정
+    function initSelectors() {
+        const hours = Array.from({length: 24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+        const minutes = Array.from({length: 60}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+        
+        hSelect.innerHTML = hours;
+        mSelect.innerHTML = minutes;
+        lhSelect.innerHTML = hours; // 퇴근 시간용
+        lmSelect.innerHTML = minutes; // 퇴근 시간용
+    }
+
+// 초기화 실행
     window.initAdminSettings = function() {
         initSelectors();
         loadSystemConfig();
         loadStaffList();
     };
+
+// 설정 불러오기 로직 수정
     function loadSystemConfig() {
         db.ref('settings/config').once('value', snap => {
             const data = snap.val() || {};
-            let timeStr = data.stdAttendance || "09:00";
-            if (timeStr.includes('AM') || timeStr.includes('PM')) timeStr = convertLegacyTo24(timeStr);
-            const [hh, mm] = timeStr.split(':');
-            if(hh && mm) {
-                hSelect.value = hh;
-                mSelect.value = mm;
-            }
-            document.getElementById('current_time_display').innerText = `Current Setting: ${timeStr} (24H Format)`;
+            
+            // 출근 시간 로드
+            let attTime = data.stdAttendance || "09:00";
+            const [ah, am] = attTime.split(':');
+            hSelect.value = ah || "09";
+            mSelect.value = am || "00";
+
+            // 퇴근 시간 로드 (추가됨)
+            let leaveTime = data.autoLeave || "18:00";
+            const [lh, lm] = leaveTime.split(':');
+            lhSelect.value = lh || "18";
+            lmSelect.value = lm || "00";
+
+            document.getElementById('current_time_display').innerText = 
+                `Current Setting: IN ${attTime} / OUT ${leaveTime} (24H Format)`;
         });
     }
-    window.saveSystemConfig = function() {
-        const selectedTime = `${hSelect.value}:${mSelect.value}`;
+
+ // 설정 저장 로직 수정
+    window.saveSystemConfig = async function() {
+        if (!(await verifyAdmin())) return;
+
+        const selectedAttTime = `${hSelect.value}:${mSelect.value}`;
+        const selectedLeaveTime = `${lhSelect.value}:${lmSelect.value}`;
+
         db.ref('settings/config').update({
-            stdAttendance: selectedTime,
+            stdAttendance: selectedAttTime,
+            autoLeave: selectedLeaveTime, // Firebase에 저장
             updatedAt: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-            alert(`Configuration saved: ${selectedTime}`);
-            document.getElementById('current_time_display').innerText = `Current Setting: ${selectedTime} (24H Format)`;
+            alert(`Configuration saved!\nAttendance: ${selectedAttTime}\nAuto-Leave: ${selectedLeaveTime}`);
+            document.getElementById('current_time_display').innerText = 
+                `Current Setting: IN ${selectedAttTime} / OUT ${selectedLeaveTime} (24H Format)`;
         });
     };
-    function convertLegacyTo24(timeStr) {
-        try {
-            const parts = timeStr.split(' ');
-            const timeParts = parts[0].split(':');
-            let hours = parseInt(timeParts[0]);
-            const minutes = timeParts[1];
-            const ampm = parts[1];
-            if (ampm === 'PM' && hours < 12) hours += 12;
-            if (ampm === 'AM' && hours === 12) hours = 0;
-            return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
-        } catch(e) { return "09:00"; }
-    }
-    window.exportFullData = function() {
-        if(!confirm("Export entire database to JSON?")) return;
+
+
+    window.exportFullData = async function() {
+        if(!(await verifyAdmin())) return;
         db.ref('/').once('value', snap => {
             const data = snap.val();
             const dataStr = JSON.stringify(data, null, 2);
@@ -149,10 +336,11 @@
             URL.revokeObjectURL(url);
         });
     };
-    window.importFullData = function(event) {
+
+    window.importFullData = async function(event) {
         const file = event.target.files[0];
         if(!file) return;
-        if(!confirm("CRITICAL: Replace ALL data?")) {
+        if (!(await verifyAdmin())) {
             event.target.value = '';
             return;
         }
@@ -168,13 +356,17 @@
         };
         reader.readAsText(file);
     };
-    window.addNewStaff = function() {
+
+    window.addNewStaff = async function() {
         const nameInput = document.getElementById('add_staff_name');
         const pwInput = document.getElementById('add_staff_pw');
         const roleSelect = document.getElementById('add_staff_role');
         const staffName = nameInput.value.trim();
         const staffPw = pwInput.value.trim();
+        
         if(!staffName || !staffPw) return alert("Fill all fields.");
+        if (!(await verifyAdmin())) return;
+
         db.ref('users/' + staffName).once('value', snap => {
             if(snap.exists()) return alert("Exists.");
             db.ref('users/' + staffName).set({
@@ -183,9 +375,11 @@
             }).then(() => {
                 alert("Staff added.");
                 nameInput.value = ''; pwInput.value = '';
+                pwInput.type = "password"; // Reset to hidden
             });
         });
     };
+
     function loadStaffList() {
         db.ref('users').on('value', snap => {
             const users = snap.val() || {};
@@ -205,27 +399,107 @@
                         </select>
                     </td>
                     <td class="p-4 block md:table-cell">
-                        <input type="text" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]">
+                        <div class="relative max-w-[160px]">
+                            <input type="password" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full pr-8">
+                            <button onclick="window.toggleViewPw('pw_${uid}', this)" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                                <i class="far fa-eye text-[10px]"></i>
+                            </button>
+                        </div>
                     </td>
-                    <td class="p-4 text-right space-x-2 block md:table-cell">
-                        <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
-                        <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">DEL</button>
-                    </td>
+<td class="p-4 text-right space-x-2 block md:table-cell">
+    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
+    <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">STAFF DEL</button>
+    <button onclick="window.clearStaffData('${uid}')" class="text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500 hover:text-white transition">DATA DEL</button>
+</td>
                 `;
                 tbody.appendChild(tr);
             });
         });
     }
-    window.updateStaff = function(uid) {
+
+    window.updateStaff = async function(uid) {
+        if (!(await verifyAdmin())) return;
         const role = document.getElementById(`role_${uid}`).value;
         const password = document.getElementById(`pw_${uid}`).value.trim();
         db.ref('users/' + uid).update({ role, password }).then(() => alert("Updated."));
     };
-    window.deleteStaff = function(uid) {
-        if(!confirm(`Delete ${uid}?`)) return;
-        const adminPw = prompt("Admin password:");
-        if (adminPw === "1") db.ref('users/' + uid).remove();
-    };
+
+window.deleteStaff = async function(uid) {
+    // 1. 상세 안내 팝업 (영문 우선, 국문 병기)
+    const warningMsg = `[WARNING] This will only delete the staff account '${uid}'.\n\n` +
+                       `* Note: Activity data (Attendance, Leaves, Reports) will REMAIN in the database.\n` +
+                       `* To delete everything: Perform 'DATA DEL' first, then 'STAFF DEL'.\n\n` +
+                       `Do you want to proceed with deleting only the account?`;
+    
+    if(!confirm(warningMsg)) return;
+
+    // 2. Admin 패스워드 검증
+    if (await verifyAdmin()) {
+        db.ref('users/' + uid).remove()
+            .then(() => {
+                alert(`Staff account '${uid}' has been deleted. (Activity data was not removed)`);
+            })
+            .catch((error) => {
+                alert("Error deleting staff: " + error.message);
+            });
+    }
+};
+
+// --- 특정 직원의 모든 활동 데이터 삭제 기능 ---
+window.clearStaffData = async function(staffName) {
+    // 1. 1차 경고 확인
+    const firstConfirm = confirm(`[warning] '${staffName}' All employee data (attendance, leave, reports) will be permanently deleted. This action cannot be undone. Do you want to continue?`);
+    if (!firstConfirm) return;
+
+    // 2. Admin 패스워드 검증
+    if (!(await verifyAdmin())) return;
+
+    try {
+        const updates = {};
+
+        // A. Attendance 데이터 처리 (attendance/날짜/이름)
+        const attendanceSnap = await db.ref('attendance').once('value');
+        attendanceSnap.forEach(dateSnap => {
+            if (dateSnap.hasChild(staffName)) {
+                updates[`attendance/${dateSnap.key}/${staffName}`] = null;
+            }
+        });
+
+        // B. Leaves 데이터 처리 (leaves/이름)
+        // 알려주신 구조 (leave-"staff name")에 맞춤
+        updates[`leaves/${staffName}`] = null; 
+
+        // C. Reports 데이터 처리 (reports/날짜/이름)
+        const reportsSnap = await db.ref('reports').once('value');
+        reportsSnap.forEach(dateSnap => {
+            if (dateSnap.hasChild(staffName)) {
+                updates[`reports/${dateSnap.key}/${staffName}`] = null;
+            }
+        });
+
+        // 3. Firebase 일괄 업데이트 (Multi-path Update)
+        await db.ref().update(updates);
+        
+        alert(`'${staffName}' All employee data has been successfully deleted (account information remains).`);
+    } catch (error) {
+        console.error("Data Clear Error:", error);
+        alert("An error occurred while deleting data: " + error.message);
+    }
+};
+
+    function convertLegacyTo24(timeStr) {
+        try {
+            const parts = timeStr.split(' ');
+            const timeParts = parts[0].split(':');
+            let hours = parseInt(timeParts[0]);
+            const minutes = timeParts[1];
+            const ampm = parts[1];
+            if (ampm === 'PM' && hours < 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        } catch(e) { return "09:00"; }
+    }
+
     initSelectors();
 })();
 </script>
