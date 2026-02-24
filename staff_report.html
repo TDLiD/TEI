@@ -333,43 +333,48 @@
 window.updateCharCount = function(textareaId, countId) {
     const textarea = document.getElementById(textareaId);
     const countEl = document.getElementById(countId);
+    const maxLength = 2000;
     
-    if (textarea.value.length > 1000) {
-        // 1000자 초과 시 팝업 알림
-        alert("The maximum number of characters that can be entered (1000 characters) has been exceeded..");
+    // 입력된 값이 최대치를 넘었는지 확인
+    if (textarea.value.length > maxLength) {
+        // 1. 알림창 표시
+        alert("The maximum number of characters (2,000) has been exceeded.");
         
-        // 1000자까지만 남기고 강제 절삭
-        textarea.value = textarea.value.substring(0, 1000);
-        
-        // 절삭 후 임시 저장 강제 실행
-        if(window.saveToTemp) window.saveToTemp();
+        // 2. 초과분 즉시 삭제
+        textarea.value = textarea.value.substring(0, maxLength);
     }
 
-    const currentLength = textarea.value.length;
-    countEl.innerText = `${currentLength}/1000`;
+    // 카운터 업데이트
+    const finalLength = textarea.value.length;
+    countEl.innerText = `${finalLength}/${maxLength}`;
 
-    // 디자인 피드백: 1000자 도달 시 빨간색 강조
-    if (currentLength >= 1000) {
-        countEl.style.color = "#ef4444"; // Red-500
+    // 디자인 피드백
+    if (finalLength >= maxLength) {
+        countEl.style.color = "#ef4444"; 
         countEl.style.fontWeight = "900";
     } else {
-        countEl.style.color = "#64748b"; // Slate-500
+        countEl.style.color = "#64748b";
         countEl.style.fontWeight = "normal";
     }
+    
+    // 임시 저장 호출
+    if(window.saveToTemp) window.saveToTemp();
 };
 
 window.saveToTemp = function() {
     let todo = document.getElementById('editTodo')?.value || "";
     let summary = document.getElementById('editSummary')?.value || "";
     const status = document.getElementById('editStatus')?.value;
+    const maxLength = 2000;
 
     // 데이터 안정성을 위해 다시 한번 절삭
-    if (todo.length > 1000) todo = todo.substring(0, 1000);
-    if (summary.length > 1000) summary = summary.substring(0, 1000);
+    if (todo.length > maxLength) todo = todo.substring(0, maxLength);
+    if (summary.length > maxLength) summary = summary.substring(0, maxLength);
 
     const tempData = { todo, summary, status, timestamp: new Date().getTime() };
     localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify(tempData));
 };
+
         window.clearTemp = function(date) { localStorage.removeItem(getTempKey(date)); };
         window.changeViewMonth = function(offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderMiniCalendar(); };
         window.changeViewYear = function(year) { viewDate.setFullYear(parseInt(year)); renderMiniCalendar(); };
@@ -379,12 +384,13 @@ window.saveReport = function() {
     const todoField = document.getElementById('editTodo');
     const summaryField = document.getElementById('editSummary');
     const statusField = document.getElementById('editStatus');
+    const maxLength = 2000;
     
     if(!todoField.value.trim() && !summaryField.value.trim()) return alert("Please enter at least one content.");
     
     // 최종 검증 로직
-    if(todoField.value.length > 1000 || summaryField.value.length > 1000) {
-if(!confirm("Content exceeds 1000 characters. Save only the first 1000 characters?")) {
+    if(todoField.value.length > maxLength || summaryField.value.length > maxLength) {
+        if(!confirm(`Content exceeds ${maxLength} characters. Save only the first ${maxLength} characters?`)) {
             return; // 사용자가 취소를 누르면 저장을 멈추고 수정하게 함
         }
     }
@@ -393,8 +399,8 @@ if(!confirm("Content exceeds 1000 characters. Save only the first 1000 character
     const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
     const saveData = { 
-        todo: todoField.value.substring(0, 1000), 
-        summary: summaryField.value.substring(0, 1000), 
+        todo: todoField.value.substring(0, maxLength), 
+        summary: summaryField.value.substring(0, maxLength), 
         status: statusField.value, 
         time: timeStr 
     };
@@ -723,6 +729,7 @@ window.showEditor = function() {
     }
     
     const isNew = !currentReportData; 
+    const maxLength = 2000; // 제한 글자수 변수화
 
     container.innerHTML = `
         <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
@@ -749,25 +756,23 @@ window.showEditor = function() {
             <div class="mb-4">
                 <div class="flex justify-between items-end mb-2">
                     <label class="text-[10px] font-bold text-blue-500 uppercase">Today's To-Do</label>
-                    <span id="todoCount" class="text-[9px] text-slate-500 font-mono">${(report.todo || '').length}/1000</span>
+                    <span id="todoCount" class="text-[9px] text-slate-500 font-mono">${(report.todo || '').length}/${maxLength}</span>
                 </div>
-<textarea id="editTodo" 
-    oninput="window.updateCharCount('editTodo', 'todoCount'); window.saveToTemp()" 
-    maxlength="1001" 
-    placeholder="Enter planned tasks..." 
-    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[100px] resize-none focus:border-blue-500 transition">${report.todo || ''}</textarea>
+                <textarea id="editTodo" 
+                    oninput="window.updateCharCount('editTodo', 'todoCount');" 
+                    placeholder="Enter planned tasks..." 
+                    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[100px] resize-none focus:border-blue-500 transition">${report.todo || ''}</textarea>
             </div>
 
             <div class="mb-5">
                 <div class="flex justify-between items-end mb-2">
                     <label class="text-[10px] font-bold text-emerald-500 uppercase">Work Summary</label>
-                    <span id="summaryCount" class="text-[9px] text-slate-500 font-mono">${(report.summary || report.content || '').length}/1000</span>
+                    <span id="summaryCount" class="text-[9px] text-slate-500 font-mono">${(report.summary || report.content || '').length}/${maxLength}</span>
                 </div>
-<textarea id="editSummary" 
-    oninput="window.updateCharCount('editSummary', 'summaryCount'); window.saveToTemp()" 
-    maxlength="1001" 
-    placeholder="Enter work results..." 
-    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${report.summary || report.content || ''}</textarea>
+                <textarea id="editSummary" 
+                    oninput="window.updateCharCount('editSummary', 'summaryCount');" 
+                    placeholder="Enter work results..." 
+                    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 outline-none text-sm min-h-[150px] resize-none focus:border-emerald-500 transition">${report.summary || report.content || ''}</textarea>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -780,6 +785,10 @@ window.showEditor = function() {
                 </button>
             </div>
         </div>`;
+
+    // 초기 로드시 카운트 디자인 적용 (색상 등)
+    window.updateCharCount('editTodo', 'todoCount');
+    window.updateCharCount('editSummary', 'summaryCount');
 };
 
 // 취소 버튼 기능: 임시 저장 데이터를 지우고 리포트를 다시 로드함
