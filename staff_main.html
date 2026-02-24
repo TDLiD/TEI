@@ -212,6 +212,7 @@ function getJakartaDate() {
     const db = firebase.database();
     if (user) {
         checkLeaveStatus(user);
+autoFillYesterdayLeave(user); // 여기에 추가
     }
     let now = getJakartaDate();
     let viewDate = new Date(now);
@@ -255,6 +256,50 @@ function getJakartaDate() {
             }
         });
     }
+
+// --- 어제 날짜 자동 퇴근(설정값 기준) 입력 루틴 시작 ---
+function autoFillYesterdayLeave(uid) {
+    const yesterday = getJakartaDate();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const y = yesterday.getFullYear();
+    const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const d = String(yesterday.getDate()).padStart(2, '0');
+    const yestStr = `${y}-${m}-${d}`;
+    const dayOfWeek = yesterday.getDay(); // 0:일, 6:토
+
+    // 1. 토요일(6) 또는 일요일(0)이면 중단
+    if (dayOfWeek === 0 || dayOfWeek === 6) return;
+
+    // 2. 먼저 DB에서 설정된 autoLeave 시간을 가져옵니다.
+    db.ref('settings/config/autoLeave').once('value', (configSnap) => {
+        const autoLeaveTime = configSnap.val() || "18:00"; // 설정값이 없으면 기본값 18:00 사용
+
+        db.ref('attendance/' + yestStr).once('value', (snapshot) => {
+            const allData = snapshot.val();
+            
+            // 3. 어제 날짜에 아무런 출근 기록이 없으면 중단
+            if (!allData) return;
+
+            const myData = allData[uid];
+
+            // 4. 내 기록이 객체 형태이고(출근은 했으나), leave(퇴근) 값이 없을 때만 실행
+            if (myData && typeof myData === 'object' && myData.attend && !myData.leave) {
+                console.log(`Auto-filling leave for ${yestStr} with config time: ${autoLeaveTime}...`);
+                
+                db.ref(`attendance/${yestStr}/${uid}`).update({
+                    leave: autoLeaveTime // 하드코딩된 "18:00" 대신 변수 사용
+                }).then(() => {
+                    console.log(`Successfully updated ${yestStr} leave to ${autoLeaveTime} for ${uid}`);
+                    // UI 업데이트를 위해 캘린더 리렌더링 (필요시)
+                    if (typeof renderCalendar === 'function') renderCalendar();
+                });
+            }
+        });
+    });
+}
+
+
     function updateLiveTime() {
         if (document.activeElement === timeInput) return;
         const liveNow = getJakartaDate();
