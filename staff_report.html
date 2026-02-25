@@ -513,7 +513,7 @@ function renderMiniCalendar() {
     });
 }
 
-        window.openCopyFromPicker = function() {
+window.openCopyFromPicker = function() {
             if (!document.getElementById('hiddenCopyInput')) {
                 const input = document.createElement('input');
                 input.id = 'hiddenCopyInput';
@@ -524,7 +524,8 @@ function renderMiniCalendar() {
             window.copyPicker = flatpickr("#hiddenCopyInput", {
                 theme: "dark", maxDate: "today", onChange: function(selectedDates, dateStr) {
                     if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
-                        database.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
+                        // [수정] database -> db (이미 상단에서 const db = firebase.database()로 선언됨)
+                        db.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
                             const data = snapshot.val();
                             if (data) {
                                 const todoEl = document.getElementById('editTodo');
