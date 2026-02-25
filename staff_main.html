@@ -38,6 +38,34 @@
         .fortune-bubble { margin-left: 0; margin-top: 10px; display: block; width: fit-content; }
         .fortune-bubble::after { display: none; }
     }
+/* 팝업 하단 버튼 스타일 */
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+}
+.dont-show-btn {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.dont-show-btn:hover {
+    color: #94a3b8;
+}
+.close-modal-btn {
+    background: #334155;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0.75rem;
+    font-size: 11px;
+    font-weight: 900;
+}
 </style>
 <div class="flex flex-col lg:flex-row gap-4 md:gap-8 animate-fadeIn p-2 md:p-0">
     <div class="w-full lg:w-1/3 space-y-3 md:space-y-6">
@@ -323,56 +351,177 @@ function autoFillYesterdayLeave(uid) {
         if (!t) return false;
         return /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t);
     }
-    window.handleAttendance = function (type) {
-        if (!type || typeof type !== 'string') return;
-        const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
-        if (btn.disabled) return;
-        const rawTime = timeInput.value;
-        if (!isValidTime(rawTime)) {
-            alert("Please enter a valid time (HH:mm:ss).");
+
+
+// 1. 설정값들을 담을 변수 (기본값 설정)
+let config = {
+    LLMAPIkey: "",
+    autoLeave: "18:00",
+    stdAttendance: "08:00"
+};
+
+// 2. Firebase에서 설정값 실시간 리스닝 
+db.ref('settings/config').on('value', (snap) => {
+    const data = snap.val();
+    if (data) {
+        config = { ...config, ...data };
+        console.log("Config loaded from DB:", config);
+        
+        // UI에 표준 출근 시간 반영
+        const stdTimeElem = document.getElementById('displayStdTime');
+        if (stdTimeElem) stdTimeElem.innerText = config.stdAttendance;
+        
+        // 전역 변수 standardTime도 업데이트 (기존 로직 호환용)
+        standardTime = config.stdAttendance;
+    }
+});
+
+let isAILoading = false; 
+
+async function fetchAIComment(type, time, userName) {
+    // Return fallback message if API key is missing or already loading
+    if (!config.LLMAPIkey || isAILoading) {
+        return getFallbackMessage(type);
+    }
+
+    isAILoading = true;
+    
+    // Groq API Endpoint
+    const url = "https://api.groq.com/openai/v1/chat/completions";
+    
+    const isAttend = type === 'attend';
+    
+    // Prompt instruction (Instruction is in English, but asks for Korean/Indonesian output)
+    const prompt = isAttend 
+        ? `${userName} clocked in at ${time}. Write a short, energetic one-sentence greeting/cheer. Mix Indonesian and Korean languages. (Include emojis)`
+        : `${userName} is clocking out at ${time}. Write a short one-sentence encouragement for their hard work today. Mix Indonesian and Korean languages. (Include emojis)`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${config.LLMAPIkey}` // Groq Authentication
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile", // High-performance model from Groq
+                messages: [
+                    { role: "system", content: "You are a helpful office assistant who speaks a mix of Korean and Indonesian." },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 100
+            })
+        });
+
+        if (response.status === 429) {
+            console.warn("Groq API Rate Limit Exceeded (429).");
+            return getFallbackMessage(type);
+        }
+
+        if (!response.ok) throw new Error(`Groq API Error: ${response.status}`);
+
+        const data = await response.json();
+        // Extract text from Groq (OpenAI format) response structure
+        return data.choices[0].message.content.trim();
+
+    } catch (error) {
+        console.error("Groq API Call Error:", error);
+        return getFallbackMessage(type);
+    } finally {
+        // Prevent rapid repeated clicks
+        setTimeout(() => { isAILoading = false; }, 2000);
+    }
+}
+
+/**
+ * Default fallback messages in case of API errors
+ */
+function getFallbackMessage(type) {
+    return type === 'attend' 
+        ? "Selamat pagi! Let's have a great day today! 😊" 
+        : "Terima kasih! You did a great job today! 👏";
+}
+
+// --- [추가] 멋진 AI 팝업창 띄우기 ---
+function showAIPopup(message) {
+    const overlay = document.createElement('div');
+    overlay.className = 'missing-modal-overlay animate-fadeIn';
+    overlay.innerHTML = `
+        <div class="missing-modal border-blue-500/50 border-2 text-center">
+            <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4">AI Assistant Message</p>
+            <div class="text-white text-lg font-bold leading-relaxed mb-6">
+                "${message}"
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="close-modal-btn w-full py-3 hover:bg-blue-600 transition-colors">
+                OK, NOTED!
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+// --- [수정] 기존 handleAttendance 함수 ---
+window.handleAttendance = function (type) {
+    if (!type || typeof type !== 'string') return;
+    const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
+    if (btn.disabled) return;
+
+    const rawTime = timeInput.value;
+    if (!isValidTime(rawTime)) {
+        alert("Please enter a valid time (HH:mm:ss).");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.style.opacity = "0.5";
+    const timeParts = rawTime.split(':');
+    const storageTime = `${timeParts[0]}:${timeParts[1]}`;
+
+    db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
+        const currentData = snap.val() || {};
+        if (type === 'attend' && currentData.attend) {
+            alert("Attendance time has already been set.");
+            btn.disabled = false; btn.style.opacity = "1";
             return;
         }
-        btn.disabled = true;
-        btn.style.opacity = "0.5";
-        const timeParts = rawTime.split(':');
-        const storageTime = `${timeParts[0]}:${timeParts[1]}`;
-        db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
-            const currentData = snap.val() || {};
-            if (type === 'attend' && currentData.attend) {
-                alert("Attendance time has already been set.");
-                btn.disabled = false;
-                btn.style.opacity = "1";
-                return;
+
+        let finalVal = storageTime;
+        if (type === 'attend') {
+            if (!standardTime) { 
+                alert("Standard time is loading..."); 
+                btn.disabled = false; btn.style.opacity = "1";
+                return; 
             }
-            let finalVal = storageTime;
-            if (type === 'attend') {
-                if (!standardTime) { 
-                    alert("Standard time is loading..."); 
+            const [iHH, iMM] = storageTime.split(':').map(Number);
+            const [sHH, sMM] = standardTime.split(':').map(Number);
+            const stdMinutes = sHH * 60 + sMM;
+            const inputMinutes = iHH * 60 + iMM;
+            finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
+        }
+
+        if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+            db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
+// handleAttendance 함수 내부의 AI 호출 부분 수정
+.then(async () => {
+    // 버튼을 다시 활성화하기 전에 AI 메시지를 가져옵니다.
+    // 만약 이미 호출 중이라면 중복 호출하지 않습니다.
+    if (isAILoading) return; 
+
+    const aiMsg = await fetchAIComment(type, storageTime, user);
+    showAIPopup(aiMsg);
+})
+                .finally(() => {
                     btn.disabled = false;
                     btn.style.opacity = "1";
-                    return; 
-                }
-                const [iHH, iMM] = storageTime.split(':').map(Number);
-                const [sHH, sMM] = standardTime.split(':').map(Number);
-                const stdMinutes = sHH * 60 + sMM;
-                const inputMinutes = iHH * 60 + iMM;
-                finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
-            }
-            if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-                db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
-                    .then(() => {
-                        alert("Success.");
-                    })
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.style.opacity = "1";
-                    });
-            } else {
-                btn.disabled = false;
-                btn.style.opacity = "1";
-            }
-        });
-    };
+                });
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+    });
+};
+
 function updateAttendanceStats(data) {
             const viewYear = viewDate.getFullYear();
             const viewMonth = viewDate.getMonth() + 1;
@@ -668,16 +817,23 @@ window.openEditPopup = function (dateStr, currentRec) {
         }
     };
 
-    // --- 수정된 Work Report 누락 체크 로직 (최근 3일) ---
+// --- 수정된 Work Report 누락 체크 로직 (최근 6일 검사) ---
     async function checkMissingRecords() {
         const user = sessionStorage.getItem('loggedInUser');
         if (!user) return;
+
+        // [추가] 오늘 하루 안보기 체크
+        const todayStr = getJakartaDate().toISOString().split('T')[0];
+        if (localStorage.getItem('hideReportPopup') === todayStr) {
+            console.log("Report popup is hidden for today.");
+            return;
+        }
 
         const missingInfo = [];
         const today = getJakartaDate();
         const db = firebase.database();
 
-        // 최근 3일간 검사 (1일전 ~ 6일전)
+        // 최근 6일간 검사 (1일전 ~ 6일전)
         for (let i = 1; i <= 6; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
@@ -691,7 +847,6 @@ window.openEditPopup = function (dateStr, currentRec) {
             const dStr = `${y}-${m}-${d}`;
 
             try {
-                // reports/{날짜}/{유저ID} 경로 확인
                 const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
                 if (!snap.exists()) {
                     const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
@@ -736,11 +891,25 @@ window.openEditPopup = function (dateStr, currentRec) {
                     <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span>
                     <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span>
                 </div>
-                <div class="max-h-[250px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
-                <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button>
+                <div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
+                
+                <div class="space-y-3">
+                    <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button>
+                    <button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button>
+                </div>
             </div>`;
         document.body.appendChild(overlay);
     }
+
+    // [추가] 오늘 하루 안보기 로직 함수
+    window.hidePopupToday = function() {
+        const todayStr = getJakartaDate().toISOString().split('T')[0];
+        localStorage.setItem('hideReportPopup', todayStr);
+        const popup = document.getElementById('missingPopup');
+        if (popup) popup.remove();
+        console.log("Popup disabled until tomorrow.");
+    };
+
 
     // --- 실행부 ---
     document.addEventListener('DOMContentLoaded', () => {
