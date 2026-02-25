@@ -295,7 +295,7 @@ function renderMiniCalendar() {
         const tbody = document.getElementById('miniCalBody');
         tbody.innerHTML = '';
 
-        // --- [수정] 최근 7일 작성 여부 체크 로직 추가 ---
+        // --- [수정] 최근 7일 작성 여부 체크 (토/일 제외) ---
         const writtenDatesContainer = document.getElementById('writtenDates');
         const missingDatesContainer = document.getElementById('missingDates');
         
@@ -306,13 +306,18 @@ function renderMiniCalendar() {
             for (let i = 0; i < 7; i++) {
                 let d = new Date();
                 d.setDate(d.getDate() - i);
+                
+                let dayOfWeek = d.getDay(); // 0: 일요일, 6: 토요일
                 let dStr = d.toISOString().split('T')[0];
                 
                 // 로그인한 staff(user)의 리포트가 있는지 확인
                 if (allReports[dStr] && allReports[dStr][user]) {
                     writtenArr.push(dStr);
                 } else {
-                    missingArr.push(dStr);
+                    // 리포트가 없고, 토요일(6)과 일요일(0)이 아닌 경우만 미작성 목록에 추가
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        missingArr.push(dStr);
+                    }
                 }
             }
             
@@ -385,7 +390,6 @@ function renderMiniCalendar() {
             if (date > lastDate) break;
         }
 
-        // 기존 요약 카운트 업데이트 (필요 시 유지)
         if (document.getElementById('countCompleted')) {
             document.getElementById('countCompleted').innerText = summaryCount["Completed"];
             document.getElementById('countPending').innerText = summaryCount["Pending"];
