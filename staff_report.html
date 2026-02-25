@@ -47,6 +47,15 @@
     .modal-content { background: #0f172a; border: 1px solid #3b82f6; width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; position: relative; max-height: 80vh; overflow-y: auto; }
     .modal-close { position: absolute; top: 15px; right: 15px; color: #94a3b8; cursor: pointer; font-size: 1.5rem; }
     .modal-close:hover { color: white; }
+/* 미작성 날짜 깜빡임 효과 */
+@keyframes blink-red {
+    0%, 100% { opacity: 1; color: #ef4444; }
+    50% { opacity: 0.3; color: #7f1d1d; }
+}
+.blink-text {
+    animation: blink-red 1s infinite;
+    font-weight: 900;
+}
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -85,11 +94,16 @@
                 <thead><tr class="text-slate-500"><th class="text-sun">SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th class="text-sat">SAT</th></tr></thead>
                 <tbody id="miniCalBody"></tbody>
             </table>
-            <div id="productivitySummary" class="mt-4 flex gap-2 justify-center border-t border-slate-800 pt-4">
-                <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center"><p class="text-[9px] font-black text-emerald-500 uppercase mb-1">Completed</p><p id="countCompleted" class="text-lg font-black text-white">0</p></div>
-                <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center"><p class="text-[9px] font-black text-amber-500 uppercase mb-1">Pending</p><p id="countPending" class="text-lg font-black text-white">0</p></div>
-                <div class="bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700 flex-1 text-center"><p class="text-[9px] font-black text-blue-500 uppercase mb-1">In Progress</p><p id="countProgress" class="text-lg font-black text-white">0</p></div>
-            </div>
+<div id="productivitySummary" class="mt-4 flex flex-col gap-3 bg-slate-800/30 p-4 rounded-xl border border-slate-700">
+    <div class="flex flex-col gap-1">
+        <span class="text-[10px] font-black text-slate-500 uppercase">Report Creation Date:</span>
+        <div id="writtenDates" class="text-xs text-emerald-400 font-mono flex flex-wrap gap-x-2 italic">-</div>
+    </div>
+    <div class="flex flex-col gap-1">
+        <span class="text-[10px] font-black text-slate-500 uppercase">Report Unwritten Date:</span>
+        <div id="missingDates" class="text-xs font-mono flex flex-wrap gap-x-2 italic">-</div>
+    </div>
+</div>
             <div id="staffListArea" class="staff-list-container hidden">
                 <div class="staff-list-title"><span>Staff Reports - <span id="targetDateDisplay"></span></span><span id="staffCount" class="text-blue-500">0 persons</span></div>
                 <div id="staffGrid" class="staff-grid"></div>
@@ -267,7 +281,6 @@ function renderMiniCalendar() {
     const lastDate = new Date(year, month + 1, 0).getDate();
     const monthName = viewDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
     
-    // Define todayStr to prevent reference errors
     const todayStr = new Date().toISOString().split('T')[0];
 
     // Year selection
@@ -277,15 +290,45 @@ function renderMiniCalendar() {
     }
     document.getElementById('miniCalMonth').innerHTML = `${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
     
-    // USE 'db' INSTEAD OF 'database'
     db.ref('reports').once('value', (snapshot) => {
         const allReports = snapshot.val() || {};
         const tbody = document.getElementById('miniCalBody');
         tbody.innerHTML = '';
 
-        let summaryCount = { "Completed": 0, "Pending": 0, "In Progress": 0 };
+        // --- [수정] 최근 7일 작성 여부 체크 로직 추가 ---
+        const writtenDatesContainer = document.getElementById('writtenDates');
+        const missingDatesContainer = document.getElementById('missingDates');
+        
+        if (writtenDatesContainer && missingDatesContainer) {
+            let writtenArr = [];
+            let missingArr = [];
+            
+            for (let i = 0; i < 7; i++) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                let dStr = d.toISOString().split('T')[0];
+                
+                // 로그인한 staff(user)의 리포트가 있는지 확인
+                if (allReports[dStr] && allReports[dStr][user]) {
+                    writtenArr.push(dStr);
+                } else {
+                    missingArr.push(dStr);
+                }
+            }
+            
+            writtenDatesContainer.innerHTML = writtenArr.length > 0 
+                ? writtenArr.map(date => `<span class="mr-2">${date}</span>`).join('') 
+                : '<span class="text-slate-600">No records</span>';
+                
+            missingDatesContainer.innerHTML = missingArr.length > 0 
+                ? missingArr.map(date => `<span class="blink-text mr-2">${date}</span>`).join('') 
+                : '<span class="text-emerald-500 font-black text-[10px]">ALL COMPLETED!</span>';
+        }
+        // ------------------------------------------
 
+        let summaryCount = { "Completed": 0, "Pending": 0, "In Progress": 0 };
         let date = 1;
+
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
             for (let j = 0; j < 7; j++) {
@@ -332,7 +375,7 @@ function renderMiniCalendar() {
                     if (dateStr === selectedDateStr) cell.classList.add('selected-date');
                     cell.onclick = () => {
                         window.hideReportPopup();
-                        window.loadReport(dateStr); // Use window.loadReport
+                        window.loadReport(dateStr);
                     };
                     row.appendChild(cell);
                     date++;
@@ -342,6 +385,7 @@ function renderMiniCalendar() {
             if (date > lastDate) break;
         }
 
+        // 기존 요약 카운트 업데이트 (필요 시 유지)
         if (document.getElementById('countCompleted')) {
             document.getElementById('countCompleted').innerText = summaryCount["Completed"];
             document.getElementById('countPending').innerText = summaryCount["Pending"];
