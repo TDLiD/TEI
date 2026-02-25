@@ -5,7 +5,35 @@
     .report-table td { height: 100px; border: 1px solid #1e293b; vertical-align: top; padding: 8px; position: relative; transition: background 0.2s; }
     .report-table td:hover { background-color: #0f172a; cursor: pointer; }
     .report-item-badge { display: block; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; margin-top: 3px; border-radius: 4px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border-left: 2px solid #3b82f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .detail-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+/* 상세 패널 스타일 수정: 화면에 고정되고 내부 스크롤 지원 */
+.detail-panel {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    /* 핵심 속성 */
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px); /* 화면 높이에서 상하 여백 제외 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 내부 콘텐츠 영역 스크롤 설정 */
+.detail-content-scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 8px; /* 스크롤바 겹침 방지 */
+}
+
+/* 스크롤바 디자인 (다크모드 최적화) */
+.detail-content-scroll::-webkit-scrollbar { width: 6px; }
+.detail-content-scroll::-webkit-scrollbar-track { background: transparent; }
+.detail-content-scroll::-webkit-scrollbar-thumb { 
+    background: #1e293b; 
+    border-radius: 10px; 
+}
+.detail-content-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
     .custom-input { background: #1e293b; color: #f1f5f9; padding: 12px; border-radius: 12px; width: 100%; border: 1px solid transparent; transition: border 0.2s; font-size: 0.875rem; }
     .custom-input:focus { border-color: #3b82f6; outline: none; }
     label { font-weight: 800; letter-spacing: -0.025em; }
@@ -45,6 +73,31 @@
     word-break: break-all; 
     color: #3b82f6; 
     line-height: 1.4; /* 가독성을 위한 줄간격 추가 */
+}
+/* 상세 패널 부모 컨테이너 보정 */
+#reportDetail {
+    transition: all 0.3s ease;
+    min-width: 380px; /* 너무 좁아지지 않게 최소 너비 설정 */
+}
+
+/* 상세 패널 내부 스타일 */
+.detail-panel {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* 부모 너비를 가득 채움 */
+}
+
+/* 입력 필드 가독성 향상 */
+.custom-input {
+    line-height: 1.5;
+    font-family: inherit;
 }
 </style>
 
@@ -127,6 +180,12 @@
 (function() {
     const reportDb = window.db || firebase.database();
     let reportViewDate = new Date();
+
+window.autoResize = function(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight) + 'px';
+    };
 
     window.renderWorkFull = function(){
         updateMonthTitle();
@@ -249,10 +308,16 @@ html += Object.keys(reports).map(n => {
                     html += `</div>`;
                     
                     td.innerHTML = html;
-                    td.onclick = () => {
-                        const firstStaff = Object.keys(reports)[0];
-                        if (firstStaff) openReportDetail(date, firstStaff);
-                    };
+td.onclick = (e) => {
+    // 이미 배지를 클릭했다면 중복 실행 방지
+    if (e.target.classList.contains('report-item-badge')) return;
+    
+    const staffNames = Object.keys(reports);
+    if (staffNames.length > 0) {
+        // 해당 날짜의 첫 번째 스태프 리포트를 즉시 오픈
+        openReportDetail(date, staffNames[0]);
+    }
+};
                     tr.appendChild(td);
                     d++;
                 }
@@ -327,49 +392,75 @@ window.openReportDetail = function(date, staff) {
             const cleanSummary = stripHtml(r.summary || '');
 
             box.classList.remove("hidden");
+            
+            if (window.innerWidth < 1024) {
+                box.scrollIntoView({ behavior: 'smooth' });
+            }
+
             box.innerHTML = `
-            <div class="detail-panel p-6 sticky top-0">
-                <div class="flex justify-between items-start mb-6">
+            <div class="detail-panel p-6 animate-fadeIn">
+                <div class="flex justify-between items-start mb-5">
                     <div>
-                        <h3 class="text-2xl font-black text-white">Report Detail</h3>
-                        <p class="text-slate-500 text-xs font-bold uppercase">${date} / ${staff}</p>
+                        <h3 class="text-2xl font-black text-white leading-tight">Report Detail</h3>
+                        <p class="text-emerald-500 text-xs font-bold uppercase tracking-wider">${date} / ${staff}</p>
                     </div>
-                    <button onclick="closeReportDetail()" class="text-slate-500 hover:text-white transition-colors">
+                    <button onclick="closeReportDetail()" class="p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-                <div class="space-y-4">
+                
+                <div class="detail-content-scroll space-y-5 pr-2">
                     <div>
-                        <label class="text-[10px] text-blue-500 mb-1 block uppercase">Status</label>
-                        <select id="rp_status" class="custom-input font-bold text-blue-400">
-                            <option ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                            <option ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <label class="text-[11px] text-blue-400 mb-2 block uppercase font-black tracking-widest">Work Status</label>
+                        <select id="rp_status" class="custom-input !py-3 font-bold text-blue-100 border-slate-700 bg-slate-900/50">
+                            <option ${r.status==='In Progress'?'selected':''}>In Progress</option>
+                            <option ${r.status==='Completed'?'selected':''}>Completed</option>
+                            <option ${r.status==='Pending'?'selected':''}>Pending</option>
                         </select>
                     </div>
+                    
                     <div>
-                        <label class="text-[10px] text-slate-500 mb-1 block uppercase">Today's To-Do</label>
-                        <textarea id="rp_todo" class="custom-input h-24 resize-none">${cleanTodo}</textarea>
+                        <label class="text-[11px] text-slate-400 mb-2 block uppercase font-black tracking-widest">Today's To-Do</label>
+                        <textarea id="rp_todo" 
+                            oninput="window.autoResize(this)" 
+                            class="custom-input h-auto resize-none text-sm leading-relaxed overflow-hidden" 
+                            placeholder="Enter tasks...">${cleanTodo}</textarea>
                     </div>
+                    
                     <div>
-                        <label class="text-[10px] text-emerald-500 mb-1 block uppercase">Work Summary</label>
-                        <textarea id="rp_summary" class="custom-input h-32 resize-none">${cleanSummary}</textarea>
+                        <label class="text-[11px] text-emerald-400 mb-2 block uppercase font-black tracking-widest">Work Summary</label>
+                        <textarea id="rp_summary" 
+                            oninput="window.autoResize(this)" 
+                            class="custom-input h-auto resize-none text-sm leading-relaxed overflow-hidden" 
+                            placeholder="Describe work done...">${cleanSummary}</textarea>
                     </div>
+                    
                     <div>
-                        <label class="text-[10px] text-amber-500 mb-1 block uppercase">Admin Memo</label>
-                        <textarea id="rp_memo" class="custom-input h-20 resize-none border-amber-500/20">${r.adminMemo || ''}</textarea>
+                        <label class="text-[11px] text-amber-400 mb-2 block uppercase font-black tracking-widest">Admin Memo</label>
+                        <textarea id="rp_memo" 
+                            oninput="window.autoResize(this)" 
+                            class="custom-input h-auto resize-none border-amber-500/10 text-sm bg-amber-500/5 overflow-hidden" 
+                            placeholder="Admin notes here...">${r.adminMemo||''}</textarea>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 mt-8">
-                    <button onclick="saveReport('${date}','${staff}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20">SAVE CHANGES</button>
-                    <button onclick="closeReportDetail()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all">Cancel</button>
-                    <button onclick="deleteReport('${date}','${staff}')" class="bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20">Delete</button>
+
+                <div class="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-slate-800/50">
+                    <button onclick="saveReport('${date}','${staff}')" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-blue-900/40 text-sm tracking-widest uppercase">Save All Changes</button>
+                    <button onclick="closeReportDetail()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold py-3 rounded-xl transition-all text-xs">Close</button>
+                    <button onclick="deleteReport('${date}','${staff}')" class="bg-rose-950/30 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/10 text-xs">Delete Record</button>
                 </div>
             </div>`;
+
+            // [핵심] 데이터 렌더링 직후 높이 자동 조절 실행
+            setTimeout(() => {
+                window.autoResize(document.getElementById('rp_todo'));
+                window.autoResize(document.getElementById('rp_summary'));
+                window.autoResize(document.getElementById('rp_memo'));
+            }, 10);
         });
-    }
+    };
 
     window.closeReportDetail = function() { document.getElementById("reportDetail").classList.add("hidden"); };
     window.saveReport = function(date, staff){
@@ -390,3 +481,4 @@ window.openReportDetail = function(date, staff) {
     updateMonthTitle();
 })();
 </script>
+
