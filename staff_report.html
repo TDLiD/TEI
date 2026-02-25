@@ -56,6 +56,41 @@
     animation: blink-red 1s infinite;
     font-weight: 900;
 }
+/* 호버 팝업: fixed 위치를 사전에 확보하고 텍스트 줄바꿈 강제 방지 */
+#reportHoverPopup { 
+    position: fixed; 
+    z-index: 999999 !important; /* 최상위 우선순위 */
+    pointer-events: none; 
+    background: #1e293b; 
+    border: 1px solid #3b82f6; 
+    padding: 12px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6); 
+    width: 280px; 
+    display: none; 
+    font-size: 0.75rem; 
+    color: #f1f5f9;
+    /* 프레임 내부에 갇히지 않도록 transform 적용 가능성 제거 */
+}
+/* AI 메시지 알림을 화면 상단에 고정된 팝업으로 변경 */
+#leaveStatusAlert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100000; /* 최상단 우선순위 */
+    width: 90%;
+    max-width: 450px;
+    pointer-events: none; /* 클릭 방해 금지 (내부 버튼은 가능) */
+}
+
+#leaveAlertContent {
+    pointer-events: auto; /* 내부 버튼 등은 클릭 가능하게 */
+    background: rgba(15, 23, 42, 0.95); /* 배경 투명도 조절 */
+    backdrop-filter: blur(8px); /* 뒷배경 흐림 효과 */
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -66,6 +101,21 @@
         </div>
         <div id="workCardContainer"><div class="text-slate-500 animate-pulse text-sm">Loading...</div></div>
     </div>
+
+<div id="leaveStatusAlert" class="hidden">
+    <div id="leaveAlertContent" class="p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-3">
+            <span id="leaveAlertIcon" class="text-xl"></span>
+            <div>
+                <p id="leaveAlertTitle" class="text-[10px] font-black uppercase italic leading-none"></p>
+                <p id="leaveAlertMsg" class="text-white text-xs font-bold mt-1"></p>
+            </div>
+        </div>
+        <button onclick="document.getElementById('leaveStatusAlert').classList.add('hidden')" class="text-white/50 hover:text-white ml-4">&times;</button>
+    </div>
+</div>
+
+
     <div class="flex-1 w-full"> 
         <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 shadow-xl">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-4 px-1">
@@ -204,15 +254,67 @@
     window.changeViewMonth = (o) => { viewDate.setMonth(viewDate.getMonth() + o); if(typeof renderMiniCalendar==='function') renderMiniCalendar(); };
     window.goToday = () => { viewDate = new Date(); selectedDateStr = new Date().toISOString().split('T')[0]; window.loadReport(selectedDateStr); };
 
-    window.saveReport = () => {
-        const tdF = document.getElementById('editTodo'), smF = document.getElementById('editSummary'), stF = document.getElementById('editStatus'), max = 2000;
-        if(!tdF.value.trim() && !smF.value.trim()) return alert("Enter content.");
-        if((tdF.value.length > max || smF.value.length > max) && !confirm(`Exceeds ${max} chars. Save first ${max}?`)) return;
-        const now = new Date(), time = now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
-        const data = { todo:tdF.value.substring(0,max), summary:smF.value.substring(0,max), status:stF.value, time:time };
-        if (currentReportData?.adminMemo) data.adminMemo = currentReportData.adminMemo;
-        db.ref(`reports/${selectedDateStr}/${user}`).set(data).then(() => { alert("Saved."); window.clearTemp(selectedDateStr); window.loadReport(selectedDateStr); }).catch(()=>alert("Error."));
+// --- [수정] saveReport 함수 ---
+window.saveReport = () => {
+    const tdF = document.getElementById('editTodo'), 
+          smF = document.getElementById('editSummary'), 
+          stF = document.getElementById('editStatus'), 
+          max = 2000;
+    
+    if(!tdF.value.trim() && !smF.value.trim()) return alert("Enter content.");
+    if((tdF.value.length > max || smF.value.length > max) && !confirm(`Exceeds ${max} chars. Save first ${max}?`)) return;
+    
+    const now = new Date(), 
+          time = now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
+    
+    const data = { 
+        todo: tdF.value.substring(0,max), 
+        summary: smF.value.substring(0,max), 
+        status: stF.value, 
+        time: time 
     };
+    
+    if (currentReportData?.adminMemo) data.adminMemo = currentReportData.adminMemo;
+    
+    db.ref(`reports/${selectedDateStr}/${user}`).set(data).then(() => {
+        // [추가] 저장 성공 후 AI Assistant 팝업 호출
+        window.showReportAI(selectedDateStr, smF.value); 
+        
+        window.clearTemp(selectedDateStr); 
+        window.loadReport(selectedDateStr); 
+    }).catch(() => alert("Error."));
+};
+
+window.showReportAI = function(date, summary) {
+    const container = document.getElementById('leaveStatusAlert');
+    const content = document.getElementById('leaveAlertContent');
+    const icon = document.getElementById('leaveAlertIcon');
+    const title = document.getElementById('leaveAlertTitle');
+    const msg = document.getElementById('leaveAlertMsg');
+
+    if(!container || !content) return;
+
+    const dateObj = new Date(date);
+    const dateLabel = (dateObj.getMonth() + 1) + "/" + dateObj.getDate();
+    const summaryHint = summary.length > 20 ? summary.substring(0, 20) + "..." : summary;
+
+    // 팝업 표시 및 애니메이션 효과 (animate-bounce 또는 animate-fadeIn)
+    container.classList.remove('hidden');
+    container.classList.add('animate-bounce'); // 짧게 튀는 효과
+    
+    content.className = "p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg bg-emerald-500/10 border-emerald-500/30";
+    icon.innerText = "🤖";
+    title.innerText = "AI Assistant Message";
+    title.className = "text-[10px] font-black uppercase italic leading-none text-emerald-500";
+    
+    msg.innerHTML = `<span class="text-emerald-400">[${dateLabel}]</span> Your work on "${summaryHint}" has been recorded. Great job!`;
+
+    // 4초 후 서서히 사라짐 효과
+    setTimeout(() => {
+        container.classList.add('hidden');
+        container.classList.remove('animate-bounce');
+    }, 7000);
+};
 
     window.deleteReport = () => {
         if (!confirm("Delete this report?")) return;
@@ -264,8 +366,21 @@ window.showReportPopup = function(event, todo, summary) {
 window.moveReportPopup = function(event) {
     const popup = document.getElementById('reportHoverPopup');
     if(!popup) return;
-    popup.style.left = (event.clientX + 15) + 'px';
-    popup.style.top = (event.clientY + 15) + 'px';
+
+    let posX = event.clientX + 15;
+    let posY = event.clientY + 15;
+
+    // 화면 오른쪽 끝에서 잘림 방지
+    if (posX + 300 > window.innerWidth) {
+        posX = event.clientX - 295;
+    }
+    // 화면 아래쪽 끝에서 잘림 방지
+    if (posY + 200 > window.innerHeight) {
+        posY = event.clientY - 150;
+    }
+
+    popup.style.left = posX + 'px';
+    popup.style.top = posY + 'px';
 };
 
 window.hideReportPopup = function() {
