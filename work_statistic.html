@@ -1,0 +1,213 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .stat-container { animation: fadeIn 0.5s ease-out; color: #f1f5f9; }
+    .glass-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 2rem; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
+    
+    /* 기존 스타일 유지 */
+    .chart-box { height: 160px; position: relative; margin-bottom: 0.5rem; }
+    .task-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px; border-radius: 10px; }
+    .indicator { width: 3px; height: 18px; border-radius: 10px; flex-shrink: 0; margin-top: 2px; }
+    .ind-new { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+    .ind-repeat { background: #3b82f6; }
+    .type-label { font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; margin-bottom: 2px; display: inline-block; }
+    .label-new { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .label-repeat { color: #60a5fa; background: rgba(59, 130, 246, 0.1); }
+
+    /* 신규 추가: 라이프사이클 타임라인 스타일 */
+    .lifecycle-box { margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+    .track-item { margin-bottom: 12px; }
+    .track-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .track-title { font-size: 10px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+    .track-days { font-size: 9px; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 1px 5px; border-radius: 4px; }
+    .track-bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; position: relative; }
+    .track-bar-fill { position: absolute; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 10px; transition: width 1s ease-in-out; }
+    .track-dates { display: flex; justify-content: space-between; font-size: 8px; color: #64748b; margin-top: 4px; font-family: monospace; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+</style>
+
+<div class="stat-container max-w-[1400px] mx-auto pb-20 p-4">
+    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter">AI Work <span class="text-blue-500">Intelligence</span> v3.0</h1>
+            <p class="text-slate-500 text-[11px] font-bold tracking-[0.4em] uppercase mt-1">Lifecycle Tracking & Semantic Analysis Engine</p>
+        </div>
+        <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
+            <span class="text-[9px] text-slate-500 block uppercase font-black">System status</span>
+            <span class="text-xs text-emerald-500 font-bold animate-pulse">● DEEP ANALYSIS ACTIVE</span>
+        </div>
+    </div>
+
+    <div id="intelligenceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="col-span-full py-20 text-center glass-card border-dashed border-slate-700">
+            <p class="text-slate-500 font-black tracking-widest uppercase text-xs animate-pulse">Processing Staff Reports & Mapping Life-cycles...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 1. 전처리 (불용어 제거 및 토큰화)
+    function getCleanTokens(text) {
+        if (!text) return new Set();
+        const stopWords = ['january','february','march','april','may','june','july','august','september','october','november','december','monday','tuesday','wednesday','thursday','friday','saturday','sunday','done','check','todo'];
+        const tokens = text.toLowerCase()
+            .replace(/[0-9]차|일차|요일|[0-9]월|[0-9]일/g, '')
+            .replace(/[^a-zA-Z가-힣\s]/g, ' ')
+            .split(/\s+/)
+            .filter(w => w.length > 1 && !stopWords.includes(w));
+        return new Set(tokens);
+    }
+
+    // 2. 업무 생애주기 분석 함수
+    function calculateLifeCycle(allReports) {
+        const sortedDates = Object.keys(allReports).sort();
+        const taskMap = {}; // 핵심어 조합을 키로 사용
+
+        sortedDates.forEach(date => {
+            const lines = (allReports[date].todo || "").split('\n').filter(l => l.trim().length > 4);
+            lines.forEach(line => {
+                const cleanLine = line.replace(/^[•\-\s]+|done|Done/g, '').trim();
+                const tokens = Array.from(getCleanTokens(cleanLine)).sort().join('|');
+                if (!tokens) return;
+
+                if (!taskMap[tokens]) {
+                    taskMap[tokens] = { title: cleanLine, start: date, end: date, count: 1 };
+                } else {
+                    taskMap[tokens].end = date;
+                    taskMap[tokens].count++;
+                }
+            });
+        });
+
+        return Object.values(taskMap)
+            .map(t => {
+                const start = new Date(t.start);
+                const end = new Date(t.end);
+                const duration = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+                const isActive = t.end === sortedDates[sortedDates.length - 1];
+                return { ...t, duration, isActive };
+            })
+            .filter(t => t.duration > 1 || t.isActive) // 하루짜리 단발성 업무 제외
+            .sort((a, b) => new Date(b.end) - new Date(a.end)) // 최신 종료순
+            .slice(0, 3); // 상위 3개 프로젝트만 표시
+    }
+
+    // 3. 메인 분석 엔진
+    function analyzeAll(data) {
+        const stats = {};
+        for(const date in data) {
+            for(const staff in data[date]) {
+                if(!stats[staff]) stats[staff] = {};
+                stats[staff][date] = data[date][staff];
+            }
+        }
+
+        const grid = document.getElementById('intelligenceGrid');
+        grid.innerHTML = '';
+
+        Object.keys(stats).forEach((name, idx) => {
+            const staffHistory = stats[name];
+            const sortedDates = Object.keys(staffHistory).sort();
+            const lastDate = sortedDates[sortedDates.length - 1];
+            
+            // 신규/반복 분석
+            const pastContext = new Set();
+            sortedDates.slice(0, -1).forEach(d => {
+                getCleanTokens(staffHistory[d].todo).forEach(t => pastContext.add(t));
+            });
+
+            const currentTasks = staffHistory[lastDate].todo.split('\n').filter(l => l.trim().length > 4).map(line => {
+                const tokens = getCleanTokens(line);
+                const intersection = Array.from(tokens).filter(x => pastContext.has(x));
+                const isRepeat = tokens.size > 0 && (intersection.length / tokens.size) > 0.2;
+                return { text: line.replace(/^[•\-\s]+/, ''), type: isRepeat ? 'REPEAT' : 'NEW' };
+            });
+
+            const newCount = currentTasks.filter(t => t.type === 'NEW').length;
+            const total = currentTasks.length || 1;
+            const newPercent = Math.round((newCount / total) * 100);
+
+            // 생애주기 분석
+            const lifecycle = calculateLifeCycle(staffHistory);
+
+            const canvasId = `chart_${idx}`;
+            const card = `
+                <div class="glass-card border-t-4 ${newPercent > 50 ? 'border-t-emerald-500' : 'border-t-blue-500'} p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-black text-white italic tracking-tighter">${name}</h3>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${lastDate}</p>
+                        </div>
+                        <span class="text-[9px] font-black ${newPercent > 50 ? 'text-emerald-400' : 'text-blue-400'} uppercase">v3.0 Engine</span>
+                    </div>
+
+                    <div class="chart-box">
+                        <canvas id="${canvasId}"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span class="text-2xl font-black text-white">${newPercent}%</span>
+                            <span class="text-[8px] text-slate-500 font-black uppercase">Innovation</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 bg-slate-900/40 rounded-xl p-3 overflow-y-auto max-h-[140px] custom-scrollbar mb-4">
+                        <p class="text-[8px] font-black text-slate-600 uppercase mb-2 tracking-widest">Daily Pattern</p>
+                        ${currentTasks.map(t => `
+                            <div class="task-row">
+                                <div class="indicator ${t.type === 'NEW' ? 'ind-new' : 'ind-repeat'}"></div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="type-label ${t.type === 'NEW' ? 'label-new' : 'label-repeat'}">${t.type}</span>
+                                    <p class="text-[10px] text-slate-300 truncate italic">"${t.text}"</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="lifecycle-box">
+                        <p class="text-[8px] font-black text-slate-600 uppercase mb-3 tracking-widest">Project Lifecycle (Ongoing)</p>
+                        ${lifecycle.map(t => `
+                            <div class="track-item">
+                                <div class="track-header">
+                                    <span class="track-title">${t.title}</span>
+                                    <span class="track-days">${t.duration} DAYS</span>
+                                </div>
+                                <div class="track-bar-bg">
+                                    <div class="track-bar-fill" style="width: ${Math.min(100, (t.duration / 14) * 100)}%"></div>
+                                </div>
+                                <div class="track-dates">
+                                    <span>${t.start}</span>
+                                    <span class="${t.isActive ? 'text-emerald-500 font-bold' : ''}">${t.isActive ? 'PROCEEDING' : t.end}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            grid.innerHTML += card;
+
+            setTimeout(() => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [newPercent, 100 - newPercent],
+                            backgroundColor: [newPercent > 50 ? '#10b981' : '#3b82f6', 'rgba(255,255,255,0.05)'],
+                            borderWidth: 0,
+                            cutout: '85%'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }, 0);
+        });
+    }
+
+    if (window.db) {
+        db.ref('reports').once('value').then(snap => analyzeAll(snap.val() || {}));
+    }
+})();
+</script>
