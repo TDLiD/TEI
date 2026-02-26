@@ -72,24 +72,53 @@
     color: #f1f5f9;
     /* 프레임 내부에 갇히지 않도록 transform 적용 가능성 제거 */
 }
-/* AI 메시지 알림을 화면 상단에 고정된 팝업으로 변경 */
+/* AI 메시지 알림: 초기 상태를 완전히 숨김 */
 #leaveStatusAlert {
     position: fixed;
     top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100000; /* 최상단 우선순위 */
-    width: 90%;
-    max-width: 450px;
-    pointer-events: none; /* 클릭 방해 금지 (내부 버튼은 가능) */
+    left: 0;
+    right: 0;
+    display: none; /* flex 대신 none으로 시작 */
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 100000;
+    pointer-events: none;
+    padding: 0 15px;
 }
 
+/* AI 메시지 알림: 더 화려한 글로우 효과와 애니메이션 */
 #leaveAlertContent {
-    pointer-events: auto; /* 내부 버튼 등은 클릭 가능하게 */
-    background: rgba(15, 23, 42, 0.95); /* 배경 투명도 조절 */
-    backdrop-filter: blur(8px); /* 뒷배경 흐림 효과 */
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid #10b981; /* 에메랄드 테두리 강화 */
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    width: 90%; /* 모바일 대응 */
+    max-width: 450px;
+    border-radius: 1.5rem;
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* 바운스 효과 */
+}
+
+/* 팝업 활성화 시 스타일 */
+#leaveAlertContent.show {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* 텍스트 글로우 효과 */
+.ai-glow-text {
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+/* 모바일 가운데 정렬 보정 */
+@media (max-width: 640px) {
+    #leaveStatusAlert {
+        top: 40%; /* 화면 중앙 근처 */
+        align-items: center;
+    }
 }
 </style>
 
@@ -102,8 +131,8 @@
         <div id="workCardContainer"><div class="text-slate-500 animate-pulse text-sm">Loading...</div></div>
     </div>
 
-<div id="leaveStatusAlert" class="hidden">
-    <div id="leaveAlertContent" class="p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg">
+<div id="leaveStatusAlert" style="display: none;">
+<div id="leaveAlertContent" class="p-4 rounded-[1.25rem] border flex items-center justify-between shadow-lg">
         <div class="flex items-center gap-3">
             <span id="leaveAlertIcon" class="text-xl"></span>
             <div>
@@ -285,35 +314,108 @@ window.saveReport = () => {
     }).catch(() => alert("Error."));
 };
 
-window.showReportAI = function(date, summary) {
+// 전역 변수 설정
+let isAILoading = false;
+
+window.showReportAI = async function(date, summary) {
+    // 중복 클릭 방지: 이미 로딩 중이면 실행하지 않음
+    if (isAILoading) return;
+    isAILoading = true;
+
     const container = document.getElementById('leaveStatusAlert');
     const content = document.getElementById('leaveAlertContent');
     const icon = document.getElementById('leaveAlertIcon');
     const title = document.getElementById('leaveAlertTitle');
     const msg = document.getElementById('leaveAlertMsg');
 
-    if(!container || !content) return;
+    if(!container || !content) {
+        isAILoading = false;
+        return;
+    }
 
-    const dateObj = new Date(date);
-    const dateLabel = (dateObj.getMonth() + 1) + "/" + dateObj.getDate();
-    const summaryHint = summary.length > 20 ? summary.substring(0, 20) + "..." : summary;
-
-    // 팝업 표시 및 애니메이션 효과 (animate-bounce 또는 animate-fadeIn)
-    container.classList.remove('hidden');
-    container.classList.add('animate-bounce'); // 짧게 튀는 효과
+    // 1. UI 즉시 표시 (로딩 상태)
+    container.style.display = 'flex';
+    content.className = "p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-blue-500 w-full animate-pulse-slow show";
+    icon.innerText = "🧠";
+    title.innerText = "AI System Checking...";
+    msg.innerHTML = `<span class="text-blue-400 text-xs font-bold italic">AI sedang analysis report...</span>`;
     
-    content.className = "p-4 rounded-[1.5rem] border flex items-center justify-between shadow-lg bg-emerald-500/10 border-emerald-500/30";
+    setTimeout(() => content.classList.add('show'), 10);
+
+    let aiResponse = "";
+    const dateLabel = date.split('-').slice(1).join('/');
+
+    try {
+        // Firebase 경로 확인 및 API Key 호출
+        let apiKey = (typeof config !== 'undefined' && config.LLMAPIkey) ? config.LLMAPIkey : "";
+        
+        if (!apiKey) {
+            console.log("Config not ready, fetching API Key from Firebase...");
+            // 경로가 'settings/config/LLMAPIkey'인지 확인 필요
+            const snap = await firebase.database().ref('settings/config/LLMAPIkey').once('value');
+            apiKey = snap.val();
+        }
+
+        if (!apiKey) throw new Error("LLM API Key missing");
+
+        const url = "https://api.groq.com/openai/v1/chat/completions";
+        const prompt = `[REPORT_ANALYSIS]
+            User: ${sessionStorage.getItem('loggedInUser') || 'Staff'}
+            Work Summary: ${summary}
+            Instruction:
+            1. Berikan pujian profesional namun lucu/witty tentang ringkasan pekerjaan ini dalam satu kalimat.
+            2. Tambahkan emoji yang relevan di akhir kalimat.
+            3. Balas dalam bahasa Indonesia saja (Bahasa Indonesia Only).
+            4. Maksimum 2 kalimat.`;
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: "You are a witty office manager AI. You must respond in Indonesian language ONLY." },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.8
+            })
+        });
+
+        const data = await response.json();
+        aiResponse = data.choices[0].message.content.trim();
+
+    } catch (error) {
+        console.error("showReportAI API Error:", error);
+        aiResponse = "Catatan kerja berhasil disimpan! Analisis AI gagal dimuat, tapi performa Anda tetap luar biasa! 🚀";
+    } finally {
+        // 로딩 상태 해제 (성공/실패 여부와 상관없이)
+        isAILoading = false;
+    }
+
+    // 2. UI 최종 업데이트 (Emerald 글로우 효과)
+    content.classList.remove('animate-pulse-slow');
+    content.className = "p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-emerald-500 w-full ai-glow-text show";
     icon.innerText = "🤖";
-    title.innerText = "AI Assistant Message";
-    title.className = "text-[10px] font-black uppercase italic leading-none text-emerald-500";
     
-    msg.innerHTML = `<span class="text-emerald-400">[${dateLabel}]</span> Your work on "${summaryHint}" has been recorded. Great job!`;
+    title.innerText = "AI Assistant Analysis";
+    title.className = "text-[11px] font-black uppercase italic tracking-widest text-emerald-400 mb-1";
+    
+    msg.innerHTML = `
+        <div class="flex flex-col">
+            <span class="text-white/60 text-[10px] mb-1">[${dateLabel}] Record Success</span>
+            <span class="text-white text-sm font-bold leading-tight">${aiResponse}</span>
+        </div>
+    `;
 
-    // 4초 후 서서히 사라짐 효과
-    setTimeout(() => {
-        container.classList.add('hidden');
-        container.classList.remove('animate-bounce');
-    }, 7000);
+    // 3. 자동 닫기 (5초)
+    if (window.aiPopupTimer) clearTimeout(window.aiPopupTimer);
+    window.aiPopupTimer = setTimeout(() => {
+        content.classList.remove('show');
+        setTimeout(() => { container.style.display = 'none'; }, 400);
+    }, 5000);
 };
 
     window.deleteReport = () => {
@@ -706,4 +808,3 @@ window.cancelEdit = function() {
         loadReport(selectedDateStr);
     })();
 </script>
-
