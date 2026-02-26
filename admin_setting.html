@@ -106,11 +106,12 @@
                         <th class="p-4 border-b border-slate-800">Staff Name</th>
                         <th class="p-4 border-b border-slate-800">Role</th>
                         <th class="p-4 border-b border-slate-800">Password</th>
+<th class="p-4 border-b border-slate-800 text-center">WARNING</th>
                         <th class="p-4 border-b border-slate-800 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="staff_list_body" class="text-sm divide-y divide-slate-800/50 md:divide-none block md:table-row-group">
-                    <tr><td colspan="4" class="p-10 text-center text-slate-600 font-bold italic">Fetching staff records...</td></tr>
+                    <tr><td colspan="5" class="p-10 text-center text-slate-600 font-bold italic">Fetching staff records...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -118,36 +119,20 @@
 </div>
 
 <style>
-    /* 아이콘 폰트 (FontAwesome)가 로드되지 않았을 경우를 대비한 대체 아이콘 스타일 */
-    .fa-eye::before { content: "👁"; }
-    .fa-eye-slash::before { content: "🙈"; }
-
-    @media (max-width: 767px) {
-        #staff_list_body tr { display: flex; flex-direction: column; padding: 1rem; background: rgba(15, 23, 42, 0.4); position: relative; margin-bottom: 1px; }
-        #staff_list_body td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border: none; }
-        #staff_list_body td:first-child { font-size: 1.1rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem; margin-bottom: 0.5rem; }
-        #staff_list_body td:nth-child(2)::before { content: "Role"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
-        #staff_list_body td:nth-child(3)::before { content: "Password"; font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
-        #staff_list_body td:last-child { margin-top: 0.5rem; justify-content: flex-end; width: 100%; }
-        #staff_list_body select, #staff_list_body input { max-width: 160px !important; }
-    }
-    select { background-image: none; }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-    animation: fadeIn 0.3s ease-out forwards;
-}
-/* 기존 코드에 추가/확인 */
-.group:hover .group-hover\:block {
-    display: block !important;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    /* 1. Icons & Keyframes */
+    .fa-eye::before { content: "👁"; } .fa-eye-slash::before { content: "🙈"; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+    
+    /* 2. Common & Interaction */
+    select { background-image: none; } .group:hover .group-hover\:block { display: block !important; } #staff_list_body select, #staff_list_body input { transition: all 0.2s ease; } .warn-select-on { border-color: rgba(239, 68, 68, 0.5) !important; color: #f87171 !important; background-color: rgba(239, 68, 68, 0.05) !important; }
+    
+    /* 3. Mobile Responsive (Staff List Card View) */
+    @media (max-width: 767px) { #staff_list_body tr { display: flex; flex-direction: column; padding: 1.25rem; background: rgba(15, 23, 42, 0.4); position: relative; margin-bottom: 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); } #staff_list_body td { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border: none; } }
+    
+    /* 4. Mobile Labels & Typography */
+    @media (max-width: 767px) { #staff_list_body td:nth-child(1) { font-size: 1.1rem; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.5rem; } #staff_list_body td:nth-child(2)::before { content: "Role"; } #staff_list_body td:nth-child(3)::before { content: "Password"; } #staff_list_body td:nth-child(4)::before { content: "Warning"; } #staff_list_body td:nth-child(2)::before, #staff_list_body td:nth-child(3)::before, #staff_list_body td:nth-child(4)::before { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; tracking-widest; } }
+    
+    /* 5. Mobile Action Buttons & Layout Fix */
+    @media (max-width: 767px) { #staff_list_body td:last-child { margin-top: 0.8rem; padding-top: 0.8rem; justify-content: flex-end; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); gap: 8px; } #staff_list_body select, #staff_list_body input { max-width: 160px !important; font-size: 12px; } }
 </style>
 
 <script>
@@ -371,7 +356,8 @@ window.toggleViewPw = function(inputId, btnEl) {
             if(snap.exists()) return alert("Exists.");
             db.ref('users/' + staffName).set({
                 role: roleSelect.value,
-                password: staffPw
+                password: staffPw,
+                WarnFlag: 'on' // 새 스태프 추가 시 기본값 설정
             }).then(() => {
                 alert("Staff added.");
                 nameInput.value = ''; pwInput.value = '';
@@ -380,49 +366,98 @@ window.toggleViewPw = function(inputId, btnEl) {
         });
     };
 
-    function loadStaffList() {
-        db.ref('users').on('value', snap => {
-            const users = snap.val() || {};
-            const tbody = document.getElementById('staff_list_body');
-            tbody.innerHTML = '';
-            Object.entries(users).forEach(([uid, user]) => {
-                if(uid === 'admin') return;
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-800/50 hover:bg-white/5 transition-colors block md:table-row";
-                tr.innerHTML = `
-                    <td class="p-4 font-bold text-white block md:table-cell">${uid}</td>
-                    <td class="p-4 block md:table-cell">
-                        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]">
-                            <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
-                            <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
-                            <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
-                        </select>
-                    </td>
-                    <td class="p-4 block md:table-cell">
-                        <div class="relative max-w-[160px]">
-                            <input type="password" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full pr-8">
-                            <button onclick="window.toggleViewPw('pw_${uid}', this)" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                                <i class="far fa-eye text-[10px]"></i>
-                            </button>
-                        </div>
-                    </td>
-<td class="p-4 text-right space-x-2 block md:table-cell">
-    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition">SAVE</button>
-    <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">STAFF DEL</button>
-    <button onclick="window.clearStaffData('${uid}')" class="text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg hover:bg-amber-500 hover:text-white transition">DATA DEL</button>
-</td>
-                `;
-                tbody.appendChild(tr);
-            });
+// --- loadStaffList 함수 내 tr.innerHTML 부분 수정 ---
+// --- loadStaffList 함수: Admin 포함 버전 ---
+function loadStaffList() {
+    db.ref('users').on('value', snap => {
+        const users = snap.val() || {};
+        const tbody = document.getElementById('staff_list_body');
+        tbody.innerHTML = '';
+        
+        // 정렬: Admin을 가장 위로, 나머지는 이름순
+        const sortedKeys = Object.keys(users).sort((a, b) => {
+            if (a.toLowerCase() === 'admin') return -1;
+            if (b.toLowerCase() === 'admin') return 1;
+            return a.localeCompare(b);
         });
-    }
 
-    window.updateStaff = async function(uid) {
-        if (!(await verifyAdmin())) return;
-        const role = document.getElementById(`role_${uid}`).value;
-        const password = document.getElementById(`pw_${uid}`).value.trim();
-        db.ref('users/' + uid).update({ role, password }).then(() => alert("Updated."));
+        sortedKeys.forEach(uid => {
+            const user = users[uid];
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-800/50 hover:bg-white/5 transition-colors block md:table-row";
+            
+            const warnStatus = user.WarnFlag === 'on' ? 'on' : 'off';
+            const isAdmin = uid.toLowerCase() === 'admin';
+
+            tr.innerHTML = `
+                <td class="p-4 font-bold text-white block md:table-cell">
+                    ${uid} ${isAdmin ? '<span class="ml-2 text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">SYSTEM</span>' : ''}
+                </td>
+                <td class="p-4 block md:table-cell">
+                    <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]" ${isAdmin ? 'disabled' : ''}>
+                        <option value="Admin" ${user.role === 'Admin' || isAdmin ? 'selected' : ''}>Admin</option>
+                        <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
+                        <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
+                        <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
+                    </select>
+                </td>
+                <td class="p-4 block md:table-cell">
+                    <div class="relative max-w-[160px]">
+                        <input type="password" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full pr-8">
+                        <button onclick="window.toggleViewPw('pw_${uid}', this)" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                            <i class="far fa-eye text-[10px]"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="p-4 block md:table-cell text-center">
+                    ${isAdmin ? '<span class="text-slate-600 text-[10px] font-black italic">MASTER</span>' : `
+                    <select id="warn_${uid}" class="bg-slate-800/50 border ${warnStatus === 'on' ? 'border-red-500/50 text-red-400' : 'border-slate-700 text-slate-400'} rounded-lg px-2 py-2 text-[10px] font-bold outline-none transition-colors">
+                        <option value="off" ${warnStatus === 'off' ? 'selected' : ''}>WARN Off</option>
+                        <option value="on" ${warnStatus === 'on' ? 'selected' : ''}>⚠️ WARN On</option>
+                    </select>
+                    `}
+                </td>
+                <td class="p-4 text-right space-x-2 block md:table-cell">
+                    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition font-bold">SAVE</button>
+                    ${isAdmin ? '' : `<button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition font-bold">DEL</button>`}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+// --- updateStaff 함수: Admin 처리 로직 추가 ---
+window.updateStaff = async function(uid) {
+    if (!(await verifyAdmin())) return;
+    
+    const roleEl = document.getElementById(`role_${uid}`);
+    const pwEl = document.getElementById(`pw_${uid}`);
+    const warnEl = document.getElementById(`warn_${uid}`);
+    
+    const role = roleEl ? roleEl.value : 'Admin';
+    const password = pwEl.value.trim();
+    // Admin은 WarnFlag를 업데이트하지 않음 (기본 off 유지)
+    const warnFlag = warnEl ? warnEl.value : 'off'; 
+    
+    if(!password) return alert("Password cannot be empty.");
+
+    const updateData = { 
+        password: password
     };
+    
+    // Admin이 아닐 때만 role과 warnFlag 저장
+    if (uid.toLowerCase() !== 'admin') {
+        updateData.role = role;
+        updateData.WarnFlag = warnFlag;
+    }
+    
+    db.ref('users/' + uid).update(updateData).then(() => {
+        alert(`'${uid}' info updated successfully.`);
+    }).catch(err => {
+        alert("Update failed: " + err.message);
+    });
+};
 
 window.deleteStaff = async function(uid) {
     // 1. 상세 안내 팝업 (영문 우선, 국문 병기)

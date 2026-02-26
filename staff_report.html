@@ -491,7 +491,7 @@ window.hideReportPopup = function() {
 };
 
 
-function renderMiniCalendar() {
+async function renderMiniCalendar() {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
@@ -507,49 +507,72 @@ function renderMiniCalendar() {
     }
     document.getElementById('miniCalMonth').innerHTML = `${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
     
-    db.ref('reports').once('value', (snapshot) => {
-        const allReports = snapshot.val() || {};
+    try {
+        // [추가] reports와 attendance 데이터를 동시에 가져옵니다.
+        const [reportSnap, attendSnap] = await Promise.all([
+            db.ref('reports').once('value'),
+            db.ref('attendance').once('value')
+        ]);
+
+        const allReports = reportSnap.val() || {};
+        const allAttendance = attendSnap.val() || {};
         const tbody = document.getElementById('miniCalBody');
         tbody.innerHTML = '';
 
-        // --- [수정] 최근 7일 작성 여부 체크 (토/일 제외) ---
+        // --- [수정] 최근 7일 작성 여부 체크 (토/일 제외 + 휴가 제외) ---
         const writtenDatesContainer = document.getElementById('writtenDates');
         const missingDatesContainer = document.getElementById('missingDates');
         
-        if (writtenDatesContainer && missingDatesContainer) {
-            let writtenArr = [];
-            let missingArr = [];
-            
-            for (let i = 0; i < 7; i++) {
-                let d = new Date();
-                d.setDate(d.getDate() - i);
+if (writtenDatesContainer && missingDatesContainer) {
+            // 1. 해당 유저의 WarnFlag 상태 확인 (users 노드 참조)
+            const userSettingsSnap = await db.ref(`users/${user}/WarnFlag`).once('value');
+            const warnFlag = userSettingsSnap.val();
+
+            if (warnFlag === "off") {
+                // WarnFlag가 off인 경우 표시할 메시지
+                writtenDatesContainer.innerHTML = '<span class="text-slate-500 italic uppercase">Monitoring Paused</span>';
+                missingDatesContainer.innerHTML = `<span class="text-amber-500 font-bold text-[10px] uppercase tracking-wider">
+                    THIS STAFF IS IN "WARNFLAG OFF" STATUS.
+                </span>`;
+            } else {
+                // 기존 로직: WarnFlag가 on이거나 설정이 없을 때 (정상 체크)
+                let writtenArr = [];
+                let missingArr = [];
+                const leaveTypes = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
                 
-                let dayOfWeek = d.getDay(); // 0: 일요일, 6: 토요일
-                let dStr = d.toISOString().split('T')[0];
-                
-                // 로그인한 staff(user)의 리포트가 있는지 확인
-                if (allReports[dStr] && allReports[dStr][user]) {
-                    writtenArr.push(dStr);
-                } else {
-                    // 리포트가 없고, 토요일(6)과 일요일(0)이 아닌 경우만 미작성 목록에 추가
-                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                        missingArr.push(dStr);
+                for (let i = 0; i < 7; i++) {
+                    let d = new Date();
+                    d.setDate(d.getDate() - i);
+                    
+                    let dayOfWeek = d.getDay(); 
+                    let dStr = d.toISOString().split('T')[0];
+                    
+                    const userAtnd = allAttendance[dStr]?.[user];
+                    const isOnLeave = leaveTypes.includes(userAtnd);
+                    
+                    if (allReports[dStr] && allReports[dStr][user]) {
+                        writtenArr.push(dStr);
+                    } else {
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isOnLeave) {
+                            missingArr.push(dStr);
+                        }
                     }
                 }
-            }
-            
-            writtenDatesContainer.innerHTML = writtenArr.length > 0 
-                ? writtenArr.map(date => `<span class="mr-2">${date}</span>`).join('') 
-                : '<span class="text-slate-600">No records</span>';
                 
-            missingDatesContainer.innerHTML = missingArr.length > 0 
-                ? missingArr.map(date => `<span class="blink-text mr-2">${date}</span>`).join('') 
-                : '<span class="text-emerald-500 font-black text-[10px]">ALL COMPLETED!</span>';
+                writtenDatesContainer.innerHTML = writtenArr.length > 0 
+                    ? writtenArr.map(date => `<span class="mr-2">${date}</span>`).join('') 
+                    : '<span class="text-slate-600">No records</span>';
+                    
+                missingDatesContainer.innerHTML = missingArr.length > 0 
+                    ? missingArr.map(date => `<span class="blink-text mr-2">${date}</span>`).join('') 
+                    : '<span class="text-emerald-500 font-black text-[10px]">ALL COMPLETED!</span>';
+            }
         }
-        // ------------------------------------------
 
+        // --- 캘린더 그리드 그리기 ---
         let summaryCount = { "Completed": 0, "Pending": 0, "In Progress": 0 };
         let date = 1;
+        const leaveTypes = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
 
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
@@ -567,8 +590,12 @@ function renderMiniCalendar() {
                     if (dateStr === todayStr) dayColorClass = "text-blue-500";
 
                     let cellHTML = `<div class="date-num text-xs font-bold ${dayColorClass}">${curDate}</div>`;
+                    
                     const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
+                    const userAtnd = allAttendance[dateStr]?.[user];
+                    const isLeave = leaveTypes.includes(userAtnd);
 
+                    // 1. 리포트가 있는 경우 (기존 로직)
                     if (userReport) {
                         cell.classList.add('has-report');
                         const status = userReport.status || "In Progress";
@@ -591,10 +618,15 @@ function renderMiniCalendar() {
                         cell.onmouseenter = (e) => window.showReportPopup(e, safeTodo, safeSummary);
                         cell.onmousemove = (e) => window.moveReportPopup(e);
                         cell.onmouseleave = () => window.hideReportPopup();
+                    } 
+                    // 2. 리포트는 없지만 휴가인 경우 (추가된 기능)
+                    else if (isLeave) {
+                        cellHTML += `<div class="status-tag bg-rose-500/20 text-rose-500 border border-rose-500/30 font-black">${userAtnd}</div>`;
                     }
                     
                     cell.innerHTML = cellHTML;
                     if (dateStr === selectedDateStr) cell.classList.add('selected-date');
+                    
                     cell.onclick = () => {
                         window.hideReportPopup();
                         window.loadReport(dateStr);
@@ -607,12 +639,16 @@ function renderMiniCalendar() {
             if (date > lastDate) break;
         }
 
+        // 하단 요약 카운트 업데이트
         if (document.getElementById('countCompleted')) {
             document.getElementById('countCompleted').innerText = summaryCount["Completed"];
             document.getElementById('countPending').innerText = summaryCount["Pending"];
             document.getElementById('countProgress').innerText = summaryCount["In Progress"];
         }
-    });
+
+    } catch (error) {
+        console.error("Calendar Rendering Error:", error);
+    }
 }
 
 window.openCopyFromPicker = function() {

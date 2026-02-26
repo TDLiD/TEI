@@ -178,6 +178,7 @@
         </section>
     </div>
 </div>
+
 <script>
 function showFortune() {
     const fortunes = [
@@ -379,68 +380,86 @@ db.ref('settings/config').on('value', (snap) => {
 let isAILoading = false; 
 
 async function fetchAIComment(type, time, userName) {
-    // Return fallback message if API key is missing or already loading
     if (!config.LLMAPIkey || isAILoading) {
         return getFallbackMessage(type);
     }
 
     isAILoading = true;
-    
-    // Groq API Endpoint
     const url = "https://api.groq.com/openai/v1/chat/completions";
-    
     const isAttend = type === 'attend';
-    
-    // Prompt instruction (Instruction is in English, but asks for Korean/Indonesian output)
+
+    // 1. 자카르타 실시간 온도 가져오기
+    let weatherInfo = "sedang bagus"; 
+    try {
+        const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true");
+        const weatherData = await weatherRes.json();
+        if (weatherData.current_weather) {
+            weatherInfo = `${weatherData.current_weather.temperature}°C`;
+        }
+    } catch (err) {
+        console.error("Weather Fetch Error:", err);
+    }
+
+    // 2. 프롬프트 구성 (날씨 + 명언 + 농담 포함)
     const prompt = isAttend 
-        ? `${userName} clocked in at ${time}. Write a short, energetic one-sentence greeting/cheer. Mix Indonesian and Korean languages. (Include emojis)`
-        : `${userName} is clocking out at ${time}. Write a short one-sentence encouragement for their hard work today. Mix Indonesian and Korean languages. (Include emojis)`;
+        ? `[ATTENDANCE]
+           User: ${userName}
+           Time: ${time}
+           Jakarta Temp: ${weatherInfo}
+           Instruction:
+           1. Greet the user and mention the temperature.
+           2. Add one short Indonesian "Peribahasa" (proverb) about success or hard work.
+           3. Add a very short "tebak-tebakan" (joke) related to coffee or work to start the day.
+           4. Language: Indonesian Only.`
+        : `[LEAVING]
+           User: ${userName}
+           Time: ${time}
+           Instruction:
+           1. Thank the user for their hard work.
+           2. Add one short Indonesian "Peribahasa" about resting or the value of effort.
+           3. Add a short, witty office-related joke for a good laugh.
+           4. Language: Indonesian Only.`;
 
     try {
         const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${config.LLMAPIkey}` // Groq Authentication
+                "Authorization": `Bearer ${config.LLMAPIkey}`
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // High-performance model from Groq
+                model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: "You are a helpful office assistant who speaks a mix of Korean and Indonesian." },
+                    { 
+                        role: "system", 
+                        content: "You are a professional yet witty office assistant. Respond in Indonesian. Keep the response concise (under 3 sentences)." 
+                    },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.7,
-                max_tokens: 100
+                temperature: 0.8, // 창의적인 농담을 위해 온도를 약간 높임
+                max_tokens: 250
             })
         });
 
-        if (response.status === 429) {
-            console.warn("Groq API Rate Limit Exceeded (429).");
-            return getFallbackMessage(type);
-        }
-
-        if (!response.ok) throw new Error(`Groq API Error: ${response.status}`);
-
+        if (response.status === 429) return getFallbackMessage(type);
         const data = await response.json();
-        // Extract text from Groq (OpenAI format) response structure
         return data.choices[0].message.content.trim();
 
     } catch (error) {
         console.error("Groq API Call Error:", error);
         return getFallbackMessage(type);
     } finally {
-        // Prevent rapid repeated clicks
         setTimeout(() => { isAILoading = false; }, 2000);
     }
 }
 
 /**
- * Default fallback messages in case of API errors
+ * 에러 발생 시 출력될 기본 메시지 (인도네시아어)
  */
 function getFallbackMessage(type) {
     return type === 'attend' 
-        ? "Selamat pagi! Let's have a great day today! 😊" 
-        : "Terima kasih! You did a great job today! 👏";
+        ? "Selamat pagi! Semoga hari Anda menyenangkan! 😊" 
+        : "Terima kasih atas kerja keras Anda hari ini! Selamat beristirahat! 👏";
 }
 
 // --- [추가] 멋진 AI 팝업창 띄우기 ---
@@ -817,12 +836,25 @@ window.openEditPopup = function (dateStr, currentRec) {
         }
     };
 
-// --- 수정된 Work Report 누락 체크 로직 (최근 6일 검사) ---
-    async function checkMissingRecords() {
-        const user = sessionStorage.getItem('loggedInUser');
-        if (!user) return;
+// --- [수정] Work Report 누락 체크 로직 (WarnFlag 상태 확인 추가) ---
+async function checkMissingRecords() {
+    const user = sessionStorage.getItem('loggedInUser');
+    if (!user) return;
 
-        // [추가] 오늘 하루 안보기 체크
+    const db = firebase.database();
+
+    try {
+        // 1. 해당 유저의 WarnFlag 상태 먼저 확인
+        const userSnap = await db.ref(`users/${user}/WarnFlag`).once('value');
+        const warnFlag = userSnap.val();
+
+        // WarnFlag가 "off"이면 리포트 체크 로직을 실행하지 않고 종료
+        if (warnFlag === "off") {
+            console.log(`Report check skipped: ${user}'s WarnFlag is OFF.`);
+            return;
+        }
+
+        // 2. 오늘 하루 안보기 체크 (localStorage)
         const todayStr = getJakartaDate().toISOString().split('T')[0];
         if (localStorage.getItem('hideReportPopup') === todayStr) {
             console.log("Report popup is hidden for today.");
@@ -831,9 +863,8 @@ window.openEditPopup = function (dateStr, currentRec) {
 
         const missingInfo = [];
         const today = getJakartaDate();
-        const db = firebase.database();
 
-        // 최근 6일간 검사 (1일전 ~ 6일전)
+        // 3. 최근 6일간 리포트 존재 여부 검사
         for (let i = 1; i <= 6; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
@@ -846,24 +877,24 @@ window.openEditPopup = function (dateStr, currentRec) {
             const d = String(checkDate.getDate()).padStart(2, '0');
             const dStr = `${y}-${m}-${d}`;
 
-            try {
-                const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
-                if (!snap.exists()) {
-                    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
-                    missingInfo.push({ 
-                        date: `${dStr} (${dayName})`, 
-                        status: "Work Report" 
-                    });
-                }
-            } catch (err) {
-                console.error("Report check error:", err);
+            const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
+            if (!snap.exists()) {
+                const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
+                missingInfo.push({ 
+                    date: `${dStr} (${dayName})`, 
+                    status: "Work Report" 
+                });
             }
         }
 
+        // 4. 누락 데이터가 있을 경우에만 팝업 표시
         if (missingInfo.length > 0) {
             showMissingPopup(missingInfo);
         }
+    } catch (err) {
+        console.error("Report check / WarnFlag fetch error:", err);
     }
+}
 
     function showMissingPopup(missingInfo) {
         if (document.getElementById('missingPopup')) return;
