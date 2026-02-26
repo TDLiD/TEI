@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - DAILY SYSTEM</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
     <script src="staff-level.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
@@ -72,17 +77,19 @@
                 </div>
             </div>
         </div>
-        <nav class="flex flex-col gap-1 flex-1">
-            <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
-            <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
-            <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
-            <button id="btn-leave" onclick="switchAdminTab('leave')" class="tab-btn px-4 py-3 text-left">🏖️ LEAVE MGT</button>
-            <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 SCHEDULE</button>
-            <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 STATISTICS</button>
-            <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ SETTINGS</button>
-            <div class="h-[1px] bg-slate-800 my-4"></div>
-            <a href="https://tdlid.github.io" target="_blank" class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">🌐 TDLiD Homepage</a>
-        </nav>
+<nav class="flex flex-col gap-1 flex-1">
+    <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
+    <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
+    <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
+    <button id="btn-leave" onclick="switchAdminTab('leave')" class="tab-btn px-4 py-3 text-left">🏖️ LEAVE MGT</button>
+    <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 SCHEDULE</button>
+    <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 STATISTICS</button>
+    <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ SETTINGS</button>
+    <button id="btn-groq" onclick="switchAdminTab('groq')" class="tab-btn px-4 py-3 text-left">🤖 GROQ CHAT</button>
+    
+    <div class="h-[1px] bg-slate-800 my-4"></div>
+    <a href="https://tdlid.github.io" target="_blank" class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">🌐 TDLiD Homepage</a>
+</nav>
         <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">🚪 Logout System</button>
     </aside>
 
@@ -345,7 +352,8 @@ content: `당신은 관리 시스템의 비서입니다.
             leave: 'admin_leave.html',
             schedule: 'admin_calendar.html',
             statistic: 'admin_statistic.html',
-            settings: 'admin_setting.html'
+            settings: 'admin_setting.html',
+groq: 'GroqChat.html'
         };
 
         try {
