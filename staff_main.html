@@ -38,7 +38,6 @@
         .fortune-bubble { margin-left: 0; margin-top: 10px; display: block; width: fit-content; }
         .fortune-bubble::after { display: none; }
     }
-/* 팝업 하단 버튼 스타일 */
 .modal-footer {
     display: flex;
     justify-content: space-between;
@@ -178,7 +177,6 @@
         </section>
     </div>
 </div>
-
 <script>
 function showFortune() {
     const fortunes = [
@@ -241,7 +239,7 @@ function getJakartaDate() {
     const db = firebase.database();
     if (user) {
         checkLeaveStatus(user);
-autoFillYesterdayLeave(user); // 여기에 추가
+autoFillYesterdayLeave(user); 
     }
     let now = getJakartaDate();
     let viewDate = new Date(now);
@@ -285,50 +283,33 @@ autoFillYesterdayLeave(user); // 여기에 추가
             }
         });
     }
-
-// --- 어제 날짜 자동 퇴근(설정값 기준) 입력 루틴 시작 ---
 function autoFillYesterdayLeave(uid) {
     const yesterday = getJakartaDate();
     yesterday.setDate(yesterday.getDate() - 1);
-    
     const y = yesterday.getFullYear();
     const m = String(yesterday.getMonth() + 1).padStart(2, '0');
     const d = String(yesterday.getDate()).padStart(2, '0');
     const yestStr = `${y}-${m}-${d}`;
-    const dayOfWeek = yesterday.getDay(); // 0:일, 6:토
-
-    // 1. 토요일(6) 또는 일요일(0)이면 중단
+    const dayOfWeek = yesterday.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) return;
-
-    // 2. 먼저 DB에서 설정된 autoLeave 시간을 가져옵니다.
     db.ref('settings/config/autoLeave').once('value', (configSnap) => {
-        const autoLeaveTime = configSnap.val() || "18:00"; // 설정값이 없으면 기본값 18:00 사용
-
+        const autoLeaveTime = configSnap.val() || "18:00";
         db.ref('attendance/' + yestStr).once('value', (snapshot) => {
             const allData = snapshot.val();
-            
-            // 3. 어제 날짜에 아무런 출근 기록이 없으면 중단
             if (!allData) return;
-
             const myData = allData[uid];
-
-            // 4. 내 기록이 객체 형태이고(출근은 했으나), leave(퇴근) 값이 없을 때만 실행
             if (myData && typeof myData === 'object' && myData.attend && !myData.leave) {
                 console.log(`Auto-filling leave for ${yestStr} with config time: ${autoLeaveTime}...`);
-                
                 db.ref(`attendance/${yestStr}/${uid}`).update({
-                    leave: autoLeaveTime // 하드코딩된 "18:00" 대신 변수 사용
+                    leave: autoLeaveTime 
                 }).then(() => {
                     console.log(`Successfully updated ${yestStr} leave to ${autoLeaveTime} for ${uid}`);
-                    // UI 업데이트를 위해 캘린더 리렌더링 (필요시)
                     if (typeof renderCalendar === 'function') renderCalendar();
                 });
             }
         });
     });
 }
-
-
     function updateLiveTime() {
         if (document.activeElement === timeInput) return;
         const liveNow = getJakartaDate();
@@ -352,43 +333,29 @@ function autoFillYesterdayLeave(uid) {
         if (!t) return false;
         return /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t);
     }
-
-
-// 1. 설정값들을 담을 변수 (기본값 설정)
 let config = {
     LLMAPIkey: "",
     autoLeave: "18:00",
     stdAttendance: "08:00"
 };
-
-// 2. Firebase에서 설정값 실시간 리스닝 
 db.ref('settings/config').on('value', (snap) => {
     const data = snap.val();
     if (data) {
         config = { ...config, ...data };
         console.log("Config loaded from DB:", config);
-        
-        // UI에 표준 출근 시간 반영
         const stdTimeElem = document.getElementById('displayStdTime');
         if (stdTimeElem) stdTimeElem.innerText = config.stdAttendance;
-        
-        // 전역 변수 standardTime도 업데이트 (기존 로직 호환용)
         standardTime = config.stdAttendance;
     }
 });
-
 let isAILoading = false; 
-
 async function fetchAIComment(type, time, userName) {
     if (!config.LLMAPIkey || isAILoading) {
         return getFallbackMessage(type);
     }
-
     isAILoading = true;
     const url = "https://api.groq.com/openai/v1/chat/completions";
     const isAttend = type === 'attend';
-
-    // 1. 자카르타 실시간 온도 가져오기
     let weatherInfo = "sedang bagus"; 
     try {
         const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true");
@@ -399,8 +366,6 @@ async function fetchAIComment(type, time, userName) {
     } catch (err) {
         console.error("Weather Fetch Error:", err);
     }
-
-    // 2. 프롬프트 구성 (날씨 + 명언 + 농담 포함)
     const prompt = isAttend 
         ? `[ATTENDANCE]
            User: ${userName}
@@ -419,7 +384,6 @@ async function fetchAIComment(type, time, userName) {
            2. Add one short Indonesian "Peribahasa" about resting or the value of effort.
            3. Add a short, witty office-related joke for a good laugh.
            4. Language: Indonesian Only.`;
-
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -436,15 +400,13 @@ async function fetchAIComment(type, time, userName) {
                     },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.8, // 창의적인 농담을 위해 온도를 약간 높임
+                temperature: 0.8, 
                 max_tokens: 250
             })
         });
-
         if (response.status === 429) return getFallbackMessage(type);
         const data = await response.json();
         return data.choices[0].message.content.trim();
-
     } catch (error) {
         console.error("Groq API Call Error:", error);
         return getFallbackMessage(type);
@@ -452,17 +414,11 @@ async function fetchAIComment(type, time, userName) {
         setTimeout(() => { isAILoading = false; }, 2000);
     }
 }
-
-/**
- * 에러 발생 시 출력될 기본 메시지 (인도네시아어)
- */
 function getFallbackMessage(type) {
     return type === 'attend' 
         ? "Selamat pagi! Semoga hari Anda menyenangkan! 😊" 
         : "Terima kasih atas kerja keras Anda hari ini! Selamat beristirahat! 👏";
 }
-
-// --- [추가] 멋진 AI 팝업창 띄우기 ---
 function showAIPopup(message) {
     const overlay = document.createElement('div');
     overlay.className = 'missing-modal-overlay animate-fadeIn';
@@ -480,23 +436,19 @@ function showAIPopup(message) {
     document.body.appendChild(overlay);
 }
 
-// --- [수정] 기존 handleAttendance 함수 ---
 window.handleAttendance = function (type) {
     if (!type || typeof type !== 'string') return;
     const btn = (type === 'attend') ? document.getElementById('btnIn') : document.getElementById('btnOut');
     if (btn.disabled) return;
-
     const rawTime = timeInput.value;
     if (!isValidTime(rawTime)) {
         alert("Please enter a valid time (HH:mm:ss).");
         return;
     }
-
     btn.disabled = true;
     btn.style.opacity = "0.5";
     const timeParts = rawTime.split(':');
     const storageTime = `${timeParts[0]}:${timeParts[1]}`;
-
     db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
         const currentData = snap.val() || {};
         if (type === 'attend' && currentData.attend) {
@@ -504,7 +456,6 @@ window.handleAttendance = function (type) {
             btn.disabled = false; btn.style.opacity = "1";
             return;
         }
-
         let finalVal = storageTime;
         if (type === 'attend') {
             if (!standardTime) { 
@@ -518,91 +469,85 @@ window.handleAttendance = function (type) {
             const inputMinutes = iHH * 60 + iMM;
             finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
         }
-
         if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
             db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
-// handleAttendance 함수 내부의 AI 호출 부분 수정
-.then(async () => {
-    // 버튼을 다시 활성화하기 전에 AI 메시지를 가져옵니다.
-    // 만약 이미 호출 중이라면 중복 호출하지 않습니다.
-    if (isAILoading) return; 
-
-    const aiMsg = await fetchAIComment(type, storageTime, user);
-    showAIPopup(aiMsg);
-})
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                });
+            .then(async () => {
+                if (isAILoading) return; 
+                const aiMsg = await fetchAIComment(type, storageTime, user);
+                showAIPopup(aiMsg);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            });
         } else {
             btn.disabled = false;
             btn.style.opacity = "1";
         }
     });
 };
-
 function updateAttendanceStats(data) {
-            const viewYear = viewDate.getFullYear();
-            const viewMonth = viewDate.getMonth() + 1;
-            let totalRecords = 0, lateCount = 0, attCount = 0, totalLeaveMinutes = 0, leaveRecordCount = 0;
-            Object.keys(data).forEach(dateStr => {
-                const [year, month] = dateStr.split('-').map(Number);
-                if (year === viewYear && month === viewMonth) {
-                    const rec = data[dateStr][user];
-                    if (rec && typeof rec === 'object' && rec.attend) {
-                        totalRecords++;
-                        if (rec.attend.includes("LATE")) lateCount++;
-                        else if (rec.attend.includes("ATT")) attCount++;
-                        if (rec.leave) {
-                            const timeMatch = rec.leave.match(/(\d{2}):(\d{2})/);
-                            if (timeMatch) {
-                                totalLeaveMinutes += (parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]));
-                                leaveRecordCount++;
-                            }
-                        }
+    const viewYear = viewDate.getFullYear();
+    const viewMonth = viewDate.getMonth() + 1;
+    let totalRecords = 0, lateCount = 0, attCount = 0, totalLeaveMinutes = 0, leaveRecordCount = 0;
+    Object.keys(data).forEach(dateStr => {
+        const [year, month] = dateStr.split('-').map(Number);
+        if (year === viewYear && month === viewMonth) {
+            const rec = data[dateStr][user];
+            if (rec && typeof rec === 'object' && rec.attend) {
+                totalRecords++;
+                if (rec.attend.includes("LATE")) lateCount++;
+                else if (rec.attend.includes("ATT")) attCount++;
+                if (rec.leave) {
+                    const timeMatch = rec.leave.match(/(\d{2}):(\d{2})/);
+                    if (timeMatch) {
+                        totalLeaveMinutes += (parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]));
+                        leaveRecordCount++;
                     }
-                }
-            });
-            const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
-            const ratioText = document.getElementById('lateRatioPercent');
-            const bar = document.getElementById('lateRatioBar');
-            const card = document.getElementById('weeklySummaryCard');
-            const statusText = document.getElementById('lateRatioStatus');
-            const warnIcon = document.getElementById('warningIcon');
-            const statCountsElem = document.getElementById('statCounts');
-            const avgLeaveElem = document.getElementById('avgLeaveTime');
-            if (ratioText) ratioText.innerText = `${ratio}%`;
-            if (bar && card && statusText && warnIcon) {
-                bar.style.width = `${ratio}%`;
-                if (ratio >= 50) {
-                    bar.className = "h-full bg-rose-500 transition-all duration-1000";
-                    card.classList.add('warning-pulse');
-                    statusText.innerText = "Aku terlambat!";
-                    statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase animate-blink";
-                    if (ratioText) ratioText.classList.add('animate-blink', 'text-rose-500');
-                    warnIcon.classList.remove('hidden');
-                } else {
-                    bar.className = "h-full bg-blue-500 transition-all duration-1000";
-                    card.classList.remove('warning-pulse');
-                    statusText.innerText = "GOOD STANDING";
-                    statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
-                    if (ratioText) {
-                        ratioText.classList.remove('animate-blink', 'text-rose-500');
-                        ratioText.classList.add('text-white');
-                    }
-                    warnIcon.classList.add('hidden');
-                }
-            }
-            if (statCountsElem) statCountsElem.innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
-            if (avgLeaveElem) {
-                if (leaveRecordCount > 0) {
-                    const avgTotal = Math.round(totalLeaveMinutes / leaveRecordCount);
-                    avgLeaveElem.innerText = `Avg Leave: ${String(Math.floor(avgTotal / 60)).padStart(2, '0')}:${String(avgTotal % 60).padStart(2, '0')}`;
-                } else {
-                    avgLeaveElem.innerText = `Avg Leave: --:--`;
                 }
             }
         }
+    });
+    const ratio = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
+    const ratioText = document.getElementById('lateRatioPercent');
+    const bar = document.getElementById('lateRatioBar');
+    const card = document.getElementById('weeklySummaryCard');
+    const statusText = document.getElementById('lateRatioStatus');
+    const warnIcon = document.getElementById('warningIcon');
+    const statCountsElem = document.getElementById('statCounts');
+    const avgLeaveElem = document.getElementById('avgLeaveTime');
+    if (ratioText) ratioText.innerText = `${ratio}%`;
+    if (bar && card && statusText && warnIcon) {
+        bar.style.width = `${ratio}%`;
+        if (ratio >= 50) {
+            bar.className = "h-full bg-rose-500 transition-all duration-1000";
+            card.classList.add('warning-pulse');
+            statusText.innerText = "Aku terlambat!";
+            statusText.className = "text-[10px] font-bold text-rose-500 mb-1 uppercase animate-blink";
+            if (ratioText) ratioText.classList.add('animate-blink', 'text-rose-500');
+            warnIcon.classList.remove('hidden');
+        } else {
+            bar.className = "h-full bg-blue-500 transition-all duration-1000";
+            card.classList.remove('warning-pulse');
+            statusText.innerText = "GOOD STANDING";
+            statusText.className = "text-[10px] font-bold text-slate-500 mb-1 uppercase";
+            if (ratioText) {
+                ratioText.classList.remove('animate-blink', 'text-rose-500');
+                ratioText.classList.add('text-white');
+            }
+            warnIcon.classList.add('hidden');
+        }
+    }
+    if (statCountsElem) statCountsElem.innerText = `T: ${totalRecords} | A: ${attCount} | L: ${lateCount}`;
+    if (avgLeaveElem) {
+        if (leaveRecordCount > 0) {
+            const avgTotal = Math.round(totalLeaveMinutes / leaveRecordCount);
+            avgLeaveElem.innerText = `Avg Leave: ${String(Math.floor(avgTotal / 60)).padStart(2, '0')}:${String(avgTotal % 60).padStart(2, '0')}`;
+        } else {
+            avgLeaveElem.innerText = `Avg Leave: --:--`;
+        }
+    }
+}
 db.ref('settings/config/stdAttendance').on('value', (snap) => {
     const val = snap.val();
     if (val) {
@@ -612,38 +557,38 @@ db.ref('settings/config/stdAttendance').on('value', (snap) => {
         if (btnIn) btnIn.disabled = false;
     }
 });
-        document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', weekday: 'short', timeZone: 'Asia/Jakarta'
-        }).toUpperCase();
-        window.toggleInputMode = function () {
-            const status = document.getElementById('specialStatus').value;
-            const timeInputWrapper = document.getElementById('timeInputWrapper');
-            const btnArea = document.getElementById('buttonArea');
-            const specialBtnArea = document.getElementById('specialButtonArea');
-            if (status !== "") {
-                timeInputWrapper.classList.add('opacity-30', 'pointer-events-none');
-                btnArea.classList.add('hidden');
-                specialBtnArea.classList.remove('hidden');
-            } else {
-                timeInputWrapper.classList.remove('opacity-30', 'pointer-events-none');
-                btnArea.classList.remove('hidden');
-                specialBtnArea.classList.add('hidden');
-            }
-        };
-        window.handleSpecialStatus = function () {
-            const status = document.getElementById('specialStatus').value;
-            if (!status) return;
-            if (confirm(`Set status to ${status}?`)) {
-                db.ref('attendance/' + todayStr + '/' + user).set(status)
-                    .then(() => {
-                        alert("Success.");
-                        document.getElementById('specialStatus').value = "";
-                        toggleInputMode();
-                    });
-            }
-        };
-        window.goToday = function () { viewDate = getJakartaDate(); renderCalendar(); };
-        window.changeMonth = function (offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
+document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', weekday: 'short', timeZone: 'Asia/Jakarta'
+}).toUpperCase();
+window.toggleInputMode = function () {
+    const status = document.getElementById('specialStatus').value;
+    const timeInputWrapper = document.getElementById('timeInputWrapper');
+    const btnArea = document.getElementById('buttonArea');
+    const specialBtnArea = document.getElementById('specialButtonArea');
+    if (status !== "") {
+        timeInputWrapper.classList.add('opacity-30', 'pointer-events-none');
+        btnArea.classList.add('hidden');
+        specialBtnArea.classList.remove('hidden');
+    } else {
+        timeInputWrapper.classList.remove('opacity-30', 'pointer-events-none');
+        btnArea.classList.remove('hidden');
+        specialBtnArea.classList.add('hidden');
+    }
+};
+window.handleSpecialStatus = function () {
+    const status = document.getElementById('specialStatus').value;
+    if (!status) return;
+    if (confirm(`Set status to ${status}?`)) {
+        db.ref('attendance/' + todayStr + '/' + user).set(status)
+            .then(() => {
+                alert("Success.");
+                document.getElementById('specialStatus').value = "";
+                toggleInputMode();
+            });
+    }
+};
+window.goToday = function () { viewDate = getJakartaDate(); renderCalendar(); };
+window.changeMonth = function (offset) { viewDate.setMonth(viewDate.getMonth() + offset); renderCalendar(); };
 function renderCalendar() {
     const year = viewDate.getFullYear(), month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
@@ -721,7 +666,6 @@ window.openEditPopup = function (dateStr, currentRec) {
     if (document.getElementById('editPopup')) return;
     let attVal = "", leaveVal = "", isAttReadOnly = false, isLeaveInfo = false, leaveTypeText = "";
     const leaveCodes = ["PEL", "ANL", "HAL", "SIL", "SPL", "WO"];
-    
     if (currentRec) {
         if (typeof currentRec === 'string') {
             if (leaveCodes.includes(currentRec)) { isLeaveInfo = true; leaveTypeText = currentRec; }
@@ -747,16 +691,13 @@ window.openEditPopup = function (dateStr, currentRec) {
             }
         }
     }
-
     const overlay = document.createElement('div');
     overlay.id = 'editPopup';
     overlay.className = 'edit-modal-overlay animate-fadeIn';
-    
     let footerButtons = isLeaveInfo ? 
         `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>` :
         `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
          <button onclick="saveEditRecord('${dateStr}', ${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
-
     overlay.innerHTML = `
         <div class="edit-modal">
             <div class="mb-4 text-center">
@@ -785,98 +726,73 @@ window.openEditPopup = function (dateStr, currentRec) {
         </div>`;
     document.body.appendChild(overlay);
 };
-
-// --- 기존 코드 수정 및 통합 ---
-
-    window.deleteLeaveTime = function (dateStr) {
-        if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
-
-        const user = sessionStorage.getItem('loggedInUser');
-        const db = firebase.database();
-        
-        db.ref(`attendance/${dateStr}/${user}/leave`).remove()
+window.deleteLeaveTime = function (dateStr) {
+    if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
+    const user = sessionStorage.getItem('loggedInUser');
+    const db = firebase.database();
+    db.ref(`attendance/${dateStr}/${user}/leave`).remove()
+        .then(() => {
+            alert("Leave time has been deleted.");
+            const popup = document.getElementById('editPopup');
+            if (popup) popup.remove();
+            if (typeof renderCalendar === 'function') renderCalendar();
+        })
+        .catch((error) => {
+            console.error("Delete failed:", error);
+            alert("Failed to delete record.");
+        });
+};
+window.saveEditRecord = function (dateStr, isAttReadOnly) {
+    const user = sessionStorage.getItem('loggedInUser');
+    const newAtt = document.getElementById('editAttTime').value;
+    const newLeave = document.getElementById('editLeaveTime').value;
+    const updateData = {};
+    if (!isAttReadOnly && newAtt) {
+        if (typeof standardTime === 'undefined') { alert("Standard time loading..."); return; }
+        const [iHH, iMM] = newAtt.split(':').map(Number);
+        const [sHH, sMM] = standardTime.split(':').map(Number);
+        const stdMinutes = sHH * 60 + sMM;
+        const inputMinutes = iHH * 60 + iMM;
+        updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
+    }
+    if (newLeave) updateData.leave = newLeave;
+    if (Object.keys(updateData).length === 0) { alert("No changes to save."); return; }
+    if (confirm(`Save changes for ${dateStr}?`)) {
+        firebase.database().ref('attendance/' + dateStr + '/' + user).update(updateData)
             .then(() => {
-                alert("Leave time has been deleted.");
-                const popup = document.getElementById('editPopup');
-                if (popup) popup.remove();
-                // 캘린더 리렌더링 로직 필요 시 추가
+                alert("Record updated successfully.");
+                document.getElementById('editPopup').remove();
                 if (typeof renderCalendar === 'function') renderCalendar();
-            })
-            .catch((error) => {
-                console.error("Delete failed:", error);
-                alert("Failed to delete record.");
-            });
-    };
-
-    window.saveEditRecord = function (dateStr, isAttReadOnly) {
-        const user = sessionStorage.getItem('loggedInUser');
-        const newAtt = document.getElementById('editAttTime').value;
-        const newLeave = document.getElementById('editLeaveTime').value;
-        const updateData = {};
-        
-        if (!isAttReadOnly && newAtt) {
-            if (typeof standardTime === 'undefined') { alert("Standard time loading..."); return; }
-            const [iHH, iMM] = newAtt.split(':').map(Number);
-            const [sHH, sMM] = standardTime.split(':').map(Number);
-            const stdMinutes = sHH * 60 + sMM;
-            const inputMinutes = iHH * 60 + iMM;
-            updateData.attend = (inputMinutes <= stdMinutes) ? `ATT(${newAtt})` : `LATE(${newAtt})`;
-        }
-        if (newLeave) updateData.leave = newLeave;
-        
-        if (Object.keys(updateData).length === 0) { alert("No changes to save."); return; }
-        
-        if (confirm(`Save changes for ${dateStr}?`)) {
-            firebase.database().ref('attendance/' + dateStr + '/' + user).update(updateData)
-                .then(() => {
-                    alert("Record updated successfully.");
-                    document.getElementById('editPopup').remove();
-                    if (typeof renderCalendar === 'function') renderCalendar();
-                }).catch(err => alert("Error: " + err.message));
-        }
-    };
-
-// --- [수정] Work Report 누락 체크 로직 (WarnFlag 상태 확인 추가) ---
+            }).catch(err => alert("Error: " + err.message));
+    }
+};
 async function checkMissingRecords() {
     const user = sessionStorage.getItem('loggedInUser');
     if (!user) return;
-
     const db = firebase.database();
-
     try {
-        // 1. 해당 유저의 WarnFlag 상태 먼저 확인
         const userSnap = await db.ref(`users/${user}/WarnFlag`).once('value');
         const warnFlag = userSnap.val();
-
-        // WarnFlag가 "off"이면 리포트 체크 로직을 실행하지 않고 종료
         if (warnFlag === "off") {
             console.log(`Report check skipped: ${user}'s WarnFlag is OFF.`);
             return;
         }
-
-        // 2. 오늘 하루 안보기 체크 (localStorage)
         const todayStr = getJakartaDate().toISOString().split('T')[0];
         if (localStorage.getItem('hideReportPopup') === todayStr) {
             console.log("Report popup is hidden for today.");
             return;
         }
-
         const missingInfo = [];
         const today = getJakartaDate();
-
-        // 3. 최근 6일간 리포트 존재 여부 검사
         for (let i = 1; i <= 6; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
-            
-            const dayOfWeek = checkDate.getDay(); // 0:일, 6:토
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue; // 주말 제외
-
+            const dayOfWeek = checkDate.getDay(); 
+            if (dayOfWeek === 0 || dayOfWeek === 6) continue; 
             const y = checkDate.getFullYear();
             const m = String(checkDate.getMonth() + 1).padStart(2, '0');
             const d = String(checkDate.getDate()).padStart(2, '0');
             const dStr = `${y}-${m}-${d}`;
-
             const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
             if (!snap.exists()) {
                 const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
@@ -886,8 +802,6 @@ async function checkMissingRecords() {
                 });
             }
         }
-
-        // 4. 누락 데이터가 있을 경우에만 팝업 표시
         if (missingInfo.length > 0) {
             showMissingPopup(missingInfo);
         }
@@ -895,63 +809,51 @@ async function checkMissingRecords() {
         console.error("Report check / WarnFlag fetch error:", err);
     }
 }
-
-    function showMissingPopup(missingInfo) {
-        if (document.getElementById('missingPopup')) return;
-        const overlay = document.createElement('div');
-        overlay.id = 'missingPopup';
-        overlay.className = 'missing-modal-overlay animate-fadeIn';
-        
-        let listHtml = missingInfo.map(info => `
-            <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
-                <div class="text-left">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
-                    <p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${info.status}</span></p>
-                </div>
-                <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-            </div>`).join('');
-
-        overlay.innerHTML = `
-            <div class="missing-modal text-center">
-                <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                    <span class="text-2xl">✍️</span>
-                </div>
-                <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3>
-                <p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p>
-                <div class="flex items-center gap-2 mb-6">
-                    <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span>
-                    <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span>
-                </div>
-                <div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
-                
-                <div class="space-y-3">
-                    <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button>
-                    <button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button>
-                </div>
-            </div>`;
-        document.body.appendChild(overlay);
-    }
-
-    // [추가] 오늘 하루 안보기 로직 함수
-    window.hidePopupToday = function() {
-        const todayStr = getJakartaDate().toISOString().split('T')[0];
-        localStorage.setItem('hideReportPopup', todayStr);
-        const popup = document.getElementById('missingPopup');
-        if (popup) popup.remove();
-        console.log("Popup disabled until tomorrow.");
-    };
-
-
-    // --- 실행부 ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // 데이터 로드 후 누락 리포트 체크 실행
-        setTimeout(() => {
-            if (typeof showFortune === 'function') showFortune();
-            checkMissingRecords(); // 리포트 체크 함수 호출
-        }, 800);
-    });
-
-    if (typeof renderCalendar === 'function') renderCalendar();
-
+function showMissingPopup(missingInfo) {
+    if (document.getElementById('missingPopup')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'missingPopup';
+    overlay.className = 'missing-modal-overlay animate-fadeIn';
+    let listHtml = missingInfo.map(info => `
+        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center">
+            <div class="text-left">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${info.date}</p>
+                <p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${info.status}</span></p>
+            </div>
+            <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+        </div>`).join('');
+    overlay.innerHTML = `
+        <div class="missing-modal text-center">
+            <div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                <span class="text-2xl">✍️</span>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3>
+            <p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p>
+            <div class="flex items-center gap-2 mb-6">
+                <span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span>
+                <span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span>
+            </div>
+            <div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div>
+            <div class="space-y-3">
+                <button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button>
+                <button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+}
+window.hidePopupToday = function() {
+    const todayStr = getJakartaDate().toISOString().split('T')[0];
+    localStorage.setItem('hideReportPopup', todayStr);
+    const popup = document.getElementById('missingPopup');
+    if (popup) popup.remove();
+    console.log("Popup disabled until tomorrow.");
+};
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        if (typeof showFortune === 'function') showFortune();
+        checkMissingRecords();
+    }, 800);
+});
+if (typeof renderCalendar === 'function') renderCalendar();
     })();
 </script>

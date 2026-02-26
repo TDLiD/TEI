@@ -1,213 +1,344 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    .stat-container { animation: fadeIn 0.5s ease-out; color: #f1f5f9; }
-    .glass-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 2rem; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
-    
-    /* 기존 스타일 유지 */
-    .chart-box { height: 160px; position: relative; margin-bottom: 0.5rem; }
-    .task-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px; border-radius: 10px; }
-    .indicator { width: 3px; height: 18px; border-radius: 10px; flex-shrink: 0; margin-top: 2px; }
-    .ind-new { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-    .ind-repeat { background: #3b82f6; }
-    .type-label { font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; margin-bottom: 2px; display: inline-block; }
-    .label-new { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-    .label-repeat { color: #60a5fa; background: rgba(59, 130, 246, 0.1); }
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
+    :root { --glass: rgba(15, 23, 42, 0.7); --accent: #3b82f6; }
+    body { background: #020617; color: #f8fafc; font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
 
-    /* 신규 추가: 라이프사이클 타임라인 스타일 */
-    .lifecycle-box { margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
-    .track-item { margin-bottom: 12px; }
-    .track-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .track-title { font-size: 10px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-    .track-days { font-size: 9px; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 1px 5px; border-radius: 4px; }
-    .track-bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; position: relative; }
-    .track-bar-fill { position: absolute; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 10px; transition: width 1s ease-in-out; }
-    .track-dates { display: flex; justify-content: space-between; font-size: 8px; color: #64748b; margin-top: 4px; font-family: monospace; }
+    /* Glass Effect */
+    .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.5rem; }
+    .glass-hover:hover { border-color: var(--accent); transform: translateY(-2px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    /* Heatmap Square */
+    .hp-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(30, 41, 59, 0.5); }
+    .hp-1 { background: #1e3a8a; } .hp-2 { background: #2563eb; } .hp-3 { background: #3b82f6; } .hp-4 { background: #60a5fa; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+
+    @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .animate-pulse-soft { animation: pulse-soft 2s infinite; }
 </style>
 
-<div class="stat-container max-w-[1400px] mx-auto pb-20 p-4">
-    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="max-w-[1600px] mx-auto p-4 md:p-10 space-y-8">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-            <h1 class="text-3xl font-black italic uppercase tracking-tighter">AI Work <span class="text-blue-500">Intelligence</span> v3.0</h1>
-            <p class="text-slate-500 text-[11px] font-bold tracking-[0.4em] uppercase mt-1">Lifecycle Tracking & Semantic Analysis Engine</p>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h1 class="text-3xl font-black tracking-tighter uppercase italic">Work <span class="text-blue-500">Core</span> <span class="text-[10px] bg-slate-800 px-2 py-1 rounded ml-2">PRO v4.0</span></h1>
+            </div>
+            <p class="text-slate-500 text-xs font-bold tracking-[0.3em] uppercase">Intelligence Engine & Predictive Analytics</p>
         </div>
-        <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
-            <span class="text-[9px] text-slate-500 block uppercase font-black">System status</span>
-            <span class="text-xs text-emerald-500 font-bold animate-pulse">● DEEP ANALYSIS ACTIVE</span>
+
+        <div class="glass p-2 flex items-center gap-1 shadow-2xl border-slate-800">
+            <select id="staffFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400 transition-colors">
+                <option value="all">EVERYONE</option>
+            </select>
+            <div class="w-px h-4 bg-slate-800 mx-2"></div>
+            <select id="yearFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-2 py-2 outline-none cursor-pointer hover:text-blue-400"></select>
+            <select id="monthFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400">
+                <option value="all">FULL YEAR</option>
+                <option value="01">JAN</option><option value="02">FEB</option><option value="03">MAR</option>
+                <option value="04">APR</option><option value="05">MAY</option><option value="06">JUN</option>
+                <option value="07">JUL</option><option value="08">AUG</option><option value="09">SEP</option>
+                <option value="10">OCT</option><option value="11">NOV</option><option value="12">DEC</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div class="glass p-6 glass-hover relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"/></svg></div>
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Total Output</p>
+            <div class="text-4xl font-black text-white" id="kpi-total">0</div>
+        </div>
+        <div class="glass p-6 glass-hover border-l-4 border-l-emerald-500">
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Innovation Rate</p>
+            <div class="text-4xl font-black text-emerald-400" id="kpi-innovation">0%</div>
+        </div>
+        <div class="glass p-6 glass-hover border-l-4 border-l-blue-500">
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Intensity Avg</p>
+            <div class="text-4xl font-black text-blue-400" id="kpi-velocity">0.0</div>
+        </div>
+        <div class="glass p-6 glass-hover border-l-4 border-l-purple-500">
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Active Force</p>
+            <div class="text-4xl font-black text-purple-400" id="kpi-active">0</div>
         </div>
     </div>
 
-    <div id="intelligenceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="col-span-full py-20 text-center glass-card border-dashed border-slate-700">
-            <p class="text-slate-500 font-black tracking-widest uppercase text-xs animate-pulse">Processing Staff Reports & Mapping Life-cycles...</p>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div class="xl:col-span-2 space-y-8">
+            <div class="glass p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
+                        <span class="w-1 h-4 bg-blue-500"></span> Production Dynamics
+                    </h3>
+                    <div id="heatmap" class="flex gap-1"></div> </div>
+                <div class="h-[400px]">
+                    <canvas id="mainTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass p-6">
+                    <h3 class="font-black text-[10px] uppercase tracking-widest mb-6 text-slate-400 italic">Work Pattern Radar</h3>
+                    <div class="h-[250px] flex justify-center">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass p-6 overflow-hidden">
+                    <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 text-slate-400 italic">Task Distribution</h3>
+                    <div id="taskList" class="space-y-3 max-h-[250px] overflow-y-auto pr-2 text-[11px]"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div class="glass p-8 bg-gradient-to-br from-slate-900/50 to-transparent">
+                <h3 class="font-black text-xs uppercase tracking-widest mb-6 italic text-blue-400">Power Rankings</h3>
+                <div id="staffRanking" class="space-y-6"></div>
+            </div>
+
+            <div class="glass p-6 border-t border-rose-500/20">
+                <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 italic flex items-center gap-2">
+                    <span class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span> Anomaly Detection
+                </h3>
+                <div id="riskScan" class="space-y-2 text-[10px]">
+                    <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/10 text-rose-200">
+                        Scanning for workflow bottlenecks...
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
 (function() {
-    // 1. 전처리 (불용어 제거 및 토큰화)
-    function getCleanTokens(text) {
-        if (!text) return new Set();
-        const stopWords = ['january','february','march','april','may','june','july','august','september','october','november','december','monday','tuesday','wednesday','thursday','friday','saturday','sunday','done','check','todo'];
-        const tokens = text.toLowerCase()
-            .replace(/[0-9]차|일차|요일|[0-9]월|[0-9]일/g, '')
-            .replace(/[^a-zA-Z가-힣\s]/g, ' ')
-            .split(/\s+/)
-            .filter(w => w.length > 1 && !stopWords.includes(w));
-        return new Set(tokens);
+    let dashboardData = null;
+    let mainChart = null;
+    let radarChart = null;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+    // Init Filters
+    const yearSelect = document.getElementById('yearFilter');
+    for (let i = 0; i < 3; i++) {
+        const y = currentYear - i;
+        const opt = document.createElement('option');
+        opt.value = y; opt.innerText = y;
+        yearSelect.appendChild(opt);
     }
+    document.getElementById('monthFilter').value = currentMonth;
 
-    // 2. 업무 생애주기 분석 함수
-    function calculateLifeCycle(allReports) {
-        const sortedDates = Object.keys(allReports).sort();
-        const taskMap = {}; // 핵심어 조합을 키로 사용
+    function processData(data, filterStaff, selYear, selMonth) {
+        const stats = {
+            total: 0, innovation: 0, days: {}, staff: {}, tasks: {},
+            radar: { innovation: 0, consistency: 0, volume: 0, maintenance: 0, speed: 0 }
+        };
+        const prefix = selMonth === 'all' ? `${selYear}` : `${selYear}-${selMonth}`;
 
-        sortedDates.forEach(date => {
-            const lines = (allReports[date].todo || "").split('\n').filter(l => l.trim().length > 4);
-            lines.forEach(line => {
-                const cleanLine = line.replace(/^[•\-\s]+|done|Done/g, '').trim();
-                const tokens = Array.from(getCleanTokens(cleanLine)).sort().join('|');
-                if (!tokens) return;
+        Object.keys(data).sort().forEach(date => {
+            if (!date.startsWith(prefix)) return;
+            Object.keys(data[date]).forEach(person => {
+                if (filterStaff !== 'all' && person !== filterStaff) return;
+                
+                const lines = (data[date][person].todo || "").split('\n').filter(l => l.trim().length > 2);
+                if (!stats.staff[person]) stats.staff[person] = { t: 0, n: 0, activeDays: new Set() };
+                if (!stats.days[date]) stats.days[date] = 0;
 
-                if (!taskMap[tokens]) {
-                    taskMap[tokens] = { title: cleanLine, start: date, end: date, count: 1 };
-                } else {
-                    taskMap[tokens].end = date;
-                    taskMap[tokens].count++;
-                }
-            });
-        });
+                stats.staff[person].activeDays.add(date);
 
-        return Object.values(taskMap)
-            .map(t => {
-                const start = new Date(t.start);
-                const end = new Date(t.end);
-                const duration = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
-                const isActive = t.end === sortedDates[sortedDates.length - 1];
-                return { ...t, duration, isActive };
-            })
-            .filter(t => t.duration > 1 || t.isActive) // 하루짜리 단발성 업무 제외
-            .sort((a, b) => new Date(b.end) - new Date(a.end)) // 최신 종료순
-            .slice(0, 3); // 상위 3개 프로젝트만 표시
-    }
+                lines.forEach(line => {
+                    stats.total++;
+                    stats.days[date]++;
+                    stats.staff[person].t++;
+                    
+                    const isNew = !line.includes('유지') && !line.includes('반복');
+                    if (isNew) { stats.innovation++; stats.staff[person].n++; }
 
-    // 3. 메인 분석 엔진
-    function analyzeAll(data) {
-        const stats = {};
-        for(const date in data) {
-            for(const staff in data[date]) {
-                if(!stats[staff]) stats[staff] = {};
-                stats[staff][date] = data[date][staff];
-            }
-        }
-
-        const grid = document.getElementById('intelligenceGrid');
-        grid.innerHTML = '';
-
-        Object.keys(stats).forEach((name, idx) => {
-            const staffHistory = stats[name];
-            const sortedDates = Object.keys(staffHistory).sort();
-            const lastDate = sortedDates[sortedDates.length - 1];
-            
-            // 신규/반복 분석
-            const pastContext = new Set();
-            sortedDates.slice(0, -1).forEach(d => {
-                getCleanTokens(staffHistory[d].todo).forEach(t => pastContext.add(t));
-            });
-
-            const currentTasks = staffHistory[lastDate].todo.split('\n').filter(l => l.trim().length > 4).map(line => {
-                const tokens = getCleanTokens(line);
-                const intersection = Array.from(tokens).filter(x => pastContext.has(x));
-                const isRepeat = tokens.size > 0 && (intersection.length / tokens.size) > 0.2;
-                return { text: line.replace(/^[•\-\s]+/, ''), type: isRepeat ? 'REPEAT' : 'NEW' };
-            });
-
-            const newCount = currentTasks.filter(t => t.type === 'NEW').length;
-            const total = currentTasks.length || 1;
-            const newPercent = Math.round((newCount / total) * 100);
-
-            // 생애주기 분석
-            const lifecycle = calculateLifeCycle(staffHistory);
-
-            const canvasId = `chart_${idx}`;
-            const card = `
-                <div class="glass-card border-t-4 ${newPercent > 50 ? 'border-t-emerald-500' : 'border-t-blue-500'} p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-xl font-black text-white italic tracking-tighter">${name}</h3>
-                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${lastDate}</p>
-                        </div>
-                        <span class="text-[9px] font-black ${newPercent > 50 ? 'text-emerald-400' : 'text-blue-400'} uppercase">v3.0 Engine</span>
-                    </div>
-
-                    <div class="chart-box">
-                        <canvas id="${canvasId}"></canvas>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span class="text-2xl font-black text-white">${newPercent}%</span>
-                            <span class="text-[8px] text-slate-500 font-black uppercase">Innovation</span>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 bg-slate-900/40 rounded-xl p-3 overflow-y-auto max-h-[140px] custom-scrollbar mb-4">
-                        <p class="text-[8px] font-black text-slate-600 uppercase mb-2 tracking-widest">Daily Pattern</p>
-                        ${currentTasks.map(t => `
-                            <div class="task-row">
-                                <div class="indicator ${t.type === 'NEW' ? 'ind-new' : 'ind-repeat'}"></div>
-                                <div class="flex-1 min-w-0">
-                                    <span class="type-label ${t.type === 'NEW' ? 'label-new' : 'label-repeat'}">${t.type}</span>
-                                    <p class="text-[10px] text-slate-300 truncate italic">"${t.text}"</p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="lifecycle-box">
-                        <p class="text-[8px] font-black text-slate-600 uppercase mb-3 tracking-widest">Project Lifecycle (Ongoing)</p>
-                        ${lifecycle.map(t => `
-                            <div class="track-item">
-                                <div class="track-header">
-                                    <span class="track-title">${t.title}</span>
-                                    <span class="track-days">${t.duration} DAYS</span>
-                                </div>
-                                <div class="track-bar-bg">
-                                    <div class="track-bar-fill" style="width: ${Math.min(100, (t.duration / 14) * 100)}%"></div>
-                                </div>
-                                <div class="track-dates">
-                                    <span>${t.start}</span>
-                                    <span class="${t.isActive ? 'text-emerald-500 font-bold' : ''}">${t.isActive ? 'PROCEEDING' : t.end}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            grid.innerHTML += card;
-
-            setTimeout(() => {
-                const ctx = document.getElementById(canvasId).getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [newPercent, 100 - newPercent],
-                            backgroundColor: [newPercent > 50 ? '#10b981' : '#3b82f6', 'rgba(255,255,255,0.05)'],
-                            borderWidth: 0,
-                            cutout: '85%'
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                    const taskName = line.replace(/[0-9\-\.\>]/g, '').trim().substring(0, 18);
+                    if (taskName.length > 2) {
+                        stats.tasks[taskName] = (stats.tasks[taskName] || 0) + 1;
+                    }
                 });
-            }, 0);
+            });
+        });
+
+        // Calc Radar for selected view
+        const dayCount = Object.keys(stats.days).length || 1;
+        stats.radar.innovation = (stats.innovation / (stats.total || 1)) * 100;
+        stats.radar.volume = Math.min(100, (stats.total / (dayCount * 5)) * 100);
+        stats.radar.consistency = (dayCount / 30) * 100;
+        stats.radar.speed = Math.min(100, (stats.total / dayCount) * 10);
+        stats.radar.maintenance = 100 - stats.radar.innovation;
+
+        return stats;
+    }
+
+    window.refreshDashboard = function() {
+        if (!dashboardData) return;
+        const s = document.getElementById('staffFilter').value;
+        const y = document.getElementById('yearFilter').value;
+        const m = document.getElementById('monthFilter').value;
+        const stats = processData(dashboardData, s, y, m);
+
+        updateKPIs(stats);
+        updateCharts(stats, m === 'all');
+        updateStaffRanking(stats);
+        renderHeatmap(stats);
+        renderTasks(stats);
+    };
+
+    function updateKPIs(stats) {
+        animateValue("kpi-total", stats.total);
+        animateValue("kpi-innovation", Math.round((stats.innovation/(stats.total||1))*100), "%");
+        animateValue("kpi-velocity", (stats.total / (Object.keys(stats.days).length || 1)).toFixed(1));
+        animateValue("kpi-active", Object.keys(stats.staff).length);
+    }
+
+    function updateCharts(stats, isYearly) {
+        // Line Chart
+        const labels = Object.keys(stats.days).sort();
+        const chartLabels = labels.map(l => isYearly ? l.split('-')[1]+'월' : l.split('-')[2]+'일');
+        const chartData = labels.map(l => stats.days[l]);
+
+        if (mainChart) mainChart.destroy();
+        mainChart = new Chart(document.getElementById('mainTrendChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Workflow',
+                    data: chartData,
+                    borderColor: '#3b82f6',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569' } }
+                }
+            }
+        });
+
+        // Radar Chart
+        if (radarChart) radarChart.destroy();
+        radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
+            type: 'radar',
+            data: {
+                labels: ['Innovation', 'Consistency', 'Volume', 'Speed', 'Stability'],
+                datasets: [{
+                    data: [stats.radar.innovation, stats.radar.consistency, stats.radar.volume, stats.radar.speed, stats.radar.maintenance],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255,255,255,0.05)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        pointLabels: { color: '#94a3b8', font: { size: 9 } },
+                        ticks: { display: false, max: 100 }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
         });
     }
 
+    function renderHeatmap(stats) {
+        const container = document.getElementById('heatmap');
+        container.innerHTML = '';
+        Object.values(stats.days).slice(-20).forEach(count => {
+            const level = count > 10 ? 'hp-4' : count > 6 ? 'hp-3' : count > 3 ? 'hp-2' : count > 0 ? 'hp-1' : '';
+            const cell = document.createElement('div');
+            cell.className = `hp-cell ${level}`;
+            container.appendChild(cell);
+        });
+    }
+
+    function updateStaffRanking(stats) {
+        const html = Object.entries(stats.staff)
+            .sort((a,b) => b[1].t - a[1].t)
+            .slice(0, 5)
+            .map(([name, d]) => {
+                const perc = Math.round((d.n / d.t) * 100);
+                return `
+                <div>
+                    <div class="flex justify-between text-[11px] mb-2 font-bold">
+                        <span class="text-slate-200 uppercase">${name}</span>
+                        <span class="text-blue-400">${d.t} Tasks</span>
+                    </div>
+                    <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500" style="width: ${perc}%"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        document.getElementById('staffRanking').innerHTML = html || '<p class="text-slate-600 text-xs italic">No data</p>';
+    }
+
+    function renderTasks(stats) {
+        const sorted = Object.entries(stats.tasks).sort((a,b) => b[1] - a[1]).slice(0, 10);
+        document.getElementById('taskList').innerHTML = sorted.map(([name, count]) => `
+            <div class="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors group">
+                <span class="text-slate-400 group-hover:text-slate-200 truncate pr-4">${name}...</span>
+                <span class="bg-slate-800 px-2 py-0.5 rounded text-[9px] text-blue-400 font-bold">${count}</span>
+            </div>
+        `).join('');
+    }
+
+    function animateValue(id, end, suffix = "") {
+        const obj = document.getElementById(id);
+        if (!obj) return;
+        let start = 0;
+        const duration = 1000;
+        const startTime = performance.now();
+        function update(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const val = parseFloat(start) + (parseFloat(end) - parseFloat(start)) * progress;
+            obj.innerText = (id.includes('velocity') ? val.toFixed(1) : Math.floor(val)) + suffix;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+    }
+
+    // Firebase Integration
     if (window.db) {
-        db.ref('reports').once('value').then(snap => analyzeAll(snap.val() || {}));
+        db.ref('reports').on('value', snap => {
+            dashboardData = snap.val() || {};
+            const staffs = new Set();
+            Object.values(dashboardData).forEach(d => Object.keys(d).forEach(s => staffs.add(s)));
+            const sel = document.getElementById('staffFilter');
+            const current = sel.value;
+            sel.innerHTML = '<option value="all">EVERYONE</option>';
+            staffs.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s; opt.innerText = s.toUpperCase();
+                sel.appendChild(opt);
+            });
+            sel.value = current || 'all';
+            refreshDashboard();
+        });
     }
 })();
 </script>
