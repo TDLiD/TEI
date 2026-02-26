@@ -115,7 +115,7 @@ const pB = document.querySelectorAll('.pc-tab-btn'); const mB = document.querySe
 pB.forEach(b => b.classList.remove('tab-active')); mB.forEach(b => b.classList.remove('mobile-tab-active'));
 const i = { dash:0, work:1, schedule:2, leave:3, statistic:4, setting:5 }[t];
 if(i !== undefined) { if(pB[i]) pB[i].classList.add('tab-active'); if(mB[i]) mB[i].classList.add('mobile-tab-active'); }
-const m = { dash:'staff_main.html', work:'staff_report.html', schedule:'staff_calendar.html', leave:'staff_leave.html', statistic:'staff_statistic.html', setting:'staff_setting.html' };
+const m = { dash:'staff_main.html', work:'staff_report.html', schedule:'staff_calendar.html', leave:'staff_leave.html', statistic:'staff_statistic.html', setting:'staff_setting.html', all: 'staff_allatt.html' };
 loadHTML(m[t], () => { if(t==='leave' && window.initLeavePage) window.initLeavePage(); if(t==='dash' && window.initDashboard) window.initDashboard(); });
 }
 window.loadHTML = async function(u, c) {
