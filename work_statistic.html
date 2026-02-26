@@ -322,22 +322,41 @@
         requestAnimationFrame(update);
     }
 
-    // Firebase Integration
-    if (window.db) {
+if (window.db) {
+        // 기존 리스너 중복 방지를 위해 off() 호출 권장
+        db.ref('reports').off('value'); 
         db.ref('reports').on('value', snap => {
             dashboardData = snap.val() || {};
+            
             const staffs = new Set();
-            Object.values(dashboardData).forEach(d => Object.keys(d).forEach(s => staffs.add(s)));
+            Object.values(dashboardData).forEach(d => {
+                if(d) Object.keys(d).forEach(s => staffs.add(s));
+            });
+
             const sel = document.getElementById('staffFilter');
-            const current = sel.value;
+            
+            // [방어 코드] 요소가 존재하지 않으면 실행 중단 (에러 방지 핵심)
+            if (!sel) return; 
+
+            const current = sel.value; 
+            
             sel.innerHTML = '<option value="all">EVERYONE</option>';
             staffs.forEach(s => {
                 const opt = document.createElement('option');
-                opt.value = s; opt.innerText = s.toUpperCase();
+                opt.value = s; 
+                opt.innerText = s.toUpperCase();
                 sel.appendChild(opt);
             });
-            sel.value = current || 'all';
-            refreshDashboard();
+            
+            if (Array.from(sel.options).some(opt => opt.value === current)) {
+                sel.value = current;
+            } else {
+                sel.value = 'all';
+            }
+            
+            if (typeof window.refreshDashboard === 'function') {
+                window.refreshDashboard();
+            }
         });
     }
 })();
