@@ -28,7 +28,7 @@
         }
         .profile-picker-item { transition: all 0.2s; border: 2px solid transparent; }
         .profile-picker-item:hover { transform: scale(1.05); border-color: #3b82f6; }
-        .admin-profile-img-container { width: 60px !important; height: 60px !important; transition: all 0.3s ease; }
+        .admin-profile-img-container { width: 45px !important; height: 45px !important; transition: all 0.3s ease; }
         @media (min-width: 1024px) { .admin-profile-img-container { width: 100px !important; height: 100px !important; } }
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -41,15 +41,24 @@
                 <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
                     <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
                 </div>
-                <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[10px] shadow-lg">✏️</div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
             </div>
-            <h1 class="text-md font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+            <h1 class="text-sm font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
         </div>
         <div class="flex items-center gap-4">
             <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
             <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
         </div>
     </header>
+    <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-7 h-[70px] px-2 shadow-2xl">
+        <button onclick="switchAdminTab('dashboard')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">📊</span><span>대시보드</span></button>
+        <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">👤</span><span>근태</span></button>
+        <button onclick="switchAdminTab('reports')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">📝</span><span>업무</span></button>
+        <button onclick="switchAdminTab('leave')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">🏖️</span><span>휴가</span></button>
+        <button onclick="switchAdminTab('schedule')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">📅</span><span>스케줄</span></button>
+        <button onclick="switchAdminTab('statistic')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">📈</span><span>통계</span></button>
+        <button onclick="switchAdminTab('settings')" class="flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-slate-500"><span class="text-xl">⚙️</span><span>설정</span></button>
+    </nav>
     <aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
         <div class="mb-10">
             <h1 class="text-2xl font-black italic mb-6">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
@@ -253,6 +262,10 @@
         area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
         document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+        const mBtns = document.querySelectorAll('.mobile-nav button');
+        mBtns.forEach(b => b.classList.remove('mobile-tab-active'));
+        const idx = { dashboard:0, attendance:1, reports:2, leave:3, schedule:4, statistic:5, settings:6 }[tab];
+        if(idx !== undefined) mBtns[idx].classList.add('mobile-tab-active');
         const map = { dashboard: 'admin_dashboard.html', attendance: 'admin_attendance.html', reports: 'admin_report.html', leave: 'admin_leave.html', schedule: 'admin_calendar.html', statistic: 'admin_statistic.html', settings: 'admin_setting.html' };
         try {
             const res = await fetch(map[tab]);
