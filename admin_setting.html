@@ -417,10 +417,13 @@ function loadStaffList() {
                     </select>
                     `}
                 </td>
-                <td class="p-4 text-right space-x-2 block md:table-cell">
-                    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition font-bold">SAVE</button>
-                    ${isAdmin ? '' : `<button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition font-bold">DEL</button>`}
-                </td>
+<td class="p-4 text-right space-x-1 block md:table-cell">
+    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition font-bold uppercase">Save</button>
+    ${isAdmin ? '' : `
+        <button onclick="window.clearStaffData('${uid}')" class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1.5 rounded-lg hover:bg-amber-500 hover:text-white transition font-bold uppercase">Data Del</button>
+        <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition font-bold uppercase">Staff Del</button>
+    `}
+</td>
             `;
             tbody.appendChild(tr);
         });
@@ -480,19 +483,19 @@ window.deleteStaff = async function(uid) {
     }
 };
 
-// --- 특정 직원의 모든 활동 데이터 삭제 기능 ---
+// --- 특정 직원의 모든 활동 데이터 삭제 기능 (DATA DEL) ---
 window.clearStaffData = async function(staffName) {
-    // 1. 1차 경고 확인
-    const firstConfirm = confirm(`[warning] '${staffName}' All employee data (attendance, leave, reports) will be permanently deleted. This action cannot be undone. Do you want to continue?`);
+    // 1. 1차 확인 경고
+    const firstConfirm = confirm(`[DANGER] All activity data (Attendance, Leaves, Reports) for '${staffName}' will be PERMANENTLY deleted.\n\nThis action cannot be undone. Continue?`);
     if (!firstConfirm) return;
 
-    // 2. Admin 패스워드 검증
+    // 2. Admin 패스워드 검증 (기존 verifyAdmin 함수 활용)
     if (!(await verifyAdmin())) return;
 
     try {
         const updates = {};
 
-        // A. Attendance 데이터 처리 (attendance/날짜/이름)
+        // A. Attendance 데이터 (attendance/날짜/이름) 삭제 예약
         const attendanceSnap = await db.ref('attendance').once('value');
         attendanceSnap.forEach(dateSnap => {
             if (dateSnap.hasChild(staffName)) {
@@ -500,11 +503,10 @@ window.clearStaffData = async function(staffName) {
             }
         });
 
-        // B. Leaves 데이터 처리 (leaves/이름)
-        // 알려주신 구조 (leave-"staff name")에 맞춤
+        // B. Leaves 데이터 (leaves/이름) 삭제 예약
         updates[`leaves/${staffName}`] = null; 
 
-        // C. Reports 데이터 처리 (reports/날짜/이름)
+        // C. Reports 데이터 (reports/날짜/이름) 삭제 예약
         const reportsSnap = await db.ref('reports').once('value');
         reportsSnap.forEach(dateSnap => {
             if (dateSnap.hasChild(staffName)) {
@@ -512,10 +514,10 @@ window.clearStaffData = async function(staffName) {
             }
         });
 
-        // 3. Firebase 일괄 업데이트 (Multi-path Update)
+        // 3. Firebase Multi-path Update를 통한 일괄 삭제 실행
         await db.ref().update(updates);
         
-        alert(`'${staffName}' All employee data has been successfully deleted (account information remains).`);
+        alert(`SUCCESS: All activity records for '${staffName}' have been wiped clean. (Account remains active)`);
     } catch (error) {
         console.error("Data Clear Error:", error);
         alert("An error occurred while deleting data: " + error.message);
