@@ -10,7 +10,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -58,7 +57,6 @@ body { font-family: "Pretendard", sans-serif; background-color: #000000; color: 
     </div>
 </div>
 
-                <div id="levelDisplayContainer" class="w-full"></div>
             </div>
             <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase flex-shrink-0">Logout</button>
         </div>
@@ -115,8 +113,7 @@ window.openProfileModal = function(title, bodyHtml) { const m = document.getElem
 window.closeProfileModal = function() { const m = document.getElementById('profileCustomModal'); if (m) { m.classList.add('hidden'); document.body.style.overflow = ''; } };
 window.openProfileImagePicker = function() { let g = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">`; PROFILE_IMAGES.forEach(i => { g += `<div onclick="saveStaffProfile('${i}')" class="profile-picker-item aspect-square shadow-lg"><img src="images/profile/${i}" class="w-full h-full object-cover"></div>`; }); g += `</div>`; openProfileModal('Change Profile', g); };
 window.saveStaffProfile = function(i) { if(!confirm("변경하시겠습니까?")) return; db.ref('users/' + loggedInUser).update({ profileImg: i, profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP }).then(() => closeProfileModal()).catch(e => alert("Error")); };
-if(loggedInUser) { document.getElementById('desktopUser').innerText = loggedInUser; db.ref('users/' + loggedInUser).on('value', snap => { const ud = snap.val(); if (!ud) return; const pi = ud.profileImg || 'image-001.webp'; const ec = document.getElementById('navEmojiContainer'); if(ec) { ec.innerHTML = `<img src="images/profile/${pi}?t=${new Date().getTime()}" class="nav-profile-img shadow-xl shadow-blue-500/10"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></div>`; } startLevelSystem(ud); }); }
-function startLevelSystem(ud) { if (window.LevelSystem && typeof window.LevelSystem.init === 'function') { window.LevelSystem.init(loggedInUser, ud); } else { setTimeout(() => startLevelSystem(ud), 200); } }
+if(loggedInUser) { document.getElementById('desktopUser').innerText = loggedInUser; db.ref('users/' + loggedInUser).on('value', snap => { const ud = snap.val(); if (!ud) return; const pi = ud.profileImg || 'image-001.webp'; const ec = document.getElementById('navEmojiContainer'); if(ec) { ec.innerHTML = `<img src="images/profile/${pi}?t=${new Date().getTime()}" class="nav-profile-img shadow-xl shadow-blue-500/10"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></div>`; } }); }
 window.switchTab = function(t) {
 const pB = document.querySelectorAll('.pc-tab-btn'); const mB = document.querySelectorAll('.mobile-tab-btn');
 pB.forEach(b => b.classList.remove('tab-active')); mB.forEach(b => b.classList.remove('mobile-tab-active'));
@@ -182,5 +179,4 @@ window.logout = function() { if (confirm("Log out?")) { firebase.auth().signOut(
 setTimeout(() => switchTab('dash'), 300);
 </script>
 </body>
-
 </html>
