@@ -44,13 +44,20 @@ body { font-family: "Pretendard", sans-serif; background-color: #000000; color: 
                     </a>
                 </div>
 
-                <div class="flex items-center gap-3 mt-4">
-                    <div id="navEmojiContainer" class="cursor-pointer relative group inline-block" onclick="openProfileImagePicker()"></div>
-                    <div class="flex flex-col">
-                        <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
-                        <span class="text-[8px] text-emerald-500 font-bold">● ONLINE</span>
-                    </div>
-                </div>
+<div class="flex items-center gap-3 mt-4">
+    <div id="navEmojiContainer" class="cursor-pointer relative group inline-block" onclick="openProfileImagePicker()"></div>
+    <div class="flex flex-col">
+        <div id="jakartaWeather" class="flex items-center gap-1.5 mb-1 bg-slate-900/50 px-2 py-0.5 rounded-lg border border-slate-800 w-fit">
+            <span id="weatherIcon" class="text-sm">⏳</span>
+            <span id="weatherTemp" class="text-[10px] font-black text-white">--°C</span>
+                        <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
+
+        </div>
+        <p id="desktopUser" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"></p>
+        <span class="text-[8px] text-emerald-500 font-bold">● ONLINE</span>
+    </div>
+</div>
+
                 <div id="levelDisplayContainer" class="w-full"></div>
             </div>
             <button onclick="logout()" class="text-[10px] font-black bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-full border border-slate-700 transition uppercase flex-shrink-0">Logout</button>
@@ -133,6 +140,44 @@ if (os.src) { ns.src = os.src; ns.async = false; } else { ns.textContent = os.te
 document.head.appendChild(ns).parentNode.removeChild(ns);
 });
 }
+// 자카르타 날씨 정보 가져오기 함수
+async function fetchJakartaWeather() {
+    const iconEl = document.getElementById('weatherIcon');
+    const tempEl = document.getElementById('weatherTemp');
+    
+    try {
+        // Open-Meteo API (Jakarta 좌표)
+        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true');
+        const data = await response.json();
+        const weather = data.current_weather;
+        
+        // 온도 표시
+        tempEl.innerText = `${Math.round(weather.temperature)}°C`;
+        
+        // 상태 코드별 아이콘 매칭 (WMO Code 기준)
+        const code = weather.weathercode;
+        let icon = '☀️'; // 기본값 (맑음)
+        
+        if (code === 0) icon = '☀️'; // Clear sky
+        else if (code >= 1 && code <= 3) icon = '⛅'; // Partly cloudy
+        else if (code >= 45 && code <= 48) icon = '☁️'; // Fog
+        else if (code >= 51 && code <= 67) icon = '🌧️'; // Drizzle / Rain
+        else if (code >= 71 && code <= 77) icon = '❄️'; // Snow (자카르타엔 없겠지만요!)
+        else if (code >= 80 && code <= 82) icon = '🌦️'; // Rain showers
+        else if (code >= 95) icon = '⛈️'; // Thunderstorm
+
+        iconEl.innerText = icon;
+        
+    } catch (error) {
+        console.error("Weather load failed", error);
+        iconEl.innerText = '❌';
+    }
+}
+
+// 페이지 로드 시 및 30분마다 날씨 업데이트
+fetchJakartaWeather();
+setInterval(fetchJakartaWeather, 1800000);
+
 window.logout = function() { if (confirm("Log out?")) { firebase.auth().signOut().then(() => { sessionStorage.clear(); localStorage.removeItem('loggedInUser'); window.location.replace("index.html"); }); } };
 setTimeout(() => switchTab('dash'), 300);
 </script>

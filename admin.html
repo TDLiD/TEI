@@ -46,7 +46,13 @@
                 </div>
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
             </div>
-            <h1 class="text-sm font-black italic">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+            <div class="flex flex-col">
+                <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+                <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
+                    <span class="weather-icon text-[10px]">☀️</span>
+                    <span class="weather-temp text-[9px] font-bold text-slate-300">--°C</span>
+                </div>
+            </div>
         </div>
         <div class="flex items-center gap-4">
             <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
@@ -65,7 +71,7 @@
         <button onclick="switchAdminTab('settings')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
     </nav>
 
-    <aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
+<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
         <div class="mb-10">
             <h1 class="text-2xl font-black italic mb-6">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
             <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
@@ -75,10 +81,17 @@
                     </div>
                     <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">✏️</div>
                 </div>
-                <div class="overflow-hidden">
+                <div class="overflow-hidden flex-1">
                     <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
                     <div class="text-sm font-black text-white truncate uppercase">Master Manager</div>
-                    <div class="inline-flex items-center gap-1.5 mt-1">
+                    
+                    <div class="flex items-center gap-2 mt-1.5 py-1 px-2 bg-black/20 rounded-lg border border-white/5 w-fit">
+                        <span class="weather-icon text-xs">☀️</span>
+                        <span class="weather-temp text-[11px] font-bold text-blue-400 tracking-tighter">--°C</span>
+                        <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
+                    </div>
+
+                    <div class="inline-flex items-center gap-1.5 mt-2">
                         <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                         <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
                     </div>
@@ -210,6 +223,37 @@
         }, 100);
     })();
 
+// 자카르타 날씨 연동 함수 (Admin 전용)
+async function updateAdminWeather() {
+    try {
+        // Open-Meteo API (Jakarta 좌표 사용)
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true');
+        const data = await res.json();
+        const { temperature, weathercode } = data.current_weather;
+        
+        // 날씨 상태 코드별 이모지 설정
+        let icon = '☀️';
+        if (weathercode >= 1 && weathercode <= 3) icon = '⛅';
+        else if (weathercode >= 45 && weathercode <= 48) icon = '☁️';
+        else if (weathercode >= 51 && weathercode <= 67) icon = '🌧️';
+        else if (weathercode >= 80 && weathercode <= 82) icon = '🌦️';
+        else if (weathercode >= 95) icon = '⛈️';
+
+        const tempStr = `${Math.round(temperature)}°C`;
+
+        // 헤더 및 사이드바(사이드바에도 클래스가 있다면)의 날씨 정보 업데이트
+        document.querySelectorAll('.weather-icon').forEach(el => el.innerText = icon);
+        document.querySelectorAll('.weather-temp').forEach(el => el.innerText = tempStr);
+        
+        console.log("Admin System: Jakarta Weather Updated", tempStr);
+    } catch (e) {
+        console.error("Weather Update Failed", e);
+    }
+}
+
+// 페이지 로드 시 즉시 실행 및 30분마다 자동 갱신
+updateAdminWeather();
+setInterval(updateAdminWeather, 1800000);
 
     // 5. 탭 전환 시스템 (수정됨: 스크립트 중복 선언 방지 로직 추가)
     async function switchAdminTab(tab) {
@@ -271,5 +315,4 @@
     });
 </script>
 </body>
-
 </html>
