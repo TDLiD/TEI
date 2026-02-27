@@ -115,259 +115,348 @@
 
 <script>
 (function() {
-        const db = firebase.database();
-        const user = sessionStorage.getItem('loggedInUser');
-        const userRole = sessionStorage.getItem('userRole');
-        let calViewDate = new Date();
-        let selectedId = null;
-        let currentEventData = null;
-        let startPicker, endPicker;
-        let draggedId = null;
-        let touchTimer = null;
-        const todayObj = new Date();
-        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
+    const db = firebase.database();
+    const user = sessionStorage.getItem('loggedInUser');
+    const userRole = sessionStorage.getItem('userRole');
+    let calViewDate = new Date();
+    let selectedId = null;
+    let currentEventData = null;
+    let startPicker, endPicker;
+    let draggedId = null;
+    let touchTimer = null;
+    let holidayData = {}; 
+    let googleApiKey = null; 
 
-        window.closeModal = () => { 
-            const modal = document.getElementById('eventModal');
-            if(modal) {
-                modal.classList.add('hidden'); 
-                modal.classList.remove('block');
+    const todayObj = new Date();
+    const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
+
+    // 시스템 초기화
+    async function initCalendarSystem() {
+        try {
+            const snapshot = await db.ref('settings/config/GoogleCAPI').once('value');
+            googleApiKey = snapshot.val();
+            
+            if (googleApiKey) {
+                console.log("System: API Key loaded. Syncing ID & KR Holidays...");
+                await fetchAllHolidays(calViewDate.getFullYear());
+            } else {
+                console.warn("System: No API Key. Skipping holidays.");
+                renderSchedule();
             }
-            document.body.style.overflow = '';
-        };
-
-        window.toggleTimePicker = (isAllDay) => {
-            const config = {
-                enableTime: !isAllDay,
-                dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
-                altInput: true,
-                altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
-                disableMobile: true, 
-                static: true
-            };
-            if (startPicker) startPicker.set(config);
-            if (endPicker) endPicker.set(config);
-        };
-
-        window.openAddModal = (dateStr) => {
-            selectedId = null; 
-            currentEventData = null;
-
-            document.getElementById('evTitle').value = "";
-            document.getElementById('evDesc').value = "";
-document.getElementById('evCategory').value = "default"; // 추가
-            
-            // [오류 해결] 요소가 존재할 때만 classList 조작
-            const memoArea = document.getElementById('adminMemoArea');
-            if (memoArea) memoArea.classList.add('hidden');
-            
-            document.getElementById('evAllDay').checked = false; 
-            window.toggleTimePicker(false);
-            
-            startPicker.setDate(dateStr + "T09:00");
-            endPicker.setDate(dateStr + "T10:00");
-            
-            document.getElementById('btnDel').classList.add('hidden');
-            document.getElementById('btnSave').classList.remove('hidden');
-
-            const modal = document.getElementById('eventModal');
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('block'); 
-            }
-            document.body.style.overflow = 'hidden'; 
-        };
-
-        window.openEditModal = (id, ev) => {
-            selectedId = id; 
-            currentEventData = ev;
-            const canEdit = (ev.author === user || userRole === 'admin');
-            
-            document.getElementById('evTitle').value = ev.title;
-            document.getElementById('evDesc').value = ev.desc || "";
-document.getElementById('evCategory').value = ev.category || "default"; // 추가
-            
-            // [오류 해결] 관리자 메모 영역 안전하게 처리
-            const memoArea = document.getElementById('adminMemoArea');
-            const memoText = document.getElementById('evAdminMemo');
-            if (memoArea) {
-                if (ev.adminMemo) {
-                    memoArea.classList.remove('hidden');
-                    if (memoText) memoText.innerText = ev.adminMemo;
-                } else { 
-                    memoArea.classList.add('hidden'); 
-                }
-            }
-            
-            window.toggleTimePicker(ev.allDay);
-            document.getElementById('evAllDay').checked = ev.allDay;
-            startPicker.setDate(ev.start);
-            endPicker.setDate(ev.end);
-            
-            document.getElementById('btnSave').classList.toggle('hidden', !canEdit);
-            document.getElementById('btnDel').classList.toggle('hidden', !canEdit);
-
-            const modal = document.getElementById('eventModal');
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('block');
-            }
-            document.body.style.overflow = 'hidden';
-        };
-
-        window.saveEvent = () => {
-            const title = document.getElementById('evTitle').value;
-            if(!title) return alert("Title required");
-            const data = {
-                title: title, desc: document.getElementById('evDesc').value || "",
-category: document.getElementById('evCategory').value, // 추가
-                start: document.getElementById('evStart').value,
-                end: document.getElementById('evEnd').value,
-                allDay: document.getElementById('evAllDay').checked,
-                author: selectedId ? currentEventData.author : user,
-                timestamp: Date.now()
-            };
-            if (selectedId && currentEventData.adminMemo) data.adminMemo = currentEventData.adminMemo;
-            const ref = db.ref('shared_schedules');
-            const promise = selectedId ? ref.child(selectedId).update(data) : ref.push(data);
-            promise.then(window.closeModal);
-        };
-        window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(window.closeModal); };
-        window.changeCalMonth = (offset) => { calViewDate.setMonth(calViewDate.getMonth() + offset); renderSchedule(); };
-        window.goTodayCal = () => { calViewDate = new Date(); renderSchedule(); };
-        window.handleDragStart = (e, id) => { draggedId = id; e.target.classList.add('dragging'); e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; };
-        window.handleDragEnd = (e) => { e.target.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); };
-        window.handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
-        window.handleDragLeave = (e) => { e.currentTarget.classList.remove('drag-over'); };
-        window.handleDrop = (e, targetDate) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = draggedId || e.dataTransfer.getData('text/plain'); if (id) moveEvent(id, targetDate); };
-        window.handleTouchStart = (e, id) => { const el = e.currentTarget; touchTimer = setTimeout(() => { draggedId = id; el.classList.add('touch-ready'); if (navigator.vibrate) navigator.vibrate(50); }, 600); };
-        window.handleTouchEnd = (e, id, dateStr) => { clearTimeout(touchTimer); const el = e.currentTarget; if (el.classList.contains('touch-ready')) { const touch = e.changedTouches[0]; const targetEl = document.elementFromPoint(touch.clientX, touch.clientY); const targetTd = targetEl ? targetEl.closest('td') : null; if (targetTd && targetTd.dataset.date && targetTd.dataset.date !== dateStr) moveEvent(id, targetTd.dataset.date); } el.classList.remove('touch-ready'); draggedId = null; };
-        function moveEvent(id, newStartDateStr) {
-            const ref = db.ref('shared_schedules/' + id);
-            ref.once('value').then(snap => {
-                const ev = snap.val();
-                if (!ev || (ev.author !== user && userRole !== 'admin')) return;
-                const oldStart = new Date(ev.start);
-                const oldEnd = new Date(ev.end);
-                const durationMs = oldEnd.getTime() - oldStart.getTime();
-                let nextStart, nextEnd;
-                if (ev.allDay) {
-                    nextStart = new Date(newStartDateStr);
-                    nextEnd = new Date(nextStart.getTime() + durationMs);
-                    const formatYMD = (d) => d.toISOString().split('T')[0];
-                    ref.update({ start: formatYMD(nextStart), end: formatYMD(nextEnd) });
-                } else {
-                    const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
-                    nextStart = new Date(newStartDateStr + 'T' + timePart);
-                    nextEnd = new Date(nextStart.getTime() + durationMs);
-                    const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
-                    ref.update({ start: formatFull(nextStart), end: formatFull(nextEnd) });
-                }
-            });
+        } catch (error) {
+            console.error("System Init Error:", error);
+            renderSchedule();
         }
-        function renderSchedule() {
-            const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            const monthYearEl = document.getElementById('calMonthYear');
-            if (monthYearEl) { monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); }
-            const scheduleRef = db.ref('shared_schedules');
-            scheduleRef.off(); 
-            scheduleRef.on('value', snap => {
-                const events = snap.val() || {};
-                const tbody = document.getElementById('scheduleBody');
-                if (!tbody) { scheduleRef.off(); return; }
-                tbody.innerHTML = ''; 
-                const sortedEvents = Object.keys(events).map(id => ({
-                    id, ...events[id],
-                    sDate: events[id].start.split('T')[0],
-                    eDate: events[id].end.split('T')[0]
-                })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
-                const eventSlots = {};
-                const dayOccupancy = {};
-                sortedEvents.forEach(ev => {
-                    let slot = 0;
-                    while (true) {
-                        let ok = true;
-                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                            const dStr = d.toISOString().split('T')[0];
-                            if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
-                        }
-                        if (ok) {
-                            for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                                const dStr = d.toISOString().split('T')[0];
-                                if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
-                                dayOccupancy[dStr].add(slot);
-                            }
-                            eventSlots[ev.id] = slot; break;
-                        }
-                        slot++;
-                    }
-                });
-                let dateNum = 1;
-                for (let i = 0; i < 6; i++) {
-                    const tr = document.createElement('tr');
-                    let weekDates = [];
-                    let maxSlotsInWeek = 0;
-                    for (let j = 0; j < 7; j++) {
-                        if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); }
-                        else { weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`); dateNum++; }
-                    }
-                    weekDates.forEach(dStr => {
-                        if (dStr && dayOccupancy[dStr]) {
-                            const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
-                            if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
+    }
+
+    window.closeModal = () => { 
+        const modal = document.getElementById('eventModal');
+        if(modal) {
+            modal.classList.add('hidden'); 
+            modal.classList.remove('block');
+        }
+        document.body.style.overflow = '';
+    };
+
+    window.toggleTimePicker = (isAllDay) => {
+        const config = {
+            enableTime: !isAllDay,
+            dateFormat: isAllDay ? "Y-m-d" : "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K",
+            disableMobile: true, 
+            static: true
+        };
+        if (startPicker) startPicker.set(config);
+        if (endPicker) endPicker.set(config);
+    };
+
+    window.openAddModal = (dateStr) => {
+        selectedId = null; 
+        currentEventData = null;
+        document.getElementById('evTitle').value = "";
+        document.getElementById('evDesc').value = "";
+        document.getElementById('evCategory').value = "default";
+        const memoArea = document.getElementById('adminMemoArea');
+        if (memoArea) memoArea.classList.add('hidden');
+        document.getElementById('evAllDay').checked = false; 
+        window.toggleTimePicker(false);
+        startPicker.setDate(dateStr + "T09:00");
+        endPicker.setDate(dateStr + "T10:00");
+        document.getElementById('btnDel').classList.add('hidden');
+        document.getElementById('btnSave').classList.remove('hidden');
+        const modal = document.getElementById('eventModal');
+        if(modal) { modal.classList.remove('hidden'); modal.classList.add('block'); }
+        document.body.style.overflow = 'hidden'; 
+    };
+
+    window.openEditModal = (id, ev) => {
+        selectedId = id; 
+        currentEventData = ev;
+        const canEdit = (ev.author === user || userRole === 'admin');
+        document.getElementById('evTitle').value = ev.title;
+        document.getElementById('evDesc').value = ev.desc || "";
+        document.getElementById('evCategory').value = ev.category || "default";
+        const memoArea = document.getElementById('adminMemoArea');
+        const memoText = document.getElementById('evAdminMemo');
+        if (memoArea) {
+            if (ev.adminMemo) {
+                memoArea.classList.remove('hidden');
+                if (memoText) memoText.innerText = ev.adminMemo;
+            } else { memoArea.classList.add('hidden'); }
+        }
+        window.toggleTimePicker(ev.allDay);
+        document.getElementById('evAllDay').checked = ev.allDay;
+        startPicker.setDate(ev.start);
+        endPicker.setDate(ev.end);
+        document.getElementById('btnSave').classList.toggle('hidden', !canEdit);
+        document.getElementById('btnDel').classList.toggle('hidden', !canEdit);
+        const modal = document.getElementById('eventModal');
+        if(modal) { modal.classList.remove('hidden'); modal.classList.add('block'); }
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.saveEvent = () => {
+        const title = document.getElementById('evTitle').value;
+        if(!title) return alert("Title required");
+        const data = {
+            title: title, desc: document.getElementById('evDesc').value || "",
+            category: document.getElementById('evCategory').value,
+            start: document.getElementById('evStart').value,
+            end: document.getElementById('evEnd').value,
+            allDay: document.getElementById('evAllDay').checked,
+            author: selectedId ? currentEventData.author : user,
+            timestamp: Date.now()
+        };
+        if (selectedId && currentEventData.adminMemo) data.adminMemo = currentEventData.adminMemo;
+        const ref = db.ref('shared_schedules');
+        const promise = selectedId ? ref.child(selectedId).update(data) : ref.push(data);
+        promise.then(window.closeModal);
+    };
+
+    window.deleteEvent = () => { if(confirm("Delete?")) db.ref('shared_schedules/' + selectedId).remove().then(window.closeModal); };
+
+    window.changeCalMonth = (offset) => { 
+        const oldYear = calViewDate.getFullYear();
+        calViewDate.setMonth(calViewDate.getMonth() + offset); 
+        const newYear = calViewDate.getFullYear();
+        if(oldYear !== newYear && googleApiKey) fetchAllHolidays(newYear);
+        else renderSchedule();
+    };
+
+    window.goTodayCal = () => { 
+        calViewDate = new Date(); 
+        if(googleApiKey) fetchAllHolidays(calViewDate.getFullYear());
+        else renderSchedule();
+    };
+
+    window.handleDragStart = (e, id) => { draggedId = id; e.target.classList.add('dragging'); e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; };
+    window.handleDragEnd = (e) => { e.target.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); };
+    window.handleDragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
+    window.handleDragLeave = (e) => { e.currentTarget.classList.remove('drag-over'); };
+    window.handleDrop = (e, targetDate) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = draggedId || e.dataTransfer.getData('text/plain'); if (id) moveEvent(id, targetDate); };
+    window.handleTouchStart = (e, id) => { const el = e.currentTarget; touchTimer = setTimeout(() => { draggedId = id; el.classList.add('touch-ready'); if (navigator.vibrate) navigator.vibrate(50); }, 600); };
+    window.handleTouchEnd = (e, id, dateStr) => { clearTimeout(touchTimer); const el = e.currentTarget; if (el.classList.contains('touch-ready')) { const touch = e.changedTouches[0]; const targetEl = document.elementFromPoint(touch.clientX, touch.clientY); const targetTd = targetEl ? targetEl.closest('td') : null; if (targetTd && targetTd.dataset.date && targetTd.dataset.date !== dateStr) moveEvent(id, targetTd.dataset.date); } el.classList.remove('touch-ready'); draggedId = null; };
+
+    function moveEvent(id, newStartDateStr) {
+        const ref = db.ref('shared_schedules/' + id);
+        ref.once('value').then(snap => {
+            const ev = snap.val();
+            if (!ev || (ev.author !== user && userRole !== 'admin')) return;
+            const oldStart = new Date(ev.start);
+            const oldEnd = new Date(ev.end);
+            const durationMs = oldEnd.getTime() - oldStart.getTime();
+            let nextStart, nextEnd;
+            if (ev.allDay) {
+                nextStart = new Date(newStartDateStr);
+                nextEnd = new Date(nextStart.getTime() + durationMs);
+                const formatYMD = (d) => d.toISOString().split('T')[0];
+                ref.update({ start: formatYMD(nextStart), end: formatYMD(nextEnd) });
+            } else {
+                const timePart = ev.start.includes('T') ? ev.start.split('T')[1] : "09:00";
+                nextStart = new Date(newStartDateStr + 'T' + timePart);
+                nextEnd = new Date(nextStart.getTime() + durationMs);
+                const formatFull = (d) => d.toISOString().split('.')[0].slice(0, 16);
+                ref.update({ start: formatFull(nextStart), end: formatFull(nextEnd) });
+            }
+        });
+    }
+
+    // [수정] 인도네시아와 한국 휴일을 모두 가져오는 함수
+    async function fetchAllHolidays(year) {
+        if(!googleApiKey) return;
+        holidayData = {}; // 초기화
+        
+        // 캘린더 ID 목록 (인도네시아, 한국)
+        const calendars = [
+            { id: 'en.indonesian#holiday@group.v.calendar.google.com', name: 'ID' },
+            { id: 'ko.south_korea#holiday@group.v.calendar.google.com', name: 'KR' }
+        ];
+
+        const timeMin = `${year}-01-01T00:00:00Z`;
+        const timeMax = `${year}-12-31T23:59:59Z`;
+
+        try {
+            await Promise.all(calendars.map(async (cal) => {
+                const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?key=${googleApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.items) {
+                    data.items.forEach(event => {
+                        const date = event.start.date;
+                        // 같은 날짜에 휴일이 중복될 경우 대비해 이름을 합침
+                        if (holidayData[date]) {
+                            holidayData[date] += `, ${event.summary}`;
+                        } else {
+                            holidayData[date] = event.summary;
                         }
                     });
-                    const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
-                    tr.style.height = Math.max(140, calculatedHeight) + 'px';
-weekDates.forEach((dStr, j) => {
-    const td = document.createElement('td');
-    if (dStr) {
-        td.dataset.date = dStr;
-        td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
-
-        // --- [추가] 주말 배경색 로직 ---
-        if (j === 0) { // 일요일
-            td.style.backgroundColor = 'rgba(244, 63, 94, 0.08)'; // 아주 연한 레드
-        } else if (j === 6) { // 토요일
-            td.style.backgroundColor = 'rgba(59, 130, 246, 0.08)'; // 아주 연한 블루
+                }
+            }));
+            console.log("All Holidays Synced (ID & KR)");
+            renderSchedule();
+        } catch (error) {
+            console.error("Holiday API Error:", error);
+            renderSchedule();
         }
-        // ----------------------------
+    }
 
-        const isToday = (dStr === (new Date().toISOString().split('T')[0]));
+    function renderSchedule() {
+        const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const monthYearEl = document.getElementById('calMonthYear');
+        if (monthYearEl) { monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); }
         
-        // 날짜 텍스트 클래스 수정 (j === 0: 레드, j === 6: 블루)
-        let html = `<div class="date-wrapper"><span class="date-text ${isToday ? 'is-today' : ''} ${j === 0 ? 'text-red-500' : (j === 6 ? 'text-blue-500' : 'text-slate-400')}">${parseInt(dStr.split('-')[2])}</span></div>`;
-        
-        sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-            if (dStr === ev.sDate || j === 0) {
-                const slot = eventSlots[ev.id];
-                const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
-                const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
-                const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
+        const scheduleRef = db.ref('shared_schedules');
+        scheduleRef.off(); 
+        scheduleRef.on('value', snap => {
+            const events = snap.val() || {};
+            const tbody = document.getElementById('scheduleBody');
+            if (!tbody) { scheduleRef.off(); return; }
+            tbody.innerHTML = ''; 
+            
+            const sortedEvents = Object.keys(events).map(id => ({
+                id, ...events[id],
+                sDate: events[id].start.split('T')[0],
+                eDate: events[id].end.split('T')[0]
+            })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
+            
+            const eventSlots = {};
+            const dayOccupancy = {};
+            sortedEvents.forEach(ev => {
+                let slot = 0;
+                while (true) {
+                    let ok = true;
+                    for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                        const dStr = d.toISOString().split('T')[0];
+                        if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
+                    }
+                    if (ok) {
+                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                            const dStr = d.toISOString().split('T')[0];
+                            if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
+                            dayOccupancy[dStr].add(slot);
+                        }
+                        eventSlots[ev.id] = slot; break;
+                    }
+                    slot++;
+                }
+            });
+
+            let dateNum = 1;
+            for (let i = 0; i < 6; i++) {
+                const tr = document.createElement('tr');
+                let weekDates = [];
+                let maxSlotsInWeek = 0;
+                for (let j = 0; j < 7; j++) {
+                    if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); }
+                    else { weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`); dateNum++; }
+                }
+                
+                weekDates.forEach(dStr => {
+                    if (dStr && dayOccupancy[dStr]) {
+                        const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
+                        if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
+                    }
+                });
+                const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
+                tr.style.height = Math.max(140, calculatedHeight) + 'px';
+
+                weekDates.forEach((dStr, j) => {
+                    const td = document.createElement('td');
+                    if (dStr) {
+                        td.dataset.date = dStr;
+// --- 추가해야 할 이벤트 리스너 ---
+    td.ondragover = (e) => window.handleDragOver(e);
+    td.ondragleave = (e) => window.handleDragLeave(e);
+    td.ondrop = (e) => window.handleDrop(e, dStr);
+                        td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+
+                        const holidayName = holidayData[dStr];
+                        const isSunday = (j === 0);
+                        const isSaturday = (j === 6);
+                        const isToday = (dStr === (new Date().toISOString().split('T')[0]));
+
+                        if (isSunday || holidayName) {
+                            td.style.backgroundColor = 'rgba(244, 63, 94, 0.08)';
+                        } else if (isSaturday) {
+                            td.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
+                        }
+
+                        let dateColorClass = 'text-slate-400';
+                        if (isSunday || holidayName) dateColorClass = 'text-red-500';
+                        else if (isSaturday) dateColorClass = 'text-blue-500';
+
+                        let html = `<div class="date-wrapper">
+                                        <span class="date-text ${isToday ? 'is-today' : ''} ${dateColorClass}">
+                                            ${parseInt(dStr.split('-')[2])}
+                                        </span>
+                                        ${holidayName ? `<span style="font-size:10px; color:#ef4444; display:block; font-weight:bold; margin-top:2px; line-height:1.2;">${holidayName}</span>` : ''}
+                                    </div>`;
+                        
+                        sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                            if (dStr === ev.sDate || j === 0) {
+                                const slot = eventSlots[ev.id];
+                                const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
+                                const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
+                                const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
+                                const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+                                const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
+// renderSchedule 함수 내 "html += `<div onclick=..." 부분 수정
 html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
               class="event-item ${isCont} ${willCont} ${catClass}" 
-              style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);">
+              style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"
+              /* --- 추가해야 할 속성들 --- */
+              draggable="true"
+              ondragstart="window.handleDragStart(event, '${ev.id}')"
+              ondragend="window.handleDragEnd(event)"
+              ontouchstart="window.handleTouchStart(event, '${ev.id}')"
+              ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
+              /* ----------------------- */
+              >
               <span class="ev-title-text">${isCont ? '' : ev.title}</span>
               <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
          </div>`;
+
+                            }
+                        });
+                        td.innerHTML = html;
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+                if (dateNum > lastDate) break;
             }
         });
-        td.innerHTML = html;
     }
-    tr.appendChild(td);
-});
-                    tbody.appendChild(tr);
-                    if (dateNum > lastDate) break;
-                }
-            });
-        }
-        const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true, disableMobile: true };
-        startPicker = flatpickr("#evStart", baseConfig);
-        endPicker = flatpickr("#evEnd", baseConfig);
-        renderSchedule();
-    })();
+
+    const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true, disableMobile: true };
+    startPicker = flatpickr("#evStart", baseConfig);
+    endPicker = flatpickr("#evEnd", baseConfig);
+
+    initCalendarSystem();
+
+})();
 </script>

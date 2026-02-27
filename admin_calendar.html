@@ -102,16 +102,72 @@
     });
 
     let viewDate = new Date();
+    let googleApiKey = null;
+    let holidayData = {}; // 휴일 데이터 저장소
 
-let db;
-try {
-    db = firebase.database();
-} catch (e) {
-    console.error("Firebase 초기화 실패:", e);
-    // 여기서 return을 해주면 상위 switchAdminTab의 catch문으로 에러가 전파되지 않아 
-    // 로그아웃되는 현상을 방지할 수 있습니다.
-    return;
+    let db;
+    try {
+        db = firebase.database();
+    } catch (e) {
+        console.error("Firebase 초기화 실패:", e);
+        return;
+    }
+
+    // [추가] 시스템 초기화 및 API 키 로드
+    async function initAdminSystem() {
+        try {
+            const snapshot = await db.ref('settings/config/GoogleCAPI').once('value');
+            googleApiKey = snapshot.val();
+            if (googleApiKey) {
+                await fetchAllAdminHolidays(viewDate.getFullYear());
+            } else {
+                console.warn("Google API Key not found.");
+                window.renderScheduleFull();
+            }
+        } catch (error) {
+            console.error("System Init Error:", error);
+            window.renderScheduleFull();
+        }
+    }
+
+    // [추가] 인도네시아 및 한국 휴일 가져오기
+  async function fetchAllAdminHolidays(year) {
+    if(!googleApiKey) return;
+    holidayData = {};
+    const calendars = [
+        { id: 'en.indonesian#holiday@group.v.calendar.google.com' },
+        { id: 'ko.south_korea#holiday@group.v.calendar.google.com' }
+    ];
+    const timeMin = `${year}-01-01T00:00:00Z`;
+    const timeMax = `${year}-12-31T23:59:59Z`;
+
+    try {
+        await Promise.all(calendars.map(async (cal) => {
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?key=${googleApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true`;
+            const response = await fetch(url);
+            
+            // 400 에러나 데이터가 없을 경우를 대비
+            if (!response.ok) {
+                console.warn(`Calendar API failed for ${cal.id}: ${response.status}`);
+                return; 
+            }
+            
+            const data = await response.json();
+            if (data.items) {
+                data.items.forEach(event => {
+                    const date = event.start.date;
+                    if (holidayData[date]) holidayData[date] += `, ${event.summary}`;
+                    else holidayData[date] = event.summary;
+                });
+            }
+        }));
+        window.renderScheduleFull();
+    } catch (error) {
+        console.error("Holiday API Fetch Error:", error);
+        window.renderScheduleFull();
+    }
 }
+
 
     let startPicker, endPicker, editStartPicker, editEndPicker;
     let draggedSchId = null;
@@ -215,6 +271,7 @@ try {
         const monthEl = document.getElementById('full_sch_month'), tbody = document.getElementById('full_sch_calendar_body');
         if (!tbody || !monthEl) return;
         monthEl.innerText = viewDate.toLocaleString('en-US', {month:'short', year:'numeric'});
+        
         db.ref('shared_schedules').off();
         db.ref('shared_schedules').on('value', snap => {
             const currentTbody = document.getElementById('full_sch_calendar_body');
@@ -222,6 +279,7 @@ try {
             const data = snap.val() || {}; currentTbody.innerHTML = '';
             const firstDay = new Date(year, month, 1).getDay(), lastDate = new Date(year, month + 1, 0).getDate();
             const sortedEvents = Object.entries(data).map(([id, ev]) => ({ id, ...ev, sDate: ev.start.split('T')[0], eDate: ev.end.split('T')[0] })).sort((a, b) => { if (a.sDate !== b.sDate) return a.sDate.localeCompare(b.sDate); return (new Date(b.eDate) - new Date(b.sDate)) - (new Date(a.eDate) - new Date(a.sDate)); });
+            
             const eventFinalSlot = {}, daySlotUsage = {};
             sortedEvents.forEach(ev => {
                 let slot = 0, found = false;
@@ -238,24 +296,71 @@ try {
                     } else slot++;
                 }
             });
+
             let dateNum = 1;
             for (let i = 0; i < 6; i++) {
                 const tr = document.createElement('tr'); let hasDateInRow = false, maxSlotsInWeek = 0;
                 for (let j = 0; j < 7; j++) {
                     const td = document.createElement('td');
                     if ((i === 0 && j < firstDay) || dateNum > lastDate) { if (!isMobile) tr.appendChild(td); continue; }
-                    hasDateInRow = true; const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`, isToday = (dStr === new Date().toISOString().split('T')[0]);
+                    hasDateInRow = true;
+                    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`, isToday = (dStr === new Date().toISOString().split('T')[0]);
+                    
+                    // [수정] 휴일 체크 및 일요일 체크
+                    const holidayName = holidayData[dStr];
+                    const isSun = (j === 0);
+                    const isSat = (j === 6);
+
                     td.dataset.date = dStr; td.className = "relative p-1 border-slate-800"; td.ondragover = window.handleAdminDragOver; td.ondragleave = window.handleAdminDragLeave; td.ondrop = (e) => window.handleAdminDrop(e, dStr);
+                    
+                    // [추가] 휴일 배경색 처리
+                    if (isSun || holidayName) td.style.backgroundColor = 'rgba(244, 63, 94, 0.05)';
+                    else if (isSat) td.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+
                     if (daySlotUsage[dStr]) { const dayMaxSlot = Math.max(...Array.from(daySlotUsage[dStr]), -1) + 1; if (dayMaxSlot > maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot; }
                     td.onclick = (e) => { if(e.target.tagName === 'TD' || e.target.classList.contains('date-wrapper')) window.addAdminSchedule(dStr); };
-                    let html = `<div class="date-wrapper flex justify-between items-center mb-1"><span class="date-text ${isToday ? 'is-today' : ''} ${j===0?'text-rose-500':(j===6?'text-blue-500':'text-slate-400')}">${dateNum}</span></div>`;
-                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                        if (isMobile || (dStr === ev.sDate || j === 0)) {
-                            const currentSlot = eventFinalSlot[ev.id] || 0, diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000), span = Math.min(diffDays + 1, 7 - j), isCont = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '', evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                            html += `<div onclick="event.stopPropagation(); window.handleAdminSchClick('${ev.id}', ${evData})" draggable="true" ondragstart="window.handleAdminDragStart(event, '${ev.id}')" ondragend="window.handleAdminDragEnd(event)" class="sch-item ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'} ${isCont} text-white cursor-pointer" style="${isMobile ? '' : `top: ${36 + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px); z-index: ${10 + currentSlot};`}">
-                                <span class="sch-title-text">${(isCont && !isMobile) ? '' : ev.title}</span><span class="sch-staff-tag">${ev.author||''}</span></div>`;
-                        }
-                    });
+                    
+// [중요 수정 부분: 날짜 및 휴일 텍스트 출력]
+    let dateColorClass = isSun || holidayName ? 'text-rose-500' : (isSat ? 'text-blue-500' : 'text-slate-400');
+    
+    // 텍스트 크기를 11px로 키우고, 폰트 두께를 최대(900)로 설정
+    let html = `<div class="date-wrapper flex flex-col mb-1" style="min-height: 48px;">
+        <div class="flex justify-between items-center">
+            <span class="date-text ${isToday ? 'is-today' : ''} ${dateColorClass}">${dateNum}</span>
+        </div>
+        ${holidayName ? `
+            <span style="
+                font-size: 11px; 
+                color: #fb7185; 
+                font-weight: 900; 
+                line-height: 1.2; 
+                margin-top: 4px; 
+                display: block; 
+                letter-spacing: -0.5px;
+                text-shadow: 0 0 10px rgba(251, 113, 133, 0.2);
+            ">${holidayName}</span>` : ''}
+    </div>`;
+
+    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+        if (isMobile || (dStr === ev.sDate || j === 0)) {
+            const currentSlot = eventFinalSlot[ev.id] || 0;
+            const diffDays = Math.ceil((new Date(ev.eDate) - new Date(dStr)) / 86400000);
+            const span = Math.min(diffDays + 1, 7 - j);
+            const isCont = !isMobile && dStr > ev.sDate ? 'continued-from-prev' : '';
+            const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+            
+            // [수정] 휴일 텍스트가 커졌으므로 일정 바의 시작 위치(baseTop)를 더 내립니다.
+            const baseTop = holidayName ? 58 : 38; 
+            
+            html += `<div onclick="event.stopPropagation(); window.handleAdminSchClick('${ev.id}', ${evData})" 
+                draggable="true" 
+                class="sch-item ${ev.adminMemo ? 'bg-purple-600' : 'bg-blue-600'} ${isCont} text-white" 
+                style="${isMobile ? '' : `top: ${baseTop + (currentSlot * 26)}px; width: calc(${span * 100}% - 12px); z-index: ${10 + currentSlot};`}">
+                <span class="sch-title-text">${(isCont && !isMobile) ? '' : ev.title}</span>
+                <span class="sch-staff-tag">${ev.author||''}</span>
+            </div>`;
+        }
+    });
                     td.innerHTML = html; tr.appendChild(td); dateNum++;
                 }
                 if (hasDateInRow) {
@@ -269,8 +374,22 @@ try {
 
     window.handleAdminSchClick = function(id, ev) { if (typeof window.showAdminSchDetail === 'function') window.showAdminSchDetail(id, ev.title, ev.start, ev.end, ev.author || 'admin', ev.desc || '', ev.adminMemo || ''); };
     window.addEventListener('beforeunload', () => { db.ref('shared_schedules').off(); closeCalendarModal(); });
-    window.changeSchMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderScheduleFull(); };
-    window.goTodaySch = () => { viewDate = new Date(); window.renderScheduleFull(); };
-    window.renderScheduleFull();
+    
+    // [수정] 월 변경 시 연도가 바뀌면 휴일 다시 로드
+    window.changeSchMonth = (offset) => { 
+        const oldYear = viewDate.getFullYear();
+        viewDate.setMonth(viewDate.getMonth() + offset); 
+        const newYear = viewDate.getFullYear();
+        if(oldYear !== newYear) fetchAllAdminHolidays(newYear);
+        else window.renderScheduleFull();
+    };
+    
+    window.goTodaySch = () => { 
+        viewDate = new Date(); 
+        fetchAllAdminHolidays(viewDate.getFullYear());
+    };
+
+    // 최초 실행
+    initAdminSystem();
 })();
 </script>

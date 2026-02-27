@@ -449,43 +449,58 @@ window.handleAttendance = function (type) {
     btn.style.opacity = "0.5";
     const timeParts = rawTime.split(':');
     const storageTime = `${timeParts[0]}:${timeParts[1]}`;
-    db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
-        const currentData = snap.val() || {};
-        if (type === 'attend' && currentData.attend) {
-            alert("Attendance time has already been set.");
-            btn.disabled = false; btn.style.opacity = "1";
-            return;
-        }
-        let finalVal = storageTime;
-        if (type === 'attend') {
-            if (!standardTime) { 
-                alert("Standard time is loading..."); 
+
+    // 1. 먼저 사용자의 WarnFlag 상태를 가져옵니다.
+    db.ref('users/' + user + '/WarnFlag').once('value', (warnSnap) => {
+        const warnFlag = warnSnap.val();
+
+        db.ref('attendance/' + todayStr + '/' + user).once('value', (snap) => {
+            const currentData = snap.val() || {};
+            if (type === 'attend' && currentData.attend) {
+                alert("Attendance time has already been set.");
                 btn.disabled = false; btn.style.opacity = "1";
-                return; 
+                return;
             }
-            const [iHH, iMM] = storageTime.split(':').map(Number);
-            const [sHH, sMM] = standardTime.split(':').map(Number);
-            const stdMinutes = sHH * 60 + sMM;
-            const inputMinutes = iHH * 60 + iMM;
-            finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
-        }
-        if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-            db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
-            .then(async () => {
-                if (isAILoading) return; 
-                const aiMsg = await fetchAIComment(type, storageTime, user);
-                showAIPopup(aiMsg);
-            })
-            .finally(() => {
+
+            let finalVal = storageTime;
+            if (type === 'attend') {
+                if (!standardTime) { 
+                    alert("Standard time is loading..."); 
+                    btn.disabled = false; btn.style.opacity = "1";
+                    return; 
+                }
+
+                // 2. WarnFlag가 "off"이면 무조건 ATT로 저장, 아니면 기존 로직 수행
+                if (warnFlag === "off") {
+                    finalVal = `ATT(${storageTime})`;
+                } else {
+                    const [iHH, iMM] = storageTime.split(':').map(Number);
+                    const [sHH, sMM] = standardTime.split(':').map(Number);
+                    const stdMinutes = sHH * 60 + sMM;
+                    const inputMinutes = iHH * 60 + iMM;
+                    finalVal = (inputMinutes <= stdMinutes) ? `ATT(${storageTime})` : `LATE(${storageTime})`;
+                }
+            }
+
+            if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+                db.ref('attendance/' + todayStr + '/' + user).update({ [type]: finalVal })
+                .then(async () => {
+                    if (isAILoading) return; 
+                    const aiMsg = await fetchAIComment(type, storageTime, user);
+                    showAIPopup(aiMsg);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                });
+            } else {
                 btn.disabled = false;
                 btn.style.opacity = "1";
-            });
-        } else {
-            btn.disabled = false;
-            btn.style.opacity = "1";
-        }
+            }
+        });
     });
 };
+
 function updateAttendanceStats(data) {
     const viewYear = viewDate.getFullYear();
     const viewMonth = viewDate.getMonth() + 1;
