@@ -138,11 +138,11 @@
     <div class="flex-1">
         <section class="bg-slate-900 p-3 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl h-full">
             <div class="mb-6 flex justify-center sm:justify-start">
-                <button onclick="switchTab('all')" class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
-                    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
-                    <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
-                    <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
-                </button>
+<button onclick="window.switchTab('all')" class="group relative flex items-center gap-3 bg-black hover:bg-slate-900 text-white px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-black transition-all active:scale-95 shadow-lg shadow-black/50 border border-slate-800 w-full sm:w-auto justify-center sm:justify-start h-fit">
+    <img src="images/gif/click.gif" alt="click" class="w-8 h-8 md:w-10 md:h-10 object-contain group-hover:scale-110 transition-transform">
+    <span class="uppercase tracking-widest whitespace-nowrap">All Staff Record</span>
+    <span class="opacity-50 group-hover:translate-x-1 transition-transform hidden xs:inline">❯</span>
+</button>
             </div>
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 px-1 gap-3">
                 <div class="flex items-center justify-between w-full sm:w-auto gap-3">
@@ -875,6 +875,7 @@ function showMissingPopup(missingInfo) {
         </div>`;
     document.body.appendChild(overlay);
 }
+
 window.hidePopupToday = function() {
     const todayStr = getJakartaDate().toISOString().split('T')[0];
     localStorage.setItem('hideReportPopup', todayStr);
