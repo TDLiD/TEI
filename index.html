@@ -135,20 +135,30 @@
                 }
             });
 
-            window.handleLogin = function() {
-                const name = document.getElementById('userName').value;
-                const pw = document.getElementById('password').value;
-                if(!name || !pw) return alert("Please check your credentials.");
-                database.ref('users/' + name).once('value', (snapshot) => {
-                    const userData = snapshot.val();
-                    if (!userData) return alert("User not found.");
-                    if (userData.password === pw) {
-                        sessionStorage.setItem('loggedInUser', name);
-                        sessionStorage.setItem('userRole', userData.role);
-                        location.href = (userData.role === 'admin' || name === 'Admin') ? "admin.html" : "staff.html";
-                    } else { alert("Incorrect password."); }
-                });
-            };
+window.handleLogin = function() {
+    const name = document.getElementById('userName').value;
+    const pw = document.getElementById('password').value;
+    if(!name || !pw) return alert("Please check your credentials.");
+    
+    database.ref('users/' + name).once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (!userData) return alert("User not found.");
+        
+        if (userData.password === pw) {
+            sessionStorage.setItem('loggedInUser', name);
+            sessionStorage.setItem('userRole', userData.role);
+            
+            // 관리자가 아니면 staff_list.html로 이동하게 수정
+            if (userData.role === 'admin' || name === 'Admin') {
+                location.href = "admin.html";
+            } else {
+                location.href = "staff_list.html"; // 수정된 부분
+            }
+        } else { 
+            alert("Incorrect password."); 
+        }
+    });
+};
 
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menu Select - Daily System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        body { 
+            font-family: "Pretendard", sans-serif; 
+            background-color: #0f172a; 
+            color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* 배경 고정을 위해 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-h-screen;
+        }
+
+        /* 요일별 동적 배경 설정 */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* 배경 어둡게 처리하여 가독성 확보 */
+        .bg-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6); /* 이미지 대비를 위해 어둡게 */
+            backdrop-filter: blur(2px);
+        }
+
+        .menu-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (hover: hover) {
+            .menu-card:hover {
+                transform: translateY(-5px);
+                background: rgba(59, 130, 246, 0.2);
+                border-color: rgba(59, 130, 246, 0.5);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .menu-card:active {
+            transform: scale(0.95);
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        /* 스크롤 가능한 영역 (작은 화면 대응) */
+        .content-wrapper {
+            width: 100%;
+            max-height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            -ms-overflow-style: none; scrollbar-width: none; /* 스크롤바 숨김 */
+        }
+        .content-wrapper::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="dynamicBg" class="bg-overlay"></div>
+
+    <div class="content-wrapper">
+        <div class="w-full max-w-2xl text-center mb-8 md:mb-12">
+            <h1 id="userGreeting" class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-lg">Hello!</h1>
+            <p class="text-blue-300 text-xs md:text-sm uppercase tracking-[0.3em] font-black drop-shadow-md">Select Task To Continue</p>
+        </div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-4xl">
+    
+    <div onclick="navigateTo('staff_main.html')" class="menu-card rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 cursor-pointer shadow-2xl">
+        <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <img src="images/gif/staff_list/Attendance.gif" alt="Attendance" class="w-full h-full object-contain">
+        </div>
+        <span class="text-[10px] md:text-xs font-black uppercase tracking-widest text-center">Attendance</span>
+    </div>
+
+    <div onclick="navigateTo('staff_report.html')" class="menu-card rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 cursor-pointer shadow-2xl">
+        <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <img src="images/gif/staff_list/work-report.gif" alt="Work Report" class="w-full h-full object-contain">
+        </div>
+        <span class="text-[10px] md:text-xs font-black uppercase tracking-widest text-center">Work Report</span>
+    </div>
+
+    <div onclick="navigateTo('staff_calendar.html')" class="menu-card rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 cursor-pointer shadow-2xl">
+        <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <img src="images/gif/staff_list/calendar.gif" alt="Calendar" class="w-full h-full object-contain">
+        </div>
+        <span class="text-[10px] md:text-xs font-black uppercase tracking-widest text-center">Calendar</span>
+    </div>
+
+    <div onclick="navigateTo('staff_leave.html')" class="menu-card rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 cursor-pointer shadow-2xl">
+        <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <img src="images/gif/staff_list/vacation.gif" alt="Vacation" class="w-full h-full object-contain">
+        </div>
+        <span class="text-[10px] md:text-xs font-black uppercase tracking-widest text-center">Vacation</span>
+    </div>
+
+</div>
+
+        <div class="mt-12 flex items-center gap-8">
+            <button onclick="navigateTo('staff_setting.html')" class="group flex flex-col items-center gap-2">
+                <div class="p-3 rounded-full bg-slate-800/50 border border-slate-700 group-hover:bg-slate-700 transition">⚙️</div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Settings</span>
+            </button>
+            
+            <button onclick="handleLogout()" class="group flex flex-col items-center gap-2">
+                <div class="p-3 rounded-full bg-rose-900/20 border border-rose-900/30 group-hover:bg-rose-900/40 transition">🚪</div>
+                <span class="text-[9px] font-bold text-rose-500 uppercase tracking-widest">Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 사용자 확인
+        const user = sessionStorage.getItem('loggedInUser');
+        if (!user) location.href = 'index.html';
+        document.getElementById('userGreeting').innerText = `Hello, ${user}!`;
+
+        // 2. 요일별 배경 설정 로직
+        function setDailyBackground() {
+            const bgLayer = document.getElementById('dynamicBg');
+            const day = new Date().getDay(); // 0: 일, 1: 월, ... 6: 토
+            
+            // 요일에 따른 이미지 매핑 (일요일: cat7, 월요일: cat1 ... 토요일: cat6)
+            // Name 규칙에 따라 매칭: 1(월), 2(화), 3(수), 4(목), 5(금), 6(토), 0(일)
+            const dailyImages = {
+                1: 'cat1.gif',
+                2: 'cat2.gif',
+                3: 'cat3.gif',
+                4: 'cat4.gif',
+                5: 'cat5.gif',
+                6: 'cat6.gif',
+                0: 'cat7.gif'
+            };
+
+            const selectedImage = dailyImages[day] || 'cat1.gif';
+            bgLayer.style.backgroundImage = `url('images/gif/${selectedImage}')`;
+        }
+
+        // 실행
+        setDailyBackground();
+
+        // 3. 네비게이션 함수
+        function navigateTo(page) {
+            sessionStorage.setItem('targetPage', page);
+            location.href = 'staff.html';
+        }
+
+        // 4. 로그아웃 함수
+        function handleLogout() {
+            if(confirm("Do you want to logout?")) {
+                sessionStorage.clear();
+                location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

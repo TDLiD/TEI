@@ -239,7 +239,7 @@ function getJakartaDate() {
     const db = firebase.database();
     if (user) {
         checkLeaveStatus(user);
-autoFillYesterdayLeave(user); 
+        autoFillYesterdayLeave(user); 
     }
     let now = getJakartaDate();
     let viewDate = new Date(now);
@@ -251,6 +251,7 @@ autoFillYesterdayLeave(user);
     let hasCheckedMissing = false;
     const btnIn = document.getElementById('btnIn');
     const timeInput = document.getElementById('manualTime');
+
     function checkLeaveStatus(uid) {
         const currentYear = new Date().getFullYear();
         db.ref(`leaves/${uid}/${currentYear}`).on('value', (snapshot) => {
@@ -283,33 +284,50 @@ autoFillYesterdayLeave(user);
             }
         });
     }
-function autoFillYesterdayLeave(uid) {
-    const yesterday = getJakartaDate();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const y = yesterday.getFullYear();
-    const m = String(yesterday.getMonth() + 1).padStart(2, '0');
-    const d = String(yesterday.getDate()).padStart(2, '0');
-    const yestStr = `${y}-${m}-${d}`;
-    const dayOfWeek = yesterday.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) return;
-    db.ref('settings/config/autoLeave').once('value', (configSnap) => {
-        const autoLeaveTime = configSnap.val() || "18:00";
-        db.ref('attendance/' + yestStr).once('value', (snapshot) => {
-            const allData = snapshot.val();
-            if (!allData) return;
-            const myData = allData[uid];
-            if (myData && typeof myData === 'object' && myData.attend && !myData.leave) {
-                console.log(`Auto-filling leave for ${yestStr} with config time: ${autoLeaveTime}...`);
-                db.ref(`attendance/${yestStr}/${uid}`).update({
-                    leave: autoLeaveTime 
-                }).then(() => {
-                    console.log(`Successfully updated ${yestStr} leave to ${autoLeaveTime} for ${uid}`);
-                    if (typeof renderCalendar === 'function') renderCalendar();
-                });
-            }
+
+    // 수정된 autoFillYesterdayLeave 함수
+    function autoFillYesterdayLeave(uid) {
+        const now = getJakartaDate();
+        const dayOfWeekToday = now.getDay(); // 0:일, 1:월, ...
+        const targetDate = getJakartaDate();
+
+        // 로직: 오늘이 월요일(1)이면 3일 전(금요일)을 체크, 아니면 1일 전을 체크
+        if (dayOfWeekToday === 1) {
+            targetDate.setDate(now.getDate() - 3);
+        } else {
+            targetDate.setDate(now.getDate() - 1);
+        }
+
+        const y = targetDate.getFullYear();
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const targetStr = `${y}-${m}-${d}`;
+        const targetDayOfWeek = targetDate.getDay();
+
+        // 타겟 날짜가 주말(토요일 6, 일요일 0)이면 중단
+        if (targetDayOfWeek === 0 || targetDayOfWeek === 6) return;
+
+        db.ref('settings/config/autoLeave').once('value', (configSnap) => {
+            const autoLeaveTime = configSnap.val() || "18:00";
+            db.ref('attendance/' + targetStr).once('value', (snapshot) => {
+                const allData = snapshot.val();
+                if (!allData) return;
+                
+                const myData = allData[uid];
+                // 출근 기록은 있고 퇴근 기록만 없는 경우 자동 기입
+                if (myData && typeof myData === 'object' && myData.attend && !myData.leave) {
+                    console.log(`Auto-filling leave for ${targetStr} (Day: ${targetDayOfWeek}) with time: ${autoLeaveTime}...`);
+                    db.ref(`attendance/${targetStr}/${uid}`).update({
+                        leave: autoLeaveTime 
+                    }).then(() => {
+                        console.log(`Successfully updated ${targetStr} leave to ${autoLeaveTime} for ${uid}`);
+                        if (typeof renderCalendar === 'function') renderCalendar();
+                    });
+                }
+            });
         });
-    });
-}
+    }
+
     function updateLiveTime() {
         if (document.activeElement === timeInput) return;
         const liveNow = getJakartaDate();
@@ -318,6 +336,7 @@ function autoFillYesterdayLeave(uid) {
         const ss = String(liveNow.getSeconds()).padStart(2, '0');
         timeInput.value = `${hh}:${mm}:${ss}`;
     }
+
     setInterval(updateLiveTime, 1000);
     updateLiveTime();
     timeInput.addEventListener('input', function (e) {
