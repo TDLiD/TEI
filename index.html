@@ -4,548 +4,177 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Login - Daily Report System</title>
-
+    
+    <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
-
+    
     <style>
-    /* ═══════════════════════════════════════════════════
-       DESIGN SYSTEM
-       Aesthetic: Hyper-Dark × 3D Spatial Glass × Chrome
-    ═══════════════════════════════════════════════════ */
-    :root {
-        --bg:         #020509;
-        --surface:    rgba(6,14,28,0.72);
-        --blue:       #2563eb;
-        --blue-2:     #3b82f6;
-        --cyan:       #06b6d4;
-        --violet:     #7c3aed;
-        --chrome:     #e2e8f0;
-        --text:       #cbd5e1;
-        --muted:      #475569;
-        --border:     rgba(255,255,255,0.07);
-        --border-2:   rgba(255,255,255,0.13);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; }
-
-    body {
-        font-family: "Pretendard", system-ui, sans-serif;
-        min-height: 100vh;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        color: var(--text);
-        background: var(--bg);
-        background-size: cover; background-position: center;
-        background-attachment: fixed; background-repeat: no-repeat;
-        -webkit-tap-highlight-color: transparent;
-        overflow-x: hidden;
-        -webkit-font-smoothing: antialiased;
-        opacity: 0;
-        transition: opacity 0.5s ease-in;
-        padding: 24px 16px;
-    }
-    body.loaded { opacity: 1; }
-
-    /* ── Noise grain ─────────────────────────────── */
-    body::before {
-        content: '';
-        position: fixed; inset: 0; z-index: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        opacity: 0.022; pointer-events: none;
-    }
-
-    /* ── Ambient orbs ────────────────────────────── */
-    .orb {
-        position: fixed; border-radius: 50%;
-        filter: blur(110px); pointer-events: none; z-index: 0;
-        animation: orb-drift 22s ease-in-out infinite alternate;
-    }
-    .orb-a { width: 600px; height: 600px; background: rgba(37,99,235,0.07); top: -15%; right: -12%; }
-    .orb-b { width: 500px; height: 500px; background: rgba(124,58,237,0.06); bottom: -12%; left: -10%; animation-delay: -9s; }
-    .orb-c { width: 300px; height: 300px; background: rgba(6,182,212,0.05); top: 55%; right: 25%; animation-delay: -16s; }
-    @keyframes orb-drift {
-        0%   { transform: translate(0,0) scale(1); }
-        100% { transform: translate(24px,44px) scale(1.1); }
-    }
-
-    /* ── 3D grid floor ───────────────────────────── */
-    .grid-floor {
-        position: fixed; bottom: 0; left: 0; right: 0; height: 35vh;
-        background-image:
-            linear-gradient(rgba(37,99,235,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(37,99,235,0.06) 1px, transparent 1px);
-        background-size: 50px 50px;
-        transform: perspective(600px) rotateX(60deg) translateY(30%);
-        transform-origin: center bottom;
-        mask-image: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 70%);
-        -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 70%);
-        pointer-events: none; z-index: 0;
-        animation: grid-scroll 14s linear infinite;
-    }
-    @keyframes grid-scroll { to { background-position: 0 -50px; } }
-
-    /* ── Scan line ───────────────────────────────── */
-    .scan-line {
-        position: fixed; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-        opacity: 0.2; pointer-events: none; z-index: 0;
-        animation: scan 8s ease-in-out infinite;
-    }
-    @keyframes scan {
-        0%   { top: 110%; opacity: 0; }
-        8%   { opacity: 0.2; }
-        92%  { opacity: 0.15; }
-        100% { top: -5%; opacity: 0; }
-    }
-
-    /* ── Particles ───────────────────────────────── */
-    .particle {
-        position: fixed; border-radius: 50%;
-        pointer-events: none; z-index: 0;
-        animation: p-float linear infinite;
-        background: var(--cyan); opacity: 0;
-    }
-    @keyframes p-float {
-        0%   { opacity:0; transform: translateY(0) scale(0); }
-        10%  { opacity:0.15; transform: translateY(-15px) scale(1); }
-        90%  { opacity:0.08; }
-        100% { opacity:0; transform: translateY(-100px) scale(0.5); }
-    }
-
-    /* ══════════════════════════════════════════════
-       LAYOUT
-    ══════════════════════════════════════════════ */
-    .page-inner {
-        position: relative; z-index: 1;
-        width: 100%; max-width: 960px;
-        display: flex; flex-direction: column;
-        align-items: center;
-        gap: clamp(28px, 5vh, 48px);
-    }
-
-    /* ── HEADER ──────────────────────────────────── */
-    .header-block {
-        display: flex; flex-direction: column;
-        align-items: center; gap: 20px;
-        text-align: center;
-        animation: reveal 0.9s cubic-bezier(0.16,1,0.3,1) both;
-    }
-    @media (min-width: 640px) {
-        .header-block { flex-direction: row; text-align: left; gap: 28px; }
-    }
-    @keyframes reveal {
-        from { opacity:0; transform: translateY(-24px); }
-        to   { opacity:1; transform: translateY(0); }
-    }
-
-    /* Logo — 3D float */
-    .logo-wrap {
-        position: relative; flex-shrink: 0;
-        width: clamp(80px, 12vw, 112px);
-        height: clamp(80px, 12vw, 112px);
-        animation: logo-float 4s ease-in-out infinite;
-    }
-    @keyframes logo-float {
-        0%,100% { transform: translateY(0) rotateY(0deg); }
-        50%      { transform: translateY(-8px) rotateY(6deg); }
-    }
-    .logo-ring {
-        position: absolute; inset: -8px; border-radius: 50%;
-        border: 1px solid rgba(37,99,235,0.25);
-        animation: ring-spin 8s linear infinite;
-    }
-    .logo-ring::before {
-        content: '';
-        position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-        width: 6px; height: 6px; border-radius: 50%;
-        background: var(--blue-2); box-shadow: 0 0 10px var(--blue-2);
-    }
-    @keyframes ring-spin { to { transform: rotate(360deg); } }
-    .logo-img {
-        width: 100%; height: 100%; object-fit: contain; border-radius: 28px;
-        filter: drop-shadow(0 12px 32px rgba(37,99,235,0.35));
-    }
-
-    .header-text-block { display: flex; flex-direction: column; gap: 6px; }
-
-    .sys-tag {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-size: 0.58rem; letter-spacing: 0.32em; text-transform: uppercase;
-        color: var(--cyan); margin-bottom: 2px;
-    }
-    .sys-dot {
-        width: 5px; height: 5px; border-radius: 50%;
-        background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
-        animation: sys-pulse 2s ease-in-out infinite;
-    }
-    @keyframes sys-pulse {
-        0%,100% { opacity:1; transform:scale(1); }
-        50%      { opacity:0.3; transform:scale(0.6); }
-    }
-
-    .main-title {
-        font-size: clamp(2.4rem, 7vw, 4rem);
-        font-weight: 900; letter-spacing: -0.04em; line-height: 1;
-        color: #fff; text-shadow: 0 0 60px rgba(37,99,235,0.25);
-    }
-    .main-title .accent {
-        background: linear-gradient(135deg, var(--blue-2) 0%, var(--cyan) 60%, var(--violet) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    .sub-title {
-        font-size: 0.72rem; letter-spacing: 0.28em;
-        text-transform: uppercase; color: var(--muted); font-weight: 700;
-    }
-
-    /* ── LOGIN CARD ──────────────────────────────── */
-    .login-card {
-        width: 100%; max-width: 440px;
-        background: var(--surface);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid var(--border-2);
-        border-radius: 32px;
-        padding: clamp(28px, 5vw, 44px);
-        position: relative; overflow: hidden;
-        box-shadow:
-            0 0 0 1px rgba(255,255,255,0.04),
-            0 8px 16px rgba(0,0,0,0.4),
-            0 32px 64px rgba(0,0,0,0.5),
-            0 0 80px rgba(37,99,235,0.07);
-        animation: reveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.15s both;
-    }
-    /* Top shimmer line */
-    .login-card::before {
-        content: '';
-        position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-    }
-    /* Holographic tint */
-    .login-card::after {
-        content: '';
-        position: absolute; inset: 0; border-radius: inherit;
-        background: linear-gradient(135deg,
-            rgba(255,255,255,0.02) 0%, transparent 50%, rgba(37,99,235,0.04) 100%);
-        pointer-events: none;
-    }
-
-    /* Corner accent marks */
-    .card-corner {
-        position: absolute; width: 24px; height: 24px;
-        border-color: rgba(37,99,235,0.3); border-style: solid; border-width: 0;
-    }
-    .card-corner.tl { top:18px; left:18px; border-top-width:1px; border-left-width:1px; border-radius:4px 0 0 0; }
-    .card-corner.tr { top:18px; right:18px; border-top-width:1px; border-right-width:1px; border-radius:0 4px 0 0; }
-    .card-corner.bl { bottom:18px; left:18px; border-bottom-width:1px; border-left-width:1px; border-radius:0 0 0 4px; }
-    .card-corner.br { bottom:18px; right:18px; border-bottom-width:1px; border-right-width:1px; border-radius:0 0 4px 0; }
-
-    .card-header { margin-bottom: 28px; }
-    .card-welcome { font-size: 1.35rem; font-weight: 800; color: var(--chrome); letter-spacing: -0.02em; margin-bottom: 4px; }
-    .card-sub     { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
-
-    /* ── FIELDS ──────────────────────────────────── */
-    .field { margin-bottom: 20px; }
-    .field-label {
-        display: block; font-size: 0.6rem; font-weight: 800;
-        letter-spacing: 0.25em; text-transform: uppercase;
-        color: var(--muted); margin-bottom: 8px; padding-left: 2px;
-    }
-    .field-wrap { position: relative; }
-
-    select, input[type="password"] {
-        width: 100%;
-        background: rgba(2,5,9,0.6) !important;
-        border: 1px solid var(--border-2) !important;
-        color: var(--chrome) !important;
-        font-family: "Pretendard", sans-serif;
-        font-size: 0.9rem !important; font-weight: 500;
-        padding: 14px 44px 14px 16px;
-        border-radius: 14px; outline: none;
-        appearance: none; -webkit-appearance: none;
-        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-    select option { background: #0d1a2e; color: var(--chrome); }
-    select:focus, input[type="password"]:focus {
-        border-color: rgba(37,99,235,0.5) !important;
-        box-shadow: 0 0 0 3px rgba(37,99,235,0.12), 0 4px 16px rgba(37,99,235,0.08);
-        background: rgba(6,14,28,0.8) !important;
-    }
-    .field-chevron {
-        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-        pointer-events: none; color: var(--muted); font-size: 0.65rem;
-    }
-
-    .forgot-row { display: flex; justify-content: flex-end; margin-top: 8px; }
-    .forgot-btn {
-        background: none; border: none; cursor: pointer;
-        font-family: "Pretendard", sans-serif;
-        font-size: 0.62rem; font-weight: 800;
-        letter-spacing: 0.18em; text-transform: uppercase;
-        color: var(--muted); padding: 0; transition: color 0.2s;
-    }
-    .forgot-btn:hover { color: var(--blue-2); }
-
-    /* ── SUBMIT BUTTON ───────────────────────────── */
-    .submit-btn {
-        width: 100%; margin-top: 8px;
-        padding: 16px 24px;
-        background: linear-gradient(135deg, var(--blue) 0%, #1d4ed8 100%);
-        border: none; border-radius: 14px;
-        color: #fff; cursor: pointer;
-        font-family: "Pretendard", sans-serif;
-        font-size: 0.78rem; font-weight: 900;
-        letter-spacing: 0.22em; text-transform: uppercase;
-        position: relative; overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
-        box-shadow: 0 4px 16px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-    }
-    .submit-btn::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
-        transform: translateX(-100%); transition: transform 0.5s ease;
-    }
-    .submit-btn:hover {
-        box-shadow: 0 8px 30px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-        transform: translateY(-1px);
-    }
-    .submit-btn:hover::before { transform: translateX(100%); }
-    .submit-btn:active { transform: scale(0.97); }
-
-    /* ── STATUS BAR ──────────────────────────────── */
-    .divider {
-        width: 100%; height: 1px; margin: 28px 0 0;
-        background: linear-gradient(90deg, transparent, var(--border-2), transparent);
-    }
-    .status-bar {
-        display: flex; align-items: center; justify-content: center;
-        gap: 8px; padding-top: 16px;
-        font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
-    }
-    .status-dot {
-        width: 5px; height: 5px; border-radius: 50%;
-        background: #22c55e; box-shadow: 0 0 6px #22c55e;
-        animation: sys-pulse 2.5s ease-in-out infinite;
-    }
-
-    /* ── RESPONSIVE ──────────────────────────────── */
-    @media (max-height: 680px) {
-        .page-inner { gap: 16px; }
-        .logo-wrap  { width: 64px; height: 64px; }
-        .login-card { padding: 22px; border-radius: 24px; }
-        .card-header { margin-bottom: 18px; }
-        .field { margin-bottom: 14px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
+        body { 
+            font-family: "Pretendard", sans-serif; 
+            color: #f1f5f9; 
+            -webkit-tap-highlight-color: transparent; 
+            margin: 0; 
+            overflow-x: hidden; 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            background-repeat: no-repeat; 
+            transition: background 0.5s ease-in-out;
+            opacity: 0;
+        }
+        body.loaded { opacity: 1; transition: opacity 0.5s ease-in; }
+        #video-bg { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -2; transform: translate(-50%, -50%); object-fit: cover; display: none; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: -1; }
+        select, input { background-color: rgba(30, 41, 59, 0.7) !important; backdrop-filter: blur(10px); color: white !important; border-color: rgba(51, 65, 85, 0.5) !important; font-size: 16px !important; }
+        .login-card { background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="flex flex-col justify-center items-center min-h-screen p-4 md:p-8">
+    <video autoplay muted loop playsinline id="video-bg">
+        <source src="images/gif/jennie.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
 
-    <!-- Ambient decoration -->
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="orb orb-c"></div>
-    <div class="grid-floor"></div>
-    <div class="scan-line"></div>
-
-    <!-- Floating particles -->
-    <div class="particle" style="width:3px;height:3px;left:12%;bottom:0;animation-duration:9s;animation-delay:0s;"></div>
-    <div class="particle" style="width:2px;height:2px;left:30%;bottom:0;animation-duration:11s;animation-delay:2.5s;"></div>
-    <div class="particle" style="width:4px;height:4px;left:52%;bottom:0;animation-duration:8s;animation-delay:5s;background:var(--blue-2);"></div>
-    <div class="particle" style="width:2px;height:2px;left:72%;bottom:0;animation-duration:10s;animation-delay:1s;"></div>
-    <div class="particle" style="width:3px;height:3px;left:88%;bottom:0;animation-duration:12s;animation-delay:3.5s;background:var(--violet);"></div>
-
-    <!-- Page content -->
-    <div class="page-inner">
-
-        <!-- Header -->
-        <div class="header-block">
-            <div class="logo-wrap">
-                <div class="logo-ring"></div>
-                <img src="images/login/login.gif" alt="Logo" class="logo-img">
-            </div>
-            <div class="header-text-block">
-                <div class="sys-tag">
-                    <span class="sys-dot"></span>
+    <div class="text-center mb-8 md:mb-12 animate-fadeIn w-full max-w-lg">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
+            <img src="images/login/login.gif" alt="Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain">
+            <div class="text-center md:text-left">
+                <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl">
+                    Staff Login
+                </h2>
+                <p class="text-slate-300 text-xs md:text-sm font-medium tracking-[0.2em] uppercase mt-2 drop-shadow-lg">
                     Daily Report System
-                    <span class="sys-dot" style="animation-delay:.6s"></span>
-                </div>
-                <h1 class="main-title">Staff<br><span class="accent">Login</span></h1>
-                <p class="sub-title">Secure Access Portal</p>
+                </p>
             </div>
         </div>
+    </div>
 
-        <!-- Login card -->
-        <div class="login-card" id="loginCard">
-            <div class="card-corner tl"></div>
-            <div class="card-corner tr"></div>
-            <div class="card-corner bl"></div>
-            <div class="card-corner br"></div>
-
-            <div class="card-header">
-                <p class="card-welcome">Welcome back</p>
-                <p class="card-sub">Select your name to continue</p>
-            </div>
-
-            <div class="field">
-                <label class="field-label" for="userName">Staff Member</label>
-                <div class="field-wrap">
-                    <select id="userName">
+    <div class="login-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-[440px] animate-fadeIn" style="animation-delay: 0.2s;">
+        <div class="mb-8 text-center md:text-left">
+            <p class="text-slate-200 text-xl md:text-2xl font-bold">Welcome back</p>
+            <p class="text-slate-400 text-sm mt-1">Select your name to continue</p>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Staff Member</label>
+                <div class="relative">
+                    <select id="userName" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none cursor-pointer shadow-xl">
                         <option value="" disabled selected>Loading staff list...</option>
                     </select>
-                    <span class="field-chevron">▼</span>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
                 </div>
             </div>
-
-            <div class="field">
-                <label class="field-label" for="password">Password</label>
-                <div class="field-wrap">
-                    <input type="password" id="password" placeholder="••••••••">
-                </div>
-                <div class="forgot-row">
-                    <button class="forgot-btn" onclick="findPassword()">Forgot Password?</button>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
+                <input type="password" id="password" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-xl" placeholder="••••••••">
+                <div class="flex justify-end px-1 mt-2">
+                    <button onclick="findPassword()" class="text-[10px] text-slate-400 hover:text-blue-400 transition font-bold uppercase tracking-wider">
+                        Forgot Password?
+                    </button>
                 </div>
             </div>
-
-            <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
-                ▶ &nbsp; Sign In
-            </button>
-
-            <div class="divider"></div>
-            <div class="status-bar">
-                <span class="status-dot"></span>
-                System Online
+            <div class="pt-2">
+                <button id="loginBtn" onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 shadow-xl shadow-blue-900/30 transition-all active:scale-95 text-base uppercase tracking-widest">
+                    Sign In
+                </button>
             </div>
         </div>
-
     </div>
 
     <script>
-    /* ════════════════════════════════════════════
-       ALL ORIGINAL LOGIC — 100% UNTOUCHED
-    ════════════════════════════════════════════ */
-    (function() {
-        window.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('loaded');
-        });
+        (function() {
+            window.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('loaded');
+            });
 
-// 이 함수 전체를 삭제하거나 아래처럼 수정하세요
-const setResponsiveBackground = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const videoEl  = document.getElementById('video-bg'); // 삭제됨
-    
-    // 비디오 관련 로직(if/else)을 지우고 배경 이미지 설정만 남깁니다.
-    const day = new Date().getDay();
-    const dailyImages = {
-        1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif",
-        4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif",
-        0: "jennie-7.gif"
-    };
-    const bgImage = dailyImages[day] || "jennie-1.gif";
-    document.body.style.backgroundImage =
-        `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('images/gif/${bgImage}')`;
-};
-        setResponsiveBackground();
-
-        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        const userSelect    = document.getElementById('userName');
-        const passwordInput = document.getElementById('password');
-
-        passwordInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
-        });
-
-        database.ref('users').limitToFirst(50).once('value', (snapshot) => {
-            const users = snapshot.val();
-            if (!userSelect) return;
-            userSelect.innerHTML = '<option value="" disabled selected>Select Name</option>';
-            if (users) {
-                const fragment = document.createDocumentFragment();
-                Object.keys(users).forEach(name => {
-                    const option       = document.createElement('option');
-                    option.value       = name;
-                    option.textContent = name + (users[name].role === 'admin' ? ' (Manager)' : '');
-                    fragment.appendChild(option);
-                });
-                userSelect.appendChild(fragment);
-            }
-        });
-
-        window.handleLogin = function() {
-            const name = document.getElementById('userName').value;
-            const pw   = document.getElementById('password').value;
-            if (!name || !pw) return alert("Please check your credentials.");
-
-            database.ref('users/' + name).once('value', (snapshot) => {
-                const userData = snapshot.val();
-                if (!userData) return alert("User not found.");
-                if (userData.password === pw) {
-                    sessionStorage.setItem('loggedInUser', name);
-                    sessionStorage.setItem('userRole', userData.role);
-                    if (userData.role === 'admin' || name === 'Admin') {
-                        location.href = "admin.html";
-                    } else {
-                        location.href = "staff_list.html";
-                    }
+            const setResponsiveBackground = () => {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                const videoEl = document.getElementById('video-bg');
+                if (isMobile) {
+                    videoEl.style.display = 'none';
+                    const day = new Date().getDay();
+                    const dailyImages = { 1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif", 4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif", 0: "jennie-7.gif" };
+                    const bgImage = dailyImages[day] || "jennie-1.gif";
+                    document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('images/gif/${bgImage}')`;
                 } else {
-                    alert("Incorrect password.");
+                    videoEl.style.display = 'block';
+                    document.body.style.backgroundImage = 'none';
+                }
+            };
+
+            setResponsiveBackground();
+
+            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            
+            const userSelect = document.getElementById('userName');
+            const passwordInput = document.getElementById('password');
+
+            passwordInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+            });
+
+            database.ref('users').limitToFirst(50).once('value', (snapshot) => {
+                const users = snapshot.val();
+                if (!userSelect) return;
+                userSelect.innerHTML = '<option value="" disabled selected>Select Name</option>';
+                if (users) {
+                    const fragment = document.createDocumentFragment();
+                    Object.keys(users).forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name + (users[name].role === 'admin' ? ' (Manager)' : '');
+                        fragment.appendChild(option);
+                    });
+                    userSelect.appendChild(fragment);
                 }
             });
-        };
 
-        window.findPassword = function() {
-            const name = document.getElementById('userName').value;
-            if (!name) return alert("Please select your name from the list first.");
-            if (confirm(`Do you want to see a password hint for '${name}'?`)) {
-                database.ref('users/' + name).once('value', (snapshot) => {
-                    const userData = snapshot.val();
-                    if (userData && userData.password) {
-                        const pw   = userData.password;
-                        const hint = pw.length > 2
-                            ? pw.substring(0, 2) + "*".repeat(pw.length - 2)
-                            : pw;
-                        alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
-                    } else {
-                        alert("User information or password not found.");
-                    }
-                });
+window.handleLogin = function() {
+    const name = document.getElementById('userName').value;
+    const pw = document.getElementById('password').value;
+    if(!name || !pw) return alert("Please check your credentials.");
+    
+    database.ref('users/' + name).once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (!userData) return alert("User not found.");
+        
+        if (userData.password === pw) {
+            sessionStorage.setItem('loggedInUser', name);
+            sessionStorage.setItem('userRole', userData.role);
+            
+            // 관리자가 아니면 staff_list.html로 이동하게 수정
+            if (userData.role === 'admin' || name === 'Admin') {
+                location.href = "admin.html";
+            } else {
+                location.href = "staff_list.html"; // 수정된 부분
             }
-        };
-
-    /* ════════════════════════════════════════════
-       DESIGN-ONLY ADDITIONS (기능 무관)
-    ════════════════════════════════════════════ */
-        // 3D card tilt on desktop
-        if (window.matchMedia('(hover: hover)').matches) {
-            const card = document.getElementById('loginCard');
-            card.addEventListener('mousemove', e => {
-                const r  = card.getBoundingClientRect();
-                const dx = (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2);
-                const dy = (e.clientY - (r.top  + r.height / 2)) / (r.height / 2);
-                card.style.transition = 'transform 0.1s linear';
-                card.style.transform  =
-                    `perspective(1200px) rotateX(${-dy * 4}deg) rotateY(${dx * 4}deg) scale(1.01)`;
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transition = 'transform 0.5s ease';
-                card.style.transform  = 'perspective(1200px) rotateX(0) rotateY(0) scale(1)';
-            });
+        } else { 
+            alert("Incorrect password."); 
         }
-    })();
+    });
+};
+
+            window.findPassword = function() {
+                const name = document.getElementById('userName').value;
+                if (!name) return alert("Please select your name from the list first.");
+                if (confirm(`Do you want to see a password hint for '${name}'?`)) {
+                    database.ref('users/' + name).once('value', (snapshot) => {
+                        const userData = snapshot.val();
+                        if (userData && userData.password) {
+                            const pw = userData.password;
+                            const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
+                            alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
+                        } else { alert("User information or password not found."); }
+                    });
+                }
+            };
+        })();
     </script>
 </body>
 </html>
