@@ -159,19 +159,33 @@ if(loggedInUser) {
 window.switchTab = function(t) {
     const pB = document.querySelectorAll('.pc-tab-btn'); 
     const mB = document.querySelectorAll('.mobile-tab-btn');
+    
+    // 탭 맵 정의
+    const tabMapping = { 
+        dash: 'staff_main.html', 
+        work: 'staff_report.html', 
+        schedule: 'staff_calendar.html', 
+        leave: 'staff_leave.html', 
+        statistic: 'staff_statistic.html', 
+        setting: 'staff_setting.html' 
+    };
+
+    // 만약 전달받은 t가 맵에 없다면 기본값 'dash' 사용
+    const activeTab = tabMapping[t] ? t : 'dash';
+    const targetFile = tabMapping[activeTab];
+
     pB.forEach(b => b.classList.remove('tab-active')); 
     mB.forEach(b => b.classList.remove('mobile-tab-active'));
     
-    const i = { dash:0, work:1, schedule:2, leave:3, statistic:4, setting:5 }[t];
+    const i = { dash:0, work:1, schedule:2, leave:3, statistic:4, setting:5 }[activeTab];
     if(i !== undefined) { 
         if(pB[i]) pB[i].classList.add('tab-active'); 
         if(mB[i]) mB[i].classList.add('mobile-tab-active'); 
     }
 
-    const m = { dash:'staff_main.html', work:'staff_report.html', schedule:'staff_calendar.html', leave:'staff_leave.html', statistic:'staff_statistic.html', setting:'staff_setting.html' };
-    loadHTML(m[t] || t, () => { 
-        if(t==='leave' && window.initLeavePage) window.initLeavePage(); 
-        if(t==='dash' && window.initDashboard) window.initDashboard(); 
+    loadHTML(targetFile, () => { 
+        if(activeTab==='leave' && window.initLeavePage) window.initLeavePage(); 
+        if(activeTab==='dash' && window.initDashboard) window.initDashboard(); 
     });
 }
 
@@ -221,11 +235,26 @@ fetchJakartaWeather();
 setInterval(fetchJakartaWeather, 1800000);
 window.logout = function() { if (confirm("Log out?")) { firebase.auth().signOut().then(() => { sessionStorage.clear(); localStorage.removeItem('loggedInUser'); window.location.replace("index.html"); }); } };
 
-const initialTab = sessionStorage.getItem('targetPage') || 'dash';
+// 페이지 하단 script 부분
+const initialPage = sessionStorage.getItem('targetPage');
+sessionStorage.removeItem('targetPage'); // 사용 후 삭제하여 무한 루프 방지
+
 setTimeout(() => {
-    const tabMap = { 'staff_main.html': 'dash', 'staff_report.html': 'work', 'staff_calendar.html': 'schedule', 'staff_leave.html': 'leave', 'staff_statistic.html': 'statistic', 'staff_setting.html': 'setting' };
-    switchTab(tabMap[initialTab] || initialTab);
+    const fileToTabMap = { 
+        'staff_main.html': 'dash', 
+        'staff_report.html': 'work', 
+        'staff_calendar.html': 'schedule', 
+        'staff_leave.html': 'leave', 
+        'staff_statistic.html': 'statistic', 
+        'staff_setting.html': 'setting' 
+    };
+    
+    // initialPage가 파일명이면 탭이름으로 변환, 아니면 그대로 사용, 없으면 'dash'
+    const targetTab = fileToTabMap[initialPage] || initialPage || 'dash';
+    switchTab(targetTab);
 }, 300);
+
+
 </script>
 </body>
 </html>
