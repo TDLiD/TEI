@@ -11,75 +11,138 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     
     <style>
+        :root {
+            --bg: #03060f;
+            --surface: rgba(8, 18, 36, 0.7);
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+        }
+
         body { 
             font-family: "Pretendard", sans-serif; 
             color: #f1f5f9; 
             -webkit-tap-highlight-color: transparent; 
             margin: 0; 
             overflow-x: hidden; 
+            background-color: var(--bg);
             background-size: cover; 
             background-position: center; 
             background-attachment: fixed; 
             background-repeat: no-repeat; 
             transition: background 0.5s ease-in-out;
             opacity: 0;
+            perspective: 1000px; /* 3D 효과를 위한 원근법 */
         }
-        body.loaded { opacity: 1; transition: opacity 0.5s ease-in; }
-        #video-bg { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -2; transform: translate(-50%, -50%); object-fit: cover; display: none; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: -1; }
-        select, input { background-color: rgba(30, 41, 59, 0.7) !important; backdrop-filter: blur(10px); color: white !important; border-color: rgba(51, 65, 85, 0.5) !important; font-size: 16px !important; }
-        .login-card { background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+        body.loaded { opacity: 1; transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent 0%, rgba(3, 6, 15, 0.8) 100%); z-index: -1; }
+
+        /* 3D Glassmorphism Card */
+        .login-card { 
+            background: var(--surface);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        /* Input Styles 강화 */
+        select, input { 
+            background: rgba(15, 23, 42, 0.6) !important; 
+            backdrop-filter: blur(10px); 
+            color: white !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            font-size: 16px !important; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        select:focus, input:focus {
+            border-color: var(--cyan) !important;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
+            background: rgba(15, 23, 42, 0.8) !important;
+            transform: translateZ(10px);
+        }
+
+        /* 텍스트 효과 */
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px) translateZ(-50px); } to { opacity: 1; transform: translateY(0) translateZ(0); } }
+        .animate-fadeIn { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* 로그인 버튼 - Liquid Chrome 느낌 */
+        #loginBtn {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        #loginBtn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+        #loginBtn:hover::after { left: 100%; }
     </style>
 </head>
 <body class="flex flex-col justify-center items-center min-h-screen p-4 md:p-8">
-    <video autoplay muted loop playsinline id="video-bg">
-        <source src="images/gif/jennie.mp4" type="video/mp4">
-    </video>
+
     <div class="video-overlay"></div>
 
     <div class="text-center mb-8 md:mb-12 animate-fadeIn w-full max-w-lg">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
-            <img src="images/login/login.gif" alt="Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <img src="images/login/login.gif" alt="Logo" class="relative w-24 h-24 md:w-32 md:h-32 object-contain rounded-full">
+            </div>
             <div class="text-center md:text-left">
-                <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl">
+                <h2 class="text-4xl md:text-6xl font-black tracking-tighter leading-tight drop-shadow-2xl gradient-text">
                     Staff Login
                 </h2>
-                <p class="text-slate-300 text-xs md:text-sm font-medium tracking-[0.2em] uppercase mt-2 drop-shadow-lg">
+                <p class="text-cyan-400/80 text-[10px] md:text-xs font-black tracking-[0.4em] uppercase mt-2">
                     Daily Report System
                 </p>
             </div>
         </div>
     </div>
 
-    <div class="login-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-[440px] animate-fadeIn" style="animation-delay: 0.2s;">
-        <div class="mb-8 text-center md:text-left">
-            <p class="text-slate-200 text-xl md:text-2xl font-bold">Welcome back</p>
-            <p class="text-slate-400 text-sm mt-1">Select your name to continue</p>
+    <div id="tilt-card" class="login-card p-8 md:p-12 rounded-[3rem] w-full max-w-[460px] animate-fadeIn" style="animation-delay: 0.2s;">
+        <div class="mb-10 text-center md:text-left" style="transform: translateZ(30px);">
+            <p class="text-white text-2xl md:text-3xl font-black tracking-tight">Welcome back</p>
+            <p class="text-slate-400 text-sm mt-2 font-medium">Select your profile to continue</p>
         </div>
-        <div class="space-y-6">
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Staff Member</label>
+        
+        <div class="space-y-8" style="transform: translateZ(20px);">
+            <div class="group">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">Staff Member</label>
                 <div class="relative">
-                    <select id="userName" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none cursor-pointer shadow-xl">
+                    <select id="userName" class="w-full border p-5 rounded-2xl outline-none appearance-none cursor-pointer shadow-2xl">
                         <option value="" disabled selected>Loading staff list...</option>
                     </select>
-                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
+                    <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
+                    </div>
                 </div>
             </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
-                <input type="password" id="password" class="w-full border p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-xl" placeholder="••••••••">
-                <div class="flex justify-end px-1 mt-2">
-                    <button onclick="findPassword()" class="text-[10px] text-slate-400 hover:text-blue-400 transition font-bold uppercase tracking-wider">
+
+            <div class="group">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">Secure Password</label>
+                <input type="password" id="password" class="w-full border p-5 rounded-2xl outline-none shadow-2xl" placeholder="••••••••">
+                <div class="flex justify-end px-1 mt-3">
+                    <button onclick="findPassword()" class="text-[10px] text-slate-500 hover:text-cyan-400 transition-all font-black uppercase tracking-widest">
                         Forgot Password?
                     </button>
                 </div>
             </div>
-            <div class="pt-2">
-                <button id="loginBtn" onclick="handleLogin()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 shadow-xl shadow-blue-900/30 transition-all active:scale-95 text-base uppercase tracking-widest">
-                    Sign In
+
+            <div class="pt-4" style="transform: translateZ(40px);">
+                <button id="loginBtn" onclick="handleLogin()" class="w-full text-white py-6 rounded-[1.5rem] font-black shadow-2xl shadow-blue-900/40 transition-all active:scale-95 text-base uppercase tracking-[0.3em]">
+                    AUTHENTICATE
                 </button>
             </div>
         </div>
@@ -87,24 +150,49 @@
 
     <script>
         (function() {
+            // 3D Tilt Effect
+            const card = document.getElementById('tilt-card');
+            if (window.matchMedia('(hover: hover)').matches) {
+                document.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    
+                    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+                
+                document.addEventListener('mouseleave', () => {
+                    card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+                });
+            }
+
             window.addEventListener('DOMContentLoaded', () => {
                 document.body.classList.add('loaded');
             });
 
-            const setResponsiveBackground = () => {
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                const videoEl = document.getElementById('video-bg');
-                if (isMobile) {
-                    videoEl.style.display = 'none';
-                    const day = new Date().getDay();
-                    const dailyImages = { 1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif", 4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif", 0: "jennie-7.gif" };
-                    const bgImage = dailyImages[day] || "jennie-1.gif";
-                    document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('images/gif/${bgImage}')`;
-                } else {
-                    videoEl.style.display = 'block';
-                    document.body.style.backgroundImage = 'none';
-                }
-            };
+// 기존 setResponsiveBackground 함수를 아래 내용으로 교체하세요
+const setResponsiveBackground = () => {
+    const day = new Date().getDay();
+    const dailyImages = { 
+        1: "jennie-1.gif", 
+        2: "jennie-2.gif", 
+        3: "jennie-3.gif", 
+        4: "jennie-4.gif", 
+        5: "jennie-5.gif", 
+        6: "jennie-6.gif", 
+        0: "jennie-7.gif" 
+    };
+    const bgImage = dailyImages[day] || "jennie-1.gif";
+    
+    // PC/모바일 구분 없이 모든 환경에 요일별 이미지 적용
+    document.body.style.backgroundImage = `linear-gradient(rgba(3, 6, 15, 0.5), rgba(3, 6, 15, 0.5)), url('images/gif/${bgImage}')`;
+};
 
             setResponsiveBackground();
 
@@ -122,7 +210,7 @@
             database.ref('users').limitToFirst(50).once('value', (snapshot) => {
                 const users = snapshot.val();
                 if (!userSelect) return;
-                userSelect.innerHTML = '<option value="" disabled selected>Select Name</option>';
+                userSelect.innerHTML = '<option value="" disabled selected>Select Identity</option>';
                 if (users) {
                     const fragment = document.createDocumentFragment();
                     Object.keys(users).forEach(name => {
@@ -135,42 +223,41 @@
                 }
             });
 
-window.handleLogin = function() {
-    const name = document.getElementById('userName').value;
-    const pw = document.getElementById('password').value;
-    if(!name || !pw) return alert("Please check your credentials.");
-    
-    database.ref('users/' + name).once('value', (snapshot) => {
-        const userData = snapshot.val();
-        if (!userData) return alert("User not found.");
-        
-        if (userData.password === pw) {
-            sessionStorage.setItem('loggedInUser', name);
-            sessionStorage.setItem('userRole', userData.role);
-            
-            // 관리자가 아니면 staff_list.html로 이동하게 수정
-            if (userData.role === 'admin' || name === 'Admin') {
-                location.href = "admin.html";
-            } else {
-                location.href = "staff_list.html"; // 수정된 부분
-            }
-        } else { 
-            alert("Incorrect password."); 
-        }
-    });
-};
+            window.handleLogin = function() {
+                const name = document.getElementById('userName').value;
+                const pw = document.getElementById('password').value;
+                if(!name || !pw) return alert("Please enter your credentials.");
+                
+                database.ref('users/' + name).once('value', (snapshot) => {
+                    const userData = snapshot.val();
+                    if (!userData) return alert("User not found.");
+                    
+                    if (userData.password === pw) {
+                        sessionStorage.setItem('loggedInUser', name);
+                        sessionStorage.setItem('userRole', userData.role);
+                        
+                        if (userData.role === 'admin' || name === 'Admin') {
+                            location.href = "admin.html";
+                        } else {
+                            location.href = "staff_list.html";
+                        }
+                    } else { 
+                        alert("Incorrect password."); 
+                    }
+                });
+            };
 
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;
                 if (!name) return alert("Please select your name from the list first.");
-                if (confirm(`Do you want to see a password hint for '${name}'?`)) {
+                if (confirm(`Request password hint for '${name}'?`)) {
                     database.ref('users/' + name).once('value', (snapshot) => {
                         const userData = snapshot.val();
                         if (userData && userData.password) {
                             const pw = userData.password;
                             const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
-                            alert(`[Password Hint for ${name}]\n\nHint: ${hint}\n\nIf you still cannot remember your password, please contact the System Manager.`);
-                        } else { alert("User information or password not found."); }
+                            alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
+                        } else { alert("Data not found."); }
                     });
                 }
             };
