@@ -27,6 +27,9 @@
         .profile-picker-item { transition: all 0.2s; border: 2px solid transparent; cursor: pointer; border-radius: 0.75rem; overflow: hidden; background: #1e293b; }
         .profile-picker-item:hover { transform: scale(1.05); border-color: #3b82f6; }
         .edit-badge { position: absolute; bottom: 8px; right: 0; background: #3b82f6; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000; font-size: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); transition: all 0.3s; }
+button, a {
+    touch-action: manipulation; /* 터치 지연 제거 */
+}
     </style>
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen bg-slate-950">
@@ -241,7 +244,26 @@ async function fetchJakartaWeather() {
 
 fetchJakartaWeather();
 setInterval(fetchJakartaWeather, 1800000);
-window.logout = function() { if (confirm("Log out?")) { firebase.auth().signOut().then(() => { sessionStorage.clear(); localStorage.removeItem('loggedInUser'); window.location.replace("index.html"); }); } };
+
+window.logout = function() {
+    // 1. 즉시 로딩 표시 (선택 사항: 버튼 글자를 'Wait...' 등으로 변경)
+    // 2. confirm이 꼭 필요하다면 유지하되, 속도를 위해 비동기 처리
+    if (!confirm("Log out?")) return;
+
+    // 즉시 세션 정리 (속도 향상 체감)
+    sessionStorage.clear();
+    localStorage.removeItem('loggedInUser');
+
+    // Firebase 로그아웃 시도와 동시에 페이지 이동 (또는 catch에서 처리)
+    firebase.auth().signOut().finally(() => {
+        window.location.replace("index.html");
+    });
+    
+    // 만약 네트워크가 너무 느릴 경우를 대비해 1초 후 강제 이동
+    setTimeout(() => {
+        window.location.replace("index.html");
+    }, 1000);
+};
 
 // 페이지 하단 script 부분
 const initialPage = sessionStorage.getItem('targetPage');
