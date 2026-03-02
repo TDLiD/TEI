@@ -49,19 +49,6 @@
     }
     body.loaded { opacity: 1; }
 
-    /* ── Video BG ─────────────────────────────────── */
-    #video-bg {
-        position: fixed; top: 50%; left: 50%;
-        min-width: 100%; min-height: 100%;
-        width: auto; height: auto; z-index: -2;
-        transform: translate(-50%,-50%);
-        object-fit: cover; display: none;
-    }
-    .video-overlay {
-        position: fixed; inset: 0; z-index: -1;
-        background: rgba(2,5,9,0.58);
-    }
-
     /* ── Noise grain ─────────────────────────────── */
     body::before {
         content: '';
@@ -364,11 +351,6 @@
     </style>
 </head>
 <body>
-    <!-- Video background -->
-    <video autoplay muted loop playsinline id="video-bg">
-        <source src="images/gif/jennie.mp4" type="video/mp4">
-    </video>
-    <div class="video-overlay"></div>
 
     <!-- Ambient decoration -->
     <div class="orb orb-a"></div>
@@ -458,25 +440,22 @@
             document.body.classList.add('loaded');
         });
 
-        const setResponsiveBackground = () => {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const videoEl  = document.getElementById('video-bg');
-            if (isMobile) {
-                videoEl.style.display = 'none';
-                const day = new Date().getDay();
-                const dailyImages = {
-                    1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif",
-                    4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif",
-                    0: "jennie-7.gif"
-                };
-                const bgImage = dailyImages[day] || "jennie-1.gif";
-                document.body.style.backgroundImage =
-                    `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('images/gif/${bgImage}')`;
-            } else {
-                videoEl.style.display = 'block';
-                document.body.style.backgroundImage = 'none';
-            }
-        };
+// 이 함수 전체를 삭제하거나 아래처럼 수정하세요
+const setResponsiveBackground = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const videoEl  = document.getElementById('video-bg'); // 삭제됨
+    
+    // 비디오 관련 로직(if/else)을 지우고 배경 이미지 설정만 남깁니다.
+    const day = new Date().getDay();
+    const dailyImages = {
+        1: "jennie-1.gif", 2: "jennie-2.gif", 3: "jennie-3.gif",
+        4: "jennie-4.gif", 5: "jennie-5.gif", 6: "jennie-6.gif",
+        0: "jennie-7.gif"
+    };
+    const bgImage = dailyImages[day] || "jennie-1.gif";
+    document.body.style.backgroundImage =
+        `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url('images/gif/${bgImage}')`;
+};
         setResponsiveBackground();
 
         const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
