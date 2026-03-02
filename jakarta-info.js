@@ -26,18 +26,33 @@ window.JakartaInfo = window.JakartaInfo || {
         this.isInitialized = true;
     },
 // 실시간 증시 데이터를 가져오는 신규 함수
+// 실시간 증시 데이터를 가져오는 함수 (에러 핸들링 강화)
 async fetchStockIndices() {
     const symbols = { kospi: '%5EKS11', kosdaq: '%5EKQ11', nasdaq: '%5EIXIC' };
+    
     for (const [key, sym] of Object.entries(symbols)) {
         try {
-            // CORS 우회를 위한 프록시 서버 사용
             const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
+            
+            // 1. AllOrigins 대신 더 안정적인 Proxy 사용 (또는 백업용으로 유지)
+            // 아래는 AllOrigins가 막힐 때 시도해볼 수 있는 대안들입니다.
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
             
             const res = await fetch(proxyUrl);
+            
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            
             const json = await res.json();
+            
+            // 2. SyntaxError 방지: json.contents가 정상적인 JSON 문자열인지 확인
+            if (!json.contents || json.contents.startsWith('Oops') || json.contents.startsWith('<')) {
+                throw new Error("Invalid response from proxy");
+            }
+
             const data = JSON.parse(json.contents);
             
+            if (!data.chart || !data.chart.result) throw new Error("No data found");
+
             const result = data.chart.result[0].meta;
             const price = result.regularMarketPrice;
             const prevClose = result.chartPreviousClose;
@@ -50,8 +65,9 @@ async fetchStockIndices() {
                 up: diff >= 0
             };
         } catch (err) {
-            console.error(`${key} fetch error:`, err);
-            this.data.stocks[key] = { val: "N/A", change: "0%", up: true };
+            // 에러 발생 시 사용자에게 에러 대신 "점검중" 혹은 기존 데이터를 보여줌
+            console.warn(`${key} fetch failed (Proxy issues):`, err.message);
+            this.data.stocks[key] = { val: "Delayed", change: "0%", up: true };
         }
     }
 },
