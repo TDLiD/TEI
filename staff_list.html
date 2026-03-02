@@ -76,7 +76,13 @@
             -ms-overflow-style: none; scrollbar-width: none; /* 스크롤바 숨김 */
         }
         .content-wrapper::-webkit-scrollbar { display: none; }
+/* 버튼 및 메뉴 카드 클릭 반응 속도 향상 */
+button, .menu-card, .group {
+    touch-action: manipulation;
+    cursor: pointer;
+}
     </style>
+
 </head>
 <body>
     <div id="dynamicBg" class="bg-overlay"></div>
@@ -168,13 +174,29 @@
             location.href = 'staff.html';
         }
 
-        // 4. 로그아웃 함수
-        function handleLogout() {
-            if(confirm("Do you want to logout?")) {
-                sessionStorage.clear();
-                location.href = 'index.html';
-            }
+// 4. 로그아웃 함수 (빠른 반응형으로 수정)
+function handleLogout() {
+    if (confirm("Do you want to logout?")) {
+        // [수정] 즉각적인 반응을 위해 로컬 데이터를 먼저 지웁니다.
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser'); // 혹시 저장되어 있을 자동로그인 정보 삭제
+
+        // [수정] Firebase 객체가 로드되어 있다면 로그아웃 명령을 던지고 즉시 이동
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().signOut().finally(() => {
+                location.replace('index.html');
+            });
+        } else {
+            location.replace('index.html');
         }
+
+        // [수정] 네트워크 지연 대비 0.5초 후 강제 이동 안전장치
+        setTimeout(() => {
+            location.replace('index.html');
+        }, 500);
+    }
+}
+
     </script>
 </body>
 </html>
