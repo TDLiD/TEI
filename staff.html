@@ -214,7 +214,37 @@ async function fetchJakartaWeather() {
 window.logout = function() { if (!confirm("Log out?")) return; sessionStorage.clear(); localStorage.removeItem('loggedInUser'); firebase.auth().signOut().finally(() => window.location.replace("index.html")); };
 
 fetchJakartaWeather();
-setTimeout(() => switchTab('dash'), 200);
+
+// URL 파라미터에서 'tab' 값을 읽어와 해당 탭을 열고, 없으면 기본값 'dash'를 엽니다.
+/* ───── 수정된 페이지 로드 로직 ───── */
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. URL 파라미터 확인 (?tab=work 등)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab'); 
+    
+    // 2. sessionStorage 확인 (staff_list.html에서 버튼 클릭 시 저장하는 값)
+    const initialPage = sessionStorage.getItem('targetPage');
+    sessionStorage.removeItem('targetPage'); // 사용 후 즉시 삭제
+
+    setTimeout(() => {
+        if (tabParam) {
+            // URL 파라미터가 있으면 우선 처리
+            switchTab(tabParam);
+        } else if (initialPage) {
+            // sessionStorage에 저장된 파일명에 따라 탭 전환
+            if (initialPage.includes('report')) switchTab('work');
+            else if (initialPage.includes('calendar')) switchTab('schedule');
+            else if (initialPage.includes('leave')) switchTab('leave');
+            else if (initialPage.includes('statistic')) switchTab('statistic');
+            else if (initialPage.includes('setting')) switchTab('setting');
+            else switchTab('dash');
+        } else {
+            // 아무 정보 없으면 기본 대시보드
+            switchTab('dash');
+        }
+    }, 200);
+});
+
 </script>
 </body>
 </html>
