@@ -804,29 +804,57 @@ async function checkMissingRecords() {
     const user = sessionStorage.getItem('loggedInUser');
     if (!user) return;
     const db = firebase.database();
+    
     try {
+        // 1. 유저의 WarnFlag 확인
         const userSnap = await db.ref(`users/${user}/WarnFlag`).once('value');
         const warnFlag = userSnap.val();
         if (warnFlag === "off") {
             console.log(`Report check skipped: ${user}'s WarnFlag is OFF.`);
             return;
         }
+
+        // 2. 오늘 팝업 숨기기 설정 확인
         const todayStr = getJakartaDate().toISOString().split('T')[0];
         if (localStorage.getItem('hideReportPopup') === todayStr) {
             console.log("Report popup is hidden for today.");
             return;
         }
+
+        // 3. 전체 근태(attendance) 데이터를 미리 한 번만 가져옴 (성능 최적화)
+        const attendanceSnap = await db.ref('attendance').once('value');
+        const attendanceData = attendanceSnap.val() || {};
+
         const missingInfo = [];
         const today = getJakartaDate();
+        
+        // 최근 6일간 검사
         for (let i = 1; i <= 6; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
+            
             const dayOfWeek = checkDate.getDay(); 
-            if (dayOfWeek === 0 || dayOfWeek === 6) continue; 
+            if (dayOfWeek === 0 || dayOfWeek === 6) continue; // 주말 제외
+
             const y = checkDate.getFullYear();
             const m = String(checkDate.getMonth() + 1).padStart(2, '0');
             const d = String(checkDate.getDate()).padStart(2, '0');
             const dStr = `${y}-${m}-${d}`;
+
+            // A. 해당 날짜에 근태 정보(휴가 등)가 있는지 확인
+            // 데이터 구조 예: attendance -> "2025-10-13" -> "Alex": "ANL"
+            const attStatus = (attendanceData[dStr] && attendanceData[dStr][user]) ? attendanceData[dStr][user] : null;
+            
+            // 제외할 근태 코드 리스트
+            const leaveCodes = ["ANL", "PEL", "HAL", "SIL", "SPL"];
+            
+            // 만약 해당 날짜에 근태 코드가 존재하면 리포트 체크 패스 (Missing에서 제외)
+            if (leaveCodes.includes(attStatus)) {
+                console.log(`Skipping ${dStr}: User is on ${attStatus}`);
+                continue;
+            }
+
+            // B. 리포트가 작성되었는지 확인
             const snap = await db.ref(`reports/${dStr}/${user}`).once('value');
             if (!snap.exists()) {
                 const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'short' });
@@ -836,6 +864,7 @@ async function checkMissingRecords() {
                 });
             }
         }
+
         if (missingInfo.length > 0) {
             showMissingPopup(missingInfo);
         }
