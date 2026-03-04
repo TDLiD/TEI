@@ -133,6 +133,12 @@
     
     /* 5. Mobile Action Buttons & Layout Fix */
     @media (max-width: 767px) { #staff_list_body td:last-child { margin-top: 0.8rem; padding-top: 0.8rem; justify-content: flex-end; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); gap: 8px; } #staff_list_body select, #staff_list_body input { max-width: 160px !important; font-size: 12px; } }
+/* style 태그 내부에 추가 */
+@media (max-width: 767px) {
+    #staff_list_body td:nth-child(1) {
+        justify-content: flex-start !important; /* 모바일에서 왼쪽 정렬 */
+    }
+}
 </style>
 
 <script>
@@ -389,42 +395,54 @@ function loadStaffList() {
             const warnStatus = user.WarnFlag === 'on' ? 'on' : 'off';
             const isAdmin = uid.toLowerCase() === 'admin';
 
-            tr.innerHTML = `
-                <td class="p-4 font-bold text-white block md:table-cell">
-                    ${uid} ${isAdmin ? '<span class="ml-2 text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">SYSTEM</span>' : ''}
-                </td>
-                <td class="p-4 block md:table-cell">
-                    <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]" ${isAdmin ? 'disabled' : ''}>
-                        <option value="Admin" ${user.role === 'Admin' || isAdmin ? 'selected' : ''}>Admin</option>
-                        <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
-                        <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
-                        <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
-                    </select>
-                </td>
-                <td class="p-4 block md:table-cell">
-                    <div class="relative max-w-[160px]">
-                        <input type="password" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full pr-8">
-                        <button onclick="window.toggleViewPw('pw_${uid}', this)" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                            <i class="far fa-eye text-[10px]"></i>
-                        </button>
-                    </div>
-                </td>
-                <td class="p-4 block md:table-cell text-center">
-                    ${isAdmin ? '<span class="text-slate-600 text-[10px] font-black italic">MASTER</span>' : `
-                    <select id="warn_${uid}" class="bg-slate-800/50 border ${warnStatus === 'on' ? 'border-red-500/50 text-red-400' : 'border-slate-700 text-slate-400'} rounded-lg px-2 py-2 text-[10px] font-bold outline-none transition-colors">
-                        <option value="off" ${warnStatus === 'off' ? 'selected' : ''}>WARN Off</option>
-                        <option value="on" ${warnStatus === 'on' ? 'selected' : ''}>⚠️ WARN On</option>
-                    </select>
-                    `}
-                </td>
-<td class="p-4 text-right space-x-1 block md:table-cell">
-    <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition font-bold uppercase">Save</button>
-    ${isAdmin ? '' : `
-        <button onclick="window.clearStaffData('${uid}')" class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1.5 rounded-lg hover:bg-amber-500 hover:text-white transition font-bold uppercase">Data Del</button>
-        <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition font-bold uppercase">Staff Del</button>
-    `}
-</td>
-            `;
+// loadStaffList 함수 내 tr.innerHTML 부분을 아래와 같이 수정하세요.
+tr.innerHTML = `
+    <td class="p-4 font-bold text-white block md:table-cell">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex-shrink-0">
+                ${user.profileImg 
+                    ? `<img src="../images/profile/${user.profileImg}" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">`
+                    : `<div class="w-full h-full flex items-center justify-center text-slate-600 text-[10px] font-black bg-slate-800">NO</div>`
+                }
+            </div>
+            <div class="flex flex-col">
+                <span class="text-sm">${uid}</span>
+                ${isAdmin ? '<span class="w-fit text-[8px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30 font-black mt-0.5">SYSTEM</span>' : ''}
+            </div>
+        </div>
+    </td>
+    <td class="p-4 block md:table-cell">
+        <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]" ${isAdmin ? 'disabled' : ''}>
+            <option value="Admin" ${user.role === 'Admin' || isAdmin ? 'selected' : ''}>Admin</option>
+            <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
+            <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
+            <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
+        </select>
+    </td>
+    <td class="p-4 block md:table-cell">
+        <div class="relative max-w-[160px]">
+            <input type="password" id="pw_${uid}" value="${user.password || ''}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full pr-8">
+            <button onclick="window.toggleViewPw('pw_${uid}', this)" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                <i class="far fa-eye text-[10px]"></i>
+            </button>
+        </div>
+    </td>
+    <td class="p-4 block md:table-cell text-center">
+        ${isAdmin ? '<span class="text-slate-600 text-[10px] font-black italic">MASTER</span>' : `
+        <select id="warn_${uid}" class="bg-slate-800/50 border ${warnStatus === 'on' ? 'border-red-500/50 text-red-400' : 'border-slate-700 text-slate-400'} rounded-lg px-2 py-2 text-[10px] font-bold outline-none transition-colors">
+            <option value="off" ${warnStatus === 'off' ? 'selected' : ''}>WARN Off</option>
+            <option value="on" ${warnStatus === 'on' ? 'selected' : ''}>⚠️ WARN On</option>
+        </select>
+        `}
+    </td>
+    <td class="p-4 text-right space-x-1 block md:table-cell">
+        <button onclick="window.updateStaff('${uid}')" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition font-bold uppercase">Save</button>
+        ${isAdmin ? '' : `
+            <button onclick="window.clearStaffData('${uid}')" class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1.5 rounded-lg hover:bg-amber-500 hover:text-white transition font-bold uppercase">Data Del</button>
+            <button onclick="window.deleteStaff('${uid}')" class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition font-bold uppercase">Staff Del</button>
+        `}
+    </td>
+`;
             tbody.appendChild(tr);
         });
     });
