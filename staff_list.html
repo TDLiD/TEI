@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Menu Select - Daily System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <style>
     /* ═══════════════════════════════════════════
         DESIGN SYSTEM
@@ -453,94 +456,102 @@
 
     </div>
 
-    <script>
+<script>
         /* ═══════════════════════════════════════════
-           ALL ORIGINAL LOGIC — UNTOUCHED
+            DYNAMIC BACKGROUND & CORE LOGIC
         ═══════════════════════════════════════════ */
+        (function() {
+            // 1. 사용자 확인
+            const user = sessionStorage.getItem('loggedInUser');
+            if (!user) location.href = 'index.html';
+            document.getElementById('userGreeting').innerText = user || '—';
 
-        // 1. 사용자 확인
-        const user = sessionStorage.getItem('loggedInUser');
-        if (!user) location.href = 'index.html';
-        document.getElementById('userGreeting').innerText = user || '—';
+            // 2. Firebase 및 Pexels 설정
+            let PEXELS_API_KEY = null;
+            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
 
-        // 2. 요일별 배경 설정 로직
-        function setDailyBackground() {
-            const bgLayer = document.getElementById('dynamicBg');
-            const day = new Date().getDay(); // 0: 일, 1: 월, ... 6: 토
-            const dailyImages = {
-                1: 'cat1.gif',
-                2: 'cat2.gif',
-                3: 'cat3.gif',
-                4: 'cat4.gif',
-                5: 'cat5.gif',
-                6: 'cat6.gif',
-                0: 'cat7.gif'
+            // Pexels 배경화면 업데이트 함수
+            const updateBackground = async () => {
+                if (!PEXELS_API_KEY) return;
+                try {
+                    const response = await fetch(
+                        "https://api.pexels.com/v1/search?query=jakarta city&per_page=30",
+                        { headers: { Authorization: PEXELS_API_KEY } }
+                    );
+                    const data = await response.json();
+                    if (data.photos && data.photos.length > 0) {
+                        const randomPhoto = data.photos[Math.floor(Math.random() * data.photos.length)];
+                        const imgUrl = randomPhoto.src.large2x || randomPhoto.src.landscape;
+
+                        const img = new Image();
+                        img.src = imgUrl;
+                        img.onload = () => {
+                            const bgLayer = document.getElementById('dynamicBg');
+                            bgLayer.style.backgroundImage = `url('${imgUrl}')`;
+                        };
+                    }
+                } catch (e) {
+                    console.error("Pexels Load Error:", e);
+                }
             };
-            const selectedImage = dailyImages[day] || 'cat1.gif';
-            bgLayer.style.backgroundImage = `url('images/gif/${selectedImage}')`;
-        }
-        setDailyBackground();
 
-        // 3. 네비게이션 함수
-        function navigateTo(page) {
-            sessionStorage.setItem('targetPage', page);
-            location.href = 'staff.html';
-        }
+            // Firebase에서 API Key 로드 후 실행
+            database.ref('settings/config/PexelAPI').once('value', (snap) => {
+                if (snap.exists()) {
+                    PEXELS_API_KEY = snap.val();
+                    updateBackground();
+                    setInterval(updateBackground, 5000); // 5초마다 배경 변경
+                }
+            });
 
-        // 4. 로그아웃 함수
-        function handleLogout() {
-            if (confirm("Do you want to logout?")) {
-                sessionStorage.clear();
-                localStorage.removeItem('loggedInUser');
-                if (typeof firebase !== 'undefined' && firebase.auth) {
-                    firebase.auth().signOut().finally(() => {
-                        location.replace('index.html');
-                    });
-                } else {
+            // 3. 네비게이션 및 로그아웃
+            window.navigateTo = function(page) {
+                sessionStorage.setItem('targetPage', page);
+                location.href = 'staff.html';
+            };
+
+            window.handleLogout = function() {
+                if (confirm("Do you want to logout?")) {
+                    sessionStorage.clear();
+                    localStorage.removeItem('loggedInUser');
                     location.replace('index.html');
                 }
-                setTimeout(() => { location.replace('index.html'); }, 500);
+            };
+
+            // 4. UI 요소 (시계, 날짜, 3D 효과)
+            function updateClock() {
+                const now = new Date();
+                document.getElementById('liveTime').textContent =
+                    now.toLocaleTimeString('en-US', { hour12: false });
             }
-        }
+            updateClock();
+            setInterval(updateClock, 1000);
 
-        /* ═══════════════════════════════════════════
-           UI ENHANCEMENTS (design-only additions)
-        ═══════════════════════════════════════════ */
-
-        // Live clock
-        function updateClock() {
+            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
             const now = new Date();
-            document.getElementById('liveTime').textContent =
-                now.toLocaleTimeString('en-US', { hour12: false });
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
+            document.getElementById('dayName').textContent = days[now.getDay()];
+            document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
 
-        // Day indicator
-        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-        const now  = new Date();
-        document.getElementById('dayName').textContent   = days[now.getDay()];
-        document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
-
-        // 3D card tilt effect (desktop only)
-        if (window.matchMedia('(hover: hover)').matches) {
-            document.querySelectorAll('.menu-card').forEach(card => {
-                card.addEventListener('mousemove', e => {
-                    const rect   = card.getBoundingClientRect();
-                    const cx     = rect.left + rect.width  / 2;
-                    const cy     = rect.top  + rect.height / 2;
-                    const dx     = (e.clientX - cx) / (rect.width  / 2);
-                    const dy     = (e.clientY - cy) / (rect.height / 2);
-                    const rotX   = -dy * 8;
-                    const rotY   =  dx * 8;
-                    card.style.transform =
-                        `translateY(-8px) scale(1.03) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            // 3D card tilt effect
+            if (window.matchMedia('(hover: hover)').matches) {
+                document.querySelectorAll('.menu-card').forEach(card => {
+                    card.addEventListener('mousemove', e => {
+                        const rect = card.getBoundingClientRect();
+                        const cx = rect.left + rect.width / 2;
+                        const cy = rect.top + rect.height / 2;
+                        const dx = (e.clientX - cx) / (rect.width / 2);
+                        const dy = (e.clientY - cy) / (rect.height / 2);
+                        card.style.transform = `translateY(-8px) scale(1.03) rotateX(${-dy * 8}deg) rotateY(${dx * 8}deg)`;
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = '';
+                    });
                 });
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = '';
-                });
-            });
-        }
+            }
+        })();
     </script>
+
 </body>
 </html>
