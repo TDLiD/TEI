@@ -21,17 +21,39 @@
     --amber-dim: rgba(245,158,11,0.12);
 }
 
+/* ── 수정한 부분 (최종) ── */
 .sm-root {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 12px;
+    display: flex;            /* Grid를 지우고 Flex로 변경 */
+    flex-direction: column;   /* 모바일에서는 세로로 쌓기 */
+    gap: 16px;                /* 요소 간 간격 */
+    width: 100%;
     min-height: 100vh;
-    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-family: "Pretendard", sans-serif;
 }
-@media (max-width: 900px) { .sm-root { grid-template-columns: 1fr; } }
 
-/* ── Left Panel ── */
-.sm-left { display: flex; flex-direction: column; gap: 10px; }
+/* 1024px 이상의 PC 화면에서만 가로로 배치 */
+@media (min-width: 1024px) {
+    .sm-root {
+        flex-direction: row;  /* 가로 배치 */
+        align-items: flex-start;
+    }
+    
+    .sm-left {
+        width: 360px;         /* 왼쪽 패널 너비 고정 */
+        flex-shrink: 0;
+    }
+    
+    .sm-right {
+        flex: 1;              /* 캘린더가 나머지 공간 차지 */
+        min-width: 0;         /* 테이블 깨짐 방지 */
+    }
+}
+
+/* 폰트 통일 */
+.sm-fortune, .sm-leave-alert-msg, .fortune-bubble,
+.sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label {
+    font-family: "Pretendard", sans-serif;
+}
 
 /* ── Hero Card (Name + Status) ── */
 .sm-hero {
