@@ -21,39 +21,6 @@
     --amber-dim: rgba(245,158,11,0.12);
 }
 
-/* ── 수정한 부분 (최종) ── */
-.sm-root {
-    display: flex;            /* Grid를 지우고 Flex로 변경 */
-    flex-direction: column;   /* 모바일에서는 세로로 쌓기 */
-    gap: 16px;                /* 요소 간 간격 */
-    width: 100%;
-    min-height: 100vh;
-    font-family: "Pretendard", sans-serif;
-}
-
-/* 1024px 이상의 PC 화면에서만 가로로 배치 */
-@media (min-width: 1024px) {
-    .sm-root {
-        flex-direction: row;  /* 가로 배치 */
-        align-items: flex-start;
-    }
-    
-    .sm-left {
-        width: 360px;         /* 왼쪽 패널 너비 고정 */
-        flex-shrink: 0;
-    }
-    
-    .sm-right {
-        flex: 1;              /* 캘린더가 나머지 공간 차지 */
-        min-width: 0;         /* 테이블 깨짐 방지 */
-    }
-}
-
-/* 폰트 통일 */
-.sm-fortune, .sm-leave-alert-msg, .fortune-bubble,
-.sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label {
-    font-family: "Pretendard", sans-serif;
-}
 
 /* ── Hero Card (Name + Status) ── */
 .sm-hero {
@@ -290,27 +257,17 @@
     .time-label { font-size: 7px; }
     .sm-hero-name { font-size: 18px; }
 }
-/* ── 수정한 부분 ── */
+/* 1. 중복된 .sm-root 선언 제거 및 폰트만 지정 */
 .sm-root {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 12px;
-    min-height: 100vh;
-    /* 기존 폰트 대신 Pretendard 적용 */
+    /* display: grid 설정을 삭제하여 상단의 flex/media query 설정을 따르도록 함 */
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
 }
 
-/* 개별적으로 폰트가 지정된 부분들도 통일감을 위해 수정할 수 있습니다. */
-.sm-fortune, .sm-leave-alert-msg, .fortune-bubble {
-    font-family: "Pretendard", sans-serif;
-}
-
-/* 숫자나 코드 스타일을 위해 'SF Mono'를 썼던 부분들을 유지하고 싶다면 그대로 두셔도 되지만, 
-   전체적인 통일감을 원하시면 아래 부분들도 "Pretendard"로 변경하세요. */
+/* 2. 개별 요소 폰트 통일 */
+.sm-fortune, .sm-leave-alert-msg, .fortune-bubble, 
 .sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label {
     font-family: "Pretendard", sans-serif;
 }
-
 </style>
 
 <div class="sm-root">
