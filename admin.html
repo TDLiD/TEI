@@ -35,30 +35,37 @@
         @media (min-width: 1024px) { .admin-profile-img-container { width: 100px !important; height: 100px !important; } }
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+/* 생일 알림 효과 */
+#mobile-birthday-dot.active { display: block !important; }
     </style>
 </head>
 <body class="flex min-h-screen">
-    <header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
-        <div class="flex items-center gap-3">
-            <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
-                <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-                    <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
-                </div>
-                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
+<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
+    <div class="flex items-center gap-3">
+        <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
+            <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
+                <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
             </div>
-            <div class="flex flex-col">
-                <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-                <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
-                    <span class="weather-icon text-[10px]">☀️</span>
-                    <span class="weather-temp text-[9px] font-bold text-slate-300">--°C</span>
-                </div>
+            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
+        </div>
+        <div class="flex flex-col">
+            <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+            <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
+                <span class="weather-icon text-[10px]">☀️</span>
+                <span class="weather-temp text-[9px] font-bold text-blue-400">--°C</span>
+                <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
-            <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
-        </div>
-    </header>
+    </div>
+    <div class="flex items-center gap-3">
+<button onclick="showAllStaffBirthdays()" class="text-lg relative">
+            🎂
+<div id="mobile-birthday-dot" class="hidden absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full border border-slate-950 animate-pulse"></div>
+        </button>
+        <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
+        <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
+    </div>
+</header>
 
     <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-8 h-[70px] px-1 shadow-2xl">
         <button onclick="switchAdminTab('dashboard')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
@@ -92,7 +99,7 @@
                     </div>
 
 <button onclick="showAllStaffBirthdays()" class="mt-2 ml-1 text-[9px] font-bold text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-1">
-    📅 Staff Birthday List
+    🎂 Staff Birthday List
 </button>
 
 <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2 ml-1">
@@ -347,21 +354,23 @@ async function updateAdminWeather() {
     }
 }
 
-/* ───── STAFF 생일 판단 및 표시 로직 (Admin용) ───── */
+/* ───── STAFF 생일 판단 및 표시 로직 (Admin용 최종) ───── */
 async function checkStaffBirthdays() {
+    // 1. 오늘 날짜 및 음력 날짜 계산
     const today = new Date();
     const tMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
-    // 음력 날짜 계산
     const lunar = Lunar.fromDate(today);
     const lMonthDay = `${String(lunar.getMonth()).padStart(2, '0')}-${String(lunar.getDay()).padStart(2, '0')}`;
 
+    // 2. Firebase 데이터 수신
     db.ref('users').once('value', snap => {
         const users = snap.val();
         if (!users) return;
 
         let birthdayMessages = [];
 
+        // 3. 사용자별 생일 매칭 여부 확인
         Object.keys(users).forEach(id => {
             const u = users[id];
             if (!u.birthday) return;
@@ -374,11 +383,12 @@ async function checkStaffBirthdays() {
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
 
             if (isSolarMatch || isLunarMatch) {
-                // 형식: Mr-Ray: 2000.03.06
+                // 예: "Admin: 1990.03.06"
                 birthdayMessages.push(`${id}: ${bDateFull}`);
             }
         });
 
+        // 4. [데스크탑/사이드바] 알림창 표시 로직
         const alertBox = document.getElementById('adminBirthdayAlert');
         const nameText = document.getElementById('adminBirthdayNames');
 
@@ -388,6 +398,16 @@ async function checkStaffBirthdays() {
                 nameText.innerHTML = birthdayMessages.join('<br>'); 
             } else {
                 alertBox.classList.add('hidden');
+            }
+        }
+
+        // 5. [모바일/헤더] 알림 점(Dot) 표시 로직
+        const mobileDot = document.getElementById('mobile-birthday-dot');
+        if (mobileDot) {
+            if (birthdayMessages.length > 0) {
+                mobileDot.classList.add('active'); // CSS에서 display: block 설정 필요
+            } else {
+                mobileDot.classList.remove('active');
             }
         }
     });
