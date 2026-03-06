@@ -48,6 +48,11 @@
             <div id="mobileProfileImg" class="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-white/5 btn-3d" onclick="openProfileImagePicker()"></div>
             <div class="flex flex-col">
                 <h1 class="text-lg font-black tracking-tighter text-white uppercase italic leading-none">Daily <span class="text-blue-500">System</span></h1>
+                
+                <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
+                    <span class="text-[9px] font-black text-yellow-500 birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                    <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+                </div>
                 <div class="flex items-center gap-2 mt-1">
                     <div class="flex items-center gap-1 bg-black/40 px-1.5 py-0.5 rounded border border-white/5">
                         <span id="mobileWeatherIcon" class="text-[10px]">⏳</span>
@@ -164,11 +169,13 @@ if(loggedInUser) {
         if(mpi) { mpi.innerHTML = `<img src="images/profile/${pi}" class="w-full h-full object-cover">`; }
     }); 
 }
+// 스크립트 내 checkTodayBirthdays 함수 (Line 135 부근) 수정
 async function checkTodayBirthdays() {
     const today = new Date();
     const tMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const lunar = Lunar.fromDate(today);
     const lMonthDay = `${String(lunar.getMonth()).padStart(2, '0')}-${String(lunar.getDay()).padStart(2, '0')}`;
+    
     db.ref('users').once('value', snap => {
         const users = snap.val();
         if (!users) return;
@@ -183,13 +190,27 @@ async function checkTodayBirthdays() {
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
             if (isSolarMatch || isLunarMatch) { birthdayMessages.push(`${id}: ${bDateFull}`); }
         });
+
+        // 요소 정의
         const alertBox = document.getElementById('birthdayAlert');
         const nameText = document.getElementById('birthdayNames');
+        const mobileAlertBox = document.getElementById('mobileBirthdayAlert'); // 추가
+        const mobileNameText = document.getElementById('mobileBirthdayNames'); // 추가
         const mobileDot = document.getElementById('mobile-birthday-dot');
+
         if (birthdayMessages.length > 0) {
+            const namesHtml = birthdayMessages.join('<br>');
+            
+            // 데스크탑 업데이트
             if (alertBox) alertBox.classList.remove('hidden');
-            if (nameText) nameText.innerHTML = birthdayMessages.join('<br>'); 
+            if (nameText) nameText.innerHTML = namesHtml;
+            
+            // 모바일 업데이트 (추가된 부분)
+            if (mobileAlertBox) mobileAlertBox.classList.remove('hidden');
+            if (mobileNameText) mobileNameText.innerHTML = namesHtml;
+            
             if (mobileDot) mobileDot.classList.remove('hidden');
+            
             const isMyBirthday = birthdayMessages.some(msg => msg.startsWith(loggedInUser + ":"));
             if (isMyBirthday) {
                 const ub = document.getElementById('desktopUser');
@@ -199,10 +220,12 @@ async function checkTodayBirthdays() {
             }
         } else {
             if (alertBox) alertBox.classList.add('hidden');
+            if (mobileAlertBox) mobileAlertBox.classList.add('hidden'); // 추가
             if (mobileDot) mobileDot.classList.add('hidden');
         }
     });
 }
+
 fetchJakartaWeather();
 checkTodayBirthdays();
 window.switchTab = function(t) {

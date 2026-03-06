@@ -48,14 +48,21 @@
             </div>
             <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
         </div>
-        <div class="flex flex-col">
-            <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-            <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
-                <span class="weather-icon text-[10px]">☀️</span>
-                <span class="weather-temp text-[9px] font-bold text-blue-400">--°C</span>
-                <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
-            </div>
-        </div>
+<div class="flex flex-col">
+    <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
+    
+    <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
+        <span class="text-[9px] font-black text-yellow-500 animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+        <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+    </div>
+
+    <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
+        <span class="weather-icon text-[10px]">☀️</span>
+        <span class="weather-temp text-[9px] font-bold text-blue-400">--°C</span>
+        <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
+    </div>
+</div>
+
     </div>
     <div class="flex items-center gap-3">
 <button onclick="showAllStaffBirthdays()" class="text-lg relative">
@@ -98,9 +105,6 @@
                         <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
                     </div>
 
-<button onclick="showAllStaffBirthdays()" class="mt-2 ml-1 text-[9px] font-bold text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-1">
-    🎂 Staff Birthday List
-</button>
 
 <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2 ml-1">
     <span class="text-[10px] font-black text-amber-500 animate-pulse flex items-center gap-1">
@@ -130,19 +134,19 @@
         <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">🚪 Logout System</button>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
-    </main>
+<main class="flex-1 p-8 overflow-y-auto">
+    <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
+</main>
 
-<div id="adminCustomModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                <h3 id="modalTitle" class="text-xl font-bold text-white"></h3>
-                <button onclick="closeAdminCustomModal()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto text-slate-300"></div>
+<div id="adminCustomModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div class="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-fadeIn">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <h3 id="modalTitle" class="text-lg font-black text-white uppercase tracking-widest italic"></h3>
+            <button onclick="closeAdminCustomModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl hover:bg-white/10 rounded-full">&times;</button>
         </div>
+        <div id="modalBody" class="p-8 max-h-[60vh] overflow-y-auto no-scrollbar text-slate-300"></div>
     </div>
+</div>
 
 <script>
     // 1. Firebase 초기화
@@ -186,25 +190,31 @@
                 document.body.style.overflow = '';
             }
         };
-// 2. 공용 모달 제어 (안정성 강화 및 지연 로딩 대응)
-window.openAdminCustomModal = function (titleHtml, bodyHtml) {
+// 2. 공용 모달 제어 (staff.html의 방식을 admin에 이식)
+window.openAdminCustomModal = function(title, bodyHtml) {
     const modal = document.getElementById('adminCustomModal');
     const tBox = document.getElementById('modalTitle');
     const bBox = document.getElementById('modalBody');
-    
-    // 함수 실행 시점에 다시 한 번 엘리먼트 존재 여부를 체크합니다.
-    if (!modal || !tBox || !bBox) {
-        console.error("오류: 모달 엘리먼트를 찾을 수 없습니다. HTML 구조를 확인하세요.");
-        return;
-    }
 
-    tBox.innerHTML = titleHtml;
-    bBox.innerHTML = bodyHtml;
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    if (modal && tBox && bBox) {
+        tBox.innerText = title;
+        bBox.innerHTML = bodyHtml;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    } else {
+        // 만약 요소를 찾지 못하면 0.1초 뒤 재시도 (탭 전환 직후 대응)
+        setTimeout(() => {
+            const m2 = document.getElementById('adminCustomModal');
+            if(m2) {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalBody').innerHTML = bodyHtml;
+                m2.classList.remove('hidden');
+            }
+        }, 100);
+    }
 };
 
-window.closeAdminCustomModal = function () {
+window.closeAdminCustomModal = function() {
     const modal = document.getElementById('adminCustomModal');
     if (modal) {
         modal.classList.add('hidden');
@@ -401,44 +411,42 @@ async function checkStaffBirthdays() {
             }
         }
 
-        // 5. [모바일/헤더] 알림 점(Dot) 표시 로직
-        const mobileDot = document.getElementById('mobile-birthday-dot');
-        if (mobileDot) {
-            if (birthdayMessages.length > 0) {
-                mobileDot.classList.add('active'); // CSS에서 display: block 설정 필요
-            } else {
-                mobileDot.classList.remove('active');
-            }
-        }
+// 5. [모바일/헤더] 알림 점(Dot) 및 텍스트 표시 로직
+const mobileDot = document.getElementById('mobile-birthday-dot');
+const mobAlert = document.getElementById('mobileBirthdayAlert'); // 추가
+const mobNames = document.getElementById('mobileBirthdayNames'); // 추가
+
+if (birthdayMessages.length > 0) {
+    if (mobileDot) mobileDot.classList.add('active');
+    if (mobAlert) mobAlert.classList.remove('hidden'); // 추가
+    if (mobNames) mobNames.innerHTML = birthdayMessages.join('<br>'); // 추가
+} else {
+    if (mobileDot) mobileDot.classList.remove('active');
+    if (mobAlert) mobAlert.classList.add('hidden'); // 추가
+}
+
     });
 }
 
-// 6. 초기 로드 시 실행 (기존 updateAdminWeather 호출부 근처에 추가)
-checkStaffBirthdays();
-// 1시간마다 체크 (선택 사항)
-setInterval(checkStaffBirthdays, 3600000);
 
-/* 모든 스태프 생일 보기 팝업 (Admin용) */
-/* 모든 스태프 생일 보기 팝업 (Admin용) - X 버튼 및 하단 닫기 추가 */
+// 모든 스태프 생일 보기 (staff.html 로직 100% 이식)
 window.showAllStaffBirthdays = function() {
     db.ref('users').once('value', snap => {
         const users = snap.val();
         if (!users) return;
-
-        let html = `<div class="space-y-3 pb-4">`; // 하단 여백 추가
         
-        // 이름순 정렬
-        const userList = Object.keys(users).map(key => ({
-            id: key,
-            ...users[key]
-        })).sort((a, b) => a.id.localeCompare(b.id));
-
+        let html = `<div class="space-y-3">`;
+        const userList = Object.keys(users).map(key => ({ id: key, ...users[key] })).sort((a, b) => a.id.localeCompare(b.id));
+        
         userList.forEach(u => {
             if (u.birthday) {
                 const bType = u.birthType || "Solar";
                 const bDate = u.birthday.replace(/-/g, '.');
                 const pImg = u.profileImg || 'image-001.webp';
-                const imgSrc = pImg.includes('/') ? pImg : `images/profile/${pImg}`;
+                // Admin 이미지 경로 예외 처리 포함
+                const imgSrc = u.id === 'Admin' ? 
+                    (pImg.includes('/') ? pImg : `images/profile/admin/${pImg}`) : 
+                    (pImg.includes('/') ? pImg : `images/profile/${pImg}`);
 
                 html += `
                 <div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
@@ -456,31 +464,10 @@ window.showAllStaffBirthdays = function() {
                 </div>`;
             }
         });
-
-        // 스태프가 없을 경우 예외 처리 및 하단 닫기 버튼 추가
-        if (userList.filter(u => u.birthday).length === 0) {
-            html = `<div class="text-center py-10 text-slate-500 font-bold">No birthday data found.</div>`;
-        }
-
-        html += `
-            </div>
-            <div class="mt-4 pt-4 border-t border-slate-800">
-                <button onclick="closeAdminCustomModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition-all">
-                    CLOSE
-                </button>
-            </div>`;
-        
-        // Admin 전용 모달 함수 호출
-        if(typeof openAdminCustomModal === 'function') {
-            openAdminCustomModal('STAFF BIRTHDAYS', html);
-        }
+        html += `</div>`;
+        window.openAdminCustomModal('STAFF BIRTHDAYS', html);
     });
 };
-
-
-// 페이지 로드 시 즉시 실행 및 30분마다 자동 갱신
-updateAdminWeather();
-setInterval(updateAdminWeather, 1800000);
 
     // 5. 탭 전환 시스템 (수정됨: 스크립트 중복 선언 방지 로직 추가)
     async function switchAdminTab(tab) {
@@ -537,9 +524,17 @@ setInterval(updateAdminWeather, 1800000);
 
     window.adminLogout = function() { if (confirm("Logout?")) { firebase.auth().signOut().then(() => window.location.replace("index.html")); } };
 
-    window.addEventListener('DOMContentLoaded', () => { 
-        switchAdminTab('dashboard'); 
-    });
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. 초기 데이터 로드 (HTML이 준비된 후 실행됨)
+    updateAdminWeather();      // 날씨 정보 가져오기
+    checkStaffBirthdays();    // 생일자 체크
+    switchAdminTab('dashboard'); // 기본 탭 로드
+
+    // 2. 자동 갱신 설정 (인터벌)
+    setInterval(updateAdminWeather, 1800000);  // 30분마다 날씨 갱신
+    setInterval(checkStaffBirthdays, 3600000); // 1시간마다 생일 갱신
+});
+
 </script>
 </body>
 </html>
