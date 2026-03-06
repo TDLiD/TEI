@@ -83,7 +83,7 @@
                     <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Password</label>
                     <div class="relative">
                         <input type="password" id="add_staff_pw" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-blue-500 transition pr-10">
-                        <button type="button" onclick="window.toggleViewPw('add_staff_pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                        <button type="button" onclick="window.toggleViewPw('add_staff_pw', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
                             <i class="far fa-eye text-sm"></i>
                         </button>
                     </div>
@@ -221,33 +221,23 @@ async function verifyAdmin() {
 // --- 수정된 비밀번호 토글 함수 (에러 방지 및 아이콘 연동) ---
 window.toggleViewPw = function(inputId, btnEl) {
     const input = document.getElementById(inputId);
-    if (!input) {
-        console.warn(`Input with ID "${inputId}" not found.`);
-        return;
-    }
+    if (!input) return;
 
-    // 1. 아이콘 요소 찾기 (전달받은 버튼 내부의 i 태그)
-    let icon = null;
-    if (btnEl) {
-        icon = btnEl.querySelector('i');
-    } else {
-        // btnEl이 없을 경우를 대비한 대체 로직
-        const btn = document.querySelector(`button[onclick*='${inputId}']`);
-        if (btn) icon = btn.querySelector('i');
-    }
+    // btnEl이 없으면 이벤트 target으로 찾기
+    const btn = btnEl instanceof Element ? btnEl 
+              : (btnEl?.target ? btnEl.target.closest('button') : null);
+    
+    const icon = btn ? btn.querySelector('i') : null;
 
-    // 2. 타입 토글 및 아이콘 클래스 변경
     if (input.type === "password") {
         input.type = "text";
         if (icon) {
-            // font-awesome 클래스 교체 (눈 감은 아이콘)
             icon.classList.remove('fa-eye');
             icon.classList.add('fa-eye-slash');
         }
     } else {
         input.type = "password";
         if (icon) {
-            // font-awesome 클래스 교체 (눈 뜬 아이콘)
             icon.classList.remove('fa-eye-slash');
             icon.classList.add('fa-eye');
         }

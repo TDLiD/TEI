@@ -75,7 +75,39 @@
 <script>
     (function () {
         const db = firebase.database();
-        let viewDate = new Date();
+       let viewDate = new Date();
+
+function ensureModal() {
+    if (!document.getElementById('attEditModal')) {
+        const modalHtml = `
+            <div id="attEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px);">
+                <div style="background:#0f172a; border:1px solid #1e293b; border-radius:24px; padding:28px; width:100%; max-width:420px; max-height:90vh; overflow-y:auto;">
+                    <div id="attEditModalTitle" style="margin-bottom:20px;"></div>
+                    <div id="attEditModalBody"></div>
+                </div>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('attEditModal').addEventListener('click', function(e) {
+            if (e.target === this) window.closeAttEditModal();
+        });
+    }
+
+    window.openAttEditModal = function(titleHtml, bodyHtml) {
+        const modal   = document.getElementById('attEditModal');
+        const titleEl = document.getElementById('attEditModalTitle');
+        const bodyEl  = document.getElementById('attEditModalBody');
+        if (!modal || !titleEl || !bodyEl) return;
+        titleEl.innerHTML = titleHtml;
+        bodyEl.innerHTML  = bodyHtml;
+        modal.style.display = 'flex';
+    };
+
+    window.closeAttEditModal = function() {
+        const modal = document.getElementById('attEditModal');
+        if (modal) modal.style.display = 'none';
+    };
+}
+ensureModal();
 
         const normalizeTime = (timeStr) => {
             if (!timeStr) return "";
@@ -137,13 +169,13 @@
                         <button onclick="window.saveAttendanceEdit('${name}', '${date}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-900/20 uppercase tracking-widest">Save Changes</button>
                         <div class="grid grid-cols-2 gap-2">
                             <button onclick="window.deleteAttendance('${name}', '${date}')" class="text-rose-500 font-bold py-3 rounded-xl text-xs hover:bg-rose-500/10 transition-all uppercase tracking-widest">Delete</button>
-                            <button onclick="window.closeAdminCustomModal()" class="text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
+                            <button onclick="window.closeAttEditModal()" class="text-slate-500 font-bold py-3 rounded-xl text-xs hover:bg-slate-800 transition-all uppercase tracking-widest">Cancel</button>
                         </div>
                     </div>
                 </div>`;
 
-            if (window.openAdminCustomModal) window.openAdminCustomModal(titleHtml, bodyHtml);
-            else alert("Modal function not found.");
+if (window.openAttEditModal) window.openAttEditModal(titleHtml, bodyHtml);
+else alert("Modal function not found.");
         };
 
 window.saveAttendanceEdit = function (name, date) {
@@ -156,7 +188,7 @@ window.saveAttendanceEdit = function (name, date) {
     // 1. 특별 상태(휴가 등)가 선택된 경우 문자열 그대로 저장
     if (special) {
         db.ref(`attendance/${date}/${name}`).set(special).then(() => {
-            if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+if (window.closeAttEditModal) window.closeAttEditModal();
         });
         return;
     }
@@ -190,7 +222,7 @@ window.saveAttendanceEdit = function (name, date) {
         };
 
         db.ref(`attendance/${date}/${name}`).set(updateData).then(() => {
-            if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+if (window.closeAttEditModal) window.closeAttEditModal();
         });
     });
 };
@@ -198,7 +230,7 @@ window.saveAttendanceEdit = function (name, date) {
         window.deleteAttendance = function (name, date) {
             if (confirm(`Delete ${name}'s record for ${date}?`)) {
                 db.ref(`attendance/${date}/${name}`).remove().then(() => {
-                    if (window.closeAdminCustomModal) window.closeAdminCustomModal();
+if (window.closeAttEditModal) window.closeAttEditModal();
                 });
             }
         };
