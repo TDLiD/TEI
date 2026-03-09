@@ -314,12 +314,22 @@ window.openLeaveModal = function(id = null, data = null) {
         document.body.style.overflow = '';
     };
 
-    window.submitLeaveRequest = function() {
+window.submitLeaveRequest = function() {
         if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
         const type = document.getElementById('leaveType').value;
         const range = datePicker.selectedDates;
         const reason = document.getElementById('leaveReason').value.trim();
         
+        // 특수문자를 제외하고 영문/한글 단어만 추출하여 개수 확인
+        const wordCount = reason.match(/\b\w+\b/g)?.length || 0;
+
+        if (wordCount < 5) {
+            alert("Please describe your reason in more detail (at least 5 words).");
+            document.getElementById('leaveReason').focus();
+            return;
+        }
+        // -----------------------------
+
         if (range.length === 0) return alert("Please select dates.");
         
         const start = new Date(range[0]);

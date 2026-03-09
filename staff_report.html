@@ -432,7 +432,8 @@ window.showReportAI = async function(date, summary) {
             const c = document.getElementById('workCardContainer');
             if (!r) { if(window.showEditor) window.showEditor(); } 
             else {
-                ab.innerHTML = `<button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button><button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600">Edit</button>`;
+                ab.innerHTML = `<button onclick="window.copyReportText()" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold mr-3 uppercase tracking-tighter">Copy</button>
+<button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button><button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600">Edit</button>`;
                 const amH = r.adminMemo ? `<div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl"><p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p><p class="text-xs text-blue-200 italic leading-relaxed whitespace-pre-wrap">${escapeHtml(r.adminMemo)}</p></div>` : "";
                 c.innerHTML = `<div class="bg-slate-900 p-6 rounded-2xl border ${r.status==='Completed'?'border-green-900/50':'border-slate-800'} shadow-lg animate-fadeIn"><div class="flex justify-between items-center mb-6"><div class="flex items-center gap-3"><span class="text-blue-400 text-xs font-black uppercase tracking-widest">Work Report</span><span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${r.status==='Completed'?'bg-emerald-500/20 text-emerald-500':r.status==='Pending'?'bg-amber-500/20 text-amber-500':'bg-blue-500/20 text-blue-400'}">${r.status||'In Progress'}</span></div><span class="text-slate-500 text-[10px] font-mono">${ds}</span></div><div class="space-y-6"><div><h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.todo)}</p></div><div><h4 class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-2">Work Summary</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.summary||r.content)}</p></div></div>${amH}<div class="mt-6 pt-4 border-t border-slate-800 text-right"><span class="text-[10px] text-slate-500 italic">Last Update: ${r.time||'N/A'}</span></div></div>`;
             }
@@ -650,6 +651,35 @@ if (writtenDatesContainer && missingDatesContainer) {
         console.error("Calendar Rendering Error:", error);
     }
 }
+// 클립보드 복사 함수 추가
+window.copyReportText = function() {
+    if (!currentReportData) return;
+
+    const todo = currentReportData.todo || "";
+    const summary = currentReportData.summary || currentReportData.content || "";
+    const date = selectedDateStr;
+
+    // 복사될 텍스트 형식 구성
+    const textToCopy = `[Work Report - ${date}]\n\n■ To-Do:\n${todo}\n\n■ Summary:\n${summary}`;
+
+    // 클립보드 API 사용
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        // 구형 브라우저 대응용 fallback
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert("Report copied to clipboard!");
+        } catch (err) {
+            alert("Unable to copy.");
+        }
+        document.body.removeChild(textArea);
+    });
+};
 
 window.openCopyFromPicker = function() {
             if (!document.getElementById('hiddenCopyInput')) {
@@ -684,6 +714,56 @@ window.openCopyFromPicker = function() {
 window.closeModal = function() {
     document.getElementById('reportDetailModal').style.display = 'none';
 };
+
+window.copyFromRecent = async () => {
+    const today = new Date(selectedDateStr);
+    let foundData = null;
+
+    // 어제(1일 전)부터 7일 전까지 루프
+    for (let i = 1; i <= 7; i++) {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() - i);
+        const targetDateStr = targetDate.toISOString().split('T')[0];
+
+        // Firebase에서 해당 날짜의 유저 데이터 확인
+        const snap = await db.ref(`reports/${targetDateStr}/${user}`).once('value');
+        const data = snap.val();
+
+        if (data && (data.todo || data.summary)) {
+            foundData = {
+                date: targetDateStr,
+                todo: data.todo || "",
+                summary: data.summary || data.content || ""
+            };
+            break; 
+        }
+    }
+
+    if (foundData) {
+        const todoField = document.getElementById('editTodo');
+        const summaryField = document.getElementById('editSummary');
+        
+        if (todoField && summaryField) {
+            todoField.value = foundData.todo;
+            summaryField.value = foundData.summary;
+
+            // 핵심 수정: showEditor에서 정의한 ID와 일치시킴
+            window.updateCharCount('editTodo', 'todoCount');
+            window.updateCharCount('editSummary', 'summaryCount');
+            
+            // 텍스트가 들어왔으므로 높이 자동 조절 (선택 사항이지만 권장)
+            if(window.autoResize) {
+                window.autoResize(todoField);
+                window.autoResize(summaryField);
+            }
+
+            alert(`Successfully copied data from ${foundData.date}.`);
+        }
+    } else {
+        alert("No report found within the last 7 days.");
+    }
+};
+
 
 // 특정 Staff의 리포트 상세 팝업 열기
 window.openStaffDetail = function(staffName, dateStr) {
@@ -792,10 +872,19 @@ window.showEditor = function() {
                     <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New' : 'Edit'} Report</span>
                     ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="window.openCopyFromPicker()" class="bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-600 transition uppercase tracking-tighter">📋 Copy from date</button>
-                    <span class="text-slate-500 text-[10px] font-mono border-l border-slate-700 pl-3">${selectedDateStr}</span>
-                </div>
+<div class="flex flex-col items-start gap-2">
+    <button onclick="window.openCopyFromPicker()" class="w-full bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
+        📋 Copy from date
+    </button>
+    
+    <button onclick="window.copyFromRecent()" class="w-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-indigo-600 hover:text-white transition uppercase tracking-widest">
+        📋 Copy from yesterday
+    </button>
+    
+    <span class="text-slate-500 text-[10px] font-mono mt-1">
+        Target Date: ${selectedDateStr}
+    </span>
+</div>
             </div>
 
             <div class="mb-4">

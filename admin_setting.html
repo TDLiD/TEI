@@ -10,7 +10,32 @@
         </div>
         <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">* WARNING: Restoring will overwrite all current database records. Admin password required.</p>
     </div>
-
+<div class="mt-6 p-4 bg-slate-950/40 rounded-2xl border border-white/5">
+    <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Automated Backup Schedule
+    </h3>
+    <div class="flex flex-wrap gap-4 items-end">
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Interval (주기)</label>
+            <select id="backup_interval" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-emerald-500 transition min-w-[100px]">
+                <option value="Daily">Daily (매일)</option>
+                <option value="Monday">Every Monday (매주 월)</option>
+                <option value="Monthly">Monthly (매월 1일)</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Time (시간: 00-23)</label>
+            <div class="flex items-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+                <select id="backup_hour" class="bg-slate-900 text-white p-2 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500 font-mono text-sm min-w-[60px] text-center"></select>
+                <span class="text-slate-500 font-bold">:</span>
+                <span class="text-white font-mono text-sm px-2">00</span>
+            </div>
+        </div>
+        <button onclick="window.saveBackupConfig()" class="bg-slate-700 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest ml-auto">
+            Save Schedule
+        </button>
+    </div>
+</div>
 
 
 <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
@@ -245,15 +270,18 @@ window.toggleViewPw = function(inputId, btnEl) {
 };
 
 // 셀렉트 박스 옵션 초기화 함수 수정
-    function initSelectors() {
-        const hours = Array.from({length: 24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
-        const minutes = Array.from({length: 60}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
-        
-        hSelect.innerHTML = hours;
-        mSelect.innerHTML = minutes;
-        lhSelect.innerHTML = hours; // 퇴근 시간용
-        lmSelect.innerHTML = minutes; // 퇴근 시간용
-    }
+function initSelectors() {
+    const hours = Array.from({length: 24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+    const minutes = Array.from({length: 60}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
+    
+    hSelect.innerHTML = hours;
+    mSelect.innerHTML = minutes;
+    lhSelect.innerHTML = hours;
+    lmSelect.innerHTML = minutes;
+    
+    // 아래 한 줄 추가: 백업 시간 셀렉트 박스 초기화
+    document.getElementById('backup_hour').innerHTML = hours; 
+}
 
 // 초기화 실행
     window.initAdminSettings = function() {
@@ -263,26 +291,39 @@ window.toggleViewPw = function(inputId, btnEl) {
     };
 
 // 설정 불러오기 로직 수정
-    function loadSystemConfig() {
-        db.ref('settings/config').once('value', snap => {
-            const data = snap.val() || {};
+function loadSystemConfig() {
+    db.ref('settings/config').once('value', snap => {
+        const data = snap.val() || {};
+        
+        // 1. 출근 시간 로드 (Standard Attendance)
+        let attTime = data.stdAttendance || "09:00";
+        const [ah, am] = attTime.split(':');
+        hSelect.value = ah || "09";
+        mSelect.value = am || "00";
+
+        // 2. 퇴근 시간 로드 (Auto Leave)
+        let leaveTime = data.autoLeave || "18:00";
+        const [lh, lm] = leaveTime.split(':');
+        lhSelect.value = lh || "18";
+        lmSelect.value = lm || "00";
+
+        // 3. 자동 백업 스케줄러 설정 로드 (추가됨)
+        // backupSchedule 하위 경로에 저장된 데이터를 가져옵니다.
+        const bData = data.backupSchedule || { interval: 'Monday', hour: '09' };
+        
+        const bIntervalSelect = document.getElementById('backup_interval');
+        const bHourSelect = document.getElementById('backup_hour');
+
+        if (bIntervalSelect) bIntervalSelect.value = bData.interval || "Monday";
+        if (bHourSelect) bHourSelect.value = bData.hour || "09";
+
+        // 하단 텍스트 디스플레이 업데이트
+        document.getElementById('current_time_display').innerText = 
+            `Current Setting: IN ${attTime} / OUT ${leaveTime} (24H Format)`;
             
-            // 출근 시간 로드
-            let attTime = data.stdAttendance || "09:00";
-            const [ah, am] = attTime.split(':');
-            hSelect.value = ah || "09";
-            mSelect.value = am || "00";
-
-            // 퇴근 시간 로드 (추가됨)
-            let leaveTime = data.autoLeave || "18:00";
-            const [lh, lm] = leaveTime.split(':');
-            lhSelect.value = lh || "18";
-            lmSelect.value = lm || "00";
-
-            document.getElementById('current_time_display').innerText = 
-                `Current Setting: IN ${attTime} / OUT ${leaveTime} (24H Format)`;
-        });
-    }
+        console.log("System & Backup Config Loaded:", { attTime, leaveTime, bData });
+    });
+}
 
  // 설정 저장 로직 수정
     window.saveSystemConfig = async function() {
@@ -561,6 +602,132 @@ window.clearStaffData = async function(staffName) {
             return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')}`;
         } catch(e) { return "09:00"; }
     }
+
+// 1. 시간 셀렉트 박스 초기화 (initSelectors 함수 내에 추가하거나 별도 실행)
+function initBackupSelectors() {
+    const bHourSelect = document.getElementById('backup_hour');
+    const hours = Array.from({length: 24}, (_, i) => 
+        `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`
+    ).join('');
+    bHourSelect.innerHTML = hours;
+}
+
+// 2. 설정 불러오기 (loadSystemConfig 함수 내부에 추가)
+// 기존 loadSystemConfig 함수 끝부분에 아래 내용을 넣으세요.
+db.ref('settings/config/backupSchedule').once('value', snap => {
+    const bData = snap.val() || { interval: 'Monday', hour: '09' };
+    document.getElementById('backup_interval').value = bData.interval;
+    document.getElementById('backup_hour').value = bData.hour;
+});
+
+// 3. 설정 저장 함수 (window 객체에 추가)
+window.saveBackupConfig = async function() {
+    if (!(await verifyAdmin())) return;
+
+    const interval = document.getElementById('backup_interval').value;
+    const hour = document.getElementById('backup_hour').value;
+
+    db.ref('settings/config/backupSchedule').set({
+        interval: interval,
+        hour: hour,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert(`Backup schedule saved!\nEvery ${interval} at ${hour}:00`);
+    }).catch(err => alert("Error: " + err.message));
+};
+
+// 페이지 로드 시 실행 (window.initAdminSettings 내부에 추가)
+// initBackupSelectors();
+
+// --- 수정된 자동 백업 스케줄러 (Firebase 설정 연동 버전) ---
+(function() {
+    let isBackupDoneToday = false;
+
+    async function autoBackupRoutine() {
+        try {
+            const now = new Date();
+            const db = firebase.database();
+            
+            // 1. Firebase에서 최신 백업 설정 불러오기
+            const configSnap = await db.ref('settings/config/backupSchedule').once('value');
+            const bConf = configSnap.val() || { interval: 'Monday', hour: '09' }; // 기본값 설정
+
+            // 2. 자카르타 시간 데이터 추출
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Jakarta',
+                hour12: false,
+                weekday: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const parts = formatter.formatToParts(now);
+            const timeData = {};
+            parts.forEach(({type, value}) => { timeData[type] = value; });
+
+            const dayName = timeData.weekday;  // "Monday" 등
+            const dayOfMonth = parseInt(timeData.day); // 1, 2, 3...
+            const currentHour = parseInt(timeData.hour);
+            const currentMinute = parseInt(timeData.minute);
+            
+            const targetHour = parseInt(bConf.hour);
+
+            // [디버그 로그] 설정된 주기와 현재 시간 출력
+            if (parseInt(timeData.second) % 30 === 0) { // 로그 과부하 방지를 위해 30초마다 설정값 출력
+                console.log(`[Backup Check] Config: ${bConf.interval} at ${targetHour}:00 | JKT Now: ${dayName} ${currentHour}:${currentMinute}`);
+            }
+
+            // 3. 조건 검사 로직
+            let isScheduleMatch = false;
+
+            if (bConf.interval === 'Daily') {
+                // 매일 설정된 시간인 경우
+                isScheduleMatch = (currentHour === targetHour);
+            } else if (bConf.interval === 'Monday') {
+                // 매주 월요일 설정된 시간인 경우
+                isScheduleMatch = (dayName === 'Monday' && currentHour === targetHour);
+            } else if (bConf.interval === 'Monthly') {
+                // 매월 1일 설정된 시간인 경우
+                isScheduleMatch = (dayOfMonth === 1 && currentHour === targetHour);
+            }
+
+            // 4. 실행 (해당 시간의 0분~1분 사이에 1회 실행)
+            if (isScheduleMatch && currentMinute === 0) {
+                if (!isBackupDoneToday) {
+                    isBackupDoneToday = true;
+                    console.log(`%c[SCHEDULED BACKUP] Starting... (${bConf.interval} at ${targetHour}:00)`, "color: #00ffa3; font-weight: bold;");
+                    
+                    db.ref('/').once('value', snap => {
+                        const dbData = snap.val();
+                        const dataStr = JSON.stringify(dbData, null, 2);
+                        const blob = new Blob([dataStr], {type: "application/json"});
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `AUTO_BACKUP_${bConf.interval}_${now.toISOString().slice(0,10)}.json`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    });
+                }
+            } else {
+                // 설정된 시간이 지나면 플래그 리셋
+                if (currentMinute !== 0) {
+                    isBackupDoneToday = false;
+                }
+            }
+        } catch (e) {
+            console.error("Backup Routine Error:", e);
+        }
+    }
+
+    console.log("Firebase-Linked Backup Scheduler Initialized.");
+    autoBackupRoutine(); 
+    setInterval(autoBackupRoutine, 5000); // 5초마다 체크
+})();
 
     window.initAdminSettings();
 })();
