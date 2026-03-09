@@ -2,49 +2,15 @@
 <style>
 /* ── Base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-    --bg: #060910;
-    --surface: #0d1117;
-    --surface2: #111827;
-    --border: #1e293b;
-    --border2: #253047;
-    --text: #f1f5f9;
-    --muted: #475569;
-    --subtle: #1e293b;
-    --green: #10b981;
-    --red: #f43f5e;
-    --blue: #3b82f6;
-    --amber: #f59e0b;
-    --green-dim: rgba(16,185,129,0.12);
-    --red-dim: rgba(244,63,94,0.12);
-    --blue-dim: rgba(59,130,246,0.12);
-    --amber-dim: rgba(245,158,11,0.12);
-}
-
-
-/* ── Hero Card (Name + Status) ── */
-.sm-hero {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-}
-.sm-hero::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 120px; height: 120px;
-    background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%);
-    border-radius: 50%;
-}
+:root { --bg: #060910; --surface: #0d1117; --surface2: #111827; --border: #1e293b; --border2: #253047; --text: #f1f5f9; --muted: #475569; --subtle: #1e293b; --green: #10b981; --red: #f43f5e; --blue: #3b82f6; --amber: #f59e0b; --green-dim: rgba(16,185,129,0.12); --red-dim: rgba(244,63,94,0.12); --blue-dim: rgba(59,130,246,0.12); --amber-dim: rgba(245,158,11,0.12); }
+/* ── Hero Card ── */
+.sm-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
+.sm-hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); border-radius: 50%; }
 .sm-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
 .sm-hero-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
 .sm-hero-name { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -0.02em; margin-top: 2px; line-height: 1; }
 .sm-live-date { font-size: 9px; font-weight: 800; color: var(--blue); background: var(--blue-dim); border: 1px solid rgba(59,130,246,0.2); padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
 .sm-fortune { margin-top: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; font-size: 10px; color: #64748b; font-weight: 700; font-family: -apple-system, sans-serif; }
-
 /* ── Leave Alert ── */
 #leaveStatusAlert { display: none; }
 #leaveStatusAlert.visible { display: block; }
@@ -59,89 +25,31 @@
 .sm-leave-alert-close { margin-left: auto; color: #475569; cursor: pointer; font-size: 16px; flex-shrink: 0; }
 .sm-leave-alert-close:hover { color: var(--text); }
 
-/* ── Stats Bar ── */
-.sm-stats {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px 16px;
-}
-.sm-stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.sm-stats-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-.sm-stats-std { font-size: 8px; font-weight: 800; color: var(--muted); }
-.sm-stats-std span { color: #94a3b8; }
-.sm-stats-numbers { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-.sm-stats-pct { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; }
-.sm-stats-pct.warning { color: var(--red); }
-.sm-stats-status { font-size: 9px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.sm-stats-status.warning { color: var(--red); }
-.sm-stats-detail { display: flex; justify-content: space-between; align-items: center; }
-.sm-stats-counts { font-size: 9px; font-weight: 800; color: var(--muted); }
-.sm-stats-avg { font-size: 9px; font-weight: 800; color: var(--blue); }
 .sm-bar { width: 100%; height: 3px; background: var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
 .sm-bar-fill { height: 100%; background: var(--blue); border-radius: 10px; transition: width 1s ease; }
 .sm-bar-fill.warning { background: var(--red); }
 #warningIcon { display: none; }
 #warningIcon.visible { display: inline; }
-
 /* ── Today Status Strip ── */
-.sm-today-strip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
+.sm-today-strip { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .sm-today-item { display: flex; flex-direction: column; gap: 3px; }
 .sm-today-lbl { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 .sm-today-val { font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
 .sm-today-val.in { color: var(--green); }
 .sm-today-val.out { color: #60a5fa; }
 .sm-today-val.empty { color: var(--border2); font-size: 13px; }
-
 /* ── Attendance Panel ── */
-.sm-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 18px;
-    flex: 1;
-}
+.sm-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; flex: 1; }
 .sm-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .sm-panel-title { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-
-/* Time Input */
 .sm-time-block { margin-bottom: 10px; }
 .sm-time-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.sm-time-input {
-    width: 100%; background: var(--surface2); color: var(--text);
-    font-size: 24px; font-weight: 900; text-align: center; letter-spacing: 0.05em;
-    padding: 10px; border-radius: 10px; border: 1px solid var(--border2);
-    outline: none; font-family: 'SF Mono', monospace;
-    transition: border-color 0.2s;
-}
+.sm-time-input { width: 100%; background: var(--surface2); color: var(--text); font-size: 24px; font-weight: 900; text-align: center; letter-spacing: 0.05em; padding: 10px; border-radius: 10px; border: 1px solid var(--border2); outline: none; font-family: 'SF Mono', monospace; transition: border-color 0.2s; }
 .sm-time-input:focus { border-color: var(--blue); }
-
-/* Special Status */
-.sm-select {
-    width: 100%; background: var(--surface2); color: var(--text);
-    font-weight: 800; padding: 10px 12px; border-radius: 10px;
-    border: 1px solid var(--border2); outline: none; cursor: pointer;
-    font-size: 11px; font-family: 'SF Mono', monospace;
-    margin-bottom: 10px;
-    transition: border-color 0.2s;
-}
+.sm-select { width: 100%; background: var(--surface2); color: var(--text); font-weight: 800; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border2); outline: none; cursor: pointer; font-size: 11px; font-family: 'SF Mono', monospace; margin-bottom: 10px; transition: border-color 0.2s; }
 .sm-select:focus { border-color: var(--blue); }
-
-/* Buttons */
 .sm-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.sm-btn {
-    padding: 12px 8px; border-radius: 10px; border: none; cursor: pointer;
-    font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
-    transition: all 0.15s; font-family: 'SF Mono', monospace;
-}
+.sm-btn { padding: 12px 8px; border-radius: 10px; border: none; cursor: pointer; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s; font-family: 'SF Mono', monospace; }
 .sm-btn:active { transform: scale(0.96); }
 .sm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .sm-btn.in { background: var(--green); color: #fff; }
@@ -150,57 +58,26 @@
 .sm-btn.out:hover:not(:disabled) { background: #e11d48; }
 .sm-btn.special { background: var(--blue); color: #fff; width: 100%; }
 .sm-btn.special:hover { background: #2563eb; }
-
-/* Log */
-.sm-log {
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 9px; font-weight: 700;
-    color: var(--muted); text-align: center; font-style: italic;
-    border: 1px solid var(--border);
-}
-
-/* All Staff Button */
-.sm-all-staff-btn {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 14px; padding: 10px 14px; cursor: pointer;
-    transition: all 0.2s; color: var(--text); width: 100%;
-    font-family: 'SF Mono', monospace;
-}
+.sm-log { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 10px; font-size: 9px; font-weight: 700; color: var(--muted); text-align: center; font-style: italic; border: 1px solid var(--border); }
+.sm-all-staff-btn { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; color: var(--text); width: 100%; font-family: 'SF Mono', monospace; }
 .sm-all-staff-btn:hover { border-color: var(--border2); background: #161f2e; }
 .sm-all-staff-btn img { width: 28px; height: 28px; object-fit: contain; }
 .sm-all-staff-btn span { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
 .sm-all-staff-btn .arrow { margin-left: auto; color: var(--muted); font-size: 11px; }
-
 /* ── Right Panel: Calendar ── */
 .sm-right { display: flex; flex-direction: column; gap: 10px; }
-.sm-cal-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 18px;
-    flex: 1;
-}
+.sm-cal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; flex: 1; }
 .sm-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
 .sm-cal-title { font-size: 16px; font-weight: 900; color: var(--text); letter-spacing: -0.01em; font-style: italic; text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: 4px; }
 .sm-cal-nav { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .sm-nav-btn { padding: 5px 10px; font-size: 9px; font-weight: 900; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'SF Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s; }
 .sm-nav-btn:hover { color: var(--text); background: var(--border); }
 .sm-nav-btn.today-btn { color: var(--blue); }
-
-/* Calendar Table */
 .sm-cal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .sm-cal-table th { padding: 6px 2px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); text-align: center; border-bottom: 1px solid var(--border); }
 .sm-cal-table th.sun { color: var(--red); }
 .sm-cal-table th.sat { color: var(--blue); }
-.sm-cal-table td {
-    height: 68px; vertical-align: top; padding: 3px;
-    border: 1px solid rgba(30,41,59,0.6);
-    cursor: pointer; transition: background 0.15s;
-    position: relative;
-}
+.sm-cal-table td { height: 68px; vertical-align: top; padding: 3px; border: 1px solid rgba(30,41,59,0.6); cursor: pointer; transition: background 0.15s; position: relative; }
 .sm-cal-table td:hover { background: rgba(255,255,255,0.03); }
 .sm-cal-table td.sun-cell { background: rgba(244,63,94,0.04); }
 .sm-cal-table td.sat-cell { background: rgba(59,130,246,0.04); }
@@ -214,8 +91,7 @@
 .late-color { background: rgba(244,63,94,0.12); color: #f43f5e; }
 .other-color { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .out-time { background: rgba(148,163,184,0.08); color: #64748b; border: 1px solid rgba(148,163,184,0.15); }
-
-/* ── Modals (preserved) ── */
+/* ── Modals ── */
 .missing-modal-overlay, .edit-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .edit-modal-overlay { z-index: 10000; }
 .missing-modal, .edit-modal { background: #0f172a; border: 1px solid #334155; border-radius: 1.5rem; width: 90%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
@@ -225,7 +101,6 @@
 .dont-show-btn { color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
 .dont-show-btn:hover { color: #94a3b8; }
 .close-modal-btn { background: #334155; color: white; padding: 8px 16px; border-radius: 0.75rem; font-size: 11px; font-weight: 900; }
-
 /* ── Animations ── */
 @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } 50% { box-shadow: 0 0 12px rgba(244,63,94,0.3); } 100% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } }
 .warning-pulse { animation: pulse-red 2s infinite; }
@@ -241,32 +116,39 @@
 .sm-left > *:nth-child(4) { animation-delay: 0.18s; }
 .sm-left > *:nth-child(5) { animation-delay: 0.22s; }
 .sm-right { animation-delay: 0.1s; }
-
-/* Fortune bubble */
 .fortune-bubble { display: block; margin-top: 8px; padding: 7px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 9px; font-size: 10px; color: #64748b; font-weight: 700; font-family: -apple-system, sans-serif; animation: float 3s ease-in-out infinite; }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-
 /* Scrollbar */
 ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
 /* Responsive */
-@media (max-width: 640px) {
-    .sm-cal-table td { height: 52px; padding: 2px; }
-    .sm-cal-table th { font-size: 7px; }
-    .time-label { font-size: 7px; }
-    .sm-hero-name { font-size: 18px; }
-}
-/* 1. 중복된 .sm-root 선언 제거 및 폰트만 지정 */
-.sm-root {
-    /* display: grid 설정을 삭제하여 상단의 flex/media query 설정을 따르도록 함 */
-    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+@media (max-width: 640px) { .sm-cal-table td { height: 52px; padding: 2px; } .sm-cal-table th { font-size: 7px; } .time-label { font-size: 7px; } .sm-hero-name { font-size: 18px; } }
+.sm-root { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+.sm-fortune, .sm-leave-alert-msg, .fortune-bubble, .sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label { font-family: "Pretendard", sans-serif; }
+/* 상단 가로 배치 레이아웃 */
+.sm-top-layout {
+    display: flex;
+    gap: 10px; /* 두 창 사이의 간격 */
+    margin-bottom: 10px;
+    align-items: stretch; /* 두 창의 높이를 동일하게 맞춤 */
 }
 
-/* 2. 개별 요소 폰트 통일 */
-.sm-fortune, .sm-leave-alert-msg, .fortune-bubble, 
-.sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label {
-    font-family: "Pretendard", sans-serif;
+.sm-top-layout > div {
+    flex: 1; /* 두 창이 1:1 비율로 너비를 나눔 */
+}
+
+/* Today Strip 내부 그리드 조정 (가로로 좁아지므로 텍스트 크기 등 최적화) */
+.sm-today-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: center; /* 내용 중앙 정렬 */
+}
+
+/* 모바일 환경에서는 다시 세로로 쌓이도록 설정 */
+@media (max-width: 640px) {
+    .sm-top-layout {
+        flex-direction: column;
+    }
 }
 </style>
 
@@ -275,60 +157,40 @@
     <div class="sm-left">
 
         <!-- Hero: Name + Date -->
-        <div class="sm-hero">
-            <div class="sm-hero-top">
-                <div>
-                    <div class="sm-hero-label">Authenticated as</div>
-                    <div id="mainWelcomeMsg" class="sm-hero-name"></div>
-                </div>
-                <div id="liveDate" class="sm-live-date"></div>
+<div class="sm-top-layout">
+    <div class="sm-hero">
+        <div class="sm-hero-top">
+            <div>
+                <div class="sm-hero-label">Authenticated as</div>
+                <div id="mainWelcomeMsg" class="sm-hero-name"></div>
             </div>
-            <div id="fortuneArea"></div>
+            <div id="liveDate" class="sm-live-date"></div>
         </div>
+        <div id="fortuneArea"></div>
+    </div>
 
-        <!-- Leave Alert -->
-        <div id="leaveStatusAlert">
-            <div id="leaveAlertContent" class="sm-leave-alert">
-                <span id="leaveAlertIcon" class="sm-leave-alert-icon"></span>
-                <div>
-                    <div id="leaveAlertTitle" class="sm-leave-alert-title"></div>
-                    <div id="leaveAlertMsg" class="sm-leave-alert-msg"></div>
-                </div>
-                <span class="sm-leave-alert-close" onclick="document.getElementById('leaveStatusAlert').classList.remove('visible')">&times;</span>
-            </div>
+    <div class="sm-today-strip" id="todayStrip">
+        <div class="sm-today-item">
+            <div class="sm-today-lbl">☀ In Time</div>
+            <div id="todayInDisplay" class="sm-today-val in">—</div>
         </div>
+        <div class="sm-today-item">
+            <div class="sm-today-lbl">🌙 Out Time</div>
+            <div id="todayOutDisplay" class="sm-today-val out">—</div>
+        </div>
+    </div>
+</div>
 
-        <!-- Today's Check-in/out Status -->
-        <div class="sm-today-strip" id="todayStrip">
-            <div class="sm-today-item">
-                <div class="sm-today-lbl">☀ In Time</div>
-                <div class="sm-today-val in" id="todayInDisplay">—</div>
-            </div>
-            <div class="sm-today-item">
-                <div class="sm-today-lbl">🌙 Out Time</div>
-                <div class="sm-today-val out" id="todayOutDisplay">—</div>
-            </div>
+<div id="leaveStatusAlert">
+    <div id="leaveAlertContent" class="sm-leave-alert">
+        <span id="leaveAlertIcon" class="sm-leave-alert-icon"></span>
+        <div>
+            <div id="leaveAlertTitle" class="sm-leave-alert-title"></div>
+            <div id="leaveAlertMsg" class="sm-leave-alert-msg"></div>
         </div>
-
-        <!-- Monthly Stats -->
-        <div class="sm-stats" id="weeklySummaryCard">
-            <div class="sm-stats-header">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span id="warningIcon">⚠️</span>
-                    <span class="sm-stats-label">Monthly Attendance Stats</span>
-                </div>
-                <span class="sm-stats-std">Std: <span id="displayStdTime">--:--</span></span>
-            </div>
-            <div class="sm-stats-numbers">
-                <span id="lateRatioPercent" class="sm-stats-pct">0%</span>
-                <span id="lateRatioStatus" class="sm-stats-status">Checking...</span>
-            </div>
-            <div class="sm-bar"><div id="lateRatioBar" class="sm-bar-fill" style="width:0%"></div></div>
-            <div class="sm-stats-detail">
-                <span id="statCounts" class="sm-stats-counts">T:0 | A:0 | L:0</span>
-                <span id="avgLeaveTime" class="sm-stats-avg">Avg Out: --:--</span>
-            </div>
-        </div>
+        <span class="sm-leave-alert-close" onclick="document.getElementById('leaveStatusAlert').classList.remove('visible')">&times;</span>
+    </div>
+</div>
 
         <!-- Attendance Panel -->
         <div class="sm-panel">
@@ -358,8 +220,6 @@
             <div id="specialButtonArea" style="display:none; margin-bottom:10px;">
                 <button onclick="handleSpecialStatus()" class="sm-btn special">SAVE STATUS</button>
             </div>
-
-            <div id="attendanceLog" class="sm-log">No records</div>
         </div>
 
         <!-- All Staff Button -->
@@ -701,22 +561,194 @@ function getJakartaDate() {
     }
 
     /* ── Edit Popup ── */
-    window.openEditPopup = function(dateStr, currentRec) {
-        if(document.getElementById('editPopup')) return;
-        let attVal="",leaveVal="",isAttReadOnly=false,isLeaveInfo=false,leaveTypeText="";
-        const leaveCodes=["PEL","ANL","HAL","SIL","SPL","WO"];
-        if(currentRec){
-            if(typeof currentRec==='string'){if(leaveCodes.includes(currentRec)){isLeaveInfo=true;leaveTypeText=currentRec;}attVal=currentRec;isAttReadOnly=true;}
-            else{
-                if(currentRec.attend){const tm=currentRec.attend.match(/(\d{1,2}:\d{2})/);if(tm){const[h,mn]=tm[1].split(':');attVal=`${h.padStart(2,'0')}:${mn}`;}else{if(leaveCodes.includes(currentRec.attend)){isLeaveInfo=true;leaveTypeText=currentRec.attend;}attVal=currentRec.attend;}isAttReadOnly=true;}
-                if(currentRec.leave){const lm=currentRec.leave.match(/(\d{1,2}:\d{2})/);if(lm){const[h,mn]=lm[1].split(':');leaveVal=`${h.padStart(2,'0')}:${mn}`;}else leaveVal=currentRec.leave;}
+window.openEditPopup = function(dateStr, currentRec) {
+    if(document.getElementById('editPopup')) return;
+    
+    // 미래 날짜 체크
+    const clickedDate = new Date(dateStr);
+    const today = new Date(todayStr);
+    const isFutureDate = clickedDate > today;
+    
+    let attVal="",leaveVal="",isAttReadOnly=false,isLeaveInfo=false,leaveTypeText="";
+    const leaveCodes=["PEL","ANL","HAL","SIL","SPL","WO"];
+    
+    // 미래 날짜인 경우: 휴가 타입만 선택 가능
+    if(isFutureDate) {
+        const overlay=document.createElement('div'); 
+        overlay.id='editPopup'; 
+        overlay.className='edit-modal-overlay';
+        
+        overlay.innerHTML=`
+        <div class="edit-modal">
+            <div class="mb-4 text-center">
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">📅 Future Date Leave</p>
+                <h3 class="text-white font-black text-lg">${dateStr}</h3>
+                <p class="text-[9px] text-slate-500 mt-2">You can only set leave type for future dates</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2">Select Leave Type</label>
+                    <select id="futureLeaveType" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-sm">
+                        <option value="">--- Select Leave Type ---</option>
+                        <option value="WO">WO — Work Out</option>
+                        <option value="PEL">PEL — Personal Leave</option>
+                        <option value="ANL">ANL — Annual Leave</option>
+                        <option value="HAL">HAL — Half Day Leave</option>
+                        <option value="SIL">SIL — Sick Leave</option>
+                        <option value="SPL">SPL — Special Leave</option>
+                    </select>
+                </div>
+<div class="grid grid-cols-3 gap-2 mt-6">
+    <button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">
+        Cancel
+    </button>
+    <button onclick="deleteFutureLeave('${dateStr}')" class="bg-rose-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-rose-500/20">
+        Delete
+    </button>
+    <button onclick="saveFutureLeave('${dateStr}')" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">
+        Save
+    </button>
+</div>
+                </div>
+            </div>
+        </div>`;
+        
+        document.body.appendChild(overlay);
+        return;
+    }
+    
+    // 기존 코드 (과거/오늘 날짜 처리) - 변경 없음
+    if(currentRec){
+        if(typeof currentRec==='string'){
+            if(leaveCodes.includes(currentRec)){
+                isLeaveInfo=true;
+                leaveTypeText=currentRec;
+            }
+            attVal=currentRec;
+            isAttReadOnly=true;
+        }
+        else{
+            if(currentRec.attend){
+                const tm=currentRec.attend.match(/(\d{1,2}:\d{2})/);
+                if(tm){
+                    const[h,mn]=tm[1].split(':');
+                    attVal=`${h.padStart(2,'0')}:${mn}`;
+                }else{
+                    if(leaveCodes.includes(currentRec.attend)){
+                        isLeaveInfo=true;
+                        leaveTypeText=currentRec.attend;
+                    }
+                    attVal=currentRec.attend;
+                }
+                isAttReadOnly=true;
+            }
+            if(currentRec.leave){
+                const lm=currentRec.leave.match(/(\d{1,2}:\d{2})/);
+                if(lm){
+                    const[h,mn]=lm[1].split(':');
+                    leaveVal=`${h.padStart(2,'0')}:${mn}`;
+                }else leaveVal=currentRec.leave;
             }
         }
-        const overlay=document.createElement('div'); overlay.id='editPopup'; overlay.className='edit-modal-overlay';
-        let footerButtons=isLeaveInfo?`<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>`:`<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button><button onclick="saveEditRecord('${dateStr}',${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
-        overlay.innerHTML=`<div class="edit-modal"><div class="mb-4 text-center"><p class="text-[10px] font-black ${isLeaveInfo?'text-amber-500':(isAttReadOnly?'text-rose-500':'text-emerald-500')} uppercase tracking-widest mb-1">${isLeaveInfo?'📅 Leave Information':(isAttReadOnly?'⚠️ Attendance Locked':'✍️ Attendance Missing')}</p><h3 class="text-white font-black text-lg">${dateStr}</h3></div><div class="space-y-4"><div><label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>${isLeaveInfo?`<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>`:`<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly?'readonly':''} class="w-full ${isAttReadOnly?'bg-slate-800 text-slate-400 border-slate-700':'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`}</div>${!isLeaveInfo?`<div><label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label><div class="flex gap-2"><input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl"><button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete">🗑️</button></div></div>`:'<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'}<div class="${isLeaveInfo?'':'grid grid-cols-2'} gap-3 mt-6">${footerButtons}</div></div></div>`;
-        document.body.appendChild(overlay);
-    };
+    }
+    
+    const overlay=document.createElement('div'); 
+    overlay.id='editPopup'; 
+    overlay.className='edit-modal-overlay';
+    
+    let footerButtons=isLeaveInfo?
+        `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>`
+        :
+        `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
+        <button onclick="saveEditRecord('${dateStr}',${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
+    
+    overlay.innerHTML=`
+    <div class="edit-modal">
+        <div class="mb-4 text-center">
+            <p class="text-[10px] font-black ${isLeaveInfo?'text-amber-500':(isAttReadOnly?'text-rose-500':'text-emerald-500')} uppercase tracking-widest mb-1">
+                ${isLeaveInfo?'📅 Leave Information':(isAttReadOnly?'⚠️ Attendance Locked':'✍️ Attendance Missing')}
+            </p>
+            <h3 class="text-white font-black text-lg">${dateStr}</h3>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
+                ${isLeaveInfo?
+                    `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>`
+                    :
+                    `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly?'readonly':''} class="w-full ${isAttReadOnly?'bg-slate-800 text-slate-400 border-slate-700':'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`
+                }
+            </div>
+            ${!isLeaveInfo?
+                `<div>
+                    <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
+                    <div class="flex gap-2">
+                        <input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
+                        <button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete">🗑️</button>
+                    </div>
+                </div>`
+                :
+                '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'
+            }
+            <div class="${isLeaveInfo?'':'grid grid-cols-2'} gap-3 mt-6">
+                ${footerButtons}
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.appendChild(overlay);
+};
+
+window.saveFutureLeave = function(dateStr) {
+    const leaveType = document.getElementById('futureLeaveType').value;
+    
+    if(!leaveType) {
+        alert("Please select a leave type.");
+        return;
+    }
+    
+    // 기존 데이터 확인
+    db.ref(`attendance/${dateStr}/${user}`).once('value', snapshot => {
+        const existingData = snapshot.val();
+        
+        // 동일한 휴가 타입이 이미 저장되어 있는지 확인
+        if(existingData === leaveType) {
+            alert("You have already applied for the same leave type!");
+            return;
+        }
+        
+        // 다른 휴가 타입이거나 데이터가 없으면 저장 진행
+        if(confirm(`Set ${leaveType} for ${dateStr}?`)) {
+            db.ref(`attendance/${dateStr}/${user}`).set(leaveType)
+            .then(() => {
+                alert("Future leave has been saved successfully.");
+                document.getElementById('editPopup').remove();
+                if(typeof renderCalendar === 'function') renderCalendar();
+            })
+            .catch(e => {
+                console.error(e);
+                alert("Failed to save: " + e.message);
+            });
+        }
+    });
+};
+
+window.deleteFutureLeave = function(dateStr) {
+    if(!confirm(`Delete leave record for ${dateStr}?`)) {
+        return;
+    }
+    
+    db.ref(`attendance/${dateStr}/${user}`).remove()
+    .then(() => {
+        alert("Leave record has been deleted successfully.");
+        document.getElementById('editPopup').remove();
+        if(typeof renderCalendar === 'function') renderCalendar();
+    })
+    .catch(e => {
+        console.error(e);
+        alert("Failed to delete: " + e.message);
+    });
+};
 
     window.deleteLeaveTime = function(dateStr) {
         if(!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
@@ -783,7 +815,6 @@ function getJakartaDate() {
     };
 
     document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); },800); });
-    if(typeof renderCalendar==='function') renderCalendar();
     renderCalendar();
 })();
 </script>
