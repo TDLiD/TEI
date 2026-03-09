@@ -10,143 +10,95 @@
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     
-    <style>
-        :root {
-            --bg: #03060f;
-            --surface: rgba(8, 18, 36, 0.7);
-            --blue: #3b82f6;
-            --cyan: #06b6d4;
-        }
+<style>:root{--bg:#03060f;--surface:rgba(8,18,36,0.7);--blue:#3b82f6;--cyan:#06b6d4}* {-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}body{font-family:"Pretendard",sans-serif;color:#f1f5f9;-webkit-tap-highlight-color:transparent;margin:0;overflow-x:hidden;background-color:var(--bg);background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;transition:background .5s ease-in-out;opacity:0;perspective:1500px;min-height:100vh;min-height:-webkit-fill-available}body.loaded{opacity:1;transition:opacity .8s cubic-bezier(.16,1,.3,1)}.video-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 0%,rgba(3,6,15,.5) 40%,rgba(3,6,15,.85) 100%);z-index:-1;animation:overlayPulse 10s ease-in-out infinite}@keyframes overlayPulse{0%,100%{opacity:1}50%{opacity:.85}}.particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;opacity:.3}.logo-container{animation:float 6s ease-in-out infinite;transform-style:preserve-3d}@keyframes float{0%,100%{transform:translateY(0px) translateZ(0px) rotateX(0deg)}50%{transform:translateY(-15px) translateZ(20px) rotateX(5deg)}}.logo-glow{position:absolute;inset:-2px;background:linear-gradient(135deg,rgba(59,130,246,.4),rgba(6,182,212,.4));border-radius:50%;filter:blur(20px);opacity:0;transition:opacity .6s ease;animation:pulse 3s ease-in-out infinite}.logo-container:hover .logo-glow{opacity:1}@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:.9}}.login-card{background:linear-gradient(135deg,rgba(8,18,36,.9) 0%,rgba(8,18,36,.7) 100%);backdrop-filter:blur(30px) saturate(200%);border:1.5px solid rgba(255,255,255,.15);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 15px 35px -10px rgba(0,0,0,.5),inset 0 2px 1px rgba(255,255,255,.15),inset 0 -2px 1px rgba(0,0,0,.3),0 0 80px rgba(59,130,246,.2);transition:all .3s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative;will-change:transform}.login-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(135deg,rgba(59,130,246,.3) 0%,rgba(6,182,212,.3) 50%,rgba(59,130,246,.3) 100%);border-radius:inherit;z-index:-1;opacity:0;transition:opacity .5s ease;filter:blur(15px)}.login-card:hover::before{opacity:1;animation:borderGlow 3s ease-in-out infinite}@keyframes borderGlow{0%,100%{opacity:.5}50%{opacity:1}}.card-layer-1{transform:translateZ(30px);transition:transform .3s ease}.card-layer-2{transform:translateZ(20px);transition:transform .3s ease}.card-layer-3{transform:translateZ(50px);transition:transform .3s ease}select,input{background:linear-gradient(135deg,rgba(15,23,42,.8) 0%,rgba(15,23,42,.6) 100%)!important;backdrop-filter:blur(15px)!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.1)!important;font-size:16px!important;transition:all .4s cubic-bezier(.4,0,.2,1)!important;box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 4px 8px rgba(0,0,0,.2)!important;transform-style:preserve-3d!important}select:focus,input:focus{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(6,182,212,.2),0 8px 20px rgba(6,182,212,.3),inset 0 2px 4px rgba(0,0,0,.2)!important;background:linear-gradient(135deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.85) 100%)!important;transform:translateZ(15px) scale(1.01)!important}label{transform-style:preserve-3d;transition:all .3s ease}.group:focus-within label{transform:translateZ(10px) translateY(-2px);text-shadow:0 2px 8px rgba(6,182,212,.5)}.gradient-text{background:linear-gradient(135deg,#fff 0%,#94a3b8 50%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 30px rgba(255,255,255,.3);animation:textShine 4s ease-in-out infinite}@keyframes textShine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}@keyframes fadeIn{from{opacity:0;transform:translateY(40px) translateZ(-80px) rotateX(10deg)}to{opacity:1;transform:translateY(0) translateZ(0) rotateX(0deg)}}.animate-fadeIn{animation:fadeIn 1s cubic-bezier(.16,1,.3,1) forwards;opacity:0}#loginBtn{background:linear-gradient(135deg,#3b82f6 0%,#06b6d4 50%,#3b82f6 100%);background-size:200% 200%;position:relative;overflow:hidden;transform-style:preserve-3d;box-shadow:0 10px 30px rgba(59,130,246,.4),0 5px 15px rgba(6,182,212,.3),inset 0 1px 0 rgba(255,255,255,.2);transition:all .4s cubic-bezier(.4,0,.2,1)}#loginBtn:hover{background-position:100% 50%;box-shadow:0 15px 40px rgba(59,130,246,.6),0 8px 20px rgba(6,182,212,.5),inset 0 1px 0 rgba(255,255,255,.3);transform:translateZ(10px) translateY(-2px)}#loginBtn:active{transform:translateZ(5px) translateY(0px) scale(.98)}#loginBtn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.3) 50%,transparent 70%);transform:rotate(45deg);transition:.6s}#loginBtn:hover::before{left:100%}#loginBtn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .3s ease}#loginBtn:active::after{opacity:1}.forgot-btn{position:relative;overflow:hidden}.forgot-btn::before{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transition:width .4s ease}.forgot-btn:hover::before{width:100%}@media (max-width:640px){body{perspective:1000px}.login-card{max-width:100%;margin:0 16px}.gradient-text{font-size:2rem;line-height:1.2}}@media (min-width:641px) and (max-width:1024px){body{perspective:1200px}}@media (min-width:1025px){body{perspective:1500px}.login-card:hover{box-shadow:0 50px 100px -25px rgba(0,0,0,.8),0 20px 45px -15px rgba(0,0,0,.6),inset 0 2px 1px rgba(255,255,255,.2),inset 0 -2px 1px rgba(0,0,0,.4),0 0 100px rgba(59,130,246,.3)}}@media (hover:none){#loginBtn:active{transform:scale(.97)}.login-card{box-shadow:0 30px 60px -15px rgba(0,0,0,.6),0 10px 25px -8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1),0 0 60px rgba(59,130,246,.15)}}*:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}select option{background-color:#0f172a;color:#fff}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:rgba(15,23,42,.3)}::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--blue),var(--cyan));border-radius:4px}::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--cyan),var(--blue))}</style>
 
-        body { 
-            font-family: "Pretendard", sans-serif; 
-            color: #f1f5f9; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0; 
-            overflow-x: hidden; 
-            background-color: var(--bg);
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed; 
-            background-repeat: no-repeat; 
-            transition: background 0.5s ease-in-out;
-            opacity: 0;
-            perspective: 1000px; /* 3D 효과를 위한 원근법 */
-        }
-        body.loaded { opacity: 1; transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent 0%, rgba(3, 6, 15, 0.8) 100%); z-index: -1; }
-
-        /* 3D Glassmorphism Card */
-        .login-card { 
-            background: var(--surface);
-            backdrop-filter: blur(25px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
-            transition: transform 0.1s ease-out, box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-        }
-
-        /* Input Styles 강화 */
-        select, input { 
-            background: rgba(15, 23, 42, 0.6) !important; 
-            backdrop-filter: blur(10px); 
-            color: white !important; 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            font-size: 16px !important; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        select:focus, input:focus {
-            border-color: var(--cyan) !important;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
-            background: rgba(15, 23, 42, 0.8) !important;
-            transform: translateZ(10px);
-        }
-
-        /* 텍스트 효과 */
-        .gradient-text {
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px) translateZ(-50px); } to { opacity: 1; transform: translateY(0) translateZ(0); } }
-        .animate-fadeIn { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        /* 로그인 버튼 - Liquid Chrome 느낌 */
-        #loginBtn {
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        #loginBtn::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: rotate(45deg);
-            transition: 0.5s;
-        }
-        #loginBtn:hover::after { left: 100%; }
-    </style>
 </head>
-<body class="flex flex-col justify-center items-center min-h-screen p-4 md:p-8">
+<body class="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
 
     <div class="video-overlay"></div>
 
-    <div class="text-center mb-8 md:mb-12 animate-fadeIn w-full max-w-lg">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-            <div class="relative group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                <img src="images/login/login.gif" alt="Logo" class="relative w-24 h-24 md:w-32 md:h-32 object-contain rounded-full">
+    <!-- 로고 및 타이틀 섹션 -->
+    <div class="text-center mb-6 sm:mb-8 md:mb-12 animate-fadeIn w-full max-w-lg px-4">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8">
+            <div class="relative logo-container group">
+                <div class="logo-glow"></div>
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full blur-sm opacity-30 group-hover:opacity-60 transition duration-1000"></div>
+                <img src="images/login/login.gif" alt="Logo" class="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-contain rounded-full ring-2 ring-white/10">
             </div>
             <div class="text-center md:text-left">
-                <h2 class="text-4xl md:text-6xl font-black tracking-tighter leading-tight drop-shadow-2xl gradient-text">
+                <h2 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter leading-tight drop-shadow-2xl gradient-text">
                     Staff Login
                 </h2>
-                <p class="text-cyan-400/80 text-[10px] md:text-xs font-black tracking-[0.4em] uppercase mt-2">
+                <p class="text-cyan-400/80 text-[9px] sm:text-[10px] md:text-xs font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase mt-1 sm:mt-2">
                     Daily Report System
                 </p>
             </div>
         </div>
     </div>
 
-    <div id="tilt-card" class="login-card p-8 md:p-12 rounded-[3rem] w-full max-w-[460px] animate-fadeIn" style="animation-delay: 0.2s;">
-        <div class="mb-10 text-center md:text-left" style="transform: translateZ(30px);">
-            <p class="text-white text-2xl md:text-3xl font-black tracking-tight">Welcome back</p>
-            <p class="text-slate-400 text-sm mt-2 font-medium">Select your profile to continue</p>
-        </div>
+    <!-- 로그인 카드 -->
+<div id="tilt-card" class="login-card p-6 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[2.5rem] md:rounded-[3rem] w-full max-w-[400px] sm:max-w-[440px] md:max-w-[460px] animate-fadeIn" style="animation-delay: 0.2s;">
+    
+    <div class="mb-8 sm:mb-10 text-center md:text-left card-layer-1">
+        <p class="text-white text-xl sm:text-2xl md:text-3xl font-black tracking-tight">Welcome back</p>
+        <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2 font-medium">Select your profile to continue</p>
+    </div>
+    
+    <div class="space-y-6 sm:space-y-8 card-layer-2">
         
-        <div class="space-y-8" style="transform: translateZ(20px);">
-            <div class="group">
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">Staff Member</label>
-                <div class="relative">
-                    <select id="userName" class="w-full border p-5 rounded-2xl outline-none appearance-none cursor-pointer shadow-2xl">
-                        <option value="" disabled selected>Loading staff list...</option>
-                    </select>
-                    <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
-                    </div>
+        <div class="group">
+            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
+                Staff Member
+            </label>
+            <div class="relative">
+                <select id="userName" class="w-full border p-4 sm:p-5 rounded-xl sm:rounded-2xl outline-none appearance-none cursor-pointer shadow-2xl text-sm sm:text-base">
+                    <option value="" disabled selected>Loading staff list...</option>
+                </select>
+                <div class="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                    </svg>
                 </div>
             </div>
+        </div>
 
-            <div class="group">
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">Secure Password</label>
-                <input type="password" id="password" class="w-full border p-5 rounded-2xl outline-none shadow-2xl" placeholder="••••••••">
-                <div class="flex justify-end px-1 mt-3">
-                    <button onclick="findPassword()" class="text-[10px] text-slate-500 hover:text-cyan-400 transition-all font-black uppercase tracking-widest">
-                        Forgot Password?
-                    </button>
-                </div>
+        <div class="group">
+            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
+                Secure Password
+            </label>
+            <div class="relative">
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="w-full border p-4 sm:p-5 pr-12 sm:pr-14 rounded-xl sm:rounded-2xl outline-none shadow-2xl text-sm sm:text-base" 
+                    placeholder="••••••••"
+                >
+                <button 
+                    type="button"
+                    onclick="togglePassword()"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition-colors focus:outline-none"
+                    style="z-index: 10;"
+                >
+                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
             </div>
-
-            <div class="pt-4" style="transform: translateZ(40px);">
-                <button id="loginBtn" onclick="handleLogin()" class="w-full text-white py-6 rounded-[1.5rem] font-black shadow-2xl shadow-blue-900/40 transition-all active:scale-95 text-base uppercase tracking-[0.3em]">
-                    AUTHENTICATE
+            <div class="flex justify-end px-1 mt-2 sm:mt-3">
+                <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] text-slate-500 hover:text-cyan-400 transition-all font-black uppercase tracking-wider sm:tracking-widest">
+                    Forgot Password?
                 </button>
             </div>
         </div>
+
+        <div class="pt-3 sm:pt-4 card-layer-3">
+            <button id="loginBtn" onclick="handleLogin()" class="w-full text-white py-5 sm:py-6 rounded-[1.25rem] sm:rounded-[1.5rem] font-black shadow-2xl shadow-blue-900/40 transition-all active:scale-95 text-sm sm:text-base uppercase tracking-[0.25em] sm:tracking-[0.3em]">
+                AUTHENTICATE
+            </button>
+        </div>
     </div>
+</div>
 
 <script>
         (function() {
@@ -154,23 +106,50 @@
             const card = document.getElementById('tilt-card');
             let PEXELS_API_KEY = null;
 
-            // 3D Tilt Effect
-            if (window.matchMedia('(hover: hover)').matches) {
+            // 3D Tilt Effect (데스크톱에서만 활성화)
+            if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+                let rafId = null;
+                let currentRotateX = 0;
+                let currentRotateY = 0;
+                let targetRotateX = 0;
+                let targetRotateY = 0;
+
+                const lerp = (start, end, factor) => start + (end - start) * factor;
+
+                const animate = () => {
+                    currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
+                    currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
+                    
+                    card.style.transform = `
+                        perspective(1500px) 
+                        rotateX(${currentRotateX}deg) 
+                        rotateY(${currentRotateY}deg)
+                        translateZ(0)
+                    `;
+                    
+                    rafId = requestAnimationFrame(animate);
+                };
+
                 document.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     const centerX = rect.width / 2;
                     const centerY = rect.height / 2;
-                    const rotateX = (y - centerY) / 20;
-                    const rotateY = (centerX - x) / 20;
-                    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    
+                    targetRotateX = ((y - centerY) / centerY) * 8;
+                    targetRotateY = ((centerX - x) / centerX) * 8;
                 });
+
                 document.addEventListener('mouseleave', () => {
-                    card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+                    targetRotateX = 0;
+                    targetRotateY = 0;
                 });
+
+                animate();
             }
 
+            // 페이지 로드 완료
             window.addEventListener('DOMContentLoaded', () => {
                 document.body.classList.add('loaded');
             });
@@ -212,7 +191,7 @@
                 if (snap.exists()) {
                     PEXELS_API_KEY = snap.val();
                     updateBackground(); // 즉시 실행
-                    setInterval(updateBackground, 5000); // 5초마다 변경 (원하는 시간으로 수정 가능)
+                    setInterval(updateBackground, 5000); // 5초마다 변경
                 }
             });
 
@@ -220,8 +199,12 @@
             const userSelect = document.getElementById('userName');
             const passwordInput = document.getElementById('password');
 
+            // Enter 키 이벤트
             passwordInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+                if (e.key === 'Enter') { 
+                    e.preventDefault(); 
+                    handleLogin(); 
+                }
             });
 
             // 스태프 목록 가져오기
@@ -241,14 +224,20 @@
                 }
             });
 
+            // 로그인 처리
             window.handleLogin = function() {
                 const name = document.getElementById('userName').value;
                 const pw = document.getElementById('password').value;
-                if(!name || !pw) return alert("Please enter your credentials.");
+                
+                if(!name || !pw) {
+                    return alert("Please enter your credentials.");
+                }
                 
                 database.ref('users/' + name).once('value', (snapshot) => {
                     const userData = snapshot.val();
-                    if (!userData) return alert("User not found.");
+                    if (!userData) {
+                        return alert("User not found.");
+                    }
                     
                     if (userData.password === pw) {
                         sessionStorage.setItem('loggedInUser', name);
@@ -264,10 +253,34 @@
                     }
                 });
             };
-
+// 비밀번호 보이기/숨기기 토글 함수
+window.togglePassword = function() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        // 눈 감은 아이콘으로 변경
+        eyeIcon.innerHTML = `
+            <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+        `;
+    } else {
+        passwordInput.type = 'password';
+        // 눈 뜬 아이콘으로 변경
+        eyeIcon.innerHTML = `
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        `;
+    }
+};
+            // 비밀번호 찾기
             window.findPassword = function() {
                 const name = document.getElementById('userName').value;
-                if (!name) return alert("Please select your name from the list first.");
+                
+                if (!name) {
+                    return alert("Please select your name from the list first.");
+                }
+                
                 if (confirm(`Request password hint for '${name}'?`)) {
                     database.ref('users/' + name).once('value', (snapshot) => {
                         const userData = snapshot.val();
@@ -275,7 +288,9 @@
                             const pw = userData.password;
                             const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
                             alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
-                        } else { alert("Data not found."); }
+                        } else { 
+                            alert("Data not found."); 
+                        }
                     });
                 }
             };
