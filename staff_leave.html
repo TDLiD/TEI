@@ -82,7 +82,7 @@
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Reason / Note</label>
-                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?"></textarea>
+                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?    Please enter at least 5 words!"></textarea>
             </div>
             <div id="adminMemoContainer" class="hidden">
                 <label class="block text-[10px] font-bold text-rose-400 uppercase mb-2 ml-1">Admin Memo</label>
@@ -373,4 +373,5 @@ window.submitLeaveRequest = function() {
 
     initLeavePage();
 })();
+
 </script>
