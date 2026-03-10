@@ -291,11 +291,12 @@ select option{background-color:#0f172a;color:#fff}
                         sessionStorage.setItem('loggedInUser', name);
                         sessionStorage.setItem('userRole', userData.role);
                         
-                        if (userData.role === 'admin' || name === 'Admin') {
-                            location.href = "admin.html";
-                        } else {
-                            location.href = "staff_list.html";
-                        }
+const role = (userData.role || '').toLowerCase();
+if (role === 'admin' || role === 'manager') {
+    location.href = "admin.html";
+} else {
+    location.href = "staff_list.html";
+}
                     } else { 
                         alert("Incorrect password."); 
                     }

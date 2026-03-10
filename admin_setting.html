@@ -218,12 +218,13 @@ async function verifyAdmin() {
                 const snap = await db.ref('users/Admin/password').once('value');
                 const actualPw = snap.val();
 
-                if (String(enteredPw) === String(actualPw)) {
-                    cleanup(true);
-                } else {
-                    alert("Verification failed. Access denied.");
-                    cleanup(false);
-                }
+if (String(enteredPw) === String(actualPw)) {
+    cleanup(true);
+} else {
+    alert("Verification failed. Access denied.");
+    input.value = '';
+    input.focus();
+}
             } catch (error) {
                 alert("Auth Error: " + error.message);
                 cleanup(false);
@@ -439,20 +440,14 @@ tr.innerHTML = `
         <div class="flex flex-col">
             <span class="text-sm">${uid}</span>
             
-            ${(() => {
-                if (!user.birthday) return ''; 
-                
-                // birthType이 없으면 기본 'Solar'로 간주
-                const bType = user.birthType || 'Solar';
-                const bDate = user.birthday; // "1970-01-18"
-                
-                // 텍스트 강조를 위해 옅은 파란색/작은 글씨 적용
-                return `
-                    <div class="text-[10px] text-blue-400/80 font-medium tracking-tighter mt-0.5">
-                        🎂 ${bType}.${bDate}
-                    </div>
-                `;
-            })()}
+<div class="flex items-center gap-1 mt-1">
+    <select id="btype_${uid}" class="bg-slate-700/50 border border-slate-600 rounded px-1 py-0.5 text-[9px] text-blue-300 outline-none">
+        <option value="Solar" ${(user.birthType || 'Solar') === 'Solar' ? 'selected' : ''}>Solar</option>
+        <option value="Lunar" ${user.birthType === 'Lunar' ? 'selected' : ''}>Lunar</option>
+    </select>
+    <input type="text" id="bday_${uid}" value="${user.birthday || ''}" placeholder="YYYY-MM-DD"
+        class="bg-slate-700/50 border border-slate-600 rounded px-1.5 py-0.5 text-[9px] text-blue-300 outline-none w-24 focus:border-blue-500">
+</div>
 
             ${isAdmin ? '<span class="w-fit text-[8px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30 font-black mt-0.5">SYSTEM</span>' : ''}
         </div>
@@ -461,7 +456,6 @@ tr.innerHTML = `
 
     <td class="p-4 block md:table-cell">
         <select id="role_${uid}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs w-full max-w-[140px]" ${isAdmin ? 'disabled' : ''}>
-            <option value="Admin" ${user.role === 'Admin' || isAdmin ? 'selected' : ''}>Admin</option>
             <option value="Staff" ${user.role === 'Staff' ? 'selected' : ''}>Staff</option>
             <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
             <option value="Designer" ${user.role === 'Designer' ? 'selected' : ''}>Designer</option>
@@ -498,7 +492,7 @@ tr.innerHTML = `
 
 // --- updateStaff 함수: Admin 처리 로직 추가 ---
 window.updateStaff = async function(uid) {
-    if (!(await verifyAdmin())) return;
+    // verifyAdmin 호출 제거 (아래로 이동)
     
     const roleEl = document.getElementById(`role_${uid}`);
     const pwEl = document.getElementById(`pw_${uid}`);
@@ -506,20 +500,32 @@ window.updateStaff = async function(uid) {
     
     const role = roleEl ? roleEl.value : 'Admin';
     const password = pwEl.value.trim();
-    // Admin은 WarnFlag를 업데이트하지 않음 (기본 off 유지)
     const warnFlag = warnEl ? warnEl.value : 'off'; 
     
     if(!password) return alert("Password cannot be empty.");
 
-    const updateData = { 
-        password: password
-    };
-    
-    // Admin이 아닐 때만 role과 warnFlag 저장
-    if (uid.toLowerCase() !== 'admin') {
-        updateData.role = role;
-        updateData.WarnFlag = warnFlag;
+    const btypeEl = document.getElementById(`btype_${uid}`);
+    const bdayEl = document.getElementById(`bday_${uid}`);
+
+    const updateData = { password: password };
+
+    if (btypeEl) updateData.birthType = btypeEl.value;
+    if (bdayEl && bdayEl.value.trim()) {
+        const bdayVal = bdayEl.value.trim();
+        const bdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+        if (!bdayRegex.test(bdayVal)) {
+            return alert(`Invalid birthday format for '${uid}'.\nPlease use YYYY-MM-DD (e.g. 2000-12-15)`);
+        }
+        updateData.birthday = bdayVal;
     }
+
+    if (!(await verifyAdmin())) return;  // ← 유효성 검사 후 실행
+
+
+if (uid.toLowerCase() !== 'admin') {
+    updateData.role = role;
+    updateData.WarnFlag = warnFlag;
+}
     
     db.ref('users/' + uid).update(updateData).then(() => {
         alert(`'${uid}' info updated successfully.`);
