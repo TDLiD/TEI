@@ -83,8 +83,103 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
     z-index: 2;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-/* 대기 중이거나 숫자가 클 때 색상 변경용 (옵션) */
-.status-alert { color: var(--rose); }
+/* 1. 프로필 이미지 컨테이너 (연필 아이콘 배치를 위해 추가) */
+.profile-container {
+    position: relative;
+    display: inline-flex; /* inline-block 대신 inline-flex 사용 */
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle; /* 텍스트와 라인 맞춤 */
+    margin-left: 12px;
+    cursor: pointer;
+    z-index: 10;
+    line-height: 0; /* 불필요한 하단 여백 제거 */
+}
+/* 2. 기존 프로필 이미지 스타일 (일부 수정) */
+.profile-img {
+    width: clamp(40px, 10vw, 60px);
+    height: clamp(40px, 10vw, 60px);
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    object-fit: cover;
+    display: block; /* 컨테이너 안에서 꽉 차게 변경 */
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 0 15px var(--blue-glow);
+}
+
+/* 3. 좌측 하단 연필 표시 아이콘 추가 */
+.profile-edit-icon {
+    position: absolute;
+    bottom: 2px;
+    left: 2px; /* 좌측 하단 배치 */
+    width: 18px;
+    height: 18px;
+    background: var(--blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+    border: 1.5px solid var(--bg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 11;
+}
+/* 호버 효과를 컨테이너 기준으로 변경 */
+.profile-container:hover .profile-img {
+    transform: scale(1.1);
+    border-color: var(--blue);
+}
+
+/* 4. 프로필 선택 모달 스타일 (기존 유지) */
+.profile-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px); z-index: 1000;
+    display: none; align-items: center; justify-content: center;
+}
+
+.profile-modal {
+    background: var(--surface); border: 1px solid var(--border-2);
+    border-radius: 24px; padding: 24px; width: 90%; max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* 5. 이미지 겹침 해결을 위한 그리드 스타일 수정 */
+.profile-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* 4열 강제 고정 */
+    gap: 12px;
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    align-items: start; /* 아이템들이 겹치지 않게 시작점 정렬 */
+}
+
+.profile-option {
+    position: relative; /* 자식 요소 위치 기준 */
+    aspect-ratio: 1; 
+    border-radius: 12px; 
+    cursor: pointer;
+    border: 2px solid transparent; 
+    transition: all 0.2s; 
+    overflow: hidden;
+    background: var(--surface-2); /* 이미지 로딩 전 배경색 */
+}
+
+.profile-option:hover { 
+    border-color: var(--blue); 
+    transform: scale(1.05); 
+    z-index: 2; /* 호버 시 위로 올라오게 */
+}
+
+.profile-option img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
+}
 </style>
 
 </head>
@@ -171,217 +266,269 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                 <div class="action-icon">🚪</div>
                 <span class="action-label">Logout</span>
             </button>
-        </div>
+       </div> 
 
+<div id="profileCustomModal" class="profile-modal-overlay" onclick="closeProfileModal()">
+    <div class="profile-modal" onclick="event.stopPropagation()">
+        <h3 id="modalTitle" style="color:#fff; text-align:center; font-weight:800; letter-spacing:0.1em; margin-bottom:15px;">SELECT PROFILE</h3>
+        <div id="modalBody" class="profile-grid">
+            </div>
+        <button onclick="closeProfileModal()" style="width:100%; margin-top:20px; padding:12px; background:var(--surface-2); border:1px solid var(--border); color:var(--text); border-radius:12px; font-weight:700; cursor:pointer;">CLOSE</button>
     </div>
+</div>
+
+    <input type="file" id="profileInput" accept="image/*" style="display: none;" />
 
 <script>
-        /* ═══════════════════════════════════════════
-            DYNAMIC BACKGROUND & CORE LOGIC
-            - 모든 기존 기능 100% 보존 + 실시간 상태 데이터 추가
-        ═══════════════════════════════════════════ */
-        (function() {
-            // 1. 사용자 확인
-            const user = sessionStorage.getItem('loggedInUser');
-            if (!user) location.href = 'index.html';
-            document.getElementById('userGreeting').innerText = user || '—';
+    /* ═══════════════════════════════════════════
+        DYNAMIC BACKGROUND & CORE LOGIC
+    ═══════════════════════════════════════════ */
+    (function() {
+        // 1. 사용자 확인 및 기본 설정
+        const user = sessionStorage.getItem('loggedInUser');
+        if (!user) location.href = 'index.html';
+        document.getElementById('userGreeting').innerText = user || '—';
 
-            // 2. Firebase 및 Pexels 설정
-            let PEXELS_API_KEY = null;
-            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
+        let PEXELS_API_KEY = null;
+        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-            // [추가] 실시간 상태 정보 업데이트 함수
-const updateStaffStatus = (userId) => {
-    if (!userId) return;
+        /* --- [수정] 새로운 프로필 이미지 리스트 정의 --- */
+        const PROFILE_IMAGES = [
+            'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp', 
+            'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
+            'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
+            'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
+            'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
+            'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
+            'image-26.gif', 'image-27.gif'
+        ];
 
-    // 1. 직전 근무일(Yesterday/Friday) 날짜 구하기
-    const getLastWorkDay = () => {
-        const d = new Date();
-        const dayOfWeek = d.getDay();
-        
-        if (dayOfWeek === 1) { // 월요일이면 금요일
-            d.setDate(d.getDate() - 3);
-        } else if (dayOfWeek === 0) { // 일요일이면 금요일
-            d.setDate(d.getDate() - 2);
-        } else { // 그 외 평일/토요일이면 어제
-            d.setDate(d.getDate() - 1);
-        }
+/* --- [수정] 공통 모달 열기 함수 --- */
+window.openProfileModal = function(title, bodyHtml) { 
+    const m = document.getElementById('profileCustomModal'); 
+    const t = document.getElementById('modalTitle');
+    const b = document.getElementById('modalBody');
+    
+    if(t) t.innerText = title; 
+    if(b) b.innerHTML = bodyHtml; 
+    // classList 대신 style.display로 확실하게 제어
+    if(m) m.style.display = 'flex'; 
+};
 
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const date = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${date}`;
-    };
+/* --- [수정] 모달 닫기 함수 --- */
+window.closeProfileModal = function() {
+    const m = document.getElementById('profileCustomModal');
+    if(m) m.style.display = 'none';
+};
 
-    const targetDateStr = getLastWorkDay();
+        /* --- [수정] 프로필 이미지 피커 실행 함수 --- */
+window.openProfileImagePicker = function() { 
+    let g = ""; // 바깥쪽 div 제거
+    PROFILE_IMAGES.forEach(i => { 
+        g += `<div onclick="saveStaffProfile('${i}')" 
+                   class="profile-option"
+                   style="border: 2px solid transparent; transition: all 0.2s; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; cursor: pointer;">
+                <img src="images/profile/${i}" style="width: 100%; height: 100%; object-fit: cover;" 
+                     onerror="this.src='https://ui-avatars.com/api/?name=Error&background=random'">
+              </div>`; 
+    }); 
+    openProfileModal('Change Profile', g); 
+};
 
-    // 2. Attendance 데이터 읽기 (어제 기록)
-    database.ref(`attendance/${targetDateStr}/${userId}`).on('value', (snap) => {
-        const data = snap.val();
-        const el = document.getElementById('status-attendance');
-        if(el) {
-            const inTime = (data && data.attend) ? data.attend : "Not Checked-in";
-            const outTime = (data && data.leave) ? data.leave : "Not Checked-Out";
-            el.innerHTML = `Yesterday In: ${inTime}<br>Yesterday Out: ${outTime}`;
-            el.style.color = (data && (data.attend || data.leave)) ? "var(--cyan)" : "var(--rose)";
-        }
-    });
+        /* --- [수정] DB 저장 함수 --- */
+        window.saveStaffProfile = async function(fileName) {
+            const userId = sessionStorage.getItem('loggedInUser');
+            if (!userId) return;
 
-    // 3. Work Report 데이터 읽기 (어제 기록 확인)
-    // 경로: reports / 2026-02-18 / Mr-Eza (예시 구조 적용)
-    database.ref(`reports/${targetDateStr}/${userId}`).on('value', (snap) => {
-        const data = snap.val();
-        const el = document.getElementById('status-report');
-        
-        if(el) {
-            // 해당 날짜에 데이터가 있고, todo 내용이 비어있지 않은지 확인
-            if (data && data.todo && data.todo.trim() !== "") {
-                el.innerText = "Yesterday Report: Submitted";
-                el.style.color = "var(--cyan)";
-            } else {
-                el.innerText = "Yesterday Report: Required";
-                el.style.color = "var(--rose)";
+            if (confirm("이 이미지로 프로필을 변경하시겠습니까?")) {
+                try {
+                    await database.ref(`users/${userId}/profileImg`).set(fileName);
+                    const currentImg = document.querySelector('.profile-img');
+                    if (currentImg) currentImg.src = `images/profile/${fileName}`;
+                    alert("Profile updated!");
+                    closeProfileModal();
+                } catch (e) {
+                    console.error(e);
+                    alert("Update failed.");
+                }
             }
-        }
-    });
+        };
 
-    // C. Calendar (오늘 예정된 일정)
-    database.ref(`schedules/${userId}/today_next`).on('value', (snap) => {
-        const nextEvent = snap.val();
-        const el = document.getElementById('status-calendar');
-        if(el) el.innerText = nextEvent ? `Next: ${nextEvent}` : "No more plans";
-    });
+        /* --- [수정] 프로필 이미지 로드 함수 --- */
+/* --- [수정된] 프로필 이미지 로드 함수 --- */
+const loadProfileImg = (userId) => {
+    if (!userId) return;
+    database.ref(`users/${userId}/profileImg`).once('value', (snap) => {
+        const imgFileName = snap.val();
+        const greetingEl = document.getElementById('userGreeting');
+        
+        // 1. 기존에 이미 생성된 컨테이너가 있다면 삭제
+        const oldContainer = document.querySelector('.profile-container');
+        if (oldContainer) oldContainer.remove();
 
-    // D. Vacation (남은 연차)
-    database.ref(`staff_info/${userId}/vacation_left`).on('value', (snap) => {
-        const days = snap.val() || 0;
-        const el = document.getElementById('status-vacation');
-        if(el) el.innerText = `${days} Days Left`;
+        // 2. 전체를 감싸는 컨테이너 생성
+        const container = document.createElement('div');
+        container.className = 'profile-container';
+        container.onclick = () => openProfileImagePicker();
+
+        // 3. 이미지 요소 생성
+        const imgEl = document.createElement('img');
+        imgEl.className = 'profile-img';
+        imgEl.src = imgFileName ? `images/profile/${imgFileName}` : 'images/default-profile.png';
+        imgEl.onerror = () => { imgEl.src = 'https://ui-avatars.com/api/?name=' + userId; };
+        
+        // 4. 연필 아이콘 생성
+        const editIcon = document.createElement('div');
+        editIcon.className = 'profile-edit-icon';
+        editIcon.innerHTML = '✏️'; // 또는 <i class="fas fa-pen"></i> 등 아이콘 폰트
+
+        // 5. 구조 조립 및 화면 삽입
+        container.appendChild(imgEl);
+        container.appendChild(editIcon);
+        
+        // 인사말(span) 바로 뒤에 삽입
+        greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
     });
 };
 
-            // 상태 업데이트 실행
-            updateStaffStatus(user);
-
-            // Pexels 배경화면 업데이트 함수
-            const updateBackground = async () => {
-                if (!PEXELS_API_KEY) return;
-                try {
-                    const response = await fetch(
-                        "https://api.pexels.com/v1/search?query=jakarta city&per_page=30",
-                        { headers: { Authorization: PEXELS_API_KEY } }
-                    );
-                    const data = await response.json();
-                    if (data.photos && data.photos.length > 0) {
-                        const randomPhoto = data.photos[Math.floor(Math.random() * data.photos.length)];
-                        const imgUrl = randomPhoto.src.large2x || randomPhoto.src.landscape;
-
-                        const img = new Image();
-                        img.src = imgUrl;
-                        img.onload = () => {
-                            const bgLayer = document.getElementById('dynamicBg');
-                            bgLayer.style.backgroundImage = `url('${imgUrl}')`;
-                        };
-                    }
-                } catch (e) {
-                    console.error("Pexels Load Error:", e);
-                }
+        /* ── [기능 3] 실시간 상태 정보 (기존 유지) ── */
+        const updateStaffStatus = (userId) => {
+            if (!userId) return;
+            const getLastWorkDay = () => {
+                const d = new Date();
+                const dayOfWeek = d.getDay();
+                if (dayOfWeek === 1) d.setDate(d.getDate() - 3);
+                else if (dayOfWeek === 0) d.setDate(d.getDate() - 2);
+                else d.setDate(d.getDate() - 1);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const date = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${date}`;
             };
+            const targetDateStr = getLastWorkDay();
 
-            // Firebase에서 API Key 로드 후 실행
-            database.ref('settings/config/PexelAPI').once('value', (snap) => {
-                if (snap.exists()) {
-                    PEXELS_API_KEY = snap.val();
-                    updateBackground();
-                    setInterval(updateBackground, 5000); // 5초마다 배경 변경
+            database.ref(`attendance/${targetDateStr}/${userId}`).on('value', (snap) => {
+                const data = snap.val();
+                const el = document.getElementById('status-attendance');
+                if(el) {
+                    const inTime = (data && data.attend) ? data.attend : "Not Checked-in";
+                    const outTime = (data && data.leave) ? data.leave : "Not Checked-Out";
+                    el.innerHTML = `Yesterday In: ${inTime}<br>Yesterday Out: ${outTime}`;
+                    el.style.color = (data && (data.attend || data.leave)) ? "var(--cyan)" : "var(--rose)";
                 }
             });
 
-            // 3. 네비게이션 및 로그아웃
-            window.navigateTo = function(page) {
-                sessionStorage.setItem('targetPage', page);
-                location.href = 'staff.html';
-            };
-
-            window.handleLogout = function() {
-                if (confirm("Do you want to logout?")) {
-                    sessionStorage.clear();
-                    localStorage.removeItem('loggedInUser');
-                    location.replace('index.html');
+            database.ref(`reports/${targetDateStr}/${userId}`).on('value', (snap) => {
+                const data = snap.val();
+                const el = document.getElementById('status-report');
+                if(el) {
+                    if (data && data.todo && data.todo.trim() !== "") {
+                        el.innerText = "Yesterday Report: Submitted";
+                        el.style.color = "var(--cyan)";
+                    } else {
+                        el.innerText = "Yesterday Report: Required";
+                        el.style.color = "var(--rose)";
+                    }
                 }
-            };
+            });
 
-            // 4. UI 요소 (시계, 날짜)
-            function updateClock() {
-                const now = new Date();
-                document.getElementById('liveTime').textContent =
-                    now.toLocaleTimeString('en-US', { hour12: false });
+            database.ref(`schedules/${userId}/today_next`).on('value', (snap) => {
+                const nextEvent = snap.val();
+                const el = document.getElementById('status-calendar');
+                if(el) el.innerText = nextEvent ? `Next: ${nextEvent}` : "No more plans";
+            });
+
+            database.ref(`staff_info/${userId}/vacation_left`).on('value', (snap) => {
+                const days = snap.val() || 0;
+                const el = document.getElementById('status-vacation');
+                if(el) el.innerText = `${days} Days Left`;
+            });
+        };
+
+        // 초기 실행
+        if (user) {
+            loadProfileImg(user);
+            updateStaffStatus(user);
+        }
+
+        /* ── [기능 4] 배경화면 및 기타 UI (기존 유지) ── */
+        const updateBackground = async () => {
+            if (!PEXELS_API_KEY) return;
+            try {
+                const response = await fetch(
+                    "https://api.pexels.com/v1/search?query=jakarta city&per_page=30",
+                    { headers: { Authorization: PEXELS_API_KEY } }
+                );
+                const data = await response.json();
+                if (data.photos && data.photos.length > 0) {
+                    const randomPhoto = data.photos[Math.floor(Math.random() * data.photos.length)];
+                    const imgUrl = randomPhoto.src.large2x || randomPhoto.src.landscape;
+                    const bgLayer = document.getElementById('dynamicBg');
+                    bgLayer.style.backgroundImage = `url('${imgUrl}')`;
+                }
+            } catch (e) { console.error("Pexels Error:", e); }
+        };
+
+        database.ref('settings/config/PexelAPI').once('value', (snap) => {
+            if (snap.exists()) {
+                PEXELS_API_KEY = snap.val();
+                updateBackground();
+                setInterval(updateBackground, 10000);
             }
-            updateClock();
-            setInterval(updateClock, 1000);
+        });
 
-            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            const now = new Date();
-            document.getElementById('dayName').textContent = days[now.getDay()];
-            document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
+        window.navigateTo = (page) => {
+            sessionStorage.setItem('targetPage', page);
+            location.href = 'staff.html';
+        };
 
-            // 5. 4D 카드 틸트 효과 (데스크톱만)
-            if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
-                document.querySelectorAll('.menu-card').forEach(card => {
-                    let rafId = null;
-                    let currentRotateX = 0;
-                    let currentRotateY = 0;
-                    let targetRotateX = 0;
-                    let targetRotateY = 0;
+        window.handleLogout = () => {
+            if (confirm("Do you want to logout?")) {
+                sessionStorage.clear();
+                localStorage.removeItem('loggedInUser');
+                location.replace('index.html');
+            }
+        };
 
-                    const lerp = (start, end, factor) => start + (end - start) * factor;
+        function updateClock() {
+            document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-                    const animate = () => {
-                        currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
-                        currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
-                        
-                        card.style.transform = `
-                            perspective(2000px)
-                            translateY(-15px)
-                            translateZ(60px)
-                            scale(1.05)
-                            rotateX(${8 + currentRotateX}deg)
-                            rotateY(${currentRotateY}deg)
-                        `;
-                        
-                        rafId = requestAnimationFrame(animate);
-                    };
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const now = new Date();
+        document.getElementById('dayName').textContent = days[now.getDay()];
+        document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
 
-                    card.addEventListener('mouseenter', () => {
-                        if (rafId) cancelAnimationFrame(rafId);
-                        rafId = requestAnimationFrame(animate);
-                    });
-
-                    card.addEventListener('mousemove', e => {
-                        const rect = card.getBoundingClientRect();
-                        const cx = rect.left + rect.width / 2;
-                        const cy = rect.top + rect.height / 2;
-                        const dx = (e.clientX - cx) / (rect.width / 2);
-                        const dy = (e.clientY - cy) / (rect.height / 2);
-                        
-                        targetRotateX = -dy * 10;
-                        targetRotateY = dx * 10;
-                    });
-
-                    card.addEventListener('mouseleave', () => {
-                        if (rafId) {
-                            cancelAnimationFrame(rafId);
-                            rafId = null;
-                        }
-                        targetRotateX = 0;
-                        targetRotateY = 0;
-                        card.style.transform = '';
-                    });
+        /* ── [기능 5] 4D 틸트 효과 (기존 유지) ── */
+        if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+            document.querySelectorAll('.menu-card').forEach(card => {
+                let targetRotateX = 0, targetRotateY = 0, currentRotateX = 0, currentRotateY = 0, rafId = null;
+                const lerp = (s, e, f) => s + (e - s) * f;
+                const animate = () => {
+                    currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
+                    currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
+                    card.style.transform = `perspective(2000px) translateY(-15px) translateZ(60px) scale(1.05) rotateX(${8 + currentRotateX}deg) rotateY(${currentRotateY}deg)`;
+                    rafId = requestAnimationFrame(animate);
+                };
+                card.addEventListener('mouseenter', () => rafId = requestAnimationFrame(animate));
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    targetRotateX = -((e.clientY - (rect.top + rect.height/2)) / (rect.height/2)) * 10;
+                    targetRotateY = ((e.clientX - (rect.left + rect.width/2)) / (rect.width/2)) * 10;
                 });
-            }
-        })();
-    </script>
+                card.addEventListener('mouseleave', () => {
+                    cancelAnimationFrame(rafId);
+                    targetRotateX = 0; targetRotateY = 0;
+                    card.style.transform = '';
+                });
+            });
+        }
+    })();
+</script>
+
 </body>
 </html>
