@@ -322,135 +322,157 @@
         }
     }
 
-    function renderSchedule() {
-        const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        const monthYearEl = document.getElementById('calMonthYear');
-        if (monthYearEl) { monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); }
+function renderSchedule() {
+    // DOM이 없는 환경(페이지 이탈 후 등)에서 실행 방지
+    if (!document.getElementById('scheduleBody') || !document.getElementById('calMonthYear')) {
+        db.ref('shared_schedules').off();
+        return;
+    }
+
+    const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const monthYearEl = document.getElementById('calMonthYear');
+    if (monthYearEl) { 
+        monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); 
+    }
+    
+    const scheduleRef = db.ref('shared_schedules');
+    scheduleRef.off(); 
+    scheduleRef.on('value', snap => {
+        const events = snap.val() || {};
+        const tbody = document.getElementById('scheduleBody');
+        if (!tbody) { scheduleRef.off(); return; }
+        tbody.innerHTML = ''; 
         
-        const scheduleRef = db.ref('shared_schedules');
-        scheduleRef.off(); 
-        scheduleRef.on('value', snap => {
-            const events = snap.val() || {};
-            const tbody = document.getElementById('scheduleBody');
-            if (!tbody) { scheduleRef.off(); return; }
-            tbody.innerHTML = ''; 
-            
-            const sortedEvents = Object.keys(events).map(id => ({
-                id, ...events[id],
-                sDate: events[id].start.split('T')[0],
-                eDate: events[id].end.split('T')[0]
-            })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
-            
-            const eventSlots = {};
-            const dayOccupancy = {};
-            sortedEvents.forEach(ev => {
-                let slot = 0;
-                while (true) {
-                    let ok = true;
+        const sortedEvents = Object.keys(events).map(id => ({
+            id, ...events[id],
+            sDate: events[id].start.split('T')[0],
+            eDate: events[id].end.split('T')[0]
+        })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
+        
+        const eventSlots = {};
+        const dayOccupancy = {};
+        sortedEvents.forEach(ev => {
+            let slot = 0;
+            while (true) {
+                let ok = true;
+                for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
+                    const dStr = d.toISOString().split('T')[0];
+                    if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
+                }
+                if (ok) {
                     for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
                         const dStr = d.toISOString().split('T')[0];
-                        if (dayOccupancy[dStr]?.has(slot)) { ok = false; break; }
+                        if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
+                        dayOccupancy[dStr].add(slot);
                     }
-                    if (ok) {
-                        for (let d = new Date(ev.sDate); d <= new Date(ev.eDate); d.setDate(d.getDate() + 1)) {
-                            const dStr = d.toISOString().split('T')[0];
-                            if (!dayOccupancy[dStr]) dayOccupancy[dStr] = new Set();
-                            dayOccupancy[dStr].add(slot);
-                        }
-                        eventSlots[ev.id] = slot; break;
-                    }
-                    slot++;
+                    eventSlots[ev.id] = slot; break;
+                }
+                slot++;
+            }
+        });
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        let dateNum = 1;
+
+        for (let i = 0; i < 6; i++) {
+            const tr = document.createElement('tr');
+            let weekDates = [];
+            let maxSlotsInWeek = 0;
+            let hasHolidayInWeek = false;
+
+            // 1단계: 해당 주(Row)의 날짜 배열 생성 및 휴일 여부 파악
+            for (let j = 0; j < 7; j++) {
+                if ((i === 0 && j < firstDay) || dateNum > lastDate) { 
+                    weekDates.push(null); 
+                } else { 
+                    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
+                    weekDates.push(dStr); 
+                    if (holidayData[dStr]) hasHolidayInWeek = true;
+                    dateNum++; 
+                }
+            }
+            
+            // 2단계: 해당 주(Row)의 최대 슬롯 높이 계산
+            weekDates.forEach(dStr => {
+                if (dStr && dayOccupancy[dStr]) {
+                    const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
+                    if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
                 }
             });
 
-            let dateNum = 1;
-            for (let i = 0; i < 6; i++) {
-                const tr = document.createElement('tr');
-                let weekDates = [];
-                let maxSlotsInWeek = 0;
-                for (let j = 0; j < 7; j++) {
-                    if ((i === 0 && j < firstDay) || dateNum > lastDate) { weekDates.push(null); }
-                    else { weekDates.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`); dateNum++; }
-                }
-                
-                weekDates.forEach(dStr => {
-                    if (dStr && dayOccupancy[dStr]) {
-                        const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
-                        if (dayMaxSlot >= maxSlotsInWeek) maxSlotsInWeek = dayMaxSlot + 1;
+            // 3단계: 주 단위 공통 top 위치 결정 (휴일이 주에 하루라도 있으면 모두 아래로 밀기)
+            // 휴일이 있으면 시작점을 58px로, 없으면 38px로 통일하여 정렬 유지
+            const commonBaseTop = hasHolidayInWeek ? 58 : 38; 
+            const calculatedHeight = commonBaseTop + (maxSlotsInWeek * 28) + 15;
+            tr.style.height = Math.max(140, calculatedHeight) + 'px';
+
+            // 4단계: TD 생성 및 이벤트 렌더링
+            weekDates.forEach((dStr, j) => {
+                const td = document.createElement('td');
+                if (dStr) {
+                    td.dataset.date = dStr;
+                    td.ondragover = (e) => window.handleDragOver(e);
+                    td.ondragleave = (e) => window.handleDragLeave(e);
+                    td.ondrop = (e) => window.handleDrop(e, dStr);
+                    td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+
+                    const holidayName = holidayData[dStr];
+                    const isSunday = (j === 0);
+                    const isSaturday = (j === 6);
+                    const isToday = (dStr === todayStr);
+
+                    if (isSunday || holidayName) {
+                        td.style.backgroundColor = 'rgba(244, 63, 94, 0.08)';
+                    } else if (isSaturday) {
+                        td.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
                     }
-                });
-                const calculatedHeight = 40 + (maxSlotsInWeek * 28) + 15;
-                tr.style.height = Math.max(140, calculatedHeight) + 'px';
 
-                weekDates.forEach((dStr, j) => {
-                    const td = document.createElement('td');
-                    if (dStr) {
-                        td.dataset.date = dStr;
-// --- 추가해야 할 이벤트 리스너 ---
-    td.ondragover = (e) => window.handleDragOver(e);
-    td.ondragleave = (e) => window.handleDragLeave(e);
-    td.ondrop = (e) => window.handleDrop(e, dStr);
-                        td.onclick = (e) => { if (e.target.tagName === 'TD') window.openAddModal(dStr); };
+                    let dateColorClass = 'text-slate-400';
+                    if (isSunday || holidayName) dateColorClass = 'text-red-500';
+                    else if (isSaturday) dateColorClass = 'text-blue-500';
 
-                        const holidayName = holidayData[dStr];
-                        const isSunday = (j === 0);
-                        const isSaturday = (j === 6);
-                        const isToday = (dStr === (new Date().toISOString().split('T')[0]));
+                    let html = `<div class="date-wrapper">
+                                    <span class="date-text ${isToday ? 'is-today' : ''} ${dateColorClass}">
+                                        ${parseInt(dStr.split('-')[2])}
+                                    </span>
+${holidayName ? `<div style="font-size:9px; color:rgba(239,68,68,0.8); font-weight:bold; line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; pointer-events:none; max-width:100%; width:0; min-width:100%;">${holidayName}</div>` : ''}
+                                </div>`;
+                    
+                    sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
+                        if (dStr === ev.sDate || j === 0) {
+                            const slot = eventSlots[ev.id];
+                            const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
+                            const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
+                            const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
+                            const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+                            const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
 
-                        if (isSunday || holidayName) {
-                            td.style.backgroundColor = 'rgba(244, 63, 94, 0.08)';
-                        } else if (isSaturday) {
-                            td.style.backgroundColor = 'rgba(59, 130, 246, 0.08)';
+                            // commonBaseTop을 사용하여 줄 전체의 일정 높이를 동기화
+                            html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
+                                  class="event-item ${isCont} ${willCont} ${catClass}" 
+                                  style="top: ${commonBaseTop + (slot * 28)}px; width: calc(${span * 100}% - 8px);"
+                                  draggable="true"
+                                  ondragstart="window.handleDragStart(event, '${ev.id}')"
+                                  ondragend="window.handleDragEnd(event)"
+                                  ontouchstart="window.handleTouchStart(event, '${ev.id}')"
+                                  ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
+                                  >
+                                  <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+                                  <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+                             </div>`;
                         }
-
-                        let dateColorClass = 'text-slate-400';
-                        if (isSunday || holidayName) dateColorClass = 'text-red-500';
-                        else if (isSaturday) dateColorClass = 'text-blue-500';
-
-                        let html = `<div class="date-wrapper">
-                                        <span class="date-text ${isToday ? 'is-today' : ''} ${dateColorClass}">
-                                            ${parseInt(dStr.split('-')[2])}
-                                        </span>
-                                        ${holidayName ? `<span style="font-size:10px; color:#ef4444; display:block; font-weight:bold; margin-top:2px; line-height:1.2;">${holidayName}</span>` : ''}
-                                    </div>`;
-                        
-                        sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
-                            if (dStr === ev.sDate || j === 0) {
-                                const slot = eventSlots[ev.id];
-                                const span = Math.min(Math.ceil((new Date(ev.eDate) - new Date(dStr)) / (86400000)) + 1, 7 - j);
-                                const isCont = dStr > ev.sDate ? 'continued-from-prev' : '';
-                                const willCont = ev.eDate > (weekDates[j + span - 1] || '9999-12-31') ? 'continues-to-next' : '';
-                                const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
-                                const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
-// renderSchedule 함수 내 "html += `<div onclick=..." 부분 수정
-html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
-              class="event-item ${isCont} ${willCont} ${catClass}" 
-              style="top: ${36 + (slot * 28)}px; width: calc(${span * 100}% - 8px);"
-              /* --- 추가해야 할 속성들 --- */
-              draggable="true"
-              ondragstart="window.handleDragStart(event, '${ev.id}')"
-              ondragend="window.handleDragEnd(event)"
-              ontouchstart="window.handleTouchStart(event, '${ev.id}')"
-              ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
-              /* ----------------------- */
-              >
-              <span class="ev-title-text">${isCont ? '' : ev.title}</span>
-              <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
-         </div>`;
-
-                            }
-                        });
-                        td.innerHTML = html;
-                    }
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-                if (dateNum > lastDate) break;
-            }
-        });
-    }
+                    });
+                    td.innerHTML = html;
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+            if (dateNum > lastDate) break;
+        }
+    });
+}
 
     const baseConfig = { enableTime: true, dateFormat: "Y-m-d\\TH:i", altInput: true, altFormat: "Y-m-d h:i K", static: true, disableMobile: true };
     startPicker = flatpickr("#evStart", baseConfig);
