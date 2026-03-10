@@ -71,6 +71,20 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 @media (max-height:700px) {.header-section {margin-bottom:1rem;}.menu-grid {gap:8px;margin-bottom:1rem;}.menu-card {padding:12px 8px;gap:8px;}}
 @media (max-height:600px) {.greeting {font-size:clamp(1.5rem,4vw,2.5rem);}.live-time,.sub-label {font-size:8px;}}
 @media (orientation:landscape) and (max-height:500px) {.content-wrapper {justify-content:flex-start;padding-top:1rem;}.header-section {margin-bottom:0.75rem;}.menu-grid {margin-bottom:1rem;}}
+/* 상태 정보 텍스트 스타일 */
+.card-status {
+    font-size: clamp(8px, 1.6vw, 10px);
+    font-weight: 500;
+    color: var(--cyan); /* 강조색 */
+    margin-top: 4px;
+    opacity: 0.9;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    z-index: 2;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+/* 대기 중이거나 숫자가 클 때 색상 변경용 (옵션) */
+.status-alert { color: var(--rose); }
 </style>
 
 </head>
@@ -107,40 +121,41 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
         </div>
 
         <!-- Menu Cards (4D Enhanced) -->
-        <div class="menu-grid">
+<div class="menu-grid">
 
-            <div class="menu-card" onclick="navigateTo('staff_main.html')">
-                <div class="card-glow"></div>
-                <div class="card-icon-wrap">
-                    <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
-                </div>
-                <span class="card-label">Attendance</span>
-            </div>
+    <div class="menu-card" onclick="navigateTo('staff_main.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+        </div>
+        <span class="card-label">Attendance</span>
+        <span class="card-status" id="status-attendance">Loading...</span>
+    </div> <div class="menu-card" onclick="navigateTo('staff_report.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+        </div>
+        <span class="card-label">Work<br>Report</span>
+        <span class="card-status" id="status-report">No pending</span>
+    </div>
 
-            <div class="menu-card" onclick="navigateTo('staff_report.html')">
-                <div class="card-glow"></div>
-                <div class="card-icon-wrap">
-                    <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
-                </div>
-                <span class="card-label">Work<br>Report</span>
-            </div>
+    <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+        </div>
+        <span class="card-label">Calendar</span>
+        <span class="card-status" id="status-calendar">Next: None</span>
+    </div>
 
-            <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
-                <div class="card-glow"></div>
-                <div class="card-icon-wrap">
-                    <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
-                </div>
-                <span class="card-label">Calendar</span>
-            </div>
-
-            <div class="menu-card" onclick="navigateTo('staff_leave.html')">
-                <div class="card-glow"></div>
-                <div class="card-icon-wrap">
-                    <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
-                </div>
-                <span class="card-label">Vacation</span>
-            </div>
-
+    <div class="menu-card" onclick="navigateTo('staff_leave.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+        </div>
+        <span class="card-label">Vacation</span>
+        <span class="card-status" id="status-vacation">-- Days Left</span>
+    </div>
         </div>
 
         <!-- Bottom actions -->
@@ -163,7 +178,7 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 <script>
         /* ═══════════════════════════════════════════
             DYNAMIC BACKGROUND & CORE LOGIC
-            - 모든 기존 기능 100% 보존
+            - 모든 기존 기능 100% 보존 + 실시간 상태 데이터 추가
         ═══════════════════════════════════════════ */
         (function() {
             // 1. 사용자 확인
@@ -176,6 +191,79 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
             const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
+
+            // [추가] 실시간 상태 정보 업데이트 함수
+const updateStaffStatus = (userId) => {
+    if (!userId) return;
+
+    // 1. 직전 근무일(Yesterday/Friday) 날짜 구하기
+    const getLastWorkDay = () => {
+        const d = new Date();
+        const dayOfWeek = d.getDay();
+        
+        if (dayOfWeek === 1) { // 월요일이면 금요일
+            d.setDate(d.getDate() - 3);
+        } else if (dayOfWeek === 0) { // 일요일이면 금요일
+            d.setDate(d.getDate() - 2);
+        } else { // 그 외 평일/토요일이면 어제
+            d.setDate(d.getDate() - 1);
+        }
+
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const date = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${date}`;
+    };
+
+    const targetDateStr = getLastWorkDay();
+
+    // 2. Attendance 데이터 읽기 (어제 기록)
+    database.ref(`attendance/${targetDateStr}/${userId}`).on('value', (snap) => {
+        const data = snap.val();
+        const el = document.getElementById('status-attendance');
+        if(el) {
+            const inTime = (data && data.attend) ? data.attend : "Not Checked-in";
+            const outTime = (data && data.leave) ? data.leave : "Not Checked-Out";
+            el.innerHTML = `Yesterday In: ${inTime}<br>Yesterday Out: ${outTime}`;
+            el.style.color = (data && (data.attend || data.leave)) ? "var(--cyan)" : "var(--rose)";
+        }
+    });
+
+    // 3. Work Report 데이터 읽기 (어제 기록 확인)
+    // 경로: reports / 2026-02-18 / Mr-Eza (예시 구조 적용)
+    database.ref(`reports/${targetDateStr}/${userId}`).on('value', (snap) => {
+        const data = snap.val();
+        const el = document.getElementById('status-report');
+        
+        if(el) {
+            // 해당 날짜에 데이터가 있고, todo 내용이 비어있지 않은지 확인
+            if (data && data.todo && data.todo.trim() !== "") {
+                el.innerText = "Yesterday Report: Submitted";
+                el.style.color = "var(--cyan)";
+            } else {
+                el.innerText = "Yesterday Report: Required";
+                el.style.color = "var(--rose)";
+            }
+        }
+    });
+
+    // C. Calendar (오늘 예정된 일정)
+    database.ref(`schedules/${userId}/today_next`).on('value', (snap) => {
+        const nextEvent = snap.val();
+        const el = document.getElementById('status-calendar');
+        if(el) el.innerText = nextEvent ? `Next: ${nextEvent}` : "No more plans";
+    });
+
+    // D. Vacation (남은 연차)
+    database.ref(`staff_info/${userId}/vacation_left`).on('value', (snap) => {
+        const days = snap.val() || 0;
+        const el = document.getElementById('status-vacation');
+        if(el) el.innerText = `${days} Days Left`;
+    });
+};
+
+            // 상태 업데이트 실행
+            updateStaffStatus(user);
 
             // Pexels 배경화면 업데이트 함수
             const updateBackground = async () => {
@@ -295,6 +383,5 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
             }
         })();
     </script>
-
 </body>
 </html>

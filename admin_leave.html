@@ -113,9 +113,9 @@
                         <span id="displayLeaveType" class="px-3 py-1 bg-indigo-600 text-white text-xs font-black rounded-lg">TYPE</span>
                         <span id="displayLeaveDates" class="text-indigo-400 font-mono text-xs font-bold">YYYY-MM-DD ~ YYYY-MM-DD</span>
                     </div>
-                    <div id="displayLeaveReason" class="text-white text-lg font-bold italic leading-tight">
-                        "Staff's leave reason will be displayed here."
-                    </div>
+<div id="displayLeaveReason" class="text-white text-lg font-bold italic leading-tight break-all overflow-hidden max-h-[300px] overflow-y-auto">
+    "Staff's leave reason will be displayed here."
+</div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Update Status</label>
@@ -196,17 +196,21 @@ window.initAdminLeave = function() {
                                     const card = document.createElement('div');
                                     card.className = "bg-slate-800/50 p-4 rounded-2xl border border-amber-500/30 blink-pending cursor-pointer";
                                     card.onclick = () => openLeaveAdminModal(uid, year, id, data);
-                                    card.innerHTML = `
-                                        <div class="flex justify-between items-start">
-                                            <span class="text-[10px] font-black text-amber-500 uppercase">Pending Request</span>
-                                            <span class="text-[9px] text-slate-500 font-mono">${data.startDate}</span>
-                                        </div>
-                                        <div class="mt-2">
-                                            <div class="text-white font-black text-sm">${uid}</div>
-                                            <div class="text-slate-400 text-xs font-bold">${data.type}: ${data.startDate} ~ ${data.endDate}</div>
-                                            <div class="text-slate-500 text-[10px] mt-1 italic">"${data.reason || 'No reason'}"</div>
-                                        </div>`;
-                                    container.appendChild(card);
+// loadPendingRequests 함수 내부의 card.innerHTML 부분 수정
+card.innerHTML = `
+    <div class="flex justify-between items-start">
+        <span class="text-[10px] font-black text-amber-500 uppercase">Pending Request</span>
+        <span class="text-[9px] text-slate-500 font-mono">${data.startDate}</span>
+    </div>
+    <div class="mt-2">
+        <div class="text-white font-black text-sm">${uid}</div>
+        <div class="text-slate-400 text-xs font-bold">${data.type}: ${data.startDate} ~ ${data.endDate}</div>
+        <div class="text-slate-500 text-[10px] mt-1 italic break-all" id="reason-text-${id}"></div>
+    </div>`;
+
+container.appendChild(card);
+// innerHTML 삽입 후 안전하게 텍스트로만 밀어넣기
+document.getElementById(`reason-text-${id}`).innerText = data.reason ? `"${data.reason}"` : `"No reason"`;
                                 }
                             });
                         });
@@ -285,8 +289,8 @@ window.renderAdminCalendar = async function() {
                             let icon = '📄';
                             if (item.status === 'Approved') { sClass = 'badge-approved'; icon = '✅'; }
                             else if (item.status === 'Rejected') { sClass = 'bg-rose-500/50 line-through'; icon = '🚫'; }
-                            badges += `<div class="leave-badge ${sClass}" onclick='openLeaveAdminModal("${uid}","${year}","${id}", ${JSON.stringify(item).replace(/"/g, '&quot;')})'>${icon} ${uid.substring(0,5)}: ${item.type}</div>`;
-                        }
+const safeItem = btoa(encodeURIComponent(JSON.stringify(item))); // 데이터를 안전하게 인코딩
+badges += `<div class="leave-badge ${sClass}" onclick="openLeaveAdminModal('${uid}','${year}','${id}', '${safeItem}')">${icon} ${uid.substring(0,5)}: ${item.type}</div>`;                        }
                     }
                 });
             });
@@ -356,22 +360,34 @@ function calculateStats(attData, year) {
         : `<tr><td colspan="7" class="py-8 text-center text-slate-600 font-bold italic text-xs">No data for this ${statsMode}.</td></tr>`;
 }
 
-            window.openLeaveAdminModal = function(uid, year, id, data) {
-                const modal = getEl('leaveAdminModal');
-                if (!modal) return;
-                currentEditRef = `leaves/${uid}/${year}/${id}`;
-                currentLeaveData = data;
-                currentUid = uid;
-                if (getEl('modalStaffName')) getEl('modalStaffName').innerText = uid;
-                if (getEl('displayLeaveType')) getEl('displayLeaveType').innerText = data.type || '';
-                if (getEl('displayLeaveDates')) getEl('displayLeaveDates').innerText = `${data.startDate} ~ ${data.endDate}`;
-                if (getEl('displayLeaveReason')) getEl('displayLeaveReason').innerText = data.reason ? `"${data.reason}"` : `"No reason"`;
-                const statusField = getEl('adminLeaveStatus');
-                const memoField = getEl('adminLeaveMemo');
-                if (statusField) statusField.value = data.status || 'Pending';
-                if (memoField) memoField.value = data.adminMemo || '';
-                modal.classList.remove('hidden');
-            };
+window.openLeaveAdminModal = function(uid, year, id, encodedData) {
+    const modal = getEl('leaveAdminModal');
+    if (!modal) return;
+    
+    // 데이터가 문자열(인코딩된 상태)로 넘어온 경우 디코딩 처리
+    let data = typeof encodedData === 'string' ? JSON.parse(decodeURIComponent(atob(encodedData))) : encodedData;
+    
+    currentEditRef = `leaves/${uid}/${year}/${id}`;
+    currentLeaveData = data;
+    currentUid = uid;
+    
+    if (getEl('modalStaffName')) getEl('modalStaffName').innerText = uid;
+    if (getEl('displayLeaveType')) getEl('displayLeaveType').innerText = data.type || '';
+    if (getEl('displayLeaveDates')) getEl('displayLeaveDates').innerText = `${data.startDate} ~ ${data.endDate}`;
+    
+    // 이 부분이 핵심: .innerText를 사용하여 HTML 태그가 실행되지 않고 텍스트로 보이게 합니다.
+    const reasonDisplay = getEl('displayLeaveReason');
+    if (reasonDisplay) {
+        reasonDisplay.innerText = data.reason ? `"${data.reason}"` : `"No reason"`;
+    }
+
+    const statusField = getEl('adminLeaveStatus');
+    const memoField = getEl('adminLeaveMemo');
+    if (statusField) statusField.value = data.status || 'Pending';
+    if (memoField) memoField.value = data.adminMemo || '';
+    modal.classList.remove('hidden');
+};
+
             window.closeLeaveAdminModal = function() {
                 const modal = getEl('leaveAdminModal');
                 if (modal) modal.classList.add('hidden');

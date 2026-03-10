@@ -82,7 +82,8 @@
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Reason / Note</label>
-                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?    Please enter at least 5 words!"></textarea>
+                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?   Please enter at least 5 words!"></textarea>
+
             </div>
             <div id="adminMemoContainer" class="hidden">
                 <label class="block text-[10px] font-bold text-rose-400 uppercase mb-2 ml-1">Admin Memo</label>
@@ -315,19 +316,27 @@ window.openLeaveModal = function(id = null, data = null) {
     };
 
 window.submitLeaveRequest = function() {
-        if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
-        const type = document.getElementById('leaveType').value;
-        const range = datePicker.selectedDates;
-        const reason = document.getElementById('leaveReason').value.trim();
-        
-        // 특수문자를 제외하고 영문/한글 단어만 추출하여 개수 확인
-        const wordCount = reason.match(/\b\w+\b/g)?.length || 0;
+    if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
+    const type = document.getElementById('leaveType').value;
+    const range = datePicker.selectedDates;
+    
+    // 이 부분을 수정하세요 -------------------------------------------
+    const escapeHTML = (str) => {
+        return str.replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m]);
+    };
+    const reasonRaw = document.getElementById('leaveReason').value.trim();
+    const reason = escapeHTML(reasonRaw);
+    // -----------------------------------------------------------
 
-        if (wordCount < 5) {
-            alert("Please describe your reason in more detail (at least 5 words).");
-            document.getElementById('leaveReason').focus();
-            return;
-        }
+    // 단어 수 체크 (기존 로직 유지)
+    const wordCount = reasonRaw.match(/\b\w+\b/g)?.length || 0;
+    if (wordCount < 5) {
+        alert("Please describe your reason in more detail (at least 5 words).");
+        document.getElementById('leaveReason').focus();
+        return;
+    }
         // -----------------------------
 
         if (range.length === 0) return alert("Please select dates.");
@@ -373,5 +382,4 @@ window.submitLeaveRequest = function() {
 
     initLeavePage();
 })();
-
 </script>

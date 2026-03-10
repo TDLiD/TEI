@@ -674,11 +674,6 @@ window.saveBackupConfig = async function() {
             
             const targetHour = parseInt(bConf.hour);
 
-            // [디버그 로그] 설정된 주기와 현재 시간 출력
-            if (parseInt(timeData.second) % 30 === 0) { // 로그 과부하 방지를 위해 30초마다 설정값 출력
-                console.log(`[Backup Check] Config: ${bConf.interval} at ${targetHour}:00 | JKT Now: ${dayName} ${currentHour}:${currentMinute}`);
-            }
-
             // 3. 조건 검사 로직
             let isScheduleMatch = false;
 
