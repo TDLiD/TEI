@@ -178,6 +178,8 @@
 
 <script>
 (function() {
+    window._reportPopupData = {};  // ← 이 줄 추가
+
     const reportDb = window.db || firebase.database();
     let reportViewDate = new Date();
 
@@ -207,6 +209,12 @@ window.autoResize = function(el) {
         popup.style.display = 'block';
         moveReportPopup(event);
     };
+
+window.showReportPopupByKey = function(event, key) {
+    const data = window._reportPopupData && window._reportPopupData[key];
+    if (!data) return;
+    window.showReportPopup(event, data.todo, data.summary);
+};
 
     // 팝업 위치 이동
     window.moveReportPopup = function(event) {
@@ -283,28 +291,30 @@ window.autoResize = function(el) {
 
                     let html = `<div class="font-black text-[10px] ${dateColorClass} mb-1">${d}</div>`;
                     html += `<div class="flex flex-col gap-1 overflow-hidden">`;
+// 전역 팝업 데이터 저장소 초기화
+window._reportPopupData = window._reportPopupData || {};
+
 html += Object.keys(reports).map(n => {
     const r = reports[n];
+    const key = `${date}_${n}`;
     
-    // HTML 태그만 제거하고, 따옴표와 줄바꿈 처리를 안전하게 수행
-    const safeTodo = stripHtml(r.todo || '')
-        .replace(/'/g, "\\'")     // 작은따옴표 이스케이프
-        .replace(/\n/g, "\\n");   // 줄바꿈을 문자열 \n으로 변환하여 팝업으로 전달
-    
-    const safeSummary = stripHtml(r.summary || '')
-        .replace(/'/g, "\\'") 
-        .replace(/\n/g, "\\n");
+    // 인라인 속성 대신 전역 객체에 저장
+    window._reportPopupData[key] = {
+        todo: stripHtml(r.todo || ''),
+        summary: stripHtml(r.summary || '')
+    };
 
     return `
         <div class="report-item-badge text-[9px] truncate cursor-pointer hover:bg-blue-500/20" 
              onclick="event.stopPropagation(); openReportDetail('${date}', '${n}')"
-             onmouseenter="showReportPopup(event, '${safeTodo}', '${safeSummary}')"
+             onmouseenter="showReportPopupByKey(event, '${key}')"
              onmousemove="moveReportPopup(event)"
              onmouseleave="hideReportPopup()">
              ${n}
         </div>
     `;
 }).join('');
+
                     html += `</div>`;
                     
                     td.innerHTML = html;
@@ -481,4 +491,3 @@ window.openReportDetail = function(date, staff) {
     updateMonthTitle();
 })();
 </script>
-
