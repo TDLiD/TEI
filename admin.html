@@ -37,7 +37,32 @@
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 /* 생일 알림 효과 */
 #mobile-birthday-dot.active { display: block !important; }
+/* 기존 ::-webkit-scrollbar 규칙 아래에 추가 */
+::-webkit-scrollbar { width: 0px; background: transparent; }
+
+/* ▼ 추가: aside 내부 nav 스크롤 허용 */
+aside { overflow: hidden; }
+aside > div:first-child { flex-shrink: 0; }   /* 프로필 카드 고정 */
+aside nav.flex { 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59,130,246,0.3) transparent;
+    min-height: 0;        /* flex 자식이 shrink되려면 필요 */
+    padding-bottom: 0.5rem;
+}
+aside nav.flex::-webkit-scrollbar { width: 3px; }
+aside nav.flex::-webkit-scrollbar-track { background: transparent; }
+aside nav.flex::-webkit-scrollbar-thumb { 
+    background: rgba(59,130,246,0.3); 
+    border-radius: 99px; 
+}
+aside nav.flex::-webkit-scrollbar-thumb:hover { 
+    background: rgba(59,130,246,0.6); 
+}
+aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     </style>
+
 </head>
 <body class="flex min-h-screen">
 <header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
@@ -82,7 +107,7 @@
         <button onclick="switchAdminTab('settings')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
     </nav>
 
-<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col">
+<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col min-h-0">
         <div class="mb-10">
             <h1 class="text-2xl font-black italic mb-6">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
             <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
@@ -116,7 +141,7 @@
                 </div>
             </div>
         </div>
-        <nav class="flex flex-col gap-1 flex-1">
+<nav class="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto">
             <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
             <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
             <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
