@@ -729,14 +729,8 @@ results.forEach(({ val }) => {
 
     if (val.attend) {
         inCount++;
-        // "LATE(8:34)" 형태 또는 시간 파싱 두 가지 모두 처리
-        if (val.attend.toUpperCase().includes('LATE')) {
+        if (val.attend.toUpperCase().startsWith('LATE')) {
             lateCount++;
-        } else {
-            const parts = val.attend.replace(/[^\d:]/g, '').split(':');
-            const h = parseInt(parts[0], 10);
-            const m = parseInt(parts[1] || '0', 10);
-            if (h > stdHour || (h === stdHour && m > 0)) lateCount++;
         }
     }
 
