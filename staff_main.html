@@ -344,12 +344,8 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 
     <!-- Info Card: 스크롤하면 보이는 영역 -->
     <div class="info-card">
-        <div class="info-grid">
-            <!-- 좌측: 인도네시아 뉴스 -->
-            <div class="info-section">
-                <div class="info-title">📰 Indonesia News Today</div>
-                <div id="indo-news-list"><div class="info-loading">Loading news...</div></div>
-            </div>
+<div class="info-grid" style="grid-template-columns:1fr;">
+
             <!-- 우측: 날씨 + 명언 + 행운 -->
             <div style="display:flex;flex-direction:column;gap:10px;">
                 <div class="info-section">
@@ -651,47 +647,6 @@ const loadProfileImg = (userId) => {
         <div class="lucky-nums">${nums.map((n,i)=>`<div class="lucky-num" style="background:${colors[i]};box-shadow:0 0 8px ${colors[i]}60;">${n}</div>`).join('')}</div>
         <div class="stat-row" style="margin-top:8px;"><span class="stat-label">Lucky Color</span><span class="stat-value" style="font-size:10px;">${luckyColor}</span></div>`;
 
-    // ④ 인도네시아 뉴스 (RSS → allorigins 프록시)
-    try {
-        const rssUrl = 'https://news.google.com/rss/search?q=indonesia+electric+vehicle+OR+motor+listrik+OR+mobil+listrik&hl=id&gl=ID&ceid=ID:id';
-        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-        const res = await fetch(proxy);
-        const data = await res.json();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data.contents, 'text/xml');
-        const items = Array.from(xml.querySelectorAll('item')).slice(0, 10);
-        
-        if(items.length > 0) {
-            const evKeywords = ['listrik','electric','ev','byd','wuling','hyundai','battery','baterai'];
-            document.getElementById('indo-news-list').innerHTML = items.map(item => {
-                const title = item.querySelector('title')?.textContent || '';
-                const link = item.querySelector('link')?.textContent || '#';
-                const isEV = evKeywords.some(k => title.toLowerCase().includes(k));
-                return `<div class="news-item" onclick="window.open('${link}','_blank')">
-                    ${isEV ? '<span class="news-badge ev">EV</span>' : '<span class="news-badge">NEWS</span>'}${title.substring(0,60)}${title.length>60?'...':''}
-                </div>`;
-            }).join('');
-        } else {
-            throw new Error('No items');
-        }
-    } catch(e) {
-        // RSS 실패 시 하드코딩 뉴스
-        const fallbackNews = [
-            {t:'Pemerintah dorong percepatan kendaraan listrik nasional',ev:true},
-            {t:'PLN perluas jaringan SPKLU di seluruh Indonesia',ev:true},
-            {t:'Motor listrik lokal semakin diminati konsumen Indonesia',ev:true},
-            {t:'BYD Indonesia luncurkan model terbaru dengan harga kompetitif',ev:true},
-            {t:'Subsidi motor listrik 2025 resmi diperpanjang pemerintah',ev:true},
-            {t:'Industri baterai EV Indonesia terus berkembang pesat',ev:true},
-            {t:'Wuling Air EV raih penjualan tertinggi bulan ini',ev:true},
-            {t:'Pemerintah bangun 1000 SPKLU baru di Jawa-Bali',ev:true},
-            {t:'Pertumbuhan ekonomi Indonesia Q1 2025 capai target',ev:false},
-            {t:'Bank Indonesia pertahankan suku bunga acuan',ev:false},
-        ];
-        document.getElementById('indo-news-list').innerHTML = fallbackNews.map(n=>
-            `<div class="news-item">${n.ev?'<span class="news-badge ev">EV</span>':'<span class="news-badge">NEWS</span>'}${n.t}</div>`
-        ).join('');
-    }
 })();
 
         const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
