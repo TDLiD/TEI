@@ -1,54 +1,87 @@
 <style>
     .calendar-wrapper { width: 100%; overflow-x: hidden; }
     .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    
+
+    /* ── 공통: 주말 배경 & 오늘 하이라이트 ── */
+    .sunday-bg  { background-color: rgba(244, 63, 94, 0.05) !important; }
+    .saturday-bg{ background-color: rgba(59, 130, 246, 0.05) !important; }
+    .today-highlight {
+        border: 2px solid #3b82f6 !important;
+        background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important;
+    }
+
+    /* ── 공통: 토/일 열 너비 축소 ── */
+    .calendar-table col.weekend { width: 5%; }
+    .calendar-table col.weekday { width: calc((100% - 10%) / 5); }
+
+    /* ── 데스크톱 전용 ── */
     @media (min-width: 769px) {
-        .calendar-table { min-width: auto; } 
-        .calendar-table td { height: 140px; vertical-align: top; padding: 8px; border: 1px solid #1e293b; width: 14.28%; }
+        .calendar-table td {
+            height: 140px; vertical-align: top;
+            padding: 8px; border: 1px solid #1e293b; width: 14.28%;
+        }
+        .calendar-table td.sunday-bg,
+        .calendar-table td.saturday-bg { width: 5%; padding: 4px 2px; }
+        .calendar-table td.sunday-bg .text-lg,
+        .calendar-table td.saturday-bg .text-lg { font-size: 11px; }
     }
 
-    .attendance-record-item { font-size: clamp(8px, 0.8vw, 10px); transition: all 0.2s ease; width: 100%; }
-    
-    input[type="time"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-    }
-
+    /* ── 모바일 전용 ── */
     @media (max-width: 768px) {
         .calendar-table thead { display: none; }
-        #full_att_calendar_body { display: flex; flex-direction: column; gap: 14px; padding: 4px; }
+
+        #full_att_calendar_body {
+            display: flex; flex-direction: column;
+            gap: 14px; padding: 4px;
+        }
         #full_att_calendar_body tr { display: contents; }
-        #full_att_calendar_body td { display: block; width: 100% !important; height: auto !important; border: none !important; padding: 0 !important; }
+        #full_att_calendar_body td {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+            border: none !important;
+            padding: 0 !important;
+        }
         #full_att_calendar_body td:empty { display: none; }
-        .mobile-date-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border-radius: 24px; padding: 18px; border: 1px solid rgba(51, 65, 85, 0.5); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden; }
-        .today-highlight { border: 2px solid #3b82f6 !important; background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important; }
-        .mobile-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+        /* 모바일 카드: sunday/saturday 배경 재정의 */
+        .mobile-date-card.sunday-bg  { background: linear-gradient(145deg, #2d1a1e 0%, #1a0d10 100%) !important; border: 1px solid rgba(244,63,94,0.2) !important; }
+        .mobile-date-card.saturday-bg{ background: linear-gradient(145deg, #1a2035 0%, #0d1525 100%) !important; border: 1px solid rgba(59,130,246,0.2) !important; }
+        .mobile-date-card.today-highlight {
+            border: 2px solid #3b82f6 !important;
+            background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important;
+        }
+
+        .mobile-date-card {
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 24px; padding: 18px;
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+        }
+        .mobile-card-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
         .mobile-record-list { display: flex; flex-direction: column; gap: 8px; }
-        .attendance-record-item { background: rgba(15, 23, 42, 0.6) !important; padding: 12px !important; border-radius: 14px !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
-/* 주말 배경색 클래스 추가 */
-    .sunday-bg { background-color: rgba(244, 63, 94, 0.05) !important; }
-    .saturday-bg { background-color: rgba(59, 130, 246, 0.05) !important; }
-    
-    /* 오늘 날짜 하이라이트와 주말 색상이 겹칠 때 오늘 날짜를 우선함 */
-    .today-highlight { 
-        border: 2px solid #3b82f6 !important; 
-        background: linear-gradient(145deg, #1e293b 0%, #1e1b4b 100%) !important; 
+        .attendance-record-item {
+            background: rgba(15,23,42,0.6) !important;
+            padding: 12px !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(255,255,255,0.05) !important;
+        }
     }
 
-    /* 요일 헤더 색상 */
-    .text-sunday { color: #f43f5e !important; }
-    .text-saturday { color: #3b82f6 !important; }
+    .attendance-record-item {
+        font-size: clamp(8px, 0.8vw, 10px);
+        transition: all 0.2s ease; width: 100%;
     }
-/* 토/일 열 너비 축소 */
-.calendar-table col.weekend { width: 5%; }
-.calendar-table col.weekday { width: calc((100% - 10%) / 5); }
 
-@media (min-width: 769px) {
-    .calendar-table td.sunday-bg,
-    .calendar-table td.saturday-bg { width: 5%; padding: 4px 2px; }
-    .calendar-table td.sunday-bg .text-lg,
-    .calendar-table td.saturday-bg .text-lg { font-size: 11px; }
-}
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1); cursor: pointer;
+    }
 </style>
 
 <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2.5rem] md:rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm max-w-full overflow-hidden">
