@@ -12,12 +12,9 @@
 <style>
 :root {--bg:#03060f;--surface:rgba(8,18,36,0.7);--surface-2:rgba(16,32,60,0.5);--blue:#3b82f6;--blue-glow:rgba(59,130,246,0.25);--cyan:#06b6d4;--violet:#818cf8;--rose:#f43f5e;--gold:#f59e0b;--chrome:#e2e8f0;--text:#cbd5e1;--muted:#475569;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);}
 *,*::before,*::after {box-sizing:border-box;margin:0;padding:0;}
-html,body {width:100%;height:100%;}
-body { overflow: hidden; }
-@media (max-width:768px) {
-    body { overflow-y: auto; }
-}
+html,body {width:100%;height:100%;overflow:hidden;}
 body {font-family:"Pretendard",system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;perspective:2000px;position:relative;}
+
 #dynamicBg {position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;background-repeat:no-repeat;transition:opacity 0.8s ease;}
 #dynamicBg::after {content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(59,130,246,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(129,140,248,0.08) 0%,transparent 55%),linear-gradient(180deg,rgba(3,6,15,0.55) 0%,rgba(3,6,15,0.75) 100%);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
 body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none;}
@@ -26,13 +23,33 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 .orb-b {width:500px;height:500px;background:rgba(129,140,248,0.08);bottom:-15%;left:-12%;animation-delay:-8s;}
 .orb-c {width:400px;height:400px;background:rgba(6,182,212,0.06);top:50%;right:20%;animation-delay:-14s;}
 @keyframes orb-float {0%{transform:translate(0,0) scale(1);opacity:0.6;}50%{transform:translate(30px,50px) scale(1.1);opacity:0.8;}100%{transform:translate(20px,40px) scale(1.08);opacity:0.6;}}
-.content-wrapper {position:relative;z-index:2;width:100%;min-height:100vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem;-ms-overflow-style:none;scrollbar-width:none;gap:0;}
-.content-wrapper::-webkit-scrollbar {display:none;}
-@media (max-width:640px) {
-    .content-wrapper {padding:1rem 0.75rem;justify-content:flex-start;padding-top:1.5rem;padding-bottom:2rem;}
-    .menu-grid { margin-bottom: 1rem; }
-    .header-section { margin-bottom: 1rem; }
+
+.content-wrapper {
+    position:relative;z-index:2;width:100%;height:100vh;
+    overflow-y:auto;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;
+    padding:1.5rem 1rem 4rem;
+    -ms-overflow-style:none;scrollbar-width:none;gap:0;
 }
+.content-wrapper::-webkit-scrollbar {display:none;}
+
+/* 메뉴 카드 4개 영역: 화면 중앙에 보이도록 최소 높이 확보 */
+.main-section {
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;
+    width:100%;
+    min-height:calc(100vh - 3rem); /* 헤더 패딩 제외한 뷰포트 높이 */
+    padding-bottom:1rem;
+}
+
+@media (max-width:768px) {
+    .content-wrapper {padding:1rem 0.75rem 4rem;}
+    .main-section {min-height:auto;justify-content:flex-start;padding-top:1rem;}
+    .menu-grid {margin-bottom:1rem;}
+    .header-section {margin-bottom:1rem;}
+}
+
 .header-section {text-align:center;margin-bottom:clamp(1.5rem,4vh,3.5rem);animation:reveal-down 0.8s cubic-bezier(0.16,1,0.3,1) both;transform-style:preserve-3d;}
 .live-time {font-size:clamp(9px,2vw,10.5px);letter-spacing:0.35em;text-transform:uppercase;color:var(--cyan);margin-bottom:clamp(12px,3vw,16px);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.8;transform:translateZ(20px);}
 .live-dot {width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px rgba(6,182,212,0.5);animation:pulse 2s ease-in-out infinite;}
@@ -193,31 +210,24 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
     position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);
     border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);
     padding:clamp(14px,3vw,22px);width:100%;max-width:800px;box-sizing:border-box;
-    margin-bottom:clamp(1rem,3vh,2rem);
+    margin-top:0;
+    margin-bottom:2rem;
     animation:reveal-down 1s cubic-bezier(0.16,1,0.3,1) 0.4s both;
     box-shadow:0 15px 30px rgba(0,0,0,0.4),inset 0 1px 1px rgba(255,255,255,0.1);
-    overflow:hidden;
+    overflow:visible; /* hidden → visible */
 }
-.info-card::after {content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+
+.info-card::after {
+    content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
     background:linear-gradient(90deg,transparent,rgba(6,182,212,0.6),rgba(129,140,248,0.6),transparent);
-    filter:blur(1px);opacity:0.8;}
+    filter:blur(1px);opacity:0.8;
+    pointer-events:none;
+}
 .info-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .info-section {background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:12px;}
 .info-title {font-size:8px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
 .news-item {font-size:9px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5;cursor:pointer;transition:color 0.2s;}
-.news-item:hover {color:var(--cyan);}
-.news-item:last-child {border-bottom:none;}
-.news-badge {display:inline-block;font-size:7px;font-weight:900;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);margin-right:4px;}
-.news-badge.ev {background:rgba(16,185,129,0.2);color:#10b981;border-color:rgba(16,185,129,0.3);}
-.stat-row {display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
-.stat-row:last-child {border-bottom:none;}
-.stat-label {font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.stat-value {font-size:11px;font-weight:900;color:#fff;}
-.lucky-nums {display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
-.lucky-num {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;}
-.quote-text {font-size:9px;color:var(--text);line-height:1.6;font-style:italic;margin-top:4px;}
-.quote-author {font-size:8px;color:var(--cyan);font-weight:700;margin-top:4px;text-align:right;}
-.info-loading {font-size:9px;color:var(--muted);text-align:center;padding:10px;animation:pulse 1.5s infinite;}
+
 @media (max-width:768px) {
     .info-grid {grid-template-columns:1fr;}
     .info-card {margin-bottom:1rem;padding:clamp(12px,3vw,18px);border-radius:16px;}
@@ -262,8 +272,11 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
         <span class="day-number" id="dayNumber"></span>
     </div>
 
-    <!-- ── Main content ──────────────────────────── -->
-    <div class="content-wrapper">
+<!-- ── Main content ──────────────────────────── -->
+<div class="content-wrapper">
+
+    <!-- 메인 섹션: 뷰포트 높이 내 중앙 정렬 -->
+    <div class="main-section">
 
         <!-- Header -->
         <div class="header-section">
@@ -279,68 +292,40 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
         </div>
 
         <!-- Menu Cards (4D Enhanced) -->
-<div class="menu-grid">
-
-    <div class="menu-card" onclick="navigateTo('staff_main.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
-        </div>
-        <span class="card-label">Attendance</span>
-        <span class="card-status" id="status-attendance">Loading...</span>
-    </div> <div class="menu-card" onclick="navigateTo('staff_report.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
-        </div>
-        <span class="card-label">Work<br>Report</span>
-        <span class="card-status" id="status-report">No pending</span>
-    </div>
-
-    <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
-        </div>
-        <span class="card-label">Calendar</span>
-        <span class="card-status" id="status-calendar">Next: None</span>
-    </div>
-
-    <div class="menu-card" onclick="navigateTo('staff_leave.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
-        </div>
-        <span class="card-label">Vacation</span>
-        <span class="card-status" id="status-vacation">-- Days Left</span>
-    </div>
-        </div>
-
-<!-- Info Card: News + Daily Info -->
-<div class="info-card">
-    <div class="info-grid">
-        <!-- 좌측: 인도네시아 뉴스 -->
-        <div class="info-section" style="grid-column: span 1;">
-            <div class="info-title">📰 Indonesia News Today</div>
-            <div id="indo-news-list"><div class="info-loading">Loading news...</div></div>
-        </div>
-        <!-- 우측: 날씨 + 명언 + 행운 -->
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <div class="info-section">
-                <div class="info-title">🌤 Jakarta Weather</div>
-                <div id="weather-info"><div class="info-loading">Loading...</div></div>
+        <div class="menu-grid">
+            <div class="menu-card" onclick="navigateTo('staff_main.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+                </div>
+                <span class="card-label">Attendance</span>
+                <span class="card-status" id="status-attendance">Loading...</span>
             </div>
-            <div class="info-section">
-                <div class="info-title">💬 Quote of the Day</div>
-                <div id="quote-info"><div class="info-loading">Loading...</div></div>
+            <div class="menu-card" onclick="navigateTo('staff_report.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+                </div>
+                <span class="card-label">Work<br>Report</span>
+                <span class="card-status" id="status-report">No pending</span>
             </div>
-            <div class="info-section">
-                <div class="info-title">🍀 Your Lucky Numbers</div>
-                <div id="lucky-info"><div class="info-loading">Loading...</div></div>
+            <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+                </div>
+                <span class="card-label">Calendar</span>
+                <span class="card-status" id="status-calendar">Next: None</span>
+            </div>
+            <div class="menu-card" onclick="navigateTo('staff_leave.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+                </div>
+                <span class="card-label">Vacation</span>
+                <span class="card-status" id="status-vacation">-- Days Left</span>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Bottom actions -->
         <div class="bottom-actions">
@@ -348,24 +333,50 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                 <div class="action-icon">⚙️</div>
                 <span class="action-label">Settings</span>
             </button>
-
             <div class="divider"></div>
-
             <button class="action-btn logout" onclick="handleLogout()">
                 <div class="action-icon">🚪</div>
                 <span class="action-label">Logout</span>
             </button>
-       </div> 
+        </div>
+
+    </div><!-- /.main-section -->
+
+    <!-- Info Card: 스크롤하면 보이는 영역 -->
+    <div class="info-card">
+        <div class="info-grid">
+            <!-- 좌측: 인도네시아 뉴스 -->
+            <div class="info-section">
+                <div class="info-title">📰 Indonesia News Today</div>
+                <div id="indo-news-list"><div class="info-loading">Loading news...</div></div>
+            </div>
+            <!-- 우측: 날씨 + 명언 + 행운 -->
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="info-section">
+                    <div class="info-title">🌤 Jakarta Weather</div>
+                    <div id="weather-info"><div class="info-loading">Loading...</div></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-title">💬 Quote of the Day</div>
+                    <div id="quote-info"><div class="info-loading">Loading...</div></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-title">🍀 Your Lucky Numbers</div>
+                    <div id="lucky-info"><div class="info-loading">Loading...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /.content-wrapper -->
 
 <div id="profileCustomModal" class="profile-modal-overlay" onclick="closeProfileModal()">
     <div class="profile-modal" onclick="event.stopPropagation()">
-        <h3 id="modalTitle" style="color:#fff; text-align:center; font-weight:800; letter-spacing:0.1em; margin-bottom:15px;">SELECT PROFILE</h3>
-        <div id="modalBody" class="profile-grid">
-            </div>
-        <button onclick="closeProfileModal()" style="width:100%; margin-top:20px; padding:12px; background:var(--surface-2); border:1px solid var(--border); color:var(--text); border-radius:12px; font-weight:700; cursor:pointer;">CLOSE</button>
+        <h3 id="modalTitle" style="color:#fff;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:15px;">SELECT PROFILE</h3>
+        <div id="modalBody" class="profile-grid"></div>
+        <button onclick="closeProfileModal()" style="width:100%;margin-top:20px;padding:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;font-weight:700;cursor:pointer;">CLOSE</button>
     </div>
 </div>
-
     <input type="file" id="profileInput" accept="image/*" style="display: none;" />
 
 <script>
