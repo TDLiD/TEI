@@ -123,7 +123,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
             <button onclick="switchTab('work')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
             <button onclick="switchTab('schedule')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
-            <button onclick="switchTab('leave')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏖️</span> Vacation</button>
+            <button onclick="switchTab('vacation')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏖️</span> Vacation</button>
             <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
             <button onclick="switchTab('setting')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
             <div class="mt-5 pt-5 border-t border-white/5">
@@ -150,7 +150,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
     <button onclick="switchTab('dash')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">🏠</span><span class="text-[8px] font-bold">HOME</span></button>
     <button onclick="switchTab('work')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">📝</span><span class="text-[8px] font-bold">WORK</span></button>
     <button onclick="switchTab('schedule')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">📅</span><span class="text-[8px] font-bold">CAL</span></button>
-    <button onclick="switchTab('leave')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">🏖️</span><span class="text-[8px] font-bold">VAC</span></button>
+    <button onclick="switchTab('vacation')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">🏖️</span><span class="text-[8px] font-bold">VAC</span></button>
     <button onclick="switchTab('statistic')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">📈</span><span class="text-[8px] font-bold">STAT</span></button>
     <button onclick="switchTab('setting')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all"><span class="text-xl">⚙️</span><span class="text-[8px] font-bold">SET</span></button>
     <a href="https://tdlid.github.io" target="_blank" class="flex flex-col items-center gap-1 transition-all">
@@ -251,11 +251,11 @@ checkTodayBirthdays();
 window.switchTab = function(t) {
     const pB = document.querySelectorAll('.pc-tab-btn'); 
     const mB = document.querySelectorAll('.mobile-tab-btn');
-    const tabMapping = { dash: 'staff_main.html', work: 'staff_report.html', schedule: 'staff_calendar.html', leave: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
+    const tabMapping = { dash: 'staff_main.html', work: 'staff_report.html', schedule: 'staff_calendar.html', vacation: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
     const activeTab = tabMapping[t] ? t : 'dash';
     pB.forEach(b => b.classList.remove('tab-active')); 
     mB.forEach(b => b.classList.remove('mobile-tab-active'));
-    const navIndex = { dash: 0, work: 1, schedule: 2, leave: 3, statistic: 4, setting: 5 };
+    const navIndex = { dash: 0, work: 1, schedule: 2, vacation: 3, statistic: 4, setting: 5 };
     const i = navIndex[activeTab];
     if(i !== undefined) { if(pB[i]) pB[i].classList.add('tab-active'); if(mB[i]) mB[i].classList.add('mobile-tab-active'); }
     loadHTML(tabMapping[activeTab]);
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (initialPage) {
             if (initialPage.includes('report')) switchTab('work');
             else if (initialPage.includes('calendar')) switchTab('schedule');
-            else if (initialPage.includes('leave')) switchTab('leave');
+            else if (initialPage.includes('vacation')) switchTab('vacation');
             else if (initialPage.includes('statistic')) switchTab('statistic');
             else if (initialPage.includes('setting')) switchTab('setting');
             else switchTab('dash');

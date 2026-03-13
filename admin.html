@@ -100,7 +100,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
         <button onclick="switchAdminTab('dashboard')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
         <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">👤</span><span>ATTEND</span></button>
         <button onclick="switchAdminTab('reports')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📝</span><span>REPORTS</span></button>
-        <button onclick="switchAdminTab('leave')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">🏖️</span><span>VACATION</span></button>
+        <button onclick="switchAdminTab('vacation')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">🏖️</span><span>VACATION</span></button>
         <button onclick="switchAdminTab('schedule')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📅</span><span>CAL</span></button>
         <button onclick="switchAdminTab('workstat')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📉</span><span>W.ANIS</span></button>
         <button onclick="switchAdminTab('statistic')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📈</span><span>A.STAT</span></button>
@@ -145,7 +145,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
             <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
             <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
             <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
-            <button id="btn-leave" onclick="switchAdminTab('leave')" class="tab-btn px-4 py-3 text-left">🏖️ VACATION MGT</button>
+            <button id="btn-vacation" onclick="switchAdminTab('vacation')" class="tab-btn px-4 py-3 text-left">🏖️ VACATION MGT</button>
             <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 CALENDAR</button>
             <button id="btn-workstat" onclick="switchAdminTab('workstat')" class="tab-btn px-4 py-3 text-left font-bold text-amber-500">📉 WORK ANALYSIS</button>
             <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 ATTEND STAT</button>
@@ -528,7 +528,7 @@ window.showAllStaffBirthdays = function() {
         const mBtns = document.querySelectorAll('.mobile-nav button');
         mBtns.forEach(b => b.classList.remove('mobile-tab-active'));
         
-        const idxMap = { dashboard:0, attendance:1, reports:2, leave:3, schedule:4, workstat:5, statistic:6, settings:7 };
+        const idxMap = { dashboard:0, attendance:1, reports:2, vacation:3, schedule:4, workstat:5, statistic:6, settings:7 };
         const idx = idxMap[tab];
         if(idx !== undefined) mBtns[idx].classList.add('mobile-tab-active');
 
@@ -536,7 +536,7 @@ window.showAllStaffBirthdays = function() {
             dashboard: 'admin_dashboard.html', 
             attendance: 'admin_attendance.html', 
             reports: 'admin_report.html', 
-            leave: 'admin_vacation.html', 
+            vacation: 'admin_vacation.html', 
             schedule: 'admin_calendar.html', 
             statistic: 'admin_statistic.html',
             workstat: 'work_statistic.html', 
