@@ -299,7 +299,25 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                     <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
                 </div>
                 <span class="card-label">Attendance</span>
-                <span class="card-status" id="status-attendance">Loading...</span>
+
+<span class="card-status" id="status-attendance" style="display:none;"></span>
+<div id="status-attendance-detail" style="width:100%;font-size:clamp(7px,1.5vw,9px);color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-top:2px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <span style="color:var(--muted);">Chk-In</span>
+        <span id="att-in-stat" style="color:var(--cyan);font-weight:700;">--/--</span>
+        <span id="att-in-pct" style="color:var(--muted);">--%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+<span style="color:var(--muted);">LATE</span>
+<span id="att-late-stat" style="color:var(--gold);font-weight:700;">--/--</span>
+<span id="att-late-pct" style="color:var(--gold);opacity:0.7;">--%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <span style="color:var(--muted);">Chk-Out</span>
+        <span id="att-out-stat" style="color:var(--violet);font-weight:700;">--/--</span>
+        <span id="att-out-pct" style="color:var(--muted);">--%</span>
+    </div>
+</div>
             </div>
             <div class="menu-card" onclick="navigateTo('staff_report.html')">
                 <div class="card-glow"></div>
@@ -307,7 +325,19 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                     <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
                 </div>
                 <span class="card-label">Work<br>Report</span>
-                <span class="card-status" id="status-report">No pending</span>
+<span class="card-status" id="status-report" style="display:none;"></span>
+<div id="status-report-detail" style="width:100%;font-size:clamp(7px,1.5vw,9px);color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-top:2px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <span style="color:var(--muted);">Report/Days</span>
+        <span id="rpt-done-stat" style="color:var(--violet);font-weight:700;">--/--</span>
+        <span id="rpt-done-pct" style="color:var(--muted);">--%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <span style="color:var(--muted);">Sum/Todo</span>
+        <span id="rpt-sum-stat" style="color:var(--cyan);font-weight:700;">--/--</span>
+        <span id="rpt-sum-pct" style="color:var(--muted);">--%</span>
+    </div>
+</div>
             </div>
             <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
                 <div class="card-glow"></div>
@@ -315,7 +345,12 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                     <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
                 </div>
                 <span class="card-label">Calendar</span>
-                <span class="card-status" id="status-calendar">Next: None</span>
+<span class="card-status" id="status-calendar" style="display:none;"></span>
+<div id="status-calendar-detail" style="width:100%;margin-top:2px;">
+    <div id="cal-schedule-list" style="display:flex;flex-direction:column;gap:3px;width:100%;">
+        <div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">Loading...</div>
+    </div>
+</div>
             </div>
             <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
                 <div class="card-glow"></div>
@@ -323,7 +358,12 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                     <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
                 </div>
                 <span class="card-label">Vacation</span>
-                <span class="card-status" id="status-vacation">-- Days Left</span>
+<span class="card-status" id="status-vacation" style="display:none;"></span>
+<div id="status-vacation-detail" style="width:100%;margin-top:2px;">
+    <div id="vac-schedule-list" style="display:flex;flex-direction:column;gap:3px;width:100%;">
+        <div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">Loading...</div>
+    </div>
+</div>
             </div>
         </div>
 
@@ -647,6 +687,345 @@ const loadProfileImg = (userId) => {
         <div class="lucky-nums">${nums.map((n,i)=>`<div class="lucky-num" style="background:${colors[i]};box-shadow:0 0 8px ${colors[i]}60;">${n}</div>`).join('')}</div>
         <div class="stat-row" style="margin-top:8px;"><span class="stat-label">Lucky Color</span><span class="stat-value" style="font-size:10px;">${luckyColor}</span></div>`;
 
+})();
+
+/* ── Attendance Monthly Stats ── */
+(function loadAttMonthlyStats() {
+    const userId = sessionStorage.getItem('loggedInUser');
+    if (!userId) return;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = now.getMonth();
+    const today = now.getDate();
+
+    // 이번 달 1일~오늘 중 평일(월~금)만 수집
+    const workdays = [];
+    for (let d = 1; d <= today; d++) {
+        const dow = new Date(y, mo, d).getDay();
+        if (dow !== 0 && dow !== 6) {
+            const mm = String(mo + 1).padStart(2, '0');
+            const dd = String(d).padStart(2, '0');
+            workdays.push(`${y}-${mm}-${dd}`);
+        }
+    }
+    const total = workdays.length;
+    if (total === 0) return;
+
+    // admin attendTime 기준 읽기 (없으면 08:00)
+    database.ref('settings/config/attendTime').once('value', snap => {
+        const stdHour = parseInt(snap.val() || '8', 10);
+
+        const promises = workdays.map(dateStr =>
+            database.ref(`attendance/${dateStr}/${userId}`).once('value')
+                .then(s => ({ date: dateStr, val: s.val() }))
+        );
+
+        Promise.all(promises).then(results => {
+            let inCount = 0, lateCount = 0, outCount = 0;
+
+results.forEach(({ val }) => {
+    if (!val) return;
+
+    if (val.attend) {
+        inCount++;
+        // "LATE(8:34)" 형태 또는 시간 파싱 두 가지 모두 처리
+        if (val.attend.toUpperCase().includes('LATE')) {
+            lateCount++;
+        } else {
+            const parts = val.attend.replace(/[^\d:]/g, '').split(':');
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1] || '0', 10);
+            if (h > stdHour || (h === stdHour && m > 0)) lateCount++;
+        }
+    }
+
+    if (val.leave) outCount++;
+});
+
+            const inPct   = Math.round((inCount   / total)   * 100);
+            const latePct = inCount > 0 ? Math.round((lateCount / inCount) * 100) : 0;
+            const outPct  = Math.round((outCount  / total)   * 100);
+
+            document.getElementById('att-in-stat').textContent   = `${inCount}/${total}`;
+            document.getElementById('att-in-pct').textContent    = `${inPct}%`;
+            document.getElementById('att-late-stat').textContent = `${lateCount}/${inCount}`;
+            document.getElementById('att-late-pct').textContent  = `${latePct}%`;
+            document.getElementById('att-out-stat').textContent  = `${outCount}/${total}`;
+            document.getElementById('att-out-pct').textContent   = `${outPct}%`;
+        });
+    });
+})();
+
+/* ── Work Report Monthly Stats ── */
+(function loadReportMonthlyStats() {
+    const userId = sessionStorage.getItem('loggedInUser');
+    if (!userId) return;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = now.getMonth();
+    const today = now.getDate();
+
+    // 이번 달 평일(월~금)만 수집
+    const workdays = [];
+    for (let d = 1; d <= today; d++) {
+        const dow = new Date(y, mo, d).getDay();
+        if (dow !== 0 && dow !== 6) {
+            const mm = String(mo + 1).padStart(2, '0');
+            const dd = String(d).padStart(2, '0');
+            workdays.push(`${y}-${mm}-${dd}`);
+        }
+    }
+    const total = workdays.length;
+    if (total === 0) return;
+
+    const promises = workdays.map(dateStr =>
+        database.ref(`reports/${dateStr}/${userId}`).once('value')
+            .then(s => ({ date: dateStr, val: s.val() }))
+    );
+
+    Promise.all(promises).then(results => {
+        let doneCount = 0, sumCount = 0;
+
+        results.forEach(({ val }) => {
+            if (!val) return;
+
+            // report 저장 여부 — todo 필드 존재시 카운트
+            if (val.todo && val.todo.trim() !== '') {
+                doneCount++;
+
+                // summary 항목 입력 여부
+                if (val.summary && val.summary.trim() !== '') {
+                    sumCount++;
+                }
+            }
+        });
+
+        const donePct = Math.round((doneCount / total)   * 100);
+        const sumPct  = doneCount > 0 ? Math.round((sumCount / doneCount) * 100) : 0;
+
+        document.getElementById('rpt-done-stat').textContent = `${doneCount}/${total}`;
+        document.getElementById('rpt-done-pct').textContent  = `${donePct}%`;
+        document.getElementById('rpt-sum-stat').textContent  = `${sumCount}/${doneCount}`;
+        document.getElementById('rpt-sum-pct').textContent   = `${sumPct}%`;
+    });
+})();
+
+/* ── Calendar Monthly Schedule ── */
+(function loadCalendarMonthlyStats() {
+    const userId = sessionStorage.getItem('loggedInUser');
+    if (!userId) return;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = now.getMonth();
+    const mm = String(mo + 1).padStart(2, '0');
+    const monthStart = `${y}-${mm}-01`;
+    const lastDay = new Date(y, mo + 1, 0).getDate();
+    const monthEnd = `${y}-${mm}-${String(lastDay).padStart(2, '0')}`;
+
+    const listEl = document.getElementById('cal-schedule-list');
+    if (!listEl) return;
+
+    database.ref('shared_schedules').once('value', snap => {
+        const raw = snap.val();
+        if (!raw) {
+            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No schedule</div>`;
+            return;
+        }
+
+        // 이번 달에 걸치는 항목 필터 (start <= monthEnd && end >= monthStart)
+        const all = Object.values(raw)
+            .filter(v => v && typeof v === 'object')
+            .filter(v => {
+                const s = v.start || '';
+                const e = v.end   || v.start || '';
+                return s <= monthEnd && e >= monthStart;
+            })
+            .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+
+        if (all.length === 0) {
+            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No schedule this month</div>`;
+            return;
+        }
+
+        // author 기준 색상 (본인=cyan, 타인=muted계열)
+        const authorColors = ['var(--cyan)','var(--violet)','var(--gold)','#10b981','var(--rose)','var(--blue)'];
+        const authorMap = {};
+        let colorIdx = 0;
+        const getAuthorColor = (author) => {
+            if (author === userId) return 'var(--cyan)';
+            if (!authorMap[author]) { authorMap[author] = authorColors[colorIdx++ % authorColors.length]; }
+            return authorMap[author];
+        };
+
+        listEl.innerHTML = all.slice(0, 4).map(v => {
+            const title   = v.title || '(No title)';
+            const author  = v.author || '--';
+            const color   = getAuthorColor(author);
+
+            // 날짜 표시: 단일일 vs 기간
+            const s = v.start || '';
+            const e = v.end   || v.start || '';
+            const sDisp = s.substring(5).replace('-', '/');
+            const eDisp = e.substring(5).replace('-', '/');
+            const dateDisp = (s === e) ? sDisp : `${sDisp}~${eDisp}`;
+
+            return `
+            <div style="width:100%;display:flex;flex-direction:column;gap:1px;
+                        padding:3px 5px;border-radius:5px;
+                        background:rgba(255,255,255,0.04);
+                        border-left:2px solid ${color};
+                        box-sizing:border-box;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:2px;">
+                    <span style="font-size:clamp(7px,1.5vw,9px);font-weight:700;color:#fff;
+                                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                                 max-width:65%;">${title}</span>
+                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
+                                 white-space:nowrap;flex-shrink:0;">${dateDisp}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:clamp(6px,1.2vw,8px);color:${color};
+                                 font-weight:700;">${author}</span>
+                    ${v.allDay ? `<span style="font-size:clamp(5px,1.1vw,7px);color:var(--muted);">ALL DAY</span>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        if (all.length > 4) {
+            listEl.innerHTML += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
+                                             text-align:right;padding-top:1px;">+${all.length - 4} more</div>`;
+        }
+    });
+})();
+
+/* ── Vacation Monthly Stats ── */
+(function loadVacationMonthlyStats() {
+    const userId = sessionStorage.getItem('loggedInUser');
+    if (!userId) return;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = now.getMonth();
+    const mm = String(mo + 1).padStart(2, '0');
+    const monthStart = `${y}-${mm}-01`;
+    const lastDay = new Date(y, mo + 1, 0).getDate();
+    const monthEnd = `${y}-${mm}-${String(lastDay).padStart(2, '0')}`;
+
+    const listEl = document.getElementById('vac-schedule-list');
+    if (!listEl) return;
+
+    // leaves 전체 읽기 (모든 유저)
+    database.ref('leaves').once('value', snap => {
+        const raw = snap.val();
+        if (!raw) {
+            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No vacation</div>`;
+            return;
+        }
+
+        const myItems    = [];  // 본인 approved
+        const otherItems = [];  // 타인 approved
+
+        // leaves/{userName}/{year}/{recordId}
+        Object.entries(raw).forEach(([userName, yearData]) => {
+            if (!yearData || typeof yearData !== 'object') return;
+            Object.values(yearData).forEach(yearRecords => {
+                if (!yearRecords || typeof yearRecords !== 'object') return;
+                Object.values(yearRecords).forEach(v => {
+                    if (!v || v.status !== 'Approved') return;
+                    const s = v.startDate || '';
+                    const e = v.endDate   || v.startDate || '';
+                    // 이번 달에 걸치는 항목만
+                    if (s > monthEnd || e < monthStart) return;
+
+                    const item = {
+                        name:      userName,
+                        startDate: s,
+                        endDate:   e,
+                        type:      v.type || '',
+                        days:      v.totalWeekdays || '',
+                        reason:    v.reason || '',
+                    };
+
+                    if (userName === userId) myItems.push(item);
+                    else otherItems.push(item);
+                });
+            });
+        });
+
+        // 날짜순 정렬
+        const sortByDate = arr => arr.sort((a, b) => a.startDate.localeCompare(b.startDate));
+        sortByDate(myItems);
+        sortByDate(otherItems);
+
+        if (myItems.length === 0 && otherItems.length === 0) {
+            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No approved vacation this month</div>`;
+            return;
+        }
+
+        const typeColor = {
+            'AL':  'var(--cyan)',
+            'PEL': 'var(--gold)',
+            'SL':  'var(--rose)',
+            'UL':  'var(--muted)',
+        };
+        const getTypeColor = t => typeColor[t] || 'var(--violet)';
+
+        const renderItem = (v, isMine) => {
+            const sDisp = v.startDate.substring(5).replace('-', '/');
+            const eDisp = v.endDate.substring(5).replace('-', '/');
+            const dateDisp = (v.startDate === v.endDate) ? sDisp : `${sDisp}~${eDisp}`;
+            const color = isMine ? 'var(--cyan)' : 'var(--muted)';
+            const tColor = getTypeColor(v.type);
+            const daysDisp = v.days ? `${v.days}d` : '';
+
+            return `
+            <div style="width:100%;display:flex;flex-direction:column;gap:1px;
+                        padding:3px 5px;border-radius:5px;
+                        background:${isMine ? 'rgba(6,182,212,0.06)' : 'rgba(255,255,255,0.03)'};
+                        border-left:2px solid ${color};
+                        box-sizing:border-box;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:2px;">
+                    <span style="font-size:clamp(7px,1.5vw,9px);font-weight:700;
+                                 color:${color};white-space:nowrap;flex-shrink:0;">${v.name}</span>
+                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
+                                 white-space:nowrap;">${dateDisp}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:clamp(6px,1.2vw,8px);color:${tColor};
+                                 font-weight:700;">${v.type}</span>
+                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);">${daysDisp}</span>
+                </div>
+            </div>`;
+        };
+
+        let html = '';
+
+        // ── 본인 섹션
+        if (myItems.length > 0) {
+            html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--cyan);
+                                  font-weight:900;letter-spacing:0.1em;
+                                  margin-bottom:2px;">MY LEAVE</div>`;
+            html += myItems.map(v => renderItem(v, true)).join('');
+        }
+
+        // ── 타인 섹션
+        if (otherItems.length > 0) {
+            html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
+                                  font-weight:900;letter-spacing:0.1em;
+                                  margin-top:${myItems.length > 0 ? '5px' : '0'};
+                                  margin-bottom:2px;">TEAM LEAVE</div>`;
+            const showOthers = otherItems.slice(0, 3);
+            html += showOthers.map(v => renderItem(v, false)).join('');
+            if (otherItems.length > 3) {
+                html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
+                                      text-align:right;padding-top:1px;">+${otherItems.length - 3} more</div>`;
+            }
+        }
+
+        listEl.innerHTML = html;
+    });
 })();
 
         const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
