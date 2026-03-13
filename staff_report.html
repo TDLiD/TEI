@@ -120,6 +120,13 @@
         align-items: center;
     }
 }
+/* 토/일 열 너비 축소 */
+.mini-cal col.weekend { width: 5%; }
+.mini-cal col.weekday { width: calc((100% - 10%) / 5); }
+.mini-cal td:nth-child(1),
+.mini-cal td:nth-child(7) { width: 5%; padding: 3px 1px; }
+.mini-cal td:nth-child(1) .date-num,
+.mini-cal td:nth-child(7) .date-num { font-size: 9px; }
 </style>
 
 <div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
@@ -169,8 +176,18 @@
                     </div>
                 </div>
             </div>
-            <table class="mini-cal w-full border-collapse">
-                <thead><tr class="text-slate-500"><th class="text-sun">SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th class="text-sat">SAT</th></tr></thead>
+<table class="mini-cal w-full border-collapse">
+    <colgroup>
+        <col class="weekend">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekend">
+    </colgroup>
+    <thead><tr class="text-slate-500"><th class="text-sun">SUN</th>
+<th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th class="text-sat">SAT</th></tr></thead>
                 <tbody id="miniCalBody"></tbody>
             </table>
 <div id="productivitySummary" class="mt-4 flex flex-col gap-3 bg-slate-800/30 p-4 rounded-xl border border-slate-700">

@@ -198,6 +198,13 @@
 .db-cal-btn:hover { color: #94a3b8; border-color: #334155; background: rgba(51,65,85,0.5); }
 .db-cal-btn.today { color: #60a5fa; border-color: rgba(59,130,246,0.3); }
 .db-cal-btn.today:hover { background: rgba(59,130,246,0.1); }
+/* 토/일 열 너비 축소 */
+.db-cal col.weekend { width: 5%; }
+.db-cal col.weekday { width: calc((100% - 10%) / 5); }
+.db-cal td.sat-cell,
+.db-cal td.sun-cell { width: 5%; padding: 2px 1px; }
+.db-cal td.sat-cell .db-cal-date,
+.db-cal td.sun-cell .db-cal-date { font-size: 7px; }
 </style>
 
 <div class="db-root animate-fadeIn">
@@ -524,12 +531,20 @@ function buildCalendarBase(tableEl, tab) {
     const titleEl = document.getElementById(`cal-title-${tab}`);
     if (titleEl) titleEl.textContent = `${MONTHS[month]} ${year}`;
 
-    let html = '<thead><tr>';
-    DAY_LABELS.forEach((d, i) => {
-        const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
-        html += `<th class="${cls}">${d}</th>`;
-    });
-    html += '</tr></thead><tbody>';
+let html = `<colgroup>
+    <col class="weekend">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekend">
+</colgroup><thead><tr>`;
+DAY_LABELS.forEach((d, i) => {
+    const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
+    html += `<th class="${cls}">${d}</th>`;
+});
+html += '</tr></thead><tbody>';
 
     let day = 1, nextDay = 1;
     const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;

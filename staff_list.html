@@ -12,7 +12,11 @@
 <style>
 :root {--bg:#03060f;--surface:rgba(8,18,36,0.7);--surface-2:rgba(16,32,60,0.5);--blue:#3b82f6;--blue-glow:rgba(59,130,246,0.25);--cyan:#06b6d4;--violet:#818cf8;--rose:#f43f5e;--gold:#f59e0b;--chrome:#e2e8f0;--text:#cbd5e1;--muted:#475569;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);}
 *,*::before,*::after {box-sizing:border-box;margin:0;padding:0;}
-html,body {width:100%;height:100%;overflow:hidden;}
+html,body {width:100%;height:100%;}
+body { overflow: hidden; }
+@media (max-width:768px) {
+    body { overflow-y: auto; }
+}
 body {font-family:"Pretendard",system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;perspective:2000px;position:relative;}
 #dynamicBg {position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;background-repeat:no-repeat;transition:opacity 0.8s ease;}
 #dynamicBg::after {content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(59,130,246,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(129,140,248,0.08) 0%,transparent 55%),linear-gradient(180deg,rgba(3,6,15,0.55) 0%,rgba(3,6,15,0.75) 100%);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
@@ -22,9 +26,13 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 .orb-b {width:500px;height:500px;background:rgba(129,140,248,0.08);bottom:-15%;left:-12%;animation-delay:-8s;}
 .orb-c {width:400px;height:400px;background:rgba(6,182,212,0.06);top:50%;right:20%;animation-delay:-14s;}
 @keyframes orb-float {0%{transform:translate(0,0) scale(1);opacity:0.6;}50%{transform:translate(30px,50px) scale(1.1);opacity:0.8;}100%{transform:translate(20px,40px) scale(1.08);opacity:0.6;}}
-.content-wrapper {position:relative;z-index:2;width:100%;height:100vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem;-ms-overflow-style:none;scrollbar-width:none;gap:0;}
+.content-wrapper {position:relative;z-index:2;width:100%;min-height:100vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem;-ms-overflow-style:none;scrollbar-width:none;gap:0;}
 .content-wrapper::-webkit-scrollbar {display:none;}
-@media (max-width:640px) {.content-wrapper {padding:1rem 0.75rem;justify-content:flex-start;padding-top:1.5rem;}}
+@media (max-width:640px) {
+    .content-wrapper {padding:1rem 0.75rem;justify-content:flex-start;padding-top:1.5rem;padding-bottom:2rem;}
+    .menu-grid { margin-bottom: 1rem; }
+    .header-section { margin-bottom: 1rem; }
+}
 .header-section {text-align:center;margin-bottom:clamp(1.5rem,4vh,3.5rem);animation:reveal-down 0.8s cubic-bezier(0.16,1,0.3,1) both;transform-style:preserve-3d;}
 .live-time {font-size:clamp(9px,2vw,10.5px);letter-spacing:0.35em;text-transform:uppercase;color:var(--cyan);margin-bottom:clamp(12px,3vw,16px);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.8;transform:translateZ(20px);}
 .live-dot {width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px rgba(6,182,212,0.5);animation:pulse 2s ease-in-out infinite;}
@@ -180,6 +188,61 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
     object-fit: cover; 
     display: block; 
 }
+/* 뉴스 & 정보 카드 */
+.info-card {
+    position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);
+    border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);
+    padding:clamp(14px,3vw,22px);width:100%;max-width:800px;box-sizing:border-box;
+    margin-bottom:clamp(1rem,3vh,2rem);
+    animation:reveal-down 1s cubic-bezier(0.16,1,0.3,1) 0.4s both;
+    box-shadow:0 15px 30px rgba(0,0,0,0.4),inset 0 1px 1px rgba(255,255,255,0.1);
+    overflow:hidden;
+}
+.info-card::after {content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(6,182,212,0.6),rgba(129,140,248,0.6),transparent);
+    filter:blur(1px);opacity:0.8;}
+.info-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-section {background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:12px;}
+.info-title {font-size:8px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.news-item {font-size:9px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5;cursor:pointer;transition:color 0.2s;}
+.news-item:hover {color:var(--cyan);}
+.news-item:last-child {border-bottom:none;}
+.news-badge {display:inline-block;font-size:7px;font-weight:900;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);margin-right:4px;}
+.news-badge.ev {background:rgba(16,185,129,0.2);color:#10b981;border-color:rgba(16,185,129,0.3);}
+.stat-row {display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.stat-row:last-child {border-bottom:none;}
+.stat-label {font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.stat-value {font-size:11px;font-weight:900;color:#fff;}
+.lucky-nums {display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.lucky-num {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;}
+.quote-text {font-size:9px;color:var(--text);line-height:1.6;font-style:italic;margin-top:4px;}
+.quote-author {font-size:8px;color:var(--cyan);font-weight:700;margin-top:4px;text-align:right;}
+.info-loading {font-size:9px;color:var(--muted);text-align:center;padding:10px;animation:pulse 1.5s infinite;}
+@media (max-width:768px) {
+    .info-grid {grid-template-columns:1fr;}
+    .info-card {margin-bottom:1rem;padding:clamp(12px,3vw,18px);border-radius:16px;}
+    .info-section {border-radius:10px;padding:10px;}
+    .news-item {font-size:10px;padding:6px 0;}
+    .info-title {font-size:9px;}
+    .stat-label {font-size:9px;}
+    .stat-value {font-size:12px;}
+    .quote-text {font-size:10px;}
+    .lucky-num {width:24px;height:24px;font-size:9px;}
+}
+
+.news-item:hover {color:var(--cyan);}
+.news-item:last-child {border-bottom:none;}
+.news-badge {display:inline-block;font-size:7px;font-weight:900;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);margin-right:4px;}
+.news-badge.ev {background:rgba(16,185,129,0.2);color:#10b981;border-color:rgba(16,185,129,0.3);}
+.stat-row {display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.stat-row:last-child {border-bottom:none;}
+.stat-label {font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.stat-value {font-size:11px;font-weight:900;color:#fff;}
+.lucky-nums {display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.lucky-num {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;}
+.quote-text {font-size:9px;color:var(--text);line-height:1.6;font-style:italic;margin-top:4px;}
+.quote-author {font-size:8px;color:var(--cyan);font-weight:700;margin-top:4px;text-align:right;}
+.info-loading {font-size:9px;color:var(--muted);text-align:center;padding:10px;animation:pulse 1.5s infinite;}
 </style>
 
 </head>
@@ -252,6 +315,32 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
         <span class="card-status" id="status-vacation">-- Days Left</span>
     </div>
         </div>
+
+<!-- Info Card: News + Daily Info -->
+<div class="info-card">
+    <div class="info-grid">
+        <!-- 좌측: 인도네시아 뉴스 -->
+        <div class="info-section" style="grid-column: span 1;">
+            <div class="info-title">📰 Indonesia News Today</div>
+            <div id="indo-news-list"><div class="info-loading">Loading news...</div></div>
+        </div>
+        <!-- 우측: 날씨 + 명언 + 행운 -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="info-section">
+                <div class="info-title">🌤 Jakarta Weather</div>
+                <div id="weather-info"><div class="info-loading">Loading...</div></div>
+            </div>
+            <div class="info-section">
+                <div class="info-title">💬 Quote of the Day</div>
+                <div id="quote-info"><div class="info-loading">Loading...</div></div>
+            </div>
+            <div class="info-section">
+                <div class="info-title">🍀 Your Lucky Numbers</div>
+                <div id="lucky-info"><div class="info-loading">Loading...</div></div>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Bottom actions -->
         <div class="bottom-actions">
@@ -497,6 +586,102 @@ const loadProfileImg = (userId) => {
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+/* ── Daily Info Panel ── */
+(async function loadDailyInfo() {
+    // ① 날씨 (Jakarta - Open-Meteo 무료)
+    try {
+        const wr = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FJakarta&forecast_days=1');
+        const wd = await wr.json();
+        const cw = wd.current_weather;
+        const wCodes = {0:'☀️ Clear',1:'🌤 Mainly Clear',2:'⛅ Partly Cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Icy Fog',51:'🌦 Drizzle',61:'🌧 Rain',71:'❄️ Snow',80:'🌧 Showers',95:'⛈ Thunderstorm'};
+        const desc = wCodes[cw.weathercode] || '🌡 ' + cw.weathercode;
+        const max = wd.daily.temperature_2m_max[0], min = wd.daily.temperature_2m_min[0];
+        document.getElementById('weather-info').innerHTML = `
+            <div class="stat-row"><span class="stat-label">Condition</span><span class="stat-value" style="font-size:10px;">${desc}</span></div>
+            <div class="stat-row"><span class="stat-label">Now</span><span class="stat-value" style="color:var(--cyan);">${cw.temperature}°C</span></div>
+            <div class="stat-row"><span class="stat-label">High / Low</span><span class="stat-value" style="font-size:10px;">${max}° / ${min}°</span></div>
+            <div class="stat-row"><span class="stat-label">Wind</span><span class="stat-value" style="font-size:10px;">${cw.windspeed} km/h</span></div>`;
+    } catch(e) {
+        document.getElementById('weather-info').innerHTML = '<div class="info-loading">Weather unavailable</div>';
+    }
+
+    // ② 명언 (랜덤 고정 리스트)
+    const quotes = [
+        {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+        {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+        {q:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
+        {q:"Success is not final, failure is not fatal.",a:"Winston Churchill"},
+        {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+        {q:"The harder you work, the luckier you get.",a:"Gary Player"},
+        {q:"Dream big and dare to fail.",a:"Norman Vaughan"},
+        {q:"Act as if what you do makes a difference. It does.",a:"William James"},
+        {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
+        {q:"Energy and persistence conquer all things.",a:"Benjamin Franklin"},
+        {q:"Opportunities don't happen. You create them.",a:"Chris Grosser"},
+        {q:"Great things never come from comfort zones.",a:"Unknown"},
+        {q:"Push yourself, because no one else is going to do it for you.",a:"Unknown"},
+        {q:"Little things make big days.",a:"Unknown"},
+        {q:"It's going to be hard, but hard is not impossible.",a:"Unknown"},
+    ];
+    const todaySeed = new Date().getDate() + new Date().getMonth() * 31;
+    const q = quotes[todaySeed % quotes.length];
+    document.getElementById('quote-info').innerHTML = `
+        <div class="quote-text">"${q.q}"</div>
+        <div class="quote-author">— ${q.a}</div>`;
+
+    // ③ 행운 번호 (오늘 날짜 시드 기반)
+    const seed = new Date().getFullYear() * 10000 + (new Date().getMonth()+1) * 100 + new Date().getDate();
+    const rand = (s, min, max) => { let x = Math.sin(s) * 10000; return min + Math.floor((x - Math.floor(x)) * (max - min + 1)); };
+    const nums = [], colors = ['#3b82f6','#06b6d4','#818cf8','#f59e0b','#10b981','#f43f5e'];
+    for(let i = 0; i < 6; i++) { let n; do { n = rand(seed + i * 7, 1, 49); } while(nums.includes(n)); nums.push(n); }
+    const luckyColor = ['Red 🔴','Blue 🔵','Green 🟢','Gold 🟡','Purple 🟣','White ⚪'][rand(seed, 0, 5)];
+    document.getElementById('lucky-info').innerHTML = `
+        <div class="lucky-nums">${nums.map((n,i)=>`<div class="lucky-num" style="background:${colors[i]};box-shadow:0 0 8px ${colors[i]}60;">${n}</div>`).join('')}</div>
+        <div class="stat-row" style="margin-top:8px;"><span class="stat-label">Lucky Color</span><span class="stat-value" style="font-size:10px;">${luckyColor}</span></div>`;
+
+    // ④ 인도네시아 뉴스 (RSS → allorigins 프록시)
+    try {
+        const rssUrl = 'https://news.google.com/rss/search?q=indonesia+electric+vehicle+OR+motor+listrik+OR+mobil+listrik&hl=id&gl=ID&ceid=ID:id';
+        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxy);
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item')).slice(0, 10);
+        
+        if(items.length > 0) {
+            const evKeywords = ['listrik','electric','ev','byd','wuling','hyundai','battery','baterai'];
+            document.getElementById('indo-news-list').innerHTML = items.map(item => {
+                const title = item.querySelector('title')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || '#';
+                const isEV = evKeywords.some(k => title.toLowerCase().includes(k));
+                return `<div class="news-item" onclick="window.open('${link}','_blank')">
+                    ${isEV ? '<span class="news-badge ev">EV</span>' : '<span class="news-badge">NEWS</span>'}${title.substring(0,60)}${title.length>60?'...':''}
+                </div>`;
+            }).join('');
+        } else {
+            throw new Error('No items');
+        }
+    } catch(e) {
+        // RSS 실패 시 하드코딩 뉴스
+        const fallbackNews = [
+            {t:'Pemerintah dorong percepatan kendaraan listrik nasional',ev:true},
+            {t:'PLN perluas jaringan SPKLU di seluruh Indonesia',ev:true},
+            {t:'Motor listrik lokal semakin diminati konsumen Indonesia',ev:true},
+            {t:'BYD Indonesia luncurkan model terbaru dengan harga kompetitif',ev:true},
+            {t:'Subsidi motor listrik 2025 resmi diperpanjang pemerintah',ev:true},
+            {t:'Industri baterai EV Indonesia terus berkembang pesat',ev:true},
+            {t:'Wuling Air EV raih penjualan tertinggi bulan ini',ev:true},
+            {t:'Pemerintah bangun 1000 SPKLU baru di Jawa-Bali',ev:true},
+            {t:'Pertumbuhan ekonomi Indonesia Q1 2025 capai target',ev:false},
+            {t:'Bank Indonesia pertahankan suku bunga acuan',ev:false},
+        ];
+        document.getElementById('indo-news-list').innerHTML = fallbackNews.map(n=>
+            `<div class="news-item">${n.ev?'<span class="news-badge ev">EV</span>':'<span class="news-badge">NEWS</span>'}${n.t}</div>`
+        ).join('');
+    }
+})();
 
         const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         const now = new Date();

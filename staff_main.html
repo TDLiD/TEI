@@ -150,6 +150,18 @@
         flex-direction: column;
     }
 }
+/* 토/일 열 너비 축소 */
+.sm-cal-table col.weekend { width: 5%; }
+.sm-cal-table col.weekday { width: calc((100% - 10%) / 5); }
+.sm-cal-table td.sun-cell,
+.sm-cal-table td.sat-cell { 
+    width: 5%; 
+    padding: 2px 1px;
+}
+.sm-cal-table td.sun-cell .sm-cal-date,
+.sm-cal-table td.sat-cell .sm-cal-date {
+    font-size: 7px;
+}
 </style>
 
 <div class="sm-root">
@@ -246,10 +258,19 @@
             </div>
 
             <div class="overflow-x-auto no-scrollbar">
-                <table class="sm-cal-table">
-                    <thead>
-                        <tr>
-                            <th class="sun">Sun</th>
+<table class="sm-cal-table">
+    <colgroup>
+        <col class="weekend">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekend">
+    </colgroup>
+    <thead>
+        <tr>
+            <th class="sun">Sun</th>
                             <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
                             <th class="sat">Sat</th>
                         </tr>

@@ -99,6 +99,13 @@
     line-height: 1.5;
     font-family: inherit;
 }
+/* 토/일 열 너비 축소 */
+.report-table col.weekend { width: 5%; }
+.report-table col.weekday { width: calc((100% - 10%) / 5); }
+.report-table td.sunday-cell,
+.report-table td.saturday-cell { width: 5%; padding: 4px 2px; }
+.report-table td.sunday-cell .text-sunday-bright,
+.report-table td.saturday-cell .text-saturday-bright { font-size: 8px; }
 </style>
 
 <div class="flex flex-col lg:flex-row gap-8 animate-fadeIn">
@@ -117,10 +124,20 @@
             </div>
         </div>
         <div class="report-calendar-wrapper bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
-            <table class="report-table">
-                <thead>
-                    <tr class="bg-slate-900/50">
-                        <th class="text-rose-500">Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th class="text-blue-500">Sat</th>
+<table class="report-table">
+    <colgroup>
+        <col class="weekend">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekday">
+        <col class="weekend">
+    </colgroup>
+    <thead>
+        <tr class="bg-slate-900/50">
+            <th class="text-rose-500">Sun</th>
+<th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th class="text-blue-500">Sat</th>
                     </tr>
                 </thead>
                 <tbody id="reportCalendarBody"></tbody>
@@ -283,13 +300,17 @@ window.showReportPopupByKey = function(event, key) {
                     const reports = data[date] || {};
                     const isToday = new Date().toISOString().split('T')[0] === date;
                     
-                    if (isToday) td.classList.add('bg-blue-500/5');
-                    else if (j === 0) td.classList.add('sunday-cell');
-                    else if (j === 6) td.classList.add('saturday-cell');
-                    
-                    let dateColorClass = isToday ? 'text-blue-500' : (j === 0 ? 'text-sunday-bright' : (j === 6 ? 'text-saturday-bright' : 'text-slate-600'));
+if (isToday) td.classList.add('bg-blue-500/5');
+else if (j === 0) td.classList.add('sunday-cell');
+else if (j === 6) td.classList.add('saturday-cell');
 
-                    let html = `<div class="font-black text-[10px] ${dateColorClass} mb-1">${d}</div>`;
+let dateColorClass = isToday ? 'text-blue-500' : (j === 0 ? 'text-sunday-bright' : (j === 6 ? 'text-saturday-bright' : 'text-slate-600'));
+
+let html = `<div class="font-black text-[10px] ${dateColorClass} mb-1 flex items-center gap-1">
+    ${d}
+    ${isToday ? '<span style="font-size:7px;font-weight:900;background:#3b82f6;color:white;padding:1px 4px;border-radius:3px;letter-spacing:0.05em;">TODAY</span>' : ''}
+</div>`;
+
                     html += `<div class="flex flex-col gap-1 overflow-hidden">`;
 // 전역 팝업 데이터 저장소 초기화
 window._reportPopupData = window._reportPopupData || {};

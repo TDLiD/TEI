@@ -20,6 +20,13 @@
     }
     .animate-zoomIn { animation: modalZoom 0.2s ease-out forwards; }
 .badge-others { background-color: #6366f1; border-left: 3px solid #4338ca; opacity: 0.8; }
+/* 토/일 열 너비 축소 */
+.leave-calendar-table col.weekend { width: 5%; }
+.leave-calendar-table col.weekday { width: calc((100% - 10%) / 5); }
+.leave-calendar-table td.sun-col,
+.leave-calendar-table td.sat-col { width: 5%; padding: 3px 1px; }
+.leave-calendar-table td.sun-col .leave-day-num,
+.leave-calendar-table td.sat-col .leave-day-num { font-size: 8px; }
 </style>
 
 <div class="animate-fadeIn space-y-6 pb-20">
@@ -136,15 +143,24 @@ window.renderCalendar = function() {
     // 본인 데이터만이 아니라 전체 leaves 노드를 참조합니다.
     db.ref(`leaves`).once('value', snap => {
         const allLeavesData = snap.val() || {};
-        let html = `<table class="leave-calendar-table"><thead><tr>`;
-        
-        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
-            let colorClass = idx === 0 ? 'text-rose-500' : (idx === 6 ? 'text-blue-500' : 'text-slate-500');
-            html += `<th class="${colorClass}">${day}</th>`;
-        });
-        
-        html += `</tr></thead><tbody><tr>`;
-        for(let i=0; i<firstDay; i++) html += `<td></td>`;
+let html = `<table class="leave-calendar-table">
+<colgroup>
+    <col class="weekend">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekend">
+</colgroup><thead><tr>`;
+
+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
+    let colorClass = idx === 0 ? 'text-rose-500' : (idx === 6 ? 'text-blue-500' : 'text-slate-500');
+    html += `<th class="${colorClass}">${day}</th>`;
+});
+
+html += `</tr></thead><tbody><tr>`;
+for(let i=0; i<firstDay; i++) html += `<td></td>`;
         
         for(let d=1; d<=lastDate; d++) {
             const dayOfWeek = (firstDay + d - 1) % 7;

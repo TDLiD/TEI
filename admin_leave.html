@@ -48,7 +48,15 @@
         /* 헤더 색상 명확화 */
         .admin-leave-table th:first-child { color: #fb7185; } /* Sun */
         .admin-leave-table th:last-child { color: #60a5fa; }  /* Sat */
+/* 토/일 열 너비 축소 */
+.admin-leave-table col.weekend { width: 5%; }
+.admin-leave-table col.weekday { width: calc((100% - 10%) / 5); }
+.admin-leave-table td.sun-col,
+.admin-leave-table td.sat-col { width: 5%; padding: 3px 1px; }
+.admin-leave-table td.sun-col .text-rose-500,
+.admin-leave-table td.sat-col .text-blue-400 { font-size: 8px; }
     </style>
+
 </head>
 <body class="bg-slate-950">
     <div class="animate-fadeIn space-y-6 pb-20 p-4">
@@ -242,15 +250,23 @@ window.renderAdminCalendar = async function() {
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
-        let html = `<table class="admin-leave-table"><thead><tr>`;
-        // 헤더(요일)에도 주말 색상 반영
-        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
-            let colorClass = idx === 0 ? 'text-rose-400' : (idx === 6 ? 'text-blue-400' : '');
-            html += `<th class="${colorClass}">${day}</th>`;
-        });
-        html += `</tr></thead><tbody><tr>`;
+let html = `<table class="admin-leave-table">
+<colgroup>
+    <col class="weekend">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekend">
+</colgroup><thead><tr>`;
+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
+    let colorClass = idx === 0 ? 'text-rose-400' : (idx === 6 ? 'text-blue-400' : '');
+    html += `<th class="${colorClass}">${day}</th>`;
+});
+html += `</tr></thead><tbody><tr>`;
 
-        for(let i=0; i<firstDay; i++) html += `<td></td>`;
+for(let i=0; i<firstDay; i++) html += `<td></td>`;
 
         for(let d=1; d<=lastDate; d++) {
             if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
