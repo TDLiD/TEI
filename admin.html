@@ -188,28 +188,6 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
         if (!window.db) window.db = firebase.database();
     })();
 
-// 2. 공용 모달 제어
-window.openAdminCustomModal = function(title, bodyHtml) {
-    const modal   = document.getElementById('adminCustomModal');
-    const tBox    = document.getElementById('modalTitle');
-    const bBox    = document.getElementById('modalBody');
-    if (!modal || !tBox || !bBox) {
-        setTimeout(() => window.openAdminCustomModal(title, bodyHtml), 100);
-        return;
-    }
-    tBox.innerText   = title;
-    bBox.innerHTML   = bodyHtml;
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-};
-
-window.closeAdminCustomModal = function() {
-    const modal = document.getElementById('adminCustomModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-};
 
     // 3. 프로필 이미지 업데이트 및 실시간 동기화
     const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
@@ -255,16 +233,25 @@ window.openProfileImagePicker = function() {
         </div>
     `;
 
-    openAdminCustomModal('Admin Profile & Birthday', gridHtml);
+openAdminCustomModal('Admin Profile & Birthday', gridHtml);
 
-    // Admin 저장된 생일 로드
-    db.ref('users/Admin').once('value', snap => {
-        const data = snap.val();
-        if (data) {
-            if (data.birthday) document.getElementById('adminBirthDate').value = data.birthday;
-            if (data.birthType) document.getElementById('adminBirthType').value = data.birthType;
+// innerHTML 렌더링 완료 후 DOM 참조 보장
+setTimeout(() => {
+
+// Admin 저장된 생일 로드
+db.ref('users/Admin').once('value', snap => {
+    const data = snap.val();
+    if (data) {
+        if (data.birthday) {
+            const el = document.getElementById('adminBirthDate');
+            if (el) el.value = data.birthday;
         }
-    });
+        if (data.birthType) {
+            const el = document.getElementById('adminBirthType');
+            if (el) el.value = data.birthType;
+        }
+    }
+});
 
     // 생일 리스트 로드 ← 독립된 별도 호출
     db.ref('users').once('value', snap => {
@@ -322,6 +309,8 @@ window.openProfileImagePicker = function() {
                 </div>`;
         }).join('');
     });
+}, 50); // ← setTimeout 닫기
+
 };  // ← openProfileImagePicker 여기서 닫힘
 
 // ── 아래 함수들은 openProfileImagePicker 밖에 독립 선언 ──
@@ -516,6 +505,36 @@ window.showAllStaffBirthdays = function() {
     });
 };
 
+function restoreCoreModalFunctions() {
+    const modal = document.getElementById('adminCustomModal');
+
+    window.openAdminCustomModal = function(title, bodyHtml) {
+        // adminContent 내 중복 id 제거
+        const ac = document.getElementById('adminContent');
+        if (ac) {
+            ['modalTitle','modalBody','adminCustomModal'].forEach(id => {
+                ac.querySelectorAll(`[id="${id}"]`).forEach(el => el.removeAttribute('id'));
+            });
+        }
+        const m  = document.getElementById('adminCustomModal');
+        const tB = m ? m.querySelector('[id="modalTitle"], #modalTitle') : null;
+        const bB = m ? m.querySelector('[id="modalBody"],  #modalBody')  : null;
+        if (!m || !tB || !bB) {
+            setTimeout(() => window.openAdminCustomModal(title, bodyHtml), 100);
+            return;
+        }
+        tB.innerText = title;
+        bB.innerHTML = bodyHtml;
+        m.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeAdminCustomModal = function() {
+        const m = document.getElementById('adminCustomModal');
+        if (m) { m.classList.add('hidden'); document.body.style.overflow = ''; }
+    };
+}
+
     // 5. 탭 전환 시스템 (수정됨: 스크립트 중복 선언 방지 로직 추가)
     async function switchAdminTab(tab) {
         const area = document.getElementById('adminContent');
@@ -551,35 +570,36 @@ window.showAllStaffBirthdays = function() {
             // [중요] 기존에 동적으로 추가된 스크립트 태그들을 제거하여 '이미 선언됨' 오류 방지
             document.querySelectorAll('script[data-dynamic="true"]').forEach(s => s.remove());
 
-            const scripts = area.querySelectorAll('script');
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-                // 동적으로 추가된 스크립트임을 표시
-                newScript.setAttribute('data-dynamic', 'true');
-                
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                if (oldScript.src) { 
-                    newScript.src = oldScript.src; 
-                    document.head.appendChild(newScript); 
-                } else { 
-                    newScript.textContent = oldScript.textContent; 
-                    document.head.appendChild(newScript); 
-                }
-            }
+const scripts = area.querySelectorAll('script');
+for (const oldScript of scripts) {
+    const newScript = document.createElement('script');
+    newScript.setAttribute('data-dynamic', 'true');
+    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+    if (oldScript.src) {
+        newScript.src = oldScript.src;
+        document.head.appendChild(newScript);
+    } else {
+        newScript.textContent = oldScript.textContent;
+        document.head.appendChild(newScript);
+    }
+}
+
+// ← 서브 페이지가 핵심 함수를 덮어쓸 수 있으므로 강제 복원
+restoreCoreModalFunctions();
+
         } catch (e) { area.innerHTML = `<div class="p-10 text-center text-rose-500">Load Failed.</div>`; }
     }
 
     window.adminLogout = function() { if (confirm("Logout?")) { firebase.auth().signOut().then(() => window.location.replace("index.html")); } };
 
 window.addEventListener('DOMContentLoaded', () => {
-    // 1. 초기 데이터 로드 (HTML이 준비된 후 실행됨)
-    updateAdminWeather();      // 날씨 정보 가져오기
-    checkStaffBirthdays();    // 생일자 체크
-    switchAdminTab('dashboard'); // 기본 탭 로드
+    restoreCoreModalFunctions(); // ← 추가: 초기 모달 함수 등록
+    updateAdminWeather();
+    checkStaffBirthdays();
+    switchAdminTab('dashboard');
 
-    // 2. 자동 갱신 설정 (인터벌)
-    setInterval(updateAdminWeather, 1800000);  // 30분마다 날씨 갱신
-    setInterval(checkStaffBirthdays, 3600000); // 1시간마다 생일 갱신
+    setInterval(updateAdminWeather, 1800000);
+    setInterval(checkStaffBirthdays, 3600000);
 });
 
 </script>
