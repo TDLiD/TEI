@@ -39,7 +39,27 @@
         @media (min-width: 1024px) { body { padding-top: 0; padding-bottom: 0; } aside { height: 100vh !important; position: sticky; top: 0; } }
         #mobile-birthday-dot.active { display: block !important; }
         #mobileProfileImg img { width: 100%; height: 100%; object-fit: cover; }
+/* ── 사이드바 세로 축소 시 nav 스크롤 ── */
+aside .hidden.lg\:flex { min-height: 0; }
+aside .hidden.lg\:flex > nav.flex {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59,130,246,0.3) transparent;
+    padding-bottom: 0.5rem;
+}
+aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar { width: 3px; }
+aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-track { background: transparent; }
+aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb {
+    background: rgba(59,130,246,0.3);
+    border-radius: 99px;
+}
+aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
+    background: rgba(59,130,246,0.6);
+}
     </style>
+
 </head>
 <body class="flex flex-col lg:flex-row min-h-screen">
 <aside class="w-full lg:w-80 lg:h-screen bg-slate-900/60 border-b lg:border-b-0 lg:border-r border-white/5 backdrop-blur-2xl sticky top-0 z-[1000] flex-shrink-0">
@@ -73,7 +93,7 @@
             </button>
         </div>
     </div>
-    <div class="hidden lg:flex p-8 flex-col h-full">
+<div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden">
         <div class="flex flex-col gap-4 mb-10">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-black tracking-tighter text-white uppercase italic">Daily <span class="text-blue-500">System</span></h1>
@@ -99,7 +119,7 @@
             </div>
             <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">Logout</button>
         </div>
-        <nav class="flex flex-col gap-1.5 flex-grow">
+<nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
             <button onclick="switchTab('work')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
             <button onclick="switchTab('schedule')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
