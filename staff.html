@@ -117,7 +117,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                     </span>
                 </div>
             </div>
-            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">Logout</button>
+            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">➡️ Logout</button>
         </div>
 <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
@@ -251,7 +251,7 @@ checkTodayBirthdays();
 window.switchTab = function(t) {
     const pB = document.querySelectorAll('.pc-tab-btn'); 
     const mB = document.querySelectorAll('.mobile-tab-btn');
-    const tabMapping = { dash: 'staff_main.html', work: 'staff_report.html', schedule: 'staff_calendar.html', leave: 'staff_leave.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
+    const tabMapping = { dash: 'staff_main.html', work: 'staff_report.html', schedule: 'staff_calendar.html', leave: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
     const activeTab = tabMapping[t] ? t : 'dash';
     pB.forEach(b => b.classList.remove('tab-active')); 
     mB.forEach(b => b.classList.remove('mobile-tab-active'));

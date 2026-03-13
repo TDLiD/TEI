@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Leave Management</title>
+    <style>
+        @keyframes blink-bg {
+            0%, 100% { background-color: rgba(245, 158, 11, 0.1); border-color: #f59e0b; }
+            50% { background-color: rgba(245, 158, 11, 0.3); border-color: #fbbf24; }
+        }
+        .blink-pending { animation: blink-bg 1.5s infinite; border-width: 2px; }
+        .admin-leave-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .admin-leave-table th { padding: 12px 0; color: #64748b; font-size: 0.7rem; font-weight: 800; border-bottom: 1px solid #1e293b; }
+        .admin-leave-table td { height: 100px; border: 1px solid #1e293b; vertical-align: top; padding: 6px; position: relative; }
+        .leave-badge { 
+            font-size: 9px; padding: 2px 4px; border-radius: 4px; margin-top: 2px;
+            color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;
+        }
+        .badge-pending { background-color: #f59e0b; }
+        .badge-approved { background-color: #10b981; }
+        .badge-attendance { background-color: #3b82f6; border-left: 2px solid #1d4ed8; cursor: default; }
+        .stats-table { width: 100%; font-size: 11px; color: #cbd5e1; }
+        .stats-table th { text-align: left; padding: 8px; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #1e293b; }
+        .stats-table td { padding: 8px; border-bottom: 1px solid #1e293b/50; }
+        .today-cell { 
+            background-color: rgba(59, 130, 246, 0.1) !important; 
+            border: 2px solid #3b82f6 !important; 
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+        .today-mark {
+            background: #3b82f6;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 900;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+/* 주말 전용 스타일 추가 */
+        .sunday-cell { background-color: rgba(244, 63, 94, 0.05) !important; }
+        .saturday-cell { background-color: rgba(59, 130, 246, 0.05) !important; }
+        
+        .text-sunday { color: #fb7185 !important; } /* 연한 빨강 */
+        .text-saturday { color: #60a5fa !important; } /* 연한 파랑 */
+        
+        /* 헤더 색상 명확화 */
+        .admin-leave-table th:first-child { color: #fb7185; } /* Sun */
+        .admin-leave-table th:last-child { color: #60a5fa; }  /* Sat */
+/* 토/일 열 너비 축소 */
+.admin-leave-table col.weekend { width: 5%; }
+.admin-leave-table col.weekday { width: calc((100% - 10%) / 5); }
+.admin-leave-table td.sun-col,
+.admin-leave-table td.sat-col { width: 5%; padding: 3px 1px; }
+.admin-leave-table td.sun-col .text-rose-500,
+.admin-leave-table td.sat-col .text-blue-400 { font-size: 8px; }
+    </style>
+
+</head>
+<body class="bg-slate-950">
+    <div class="animate-fadeIn space-y-6 pb-20 p-4">
+        <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
+            <h3 class="text-sm font-black text-white mb-4 flex items-center gap-2 uppercase italic">
+                <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                Pending Leave Requests
+            </h3>
+            <div id="pendingLeaveList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+        <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="leaveMonthTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">Month Year</h3>
+                <div class="flex gap-2">
+                    <button onclick="goToToday()" class="px-4 py-2 bg-indigo-600/20 text-indigo-400 text-[10px] font-black rounded-xl border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all">TODAY</button>
+                    <button onclick="changeLeaveMonth(-1)" class="p-2 bg-slate-800 rounded-xl text-white hover:bg-slate-700 transition">◀</button>
+                    <button onclick="changeLeaveMonth(1)" class="p-2 bg-slate-800 rounded-xl text-white hover:bg-slate-700 transition">▶</button>
+                </div>
+            </div>
+            <div id="adminLeaveCalendarContainer" class="overflow-x-auto"></div>
+        </div>
+
+<div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-sm font-black text-white uppercase italic flex items-center gap-2">
+            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+            <span id="statsTitle">Staff Leave Statistics (Yearly)</span>
+        </h3>
+        <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+            <button onclick="toggleStatsMode('year')" id="btnStatYear" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all bg-indigo-600 text-white">YEAR</button>
+            <button onclick="toggleStatsMode('month')" id="btnStatMonth" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all text-slate-400 hover:text-white">MONTH</button>
+        </div>
+    </div>
+
+            <div id="staffStatsContainer" class="overflow-x-auto">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Staff ID</th>
+                            <th>PEL</th>
+                            <th>ANL</th>
+                            <th>HAL</th>
+                            <th>SIL</th>
+                            <th>SPL</th>
+                            <th class="text-indigo-400">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffStatsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="leaveAdminModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modalStaffName" class="text-xl font-black text-white italic uppercase tracking-tighter">Staff ID: -</h3>
+                <button onclick="closeLeaveAdminModal()" class="text-slate-500 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-4 mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="displayLeaveType" class="px-3 py-1 bg-indigo-600 text-white text-xs font-black rounded-lg">TYPE</span>
+                        <span id="displayLeaveDates" class="text-indigo-400 font-mono text-xs font-bold">YYYY-MM-DD ~ YYYY-MM-DD</span>
+                    </div>
+<div id="displayLeaveReason" class="text-white text-lg font-bold italic leading-tight break-all overflow-hidden max-h-[300px] overflow-y-auto">
+    "Staff's leave reason will be displayed here."
+</div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Update Status</label>
+                    <select id="adminLeaveStatus" class="w-full bg-slate-800 border-none text-white rounded-2xl p-4 font-bold focus:ring-2 focus:ring-indigo-500 transition-all">
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Admin Memo</label>
+                    <textarea id="adminLeaveMemo" class="w-full bg-slate-800 border-none text-white rounded-2xl p-4 font-medium text-sm h-32 focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="Enter reason or notes..."></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeLeaveAdminModal()" class="flex-1 py-4 bg-slate-800 text-slate-400 font-black rounded-2xl hover:bg-slate-700 transition-all uppercase italic text-sm">Cancel</button>
+                    <button onclick="saveLeaveDecision()" class="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all uppercase italic text-sm">Save Decision</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const firebaseConfig = { 
+                databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" 
+            };
+            if (firebase.apps.length === 0) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const db = firebase.database();
+            window.adminDb = db;
+            let currentViewDate = new Date();
+
+let statsMode = 'year'; // 'year' 또는 'month'
+
+window.toggleStatsMode = function(mode) {
+    statsMode = mode;
+    // 버튼 스타일 업데이트
+    getEl('btnStatYear').className = mode === 'year' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+    getEl('btnStatMonth').className = mode === 'month' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+    
+    // 달력 렌더링 시 통계도 다시 계산됨
+    renderAdminCalendar();
+};
+
+            let currentEditRef = null;
+            let currentLeaveData = null;       
+            let currentUid = null;        
+            const leaveTypes = ["PEL", "ANL", "HAL", "SIL", "SPL"];
+            const getEl = (id) => document.getElementById(id);
+window.initAdminLeave = function() {
+    if (!getEl('adminLeaveCalendarContainer')) return;
+    loadPendingRequests();
+    toggleStatsMode('year'); // 초기 통계 모드 설정 및 렌더링 호출
+};
+            window.goToToday = function() {
+                currentViewDate = new Date();
+                renderAdminCalendar();
+            };
+            function loadPendingRequests() {
+                const leavesRef = db.ref('leaves');
+                leavesRef.off(); 
+                leavesRef.on('value', snap => {
+                    const container = getEl('pendingLeaveList');
+                    if (!container) {
+                        leavesRef.off();
+                        return;
+                    }
+                    const allLeaves = snap.val() || {};
+                    container.innerHTML = ''; 
+                    let hasPending = false;
+                    Object.entries(allLeaves).forEach(([uid, years]) => {
+                        if (!years) return; 
+                        Object.entries(years).forEach(([year, items]) => {
+                            if (!items) return;
+                            Object.entries(items).forEach(([id, data]) => {
+                                if(data.status === 'Pending') {
+                                    hasPending = true;
+                                    const card = document.createElement('div');
+                                    card.className = "bg-slate-800/50 p-4 rounded-2xl border border-amber-500/30 blink-pending cursor-pointer";
+                                    card.onclick = () => openLeaveAdminModal(uid, year, id, data);
+// loadPendingRequests 함수 내부의 card.innerHTML 부분 수정
+card.innerHTML = `
+    <div class="flex justify-between items-start">
+        <span class="text-[10px] font-black text-amber-500 uppercase">Pending Request</span>
+        <span class="text-[9px] text-slate-500 font-mono">${data.startDate}</span>
+    </div>
+    <div class="mt-2">
+        <div class="text-white font-black text-sm">${uid}</div>
+        <div class="text-slate-400 text-xs font-bold">${data.type}: ${data.startDate} ~ ${data.endDate}</div>
+        <div class="text-slate-500 text-[10px] mt-1 italic break-all" id="reason-text-${id}"></div>
+    </div>`;
+
+container.appendChild(card);
+// innerHTML 삽입 후 안전하게 텍스트로만 밀어넣기
+document.getElementById(`reason-text-${id}`).innerText = data.reason ? `"${data.reason}"` : `"No reason"`;
+                                }
+                            });
+                        });
+                    });
+                    if(!hasPending) {
+                        container.innerHTML = '<p class="text-slate-600 text-xs font-bold px-2">No pending requests.</p>';
+                    }
+                });
+            }
+window.renderAdminCalendar = async function() {
+    const container = getEl('adminLeaveCalendarContainer');
+    const title = getEl('leaveMonthTitle');
+    if (!container || !title) return;
+
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
+    title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    try {
+        const [leavesSnap, attSnap] = await Promise.all([
+            db.ref('leaves').once('value'),
+            db.ref('attendance').once('value') 
+        ]);
+        const allLeavesData = leavesSnap.val() || {};
+        const attData = attSnap.val() || {};
+        
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+let html = `<table class="admin-leave-table">
+<colgroup>
+    <col class="weekend">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekday">
+    <col class="weekend">
+</colgroup><thead><tr>`;
+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
+    let colorClass = idx === 0 ? 'text-rose-400' : (idx === 6 ? 'text-blue-400' : '');
+    html += `<th class="${colorClass}">${day}</th>`;
+});
+html += `</tr></thead><tbody><tr>`;
+
+for(let i=0; i<firstDay; i++) html += `<td></td>`;
+
+        for(let d=1; d<=lastDate; d++) {
+            if((firstDay + d - 1) % 7 === 0 && d > 1) html += `</tr><tr>`;
+            
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const currentDayNum = new Date(dateStr).getDay(); // 0: 일요일, 6: 토요일
+            const isToday = dateStr === todayStr;
+
+            // --- 주말 및 오늘 날짜 스타일 결정 ---
+            let cellClass = "";
+            let dateTextClass = "text-slate-500"; // 기본 평일 날짜 색상
+
+            if (isToday) {
+                cellClass = "today-cell";
+                dateTextClass = "text-white font-black";
+            } else if (currentDayNum === 0) { // 일요일
+                cellClass = "bg-rose-500/5"; 
+                dateTextClass = "text-rose-500";
+            } else if (currentDayNum === 6) { // 토요일
+                cellClass = "bg-blue-500/5";
+                dateTextClass = "text-blue-400";
+            }
+
+            let badges = '';
+            let displayedStaffInLeaves = new Set();
+
+            // 휴가 데이터 처리
+            Object.entries(allLeavesData).forEach(([uid, years]) => {
+                const leaves = (years && years[year]) || {};
+                Object.entries(leaves).forEach(([id, item]) => {
+                    if(dateStr >= item.startDate && dateStr <= item.endDate) {
+                        // 주말(토,일)이 아닐 때만 카운트 및 배지 표시 (기존 로직 유지)
+                        if (currentDayNum !== 0 && currentDayNum !== 6) { 
+                            displayedStaffInLeaves.add(uid);
+                            let sClass = 'badge-pending'; 
+                            let icon = '📄';
+                            if (item.status === 'Approved') { sClass = 'badge-approved'; icon = '✅'; }
+                            else if (item.status === 'Rejected') { sClass = 'bg-rose-500/50 line-through'; icon = '🚫'; }
+const safeItem = btoa(encodeURIComponent(JSON.stringify(item))); // 데이터를 안전하게 인코딩
+badges += `<div class="leave-badge ${sClass}" onclick="openLeaveAdminModal('${uid}','${year}','${id}', '${safeItem}')">${icon} ${uid.substring(0,5)}: ${item.type}</div>`;                        }
+                    }
+                });
+            });
+
+            // 근태 기록 처리
+            if (attData[dateStr]) {
+                Object.entries(attData[dateStr]).forEach(([staffName, status]) => {
+                    if (displayedStaffInLeaves.has(staffName) || status === 'WO') return;
+                    if (typeof status === 'string' && status !== "") {
+                        if (leaveTypes.includes(status)) {
+                            badges += `<div class="leave-badge bg-indigo-500/80 border border-indigo-400 cursor-default">🏥 ${staffName}: ${status}</div>`;
+                        } else {
+                            badges += `<div class="leave-badge bg-slate-800 text-slate-500 border border-slate-700/50 cursor-default">🕒 ${staffName}: ${status}</div>`;
+                        }
+                    }
+                });
+            }
+
+            html += `<td class="${cellClass}">
+                        <div class="text-[10px] font-black ${dateTextClass} mb-1">
+                            ${d}${isToday ? '<span class="today-mark">TODAY</span>' : ''}
+                        </div>
+                        ${badges}
+                     </td>`;
+        }
+        html += `</tr></tbody></table>`;
+        container.innerHTML = html;
+        calculateStats(attData, year);
+    } catch (error) {
+        console.error("Calendar Render Error:", error);
+    }
+};
+
+
+function calculateStats(attData, year) {
+    const statsBody = getEl('staffStatsBody');
+    const statsTitle = getEl('statsTitle');
+    if (!statsBody) return;
+
+    const currentMonth = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+    const filterPrefix = statsMode === 'year' ? year.toString() : `${year}-${currentMonth}`;
+    
+    // 제목 업데이트
+    statsTitle.innerText = statsMode === 'year' ? `Staff Leave Statistics (${year})` : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
+
+    let stats = {};
+    Object.entries(attData).forEach(([date, dayLogs]) => {
+        // 모드에 따라 년도(YYYY) 또는 년-월(YYYY-MM)로 필터링
+        if (date.startsWith(filterPrefix)) {
+            Object.entries(dayLogs).forEach(([staffName, status]) => {
+                if (leaveTypes.includes(status)) {
+                    if (!stats[staffName]) stats[staffName] = { PEL:0, ANL:0, HAL:0, SIL:0, SPL:0, total:0 };
+                    stats[staffName][status]++;
+                    stats[staffName].total++;
+                }
+            });
+        }
+    });
+
+    statsBody.innerHTML = Object.keys(stats).length > 0 
+        ? Object.entries(stats).map(([name, s]) => `
+            <tr class="hover:bg-white/5 transition border-b border-slate-800/50">
+                <td class="font-bold text-white py-3">${name}</td>
+                <td>${s.PEL}</td><td>${s.ANL}</td><td>${s.HAL}</td><td>${s.SIL}</td><td>${s.SPL}</td>
+                <td class="font-black text-indigo-400">${s.total}</td>
+            </tr>`).join('')
+        : `<tr><td colspan="7" class="py-8 text-center text-slate-600 font-bold italic text-xs">No data for this ${statsMode}.</td></tr>`;
+}
+
+window.openLeaveAdminModal = function(uid, year, id, encodedData) {
+    const modal = getEl('leaveAdminModal');
+    if (!modal) return;
+    
+    // 데이터가 문자열(인코딩된 상태)로 넘어온 경우 디코딩 처리
+    let data = typeof encodedData === 'string' ? JSON.parse(decodeURIComponent(atob(encodedData))) : encodedData;
+    
+    currentEditRef = `leaves/${uid}/${year}/${id}`;
+    currentLeaveData = data;
+    currentUid = uid;
+    
+    if (getEl('modalStaffName')) getEl('modalStaffName').innerText = uid;
+    if (getEl('displayLeaveType')) getEl('displayLeaveType').innerText = data.type || '';
+    if (getEl('displayLeaveDates')) getEl('displayLeaveDates').innerText = `${data.startDate} ~ ${data.endDate}`;
+    
+    // 이 부분이 핵심: .innerText를 사용하여 HTML 태그가 실행되지 않고 텍스트로 보이게 합니다.
+    const reasonDisplay = getEl('displayLeaveReason');
+    if (reasonDisplay) {
+        reasonDisplay.innerText = data.reason ? `"${data.reason}"` : `"No reason"`;
+    }
+
+    const statusField = getEl('adminLeaveStatus');
+    const memoField = getEl('adminLeaveMemo');
+    if (statusField) statusField.value = data.status || 'Pending';
+    if (memoField) memoField.value = data.adminMemo || '';
+    modal.classList.remove('hidden');
+};
+
+            window.closeLeaveAdminModal = function() {
+                const modal = getEl('leaveAdminModal');
+                if (modal) modal.classList.add('hidden');
+            };
+            window.saveLeaveDecision = async function() {
+                if(!currentEditRef || !currentLeaveData) return;
+                const status = getEl('adminLeaveStatus').value;
+                const adminMemo = getEl('adminLeaveMemo').value;
+                try {
+                    await db.ref(currentEditRef).update({
+                        status, adminMemo,
+                        reviewedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    const start = new Date(currentLeaveData.startDate);
+                    const end = new Date(currentLeaveData.endDate);
+                    let updates = {};
+                    if (status === 'Approved') {
+                        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                            const dayOfWeek = d.getDay();
+                            const dateStr = d.toISOString().split('T')[0];
+                            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                                updates[`attendance/${dateStr}/${currentUid}`] = currentLeaveData.type;
+                            }
+                        }
+                    } else {
+                        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                            const dateStr = d.toISOString().split('T')[0];
+                            updates[`attendance/${dateStr}/${currentUid}`] = null;
+                        }
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        await db.ref().update(updates);
+                    }
+                    alert(`Decision saved as ${status}.`);
+                    closeLeaveAdminModal();
+                    renderAdminCalendar();
+                } catch (error) {
+                    console.error(error);
+                    alert("Error updating data.");
+                }
+            };
+            window.changeLeaveMonth = function(val) {
+                currentViewDate.setMonth(currentViewDate.getMonth() + val);
+                renderAdminCalendar();
+            };
+            if (document.readyState === 'complete') {
+                initAdminLeave();
+            } else {
+                window.addEventListener('load', initAdminLeave);
+            }
+        })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</body>
+</html>

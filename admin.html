@@ -92,7 +92,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     <div class="flex items-center gap-3">
 
         <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
-        <button onclick="adminLogout()" class="text-slate-400 text-lg">🚪</button>
+        <button onclick="adminLogout()" class="text-slate-400 text-lg">➡️</button>
     </div>
 </header>
 
@@ -115,7 +115,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
                     <div class="admin-profile-img-container rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-blue-500/10 transition-transform group-hover:scale-105">
                         <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
                     </div>
-                    <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">✏️</div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">🎂</div>
                 </div>
                 <div class="overflow-hidden flex-1">
                     <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
@@ -153,7 +153,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
             <div class="h-[1px] bg-slate-800 my-4"></div>
             <a href="https://tdlid.github.io" target="_blank" class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">🌐 TDLiD Homepage</a>
         </nav>
-        <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">🚪 Logout System</button>
+        <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">➡️ Logout System</button>
     </aside>
 
 <main class="flex-1 p-8 overflow-y-auto">
@@ -188,52 +188,19 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
         if (!window.db) window.db = firebase.database();
     })();
 
-// 2. 공용 모달 제어 (안정성 강화)
-    (function () {
-        const openFn = function (titleHtml, bodyHtml) {
-            const modal = document.getElementById('adminCustomModal');
-            const tBox = document.getElementById('modalTitle');
-            const bBox = document.getElementById('modalBody');
-            
-            // 엘리먼트가 로드되었는지 확인 후 실행
-            if (modal && tBox && bBox) {
-                tBox.innerHTML = titleHtml;
-                bBox.innerHTML = bodyHtml;
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            } else {
-                console.error("Modal elements not found in DOM");
-            }
-        };
-        const closeFn = function () {
-            const modal = document.getElementById('adminCustomModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        };
-// 2. 공용 모달 제어 (staff.html의 방식을 admin에 이식)
+// 2. 공용 모달 제어
 window.openAdminCustomModal = function(title, bodyHtml) {
-    const modal = document.getElementById('adminCustomModal');
-    const tBox = document.getElementById('modalTitle');
-    const bBox = document.getElementById('modalBody');
-
-    if (modal && tBox && bBox) {
-        tBox.innerText = title;
-        bBox.innerHTML = bodyHtml;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    } else {
-        // 만약 요소를 찾지 못하면 0.1초 뒤 재시도 (탭 전환 직후 대응)
-        setTimeout(() => {
-            const m2 = document.getElementById('adminCustomModal');
-            if(m2) {
-                document.getElementById('modalTitle').innerText = title;
-                document.getElementById('modalBody').innerHTML = bodyHtml;
-                m2.classList.remove('hidden');
-            }
-        }, 100);
+    const modal   = document.getElementById('adminCustomModal');
+    const tBox    = document.getElementById('modalTitle');
+    const bBox    = document.getElementById('modalBody');
+    if (!modal || !tBox || !bBox) {
+        setTimeout(() => window.openAdminCustomModal(title, bodyHtml), 100);
+        return;
     }
+    tBox.innerText   = title;
+    bBox.innerHTML   = bodyHtml;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 };
 
 window.closeAdminCustomModal = function() {
@@ -243,7 +210,6 @@ window.closeAdminCustomModal = function() {
         document.body.style.overflow = '';
     }
 };
-    })();
 
     // 3. 프로필 이미지 업데이트 및 실시간 동기화
     const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
@@ -269,7 +235,6 @@ window.openProfileImagePicker = function() {
                     </select>
                     <input type="date" id="adminBirthDate" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-blue-500">
                 </div>
-                
                 <div class="flex flex-col gap-2">
                     <button onclick="saveAdminBirthday()" id="adminBirthSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
                         <span>SAVE CHANGES</span>
@@ -280,11 +245,19 @@ window.openProfileImagePicker = function() {
                 </div>
             </div>
         </div>
+        <div class="mt-6 pt-6 border-t border-slate-800">
+            <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                🎂 Staff Birthday List
+            </h4>
+            <div id="birthdayListInModal" class="space-y-2">
+                <div class="text-[10px] text-slate-600 italic text-center py-4">Loading...</div>
+            </div>
+        </div>
     `;
 
     openAdminCustomModal('Admin Profile & Birthday', gridHtml);
 
-    // [수정] users/Admin 경로에서 데이터 로드
+    // Admin 저장된 생일 로드
     db.ref('users/Admin').once('value', snap => {
         const data = snap.val();
         if (data) {
@@ -292,19 +265,74 @@ window.openProfileImagePicker = function() {
             if (data.birthType) document.getElementById('adminBirthType').value = data.birthType;
         }
     });
-};
+
+    // 생일 리스트 로드 ← 독립된 별도 호출
+    db.ref('users').once('value', snap => {
+        const users = snap.val() || {};
+        const container = document.getElementById('birthdayListInModal');
+        if (!container) return;
+
+        const today = new Date();
+        const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+        const list = Object.keys(users)
+            .filter(uid => users[uid].birthday)
+            .sort((a, b) => {
+                const am = users[a].birthday.substring(5);
+                const bm = users[b].birthday.substring(5);
+                return am.localeCompare(bm);
+            });
+
+        if (list.length === 0) {
+            container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`;
+            return;
+        }
+
+        container.innerHTML = list.map(uid => {
+            const u = users[uid];
+            const bType = u.birthType || 'Solar';
+            const bDate = u.birthday.replace(/-/g, '.');
+            const bMonthDay = u.birthday.substring(5);
+            const isToday = bMonthDay === tMonthDay;
+            const pImg = u.profileImg || '';
+            const imgSrc = uid.toLowerCase() === 'admin'
+                ? (pImg.includes('/') ? pImg : `images/profile/admin/${pImg || '1.gif'}`)
+                : (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-001.webp'}`);
+            const typeColor = bType === 'Lunar'
+                ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                : 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+
+            return `
+                <div class="flex items-center justify-between p-3 rounded-xl border ${isToday ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/5'} hover:bg-white/5 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <img src="${imgSrc}" class="w-7 h-7 rounded-full border border-white/10 object-cover flex-shrink-0"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-black text-white uppercase flex items-center gap-1">
+                                ${uid}
+                                ${isToday ? '<span class="text-[8px] bg-yellow-500 text-black px-1.5 py-0.5 rounded font-black">🎂 TODAY</span>' : ''}
+                            </span>
+                            <span class="text-[9px] text-slate-500 font-bold uppercase">${u.role || 'Staff'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${typeColor} uppercase">${bType}</span>
+                        <span class="text-[10px] font-bold text-slate-300">${bDate}</span>
+                    </div>
+                </div>`;
+        }).join('');
+    });
+};  // ← openProfileImagePicker 여기서 닫힘
+
+// ── 아래 함수들은 openProfileImagePicker 밖에 독립 선언 ──
 
 window.saveAdminBirthday = function() {
     const birthDate = document.getElementById('adminBirthDate').value;
     const birthType = document.getElementById('adminBirthType').value;
     const saveBtn = document.getElementById('adminBirthSaveBtn');
-
     if (!birthDate) { alert("Please select a date."); return; }
-
     saveBtn.disabled = true;
     saveBtn.innerHTML = `<span>SAVING...</span>`;
-
-    // [수정] users/Admin 경로에 저장
     db.ref('users/Admin').update({
         birthday: birthDate,
         birthType: birthType,
@@ -323,21 +351,19 @@ window.saveAdminBirthday = function() {
 
 window.saveAdminProfile = function(imgName) {
     const path = `images/profile/admin/${imgName}`;
-    if(!confirm("Would you like to change your admin profile to this image?")) return;
-    
-    // [수정] admin_settings/profile -> users/Admin 경로로 변경
-    db.ref('users/Admin').update({ 
-        profileImg: path, 
-        updatedAt: firebase.database.ServerValue.TIMESTAMP 
+    if (!confirm("Would you like to change your admin profile to this image?")) return;
+    db.ref('users/Admin').update({
+        profileImg: path,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
     }).then(() => {
         const timestamp = new Date().getTime();
-        document.querySelectorAll('.admin-profile-img').forEach(img => { 
-            img.src = `${path}?t=${timestamp}`; 
+        document.querySelectorAll('.admin-profile-img').forEach(img => {
+            img.src = `${path}?t=${timestamp}`;
         });
         closeAdminCustomModal();
-    }).catch(e => { 
-        console.error(e); 
-        alert("Save failed"); 
+    }).catch(e => {
+        console.error(e);
+        alert("Save failed");
     });
 };
 
@@ -345,12 +371,11 @@ window.saveAdminProfile = function(imgName) {
     const checkDB = setInterval(() => {
         if (window.db) {
             clearInterval(checkDB);
-            // [수정] admin_settings/profile/profileImg -> users/Admin/profileImg 경로로 변경
             db.ref('users/Admin/profileImg').on('value', snap => {
                 const imgUrl = snap.val();
                 if (imgUrl) {
-                    document.querySelectorAll('.admin-profile-img').forEach(img => { 
-                        if(!img.src.includes(imgUrl)) img.src = imgUrl; 
+                    document.querySelectorAll('.admin-profile-img').forEach(img => {
+                        if (!img.src.includes(imgUrl)) img.src = imgUrl;
                     });
                 }
             });
@@ -511,7 +536,7 @@ window.showAllStaffBirthdays = function() {
             dashboard: 'admin_dashboard.html', 
             attendance: 'admin_attendance.html', 
             reports: 'admin_report.html', 
-            leave: 'admin_leave.html', 
+            leave: 'admin_vacation.html', 
             schedule: 'admin_calendar.html', 
             statistic: 'admin_statistic.html',
             workstat: 'work_statistic.html', 
