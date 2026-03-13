@@ -1,841 +1,730 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menu Select - Daily System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
 <style>
-/* ── Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --bg: #060910; --surface: #0d1117; --surface2: #111827; --border: #1e293b; --border2: #253047; --text: #f1f5f9; --muted: #475569; --subtle: #1e293b; --green: #10b981; --red: #f43f5e; --blue: #3b82f6; --amber: #f59e0b; --green-dim: rgba(16,185,129,0.12); --red-dim: rgba(244,63,94,0.12); --blue-dim: rgba(59,130,246,0.12); --amber-dim: rgba(245,158,11,0.12); }
-/* ── Hero Card ── */
-.sm-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
-.sm-hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); border-radius: 50%; }
-.sm-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.sm-hero-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
-.sm-hero-name { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: -0.02em; margin-top: 2px; line-height: 1; }
-.sm-live-date { font-size: 9px; font-weight: 800; color: var(--blue); background: var(--blue-dim); border: 1px solid rgba(59,130,246,0.2); padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
-.sm-fortune { margin-top: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; font-size: 10px; color: #64748b; font-weight: 700; font-family: -apple-system, sans-serif; }
-/* ── Leave Alert ── */
-#leaveStatusAlert { display: none; }
-#leaveStatusAlert.visible { display: block; }
-.sm-leave-alert { border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-.sm-leave-alert.pending { background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.3); }
-.sm-leave-alert.rejected { background: var(--red-dim); border: 1px solid rgba(244,63,94,0.3); }
-.sm-leave-alert-icon { font-size: 18px; flex-shrink: 0; }
-.sm-leave-alert-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
-.sm-leave-alert-title.pending { color: var(--amber); }
-.sm-leave-alert-title.rejected { color: var(--red); }
-.sm-leave-alert-msg { font-size: 10px; color: var(--text); font-weight: 600; margin-top: 2px; font-family: -apple-system, sans-serif; }
-.sm-leave-alert-close { margin-left: auto; color: #475569; cursor: pointer; font-size: 16px; flex-shrink: 0; }
-.sm-leave-alert-close:hover { color: var(--text); }
+:root {--bg:#03060f;--surface:rgba(8,18,36,0.7);--surface-2:rgba(16,32,60,0.5);--blue:#3b82f6;--blue-glow:rgba(59,130,246,0.25);--cyan:#06b6d4;--violet:#818cf8;--rose:#f43f5e;--gold:#f59e0b;--chrome:#e2e8f0;--text:#cbd5e1;--muted:#475569;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);}
+*,*::before,*::after {box-sizing:border-box;margin:0;padding:0;}
+html,body {width:100%;height:100%;overflow:hidden;}
+body {font-family:"Pretendard",system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;perspective:2000px;position:relative;}
 
-.sm-bar { width: 100%; height: 3px; background: var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
-.sm-bar-fill { height: 100%; background: var(--blue); border-radius: 10px; transition: width 1s ease; }
-.sm-bar-fill.warning { background: var(--red); }
-#warningIcon { display: none; }
-#warningIcon.visible { display: inline; }
-/* ── Today Status Strip ── */
-.sm-today-strip { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.sm-today-item { display: flex; flex-direction: column; gap: 3px; }
-.sm-today-lbl { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-.sm-today-val { font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
-.sm-today-val.in { color: var(--green); }
-.sm-today-val.out { color: #60a5fa; }
-.sm-today-val.empty { color: var(--border2); font-size: 13px; }
-/* ── Attendance Panel ── */
-.sm-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; flex: 1; }
-.sm-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.sm-panel-title { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-.sm-time-block { margin-bottom: 10px; }
-.sm-time-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.sm-time-input { width: 100%; background: var(--surface2); color: var(--text); font-size: 24px; font-weight: 900; text-align: center; letter-spacing: 0.05em; padding: 10px; border-radius: 10px; border: 1px solid var(--border2); outline: none; font-family: 'SF Mono', monospace; transition: border-color 0.2s; }
-.sm-time-input:focus { border-color: var(--blue); }
-.sm-select { width: 100%; background: var(--surface2); color: var(--text); font-weight: 800; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border2); outline: none; cursor: pointer; font-size: 11px; font-family: 'SF Mono', monospace; margin-bottom: 10px; transition: border-color 0.2s; }
-.sm-select:focus { border-color: var(--blue); }
-.sm-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.sm-btn { padding: 12px 8px; border-radius: 10px; border: none; cursor: pointer; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s; font-family: 'SF Mono', monospace; }
-.sm-btn:active { transform: scale(0.96); }
-.sm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.sm-btn.in { background: var(--green); color: #fff; }
-.sm-btn.in:hover:not(:disabled) { background: #059669; }
-.sm-btn.out { background: var(--red); color: #fff; }
-.sm-btn.out:hover:not(:disabled) { background: #e11d48; }
-.sm-btn.special { background: var(--blue); color: #fff; width: 100%; }
-.sm-btn.special:hover { background: #2563eb; }
-.sm-log { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 10px; font-size: 9px; font-weight: 700; color: var(--muted); text-align: center; font-style: italic; border: 1px solid var(--border); }
-.sm-all-staff-btn { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; color: var(--text); width: 100%; font-family: 'SF Mono', monospace; }
-.sm-all-staff-btn:hover { border-color: var(--border2); background: #161f2e; }
-.sm-all-staff-btn img { width: 28px; height: 28px; object-fit: contain; }
-.sm-all-staff-btn span { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
-.sm-all-staff-btn .arrow { margin-left: auto; color: var(--muted); font-size: 11px; }
-/* ── Right Panel: Calendar ── */
-.sm-right { display: flex; flex-direction: column; gap: 10px; }
-.sm-cal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; flex: 1; }
-.sm-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
-.sm-cal-title { font-size: 16px; font-weight: 900; color: var(--text); letter-spacing: -0.01em; font-style: italic; text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: 4px; }
-.sm-cal-nav { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-.sm-nav-btn { padding: 5px 10px; font-size: 9px; font-weight: 900; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'SF Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s; }
-.sm-nav-btn:hover { color: var(--text); background: var(--border); }
-.sm-nav-btn.today-btn { color: var(--blue); }
-.sm-cal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.sm-cal-table th { padding: 6px 2px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); text-align: center; border-bottom: 1px solid var(--border); }
-.sm-cal-table th.sun { color: var(--red); }
-.sm-cal-table th.sat { color: var(--blue); }
-.sm-cal-table td { height: 68px; vertical-align: top; padding: 3px; border: 1px solid rgba(30,41,59,0.6); cursor: pointer; transition: background 0.15s; position: relative; }
-.sm-cal-table td:hover { background: rgba(255,255,255,0.03); }
-.sm-cal-table td.sun-cell { background: rgba(244,63,94,0.04); }
-.sm-cal-table td.sat-cell { background: rgba(59,130,246,0.04); }
-.sm-cal-table td.today-highlight { background: rgba(59,130,246,0.08); border-color: var(--blue) !important; }
-.sm-cal-date { font-size: 9px; font-weight: 900; color: var(--muted); margin-bottom: 2px; padding: 1px 2px; }
-.sm-cal-date.sun { color: rgba(244,63,94,0.6); }
-.sm-cal-date.sat { color: rgba(59,130,246,0.6); }
-.sm-cal-date.today { color: var(--blue); }
-.time-label { display: block; font-size: 8px; font-weight: 900; padding: 1px 3px; margin-top: 1px; border-radius: 3px; text-align: center; font-family: 'SF Mono', monospace; letter-spacing: -0.03em; line-height: 1.4; }
-.att-color { background: rgba(16,185,129,0.12); color: #10b981; }
-.late-color { background: rgba(244,63,94,0.12); color: #f43f5e; }
-.other-color { background: rgba(245,158,11,0.12); color: #f59e0b; }
-.out-time { background: rgba(148,163,184,0.08); color: #64748b; border: 1px solid rgba(148,163,184,0.15); }
-/* ── Modals ── */
-.missing-modal-overlay, .edit-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-.edit-modal-overlay { z-index: 10000; }
-.missing-modal, .edit-modal { background: #0f172a; border: 1px solid #334155; border-radius: 1.5rem; width: 90%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-.edit-modal input[readonly] { background-color: #1e293b; color: #64748b; cursor: not-allowed; }
-.edit-modal input[type="time"] { color-scheme: dark; }
-.modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #334155; }
-.dont-show-btn { color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
-.dont-show-btn:hover { color: #94a3b8; }
-.close-modal-btn { background: #334155; color: white; padding: 8px 16px; border-radius: 0.75rem; font-size: 11px; font-weight: 900; }
-/* ── Animations ── */
-@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } 50% { box-shadow: 0 0 12px rgba(244,63,94,0.3); } 100% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } }
-.warning-pulse { animation: pulse-red 2s infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-.animate-blink { animation: blink 1s infinite; }
-@keyframes pulse-border { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-.animate-pulse-slow { animation: pulse-border 2s infinite; }
-@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.sm-root > * { animation: fadeSlideIn 0.4s ease both; }
-.sm-left > *:nth-child(1) { animation-delay: 0s; }
-.sm-left > *:nth-child(2) { animation-delay: 0.06s; }
-.sm-left > *:nth-child(3) { animation-delay: 0.12s; }
-.sm-left > *:nth-child(4) { animation-delay: 0.18s; }
-.sm-left > *:nth-child(5) { animation-delay: 0.22s; }
-.sm-right { animation-delay: 0.1s; }
-.fortune-bubble { display: block; margin-top: 8px; padding: 7px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 9px; font-size: 10px; color: #64748b; font-weight: 700; font-family: -apple-system, sans-serif; animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-/* Scrollbar */
-::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* Responsive */
-@media (max-width: 640px) { .sm-cal-table td { height: 52px; padding: 2px; } .sm-cal-table th { font-size: 7px; } .time-label { font-size: 7px; } .sm-hero-name { font-size: 18px; } }
-.sm-root { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
-.sm-fortune, .sm-leave-alert-msg, .fortune-bubble, .sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label { font-family: "Pretendard", sans-serif; }
-/* 상단 가로 배치 레이아웃 */
-.sm-top-layout {
+#dynamicBg {position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;background-repeat:no-repeat;transition:opacity 0.8s ease;}
+#dynamicBg::after {content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(59,130,246,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(129,140,248,0.08) 0%,transparent 55%),linear-gradient(180deg,rgba(3,6,15,0.55) 0%,rgba(3,6,15,0.75) 100%);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none;}
+.orb {position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:1;animation:orb-float 25s ease-in-out infinite alternate;will-change:transform;}
+.orb-a {width:600px;height:600px;background:rgba(59,130,246,0.08);top:-20%;right:-15%;}
+.orb-b {width:500px;height:500px;background:rgba(129,140,248,0.08);bottom:-15%;left:-12%;animation-delay:-8s;}
+.orb-c {width:400px;height:400px;background:rgba(6,182,212,0.06);top:50%;right:20%;animation-delay:-14s;}
+@keyframes orb-float {0%{transform:translate(0,0) scale(1);opacity:0.6;}50%{transform:translate(30px,50px) scale(1.1);opacity:0.8;}100%{transform:translate(20px,40px) scale(1.08);opacity:0.6;}}
+
+.content-wrapper {
+    position:relative;z-index:2;width:100%;height:100vh;
+    overflow-y:auto;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;
+    padding:1.5rem 1rem 4rem;
+    -ms-overflow-style:none;scrollbar-width:none;gap:0;
+}
+.content-wrapper::-webkit-scrollbar {display:none;}
+
+/* 메뉴 카드 4개 영역: 화면 중앙에 보이도록 최소 높이 확보 */
+.main-section {
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;
+    width:100%;
+    min-height:calc(100vh - 3rem); /* 헤더 패딩 제외한 뷰포트 높이 */
+    padding-bottom:1rem;
+}
+
+@media (max-width:768px) {
+    .content-wrapper {padding:1rem 0.75rem 4rem;}
+    .main-section {min-height:auto;justify-content:flex-start;padding-top:1rem;}
+    .menu-grid {margin-bottom:1rem;}
+    .header-section {margin-bottom:1rem;}
+}
+
+.header-section {text-align:center;margin-bottom:clamp(1.5rem,4vh,3.5rem);animation:reveal-down 0.8s cubic-bezier(0.16,1,0.3,1) both;transform-style:preserve-3d;}
+.live-time {font-size:clamp(9px,2vw,10.5px);letter-spacing:0.35em;text-transform:uppercase;color:var(--cyan);margin-bottom:clamp(12px,3vw,16px);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0.8;transform:translateZ(20px);}
+.live-dot {width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px rgba(6,182,212,0.5);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse {0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 10px var(--cyan),0 0 20px rgba(6,182,212,0.5);}50%{opacity:0.4;transform:scale(0.6);box-shadow:0 0 5px var(--cyan);}}
+.greeting {font-size:clamp(1.75rem,5vw,3.8rem);font-weight:900;letter-spacing:-0.03em;line-height:1.1;color:#fff;text-shadow:0 0 60px rgba(59,130,246,0.4),0 10px 30px rgba(0,0,0,0.5);margin-bottom:clamp(8px,2vw,10px);transform:translateZ(40px);}
+.greeting span {background:linear-gradient(135deg,var(--blue) 0%,var(--cyan) 50%,var(--violet) 100%);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient-shift 4s ease infinite;}
+@keyframes gradient-shift {0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.sub-label {font-size:clamp(9px,2vw,10.5px);letter-spacing:0.35em;text-transform:uppercase;color:var(--muted);font-weight:700;transform:translateZ(30px);}
+.menu-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,2.5vw,20px);width:100%;max-width:800px;margin-bottom:clamp(1.5rem,4vh,2.5rem);perspective:2000px;transform-style:preserve-3d;}
+@media (max-width:640px) {.menu-grid {grid-template-columns:repeat(2,1fr);max-width:100%;gap:clamp(10px,3vw,14px);padding:0 0.5rem;}}
+@media (min-width:641px) and (max-width:1024px) {.menu-grid {grid-template-columns:repeat(2,1fr);max-width:500px;}}
+.menu-card {position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);padding:clamp(16px,4vw,28px) clamp(10px,3vw,20px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,3vw,14px);cursor:pointer;overflow:hidden;transform-style:preserve-3d;transform:translateZ(0);transition:all 0.5s cubic-bezier(0.16,1,0.3,1);animation:card-in 0.7s cubic-bezier(0.16,1,0.3,1) both;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 2px rgba(255,255,255,0.1),0 15px 30px rgba(0,0,0,0.4),0 5px 15px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.15),inset 0 -1px 1px rgba(0,0,0,0.25);will-change:transform,box-shadow;}
+@media (hover:hover) {.menu-card:hover {transform:translateY(-15px) translateZ(60px) scale(1.05) rotateX(8deg);border-color:rgba(59,130,246,0.6);background:linear-gradient(135deg,rgba(59,130,246,0.25) 0%,rgba(6,182,212,0.2) 100%);box-shadow:0 2px 4px rgba(255,255,255,0.2),0 30px 60px rgba(0,0,0,0.7),0 15px 35px rgba(59,130,246,0.4),0 0 40px rgba(59,130,246,0.3),inset 0 1px 2px rgba(255,255,255,0.3),inset 0 -1px 2px rgba(0,0,0,0.3);}
+.menu-card:hover .card-label {color:#fff;text-shadow:0 0 15px rgba(59,130,246,0.7),0 2px 8px rgba(0,0,0,0.8);transform:translateZ(20px);}
+.menu-card:hover .card-icon-wrap {transform:translateZ(40px) scale(1.15) rotateY(8deg);filter:drop-shadow(0 15px 30px rgba(0,0,0,0.6)) drop-shadow(0 0 25px rgba(59,130,246,0.5));}
+.menu-card:hover .card-glow {opacity:1;}}
+.menu-card:active {transform:scale(0.95) translateY(4px) translateZ(-10px);box-shadow:0 5px 15px rgba(0,0,0,0.5),inset 0 1px 2px rgba(255,255,255,0.1);}
+.menu-card:nth-child(1) {animation-delay:0.08s;}
+.menu-card:nth-child(2) {animation-delay:0.16s;}
+.menu-card:nth-child(3) {animation-delay:0.24s;}
+.menu-card:nth-child(4) {animation-delay:0.32s;}
+@keyframes card-in {from{opacity:0;transform:translateY(40px) translateZ(-100px) scale(0.9) rotateX(20deg);}to{opacity:1;transform:translateY(0) translateZ(0) scale(1) rotateX(0deg);}}
+@keyframes reveal-down {from{opacity:0;transform:translateY(-30px) translateZ(-50px);}to{opacity:1;transform:translateY(0) translateZ(0);}}
+.menu-card::before {content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 30%,transparent 70%,rgba(255,255,255,0.05) 100%);pointer-events:none;opacity:0.6;transition:opacity 0.4s ease;}
+.menu-card:hover::before {opacity:1;background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,rgba(59,130,246,0.1) 30%,rgba(6,182,212,0.1) 70%,rgba(255,255,255,0.15) 100%);}
+.menu-card::after {content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.6),rgba(6,182,212,0.6),transparent);filter:blur(1px);opacity:0.8;}
+.card-glow {position:absolute;width:clamp(80px,20vw,120px);height:clamp(80px,20vw,120px);border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.4) 0%,rgba(6,182,212,0.2) 40%,transparent 70%);top:10%;left:50%;transform:translateX(-50%) translateZ(10px);opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;pointer-events:none;filter:blur(15px);}
+.card-icon-wrap {width:clamp(50px,12vw,72px);height:clamp(50px,12vw,72px);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;transform-style:preserve-3d;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5)) drop-shadow(0 5px 10px rgba(0,0,0,0.3));}
+.card-icon-wrap img {width:100%;height:100%;object-fit:contain;transform-style:preserve-3d;}
+.card-label {font-size:clamp(7px,1.8vw,11px);font-weight:800;text-transform:uppercase;letter-spacing:0.2em;color:var(--text);text-align:center;position:relative;z-index:2;transform-style:preserve-3d;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);line-height:1.5;text-shadow:0 2px 6px rgba(0,0,0,0.6);}
+.bottom-actions {display:flex;align-items:center;gap:clamp(16px,4vw,40px);animation:reveal-down 0.9s cubic-bezier(0.16,1,0.3,1) 0.5s both;transform-style:preserve-3d;}
+.action-btn {display:flex;flex-direction:column;align-items:center;gap:clamp(6px,2vw,8px);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;background:none;border:none;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);transform-style:preserve-3d;}
+.action-btn:active {transform:scale(0.92) translateZ(-10px);}
+.action-icon {width:clamp(42px,10vw,48px);height:clamp(42px,10vw,48px);border-radius:clamp(12px,3vw,16px);display:flex;align-items:center;justify-content:center;font-size:clamp(1rem,3vw,1.25rem);border:1.5px solid var(--border);background:var(--surface);transition:all 0.4s cubic-bezier(0.16,1,0.3,1);transform-style:preserve-3d;box-shadow:0 6px 16px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1),inset 0 -1px 0 rgba(0,0,0,0.2);}
+@media (hover:hover) {.action-btn.settings:hover .action-icon {background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.5);box-shadow:0 0 30px rgba(59,130,246,0.4),0 10px 25px rgba(0,0,0,0.5);transform:translateZ(15px) scale(1.08);}
+.action-btn.logout:hover .action-icon {background:rgba(244,63,94,0.2);border-color:rgba(244,63,94,0.5);box-shadow:0 0 30px rgba(244,63,94,0.4),0 10px 25px rgba(0,0,0,0.5);transform:translateZ(15px) scale(1.08);}}
+.action-label {font-size:clamp(8px,2vw,9px);font-weight:800;letter-spacing:0.2em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.action-btn.settings .action-label {color:var(--muted);}
+.action-btn.logout .action-label {color:rgba(244,63,94,0.7);}
+.day-indicator {position:fixed;top:clamp(16px,3vw,20px);right:clamp(16px,3vw,20px);z-index:10;display:flex;flex-direction:column;align-items:flex-end;gap:4px;animation:reveal-down 0.7s ease 0.2s both;transform-style:preserve-3d;}
+.day-name {font-size:clamp(8px,1.5vw,10px);letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.5);transform:translateZ(10px);}
+.day-number {font-size:clamp(1.5rem,5vw,2.2rem);font-weight:900;line-height:1;color:rgba(255,255,255,0.08);letter-spacing:-0.04em;text-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translateZ(5px);}
+.divider {width:1px;height:clamp(28px,6vw,32px);background:linear-gradient(180deg,transparent,var(--border-2),transparent);transform:translateZ(5px);}
+@media (max-height:700px) {.header-section {margin-bottom:1rem;}.menu-grid {gap:8px;margin-bottom:1rem;}.menu-card {padding:12px 8px;gap:8px;}}
+@media (max-height:600px) {.greeting {font-size:clamp(1.5rem,4vw,2.5rem);}.live-time,.sub-label {font-size:8px;}}
+@media (orientation:landscape) and (max-height:500px) {.content-wrapper {justify-content:flex-start;padding-top:1rem;}.header-section {margin-bottom:0.75rem;}.menu-grid {margin-bottom:1rem;}}
+/* 상태 정보 텍스트 스타일 */
+.card-status {
+    font-size: clamp(8px, 1.6vw, 10px);
+    font-weight: 500;
+    color: var(--cyan); /* 강조색 */
+    margin-top: 4px;
+    opacity: 0.9;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    z-index: 2;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+/* 1. 프로필 이미지 컨테이너 (연필 아이콘 배치를 위해 추가) */
+.profile-container {
+    position: relative;
+    display: inline-flex; /* inline-block 대신 inline-flex 사용 */
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle; /* 텍스트와 라인 맞춤 */
+    margin-left: 12px;
+    cursor: pointer;
+    z-index: 10;
+    line-height: 0; /* 불필요한 하단 여백 제거 */
+}
+/* 2. 기존 프로필 이미지 스타일 (일부 수정) */
+.profile-img {
+    width: clamp(40px, 10vw, 60px);
+    height: clamp(40px, 10vw, 60px);
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    object-fit: cover;
+    display: block; /* 컨테이너 안에서 꽉 차게 변경 */
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 0 15px var(--blue-glow);
+}
+
+/* 3. 좌측 하단 연필 표시 아이콘 추가 */
+.profile-edit-icon {
+    position: absolute;
+    bottom: 2px;
+    left: 2px; /* 좌측 하단 배치 */
+    width: 18px;
+    height: 18px;
+    background: var(--blue);
+    border-radius: 50%;
     display: flex;
-    gap: 10px; /* 두 창 사이의 간격 */
-    margin-bottom: 10px;
-    align-items: stretch; /* 두 창의 높이를 동일하게 맞춤 */
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+    border: 1.5px solid var(--bg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 11;
+}
+/* 호버 효과를 컨테이너 기준으로 변경 */
+.profile-container:hover .profile-img {
+    transform: scale(1.1);
+    border-color: var(--blue);
 }
 
-.sm-top-layout > div {
-    flex: 1; /* 두 창이 1:1 비율로 너비를 나눔 */
+/* 4. 프로필 선택 모달 스타일 (기존 유지) */
+.profile-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px); z-index: 1000;
+    display: none; align-items: center; justify-content: center;
 }
 
-/* Today Strip 내부 그리드 조정 (가로로 좁아지므로 텍스트 크기 등 최적화) */
-.sm-today-strip {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-content: center; /* 내용 중앙 정렬 */
+.profile-modal {
+    background: var(--surface); border: 1px solid var(--border-2);
+    border-radius: 24px; padding: 24px; width: 90%; max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
-/* 모바일 환경에서는 다시 세로로 쌓이도록 설정 */
-@media (max-width: 640px) {
-    .sm-top-layout {
-        flex-direction: column;
-    }
+/* 5. 이미지 겹침 해결을 위한 그리드 스타일 수정 */
+.profile-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* 4열 강제 고정 */
+    gap: 12px;
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    align-items: start; /* 아이템들이 겹치지 않게 시작점 정렬 */
 }
-/* 토/일 열 너비 축소 */
-.sm-cal-table col.weekend { width: 5%; }
-.sm-cal-table col.weekday { width: calc((100% - 10%) / 5); }
-.sm-cal-table td.sun-cell,
-.sm-cal-table td.sat-cell { 
-    width: 5%; 
-    padding: 2px 1px;
+
+.profile-option {
+    position: relative; /* 자식 요소 위치 기준 */
+    aspect-ratio: 1; 
+    border-radius: 12px; 
+    cursor: pointer;
+    border: 2px solid transparent; 
+    transition: all 0.2s; 
+    overflow: hidden;
+    background: var(--surface-2); /* 이미지 로딩 전 배경색 */
 }
-.sm-cal-table td.sun-cell .sm-cal-date,
-.sm-cal-table td.sat-cell .sm-cal-date {
-    font-size: 7px;
+
+.profile-option:hover { 
+    border-color: var(--blue); 
+    transform: scale(1.05); 
+    z-index: 2; /* 호버 시 위로 올라오게 */
 }
+
+.profile-option img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
+}
+/* 뉴스 & 정보 카드 */
+.info-card {
+    position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);
+    border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);
+    padding:clamp(14px,3vw,22px);width:100%;max-width:800px;box-sizing:border-box;
+    margin-top:0;
+    margin-bottom:2rem;
+    animation:reveal-down 1s cubic-bezier(0.16,1,0.3,1) 0.4s both;
+    box-shadow:0 15px 30px rgba(0,0,0,0.4),inset 0 1px 1px rgba(255,255,255,0.1);
+    overflow:visible; /* hidden → visible */
+}
+
+.info-card::after {
+    content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(6,182,212,0.6),rgba(129,140,248,0.6),transparent);
+    filter:blur(1px);opacity:0.8;
+    pointer-events:none;
+}
+.info-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-section {background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:12px;}
+.info-title {font-size:8px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.news-item {font-size:9px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5;cursor:pointer;transition:color 0.2s;}
+
+@media (max-width:768px) {
+    .info-grid {grid-template-columns:1fr;}
+    .info-card {margin-bottom:1rem;padding:clamp(12px,3vw,18px);border-radius:16px;}
+    .info-section {border-radius:10px;padding:10px;}
+    .news-item {font-size:10px;padding:6px 0;}
+    .info-title {font-size:9px;}
+    .stat-label {font-size:9px;}
+    .stat-value {font-size:12px;}
+    .quote-text {font-size:10px;}
+    .lucky-num {width:24px;height:24px;font-size:9px;}
+}
+
+.news-item:hover {color:var(--cyan);}
+.news-item:last-child {border-bottom:none;}
+.news-badge {display:inline-block;font-size:7px;font-weight:900;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);margin-right:4px;}
+.news-badge.ev {background:rgba(16,185,129,0.2);color:#10b981;border-color:rgba(16,185,129,0.3);}
+.stat-row {display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.stat-row:last-child {border-bottom:none;}
+.stat-label {font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.stat-value {font-size:11px;font-weight:900;color:#fff;}
+.lucky-nums {display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.lucky-num {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;}
+.quote-text {font-size:9px;color:var(--text);line-height:1.6;font-style:italic;margin-top:4px;}
+.quote-author {font-size:8px;color:var(--cyan);font-weight:700;margin-top:4px;text-align:right;}
+.info-loading {font-size:9px;color:var(--muted);text-align:center;padding:10px;animation:pulse 1.5s infinite;}
 </style>
 
-<div class="sm-root">
-    <!-- ══ LEFT PANEL ══ -->
-    <div class="sm-left">
+</head>
+<body>
 
-        <!-- Hero: Name + Date -->
-<div class="sm-top-layout">
-    <div class="sm-hero">
-        <div class="sm-hero-top">
-            <div>
-                <div class="sm-hero-label">Authenticated as</div>
-                <div id="mainWelcomeMsg" class="sm-hero-name"></div>
-            </div>
-            <div id="liveDate" class="sm-live-date"></div>
-        </div>
-        <div id="fortuneArea"></div>
+    <!-- ── Background (요일별 동적) ─────────────── -->
+    <div id="dynamicBg"></div>
+
+    <!-- ── Ambient orbs (4D 깊이감) ──────────────────────────── -->
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+
+    <!-- ── Day indicator (top-right) ─────────────── -->
+    <div class="day-indicator">
+        <span class="day-name" id="dayName"></span>
+        <span class="day-number" id="dayNumber"></span>
     </div>
 
-    <div class="sm-today-strip" id="todayStrip">
-        <div class="sm-today-item">
-            <div class="sm-today-lbl">☀ In Time</div>
-            <div id="todayInDisplay" class="sm-today-val in">—</div>
-        </div>
-        <div class="sm-today-item">
-            <div class="sm-today-lbl">🌙 Out Time</div>
-            <div id="todayOutDisplay" class="sm-today-val out">—</div>
-        </div>
-    </div>
-</div>
+<!-- ── Main content ──────────────────────────── -->
+<div class="content-wrapper">
 
-<div id="leaveStatusAlert">
-    <div id="leaveAlertContent" class="sm-leave-alert">
-        <span id="leaveAlertIcon" class="sm-leave-alert-icon"></span>
-        <div>
-            <div id="leaveAlertTitle" class="sm-leave-alert-title"></div>
-            <div id="leaveAlertMsg" class="sm-leave-alert-msg"></div>
-        </div>
-        <span class="sm-leave-alert-close" onclick="document.getElementById('leaveStatusAlert').classList.remove('visible')">&times;</span>
-    </div>
-</div>
+    <!-- 메인 섹션: 뷰포트 높이 내 중앙 정렬 -->
+    <div class="main-section">
 
-        <!-- Attendance Panel -->
-        <div class="sm-panel">
-            <div class="sm-panel-header">
-                <div class="sm-panel-title">Attendance Panel</div>
+        <!-- Header -->
+        <div class="header-section">
+            <div class="live-time">
+                <span class="live-dot"></span>
+                <span id="liveTime">--:--:--</span>
+                <span class="live-dot"></span>
             </div>
-
-            <div id="timeInputWrapper" class="sm-time-block">
-                <div class="sm-time-label">Time (24H)</div>
-                <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8" class="sm-time-input">
-            </div>
-
-            <select id="specialStatus" onchange="toggleInputMode()" class="sm-select">
-                <option value="">--- REGULAR (IN / OUT) ---</option>
-                <option value="WO">WO — Work Out</option>
-                <option value="PEL">PEL — Personal Leave</option>
-                <option value="ANL">ANL — Annual Leave</option>
-                <option value="HAL">HAL — Half Day Leave</option>
-                <option value="SIL">SIL — Sick Leave</option>
-                <option value="SPL">SPL — Special Leave</option>
-            </select>
-
-            <div id="buttonArea" class="sm-btn-row">
-                <button id="btnIn" onclick="handleAttendance('attend')" class="sm-btn in">SET IN</button>
-                <button id="btnOut" onclick="handleAttendance('leave')" class="sm-btn out">SET OUT</button>
-            </div>
-            <div id="specialButtonArea" style="display:none; margin-bottom:10px;">
-                <button onclick="handleSpecialStatus()" class="sm-btn special">SAVE STATUS</button>
-            </div>
+            <h1 class="greeting">
+                Hello, <span id="userGreeting">—</span>
+            </h1>
+            <p class="sub-label">Select Task To Continue</p>
         </div>
 
-        <!-- All Staff Button -->
-        <button onclick="window.switchTab && window.switchTab('all')" class="sm-all-staff-btn">
-            <img src="images/gif/click.gif" alt="click">
-            <span>All Staff Record</span>
-            <span class="arrow">❯</span>
-        </button>
+        <!-- Menu Cards (4D Enhanced) -->
+        <div class="menu-grid">
+            <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+                </div>
+                <span class="card-label">Attendance</span>
+                <span class="card-status" id="status-attendance">Loading...</span>
+            </div>
+            <div class="menu-card" onclick="navigateTo('staff_report.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+                </div>
+                <span class="card-label">Work<br>Report</span>
+                <span class="card-status" id="status-report">No pending</span>
+            </div>
+            <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+                </div>
+                <span class="card-label">Calendar</span>
+                <span class="card-status" id="status-calendar">Next: None</span>
+            </div>
+            <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+                </div>
+                <span class="card-label">Vacation</span>
+                <span class="card-status" id="status-vacation">-- Days Left</span>
+            </div>
+        </div>
 
-    </div>
+        <!-- Bottom actions -->
+        <div class="bottom-actions">
+            <button class="action-btn settings" onclick="navigateTo('staff_setting.html')">
+                <div class="action-icon">⚙️</div>
+                <span class="action-label">Settings</span>
+            </button>
+            <div class="divider"></div>
+            <button class="action-btn logout" onclick="handleLogout()">
+                <div class="action-icon">🚪</div>
+                <span class="action-label">Logout</span>
+            </button>
+        </div>
 
-    <!-- ══ RIGHT PANEL: Calendar ══ -->
-    <div class="sm-right">
-        <div class="sm-cal-card">
-            <div class="sm-cal-header">
-                <div id="currentMonthYear" class="sm-cal-title"></div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <div class="sm-cal-nav">
-                        <button onclick="changeMonth(-1)" class="sm-nav-btn">PREV</button>
-                        <button onclick="goToday()" class="sm-nav-btn today-btn">TODAY</button>
-                        <button onclick="changeMonth(1)" class="sm-nav-btn">NEXT</button>
-                    </div>
+    </div><!-- /.main-section -->
+
+    <!-- Info Card: 스크롤하면 보이는 영역 -->
+    <div class="info-card">
+        <div class="info-grid">
+            <!-- 좌측: 인도네시아 뉴스 -->
+            <div class="info-section">
+                <div class="info-title">📰 Indonesia News Today</div>
+                <div id="indo-news-list"><div class="info-loading">Loading news...</div></div>
+            </div>
+            <!-- 우측: 날씨 + 명언 + 행운 -->
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="info-section">
+                    <div class="info-title">🌤 Jakarta Weather</div>
+                    <div id="weather-info"><div class="info-loading">Loading...</div></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-title">💬 Quote of the Day</div>
+                    <div id="quote-info"><div class="info-loading">Loading...</div></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-title">🍀 Your Lucky Numbers</div>
+                    <div id="lucky-info"><div class="info-loading">Loading...</div></div>
                 </div>
             </div>
-
-            <div class="overflow-x-auto no-scrollbar">
-<table class="sm-cal-table">
-    <colgroup>
-        <col class="weekend">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekend">
-    </colgroup>
-    <thead>
-        <tr>
-            <th class="sun">Sun</th>
-                            <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
-                            <th class="sat">Sat</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendarBody"></tbody>
-                </table>
-            </div>
         </div>
     </div>
+
+</div><!-- /.content-wrapper -->
+
+<div id="profileCustomModal" class="profile-modal-overlay" onclick="closeProfileModal()">
+    <div class="profile-modal" onclick="event.stopPropagation()">
+        <h3 id="modalTitle" style="color:#fff;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:15px;">SELECT PROFILE</h3>
+        <div id="modalBody" class="profile-grid"></div>
+        <button onclick="closeProfileModal()" style="width:100%;margin-top:20px;padding:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;font-weight:700;cursor:pointer;">CLOSE</button>
+    </div>
 </div>
+    <input type="file" id="profileInput" accept="image/*" style="display: none;" />
 
 <script>
-/* ── Fortune ── */
-function showFortune() {
-    const fortunes = [
-        "Waktunya istirahat kopi sejenak! ☕","Item Keberuntungan: Pulpen biru 🖋️","Fokus Anda luar biasa hari ini! 🔥",
-        "Sapa rekan kerja Anda hari ini! 😊","Manjakan diri dengan makan siang yang enak! 🍱","Bagaimana kalau peregangan sejenak? 🧘",
-        "Senyum Anda mencerahkan tim ini! ✨","Rencanakan sesuatu yang seru setelah kerja! 🎈","Kesuksesan sedang menuju ke arah Anda! 🚀",
-        "Dengarkan lagu favorit Anda sekarang 🎵","Anda melakukan pekerjaan yang luar biasa! 👍","Jangan lupa minum air putih 💧",
-        "Ada kejutan kecil menanti Anda 🎁","Percayalah pada potensi Anda! 🌟","Tarik napas dalam-dalam santai sejenak 🌬️",
-        "Warna Keberuntungan: Hijau Zamrud 🟢","Kerja keras Anda akan membuahkan hasil! 💰","Tetap positif, kerja keras! ✨",
-        "Efisiensi adalah nama tengah Anda hari ini ⏱️","Seseorang berterima kasih atas bantuan Anda! ❤️",
-        "Hari ini hari yang sempurna untuk awal yang baru 🌅","Yang terbaik masih akan datang! 🌈",
-        "Jangan lupa berkedip! Istirahatkan mata Anda 👀","Kreativitas Anda tidak ada batasnya 🎨",
-        "Teruslah melangkah, Anda hampir sampai! 🏁","Kata-kata baik sangat berarti bagi orang lain 🗣️",
-        "Keberuntungan memihak mereka yang berani! 💪","Keajaiban terjadi di luar zona nyaman Anda ✨",
-        "Anda lebih mampu dari yang Anda kira 🧠","JACKPOT! Keberuntungan super langka! 🎰"
+    /* ═══════════════════════════════════════════
+        DYNAMIC BACKGROUND & CORE LOGIC
+    ═══════════════════════════════════════════ */
+    (function() {
+        // 1. 사용자 확인 및 기본 설정
+        const user = sessionStorage.getItem('loggedInUser');
+        if (!user) location.href = 'index.html';
+        document.getElementById('userGreeting').innerText = user || '—';
+
+        let PEXELS_API_KEY = null;
+        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        /* --- [수정] 새로운 프로필 이미지 리스트 정의 --- */
+        const PROFILE_IMAGES = [
+            'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp', 
+            'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
+            'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
+            'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
+            'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
+            'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
+            'image-26.gif', 'image-27.gif'
+        ];
+
+/* --- [수정] 공통 모달 열기 함수 --- */
+window.openProfileModal = function(title, bodyHtml) { 
+    const m = document.getElementById('profileCustomModal'); 
+    const t = document.getElementById('modalTitle');
+    const b = document.getElementById('modalBody');
+    
+    if(t) t.innerText = title; 
+    if(b) b.innerHTML = bodyHtml; 
+    // classList 대신 style.display로 확실하게 제어
+    if(m) m.style.display = 'flex'; 
+};
+
+/* --- [수정] 모달 닫기 함수 --- */
+window.closeProfileModal = function() {
+    const m = document.getElementById('profileCustomModal');
+    if(m) m.style.display = 'none';
+};
+
+        /* --- [수정] 프로필 이미지 피커 실행 함수 --- */
+window.openProfileImagePicker = function() { 
+    let g = ""; // 바깥쪽 div 제거
+    PROFILE_IMAGES.forEach(i => { 
+        g += `<div onclick="saveStaffProfile('${i}')" 
+                   class="profile-option"
+                   style="border: 2px solid transparent; transition: all 0.2s; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; cursor: pointer;">
+                <img src="images/profile/${i}" style="width: 100%; height: 100%; object-fit: cover;" 
+                     onerror="this.src='https://ui-avatars.com/api/?name=Error&background=random'">
+              </div>`; 
+    }); 
+    openProfileModal('Change Profile', g); 
+};
+
+        /* --- [수정] DB 저장 함수 --- */
+        window.saveStaffProfile = async function(fileName) {
+            const userId = sessionStorage.getItem('loggedInUser');
+            if (!userId) return;
+
+            if (confirm("이 이미지로 프로필을 변경하시겠습니까?")) {
+                try {
+                    await database.ref(`users/${userId}/profileImg`).set(fileName);
+                    const currentImg = document.querySelector('.profile-img');
+                    if (currentImg) currentImg.src = `images/profile/${fileName}`;
+                    alert("Profile updated!");
+                    closeProfileModal();
+                } catch (e) {
+                    console.error(e);
+                    alert("Update failed.");
+                }
+            }
+        };
+
+        /* --- [수정] 프로필 이미지 로드 함수 --- */
+/* --- [수정된] 프로필 이미지 로드 함수 --- */
+const loadProfileImg = (userId) => {
+    if (!userId) return;
+    database.ref(`users/${userId}/profileImg`).once('value', (snap) => {
+        const imgFileName = snap.val();
+        const greetingEl = document.getElementById('userGreeting');
+        
+        // 1. 기존에 이미 생성된 컨테이너가 있다면 삭제
+        const oldContainer = document.querySelector('.profile-container');
+        if (oldContainer) oldContainer.remove();
+
+        // 2. 전체를 감싸는 컨테이너 생성
+        const container = document.createElement('div');
+        container.className = 'profile-container';
+        container.onclick = () => openProfileImagePicker();
+
+        // 3. 이미지 요소 생성
+        const imgEl = document.createElement('img');
+        imgEl.className = 'profile-img';
+        imgEl.src = imgFileName ? `images/profile/${imgFileName}` : 'images/default-profile.png';
+        imgEl.onerror = () => { imgEl.src = 'https://ui-avatars.com/api/?name=' + userId; };
+        
+        // 4. 연필 아이콘 생성
+        const editIcon = document.createElement('div');
+        editIcon.className = 'profile-edit-icon';
+        editIcon.innerHTML = '✏️'; // 또는 <i class="fas fa-pen"></i> 등 아이콘 폰트
+
+        // 5. 구조 조립 및 화면 삽입
+        container.appendChild(imgEl);
+        container.appendChild(editIcon);
+        
+        // 인사말(span) 바로 뒤에 삽입
+        greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
+    });
+};
+
+        /* ── [기능 3] 실시간 상태 정보 (기존 유지) ── */
+        const updateStaffStatus = (userId) => {
+            if (!userId) return;
+            const getLastWorkDay = () => {
+                const d = new Date();
+                const dayOfWeek = d.getDay();
+                if (dayOfWeek === 1) d.setDate(d.getDate() - 3);
+                else if (dayOfWeek === 0) d.setDate(d.getDate() - 2);
+                else d.setDate(d.getDate() - 1);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const date = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${date}`;
+            };
+            const targetDateStr = getLastWorkDay();
+
+            database.ref(`attendance/${targetDateStr}/${userId}`).on('value', (snap) => {
+                const data = snap.val();
+                const el = document.getElementById('status-attendance');
+                if(el) {
+                    const inTime = (data && data.attend) ? data.attend : "Not Checked-in";
+                    const outTime = (data && data.leave) ? data.leave : "Not Checked-Out";
+                    el.innerHTML = `Yesterday In: ${inTime}<br>Yesterday Out: ${outTime}`;
+                    el.style.color = (data && (data.attend || data.leave)) ? "var(--cyan)" : "var(--rose)";
+                }
+            });
+
+            database.ref(`reports/${targetDateStr}/${userId}`).on('value', (snap) => {
+                const data = snap.val();
+                const el = document.getElementById('status-report');
+                if(el) {
+                    if (data && data.todo && data.todo.trim() !== "") {
+                        el.innerText = "Yesterday Report: Submitted";
+                        el.style.color = "var(--cyan)";
+                    } else {
+                        el.innerText = "Yesterday Report: Required";
+                        el.style.color = "var(--rose)";
+                    }
+                }
+            });
+
+            database.ref(`schedules/${userId}/today_next`).on('value', (snap) => {
+                const nextEvent = snap.val();
+                const el = document.getElementById('status-calendar');
+                if(el) el.innerText = nextEvent ? `Next: ${nextEvent}` : "No more plans";
+            });
+
+            database.ref(`staff_info/${userId}/vacation_left`).on('value', (snap) => {
+                const days = snap.val() || 0;
+                const el = document.getElementById('status-vacation');
+                if(el) el.innerText = `${days} Days Left`;
+            });
+        };
+
+        // 초기 실행
+        if (user) {
+            loadProfileImg(user);
+            updateStaffStatus(user);
+        }
+
+        /* ── [기능 4] 배경화면 및 기타 UI (기존 유지) ── */
+        const updateBackground = async () => {
+            if (!PEXELS_API_KEY) return;
+            try {
+                const response = await fetch(
+                    "https://api.pexels.com/v1/search?query=jakarta city&per_page=30",
+                    { headers: { Authorization: PEXELS_API_KEY } }
+                );
+                const data = await response.json();
+                if (data.photos && data.photos.length > 0) {
+                    const randomPhoto = data.photos[Math.floor(Math.random() * data.photos.length)];
+                    const imgUrl = randomPhoto.src.large2x || randomPhoto.src.landscape;
+                    const bgLayer = document.getElementById('dynamicBg');
+                    bgLayer.style.backgroundImage = `url('${imgUrl}')`;
+                }
+            } catch (e) { console.error("Pexels Error:", e); }
+        };
+
+        database.ref('settings/config/PexelAPI').once('value', (snap) => {
+            if (snap.exists()) {
+                PEXELS_API_KEY = snap.val();
+                updateBackground();
+                setInterval(updateBackground, 10000);
+            }
+        });
+
+        window.navigateTo = (page) => {
+            sessionStorage.setItem('targetPage', page);
+            location.href = 'staff.html';
+        };
+
+        window.handleLogout = () => {
+            if (confirm("Do you want to logout?")) {
+                sessionStorage.clear();
+                localStorage.removeItem('loggedInUser');
+                location.replace('index.html');
+            }
+        };
+
+        function updateClock() {
+            document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+/* ── Daily Info Panel ── */
+(async function loadDailyInfo() {
+    // ① 날씨 (Jakarta - Open-Meteo 무료)
+    try {
+        const wr = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FJakarta&forecast_days=1');
+        const wd = await wr.json();
+        const cw = wd.current_weather;
+        const wCodes = {0:'☀️ Clear',1:'🌤 Mainly Clear',2:'⛅ Partly Cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Icy Fog',51:'🌦 Drizzle',61:'🌧 Rain',71:'❄️ Snow',80:'🌧 Showers',95:'⛈ Thunderstorm'};
+        const desc = wCodes[cw.weathercode] || '🌡 ' + cw.weathercode;
+        const max = wd.daily.temperature_2m_max[0], min = wd.daily.temperature_2m_min[0];
+        document.getElementById('weather-info').innerHTML = `
+            <div class="stat-row"><span class="stat-label">Condition</span><span class="stat-value" style="font-size:10px;">${desc}</span></div>
+            <div class="stat-row"><span class="stat-label">Now</span><span class="stat-value" style="color:var(--cyan);">${cw.temperature}°C</span></div>
+            <div class="stat-row"><span class="stat-label">High / Low</span><span class="stat-value" style="font-size:10px;">${max}° / ${min}°</span></div>
+            <div class="stat-row"><span class="stat-label">Wind</span><span class="stat-value" style="font-size:10px;">${cw.windspeed} km/h</span></div>`;
+    } catch(e) {
+        document.getElementById('weather-info').innerHTML = '<div class="info-loading">Weather unavailable</div>';
+    }
+
+    // ② 명언 (랜덤 고정 리스트)
+    const quotes = [
+        {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+        {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+        {q:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
+        {q:"Success is not final, failure is not fatal.",a:"Winston Churchill"},
+        {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+        {q:"The harder you work, the luckier you get.",a:"Gary Player"},
+        {q:"Dream big and dare to fail.",a:"Norman Vaughan"},
+        {q:"Act as if what you do makes a difference. It does.",a:"William James"},
+        {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
+        {q:"Energy and persistence conquer all things.",a:"Benjamin Franklin"},
+        {q:"Opportunities don't happen. You create them.",a:"Chris Grosser"},
+        {q:"Great things never come from comfort zones.",a:"Unknown"},
+        {q:"Push yourself, because no one else is going to do it for you.",a:"Unknown"},
+        {q:"Little things make big days.",a:"Unknown"},
+        {q:"It's going to be hard, but hard is not impossible.",a:"Unknown"},
     ];
-    const area = document.getElementById('fortuneArea');
-    if (!area) return;
-    const div = document.createElement('div');
-    div.className = 'fortune-bubble';
-    div.textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
-    area.innerHTML = '';
-    area.appendChild(div);
-}
-setTimeout(showFortune, 1000);
+    const todaySeed = new Date().getDate() + new Date().getMonth() * 31;
+    const q = quotes[todaySeed % quotes.length];
+    document.getElementById('quote-info').innerHTML = `
+        <div class="quote-text">"${q.q}"</div>
+        <div class="quote-author">— ${q.a}</div>`;
 
-function getJakartaDate() {
-    return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-}
+    // ③ 행운 번호 (오늘 날짜 시드 기반)
+    const seed = new Date().getFullYear() * 10000 + (new Date().getMonth()+1) * 100 + new Date().getDate();
+    const rand = (s, min, max) => { let x = Math.sin(s) * 10000; return min + Math.floor((x - Math.floor(x)) * (max - min + 1)); };
+    const nums = [], colors = ['#3b82f6','#06b6d4','#818cf8','#f59e0b','#10b981','#f43f5e'];
+    for(let i = 0; i < 6; i++) { let n; do { n = rand(seed + i * 7, 1, 49); } while(nums.includes(n)); nums.push(n); }
+    const luckyColor = ['Red 🔴','Blue 🔵','Green 🟢','Gold 🟡','Purple 🟣','White ⚪'][rand(seed, 0, 5)];
+    document.getElementById('lucky-info').innerHTML = `
+        <div class="lucky-nums">${nums.map((n,i)=>`<div class="lucky-num" style="background:${colors[i]};box-shadow:0 0 8px ${colors[i]}60;">${n}</div>`).join('')}</div>
+        <div class="stat-row" style="margin-top:8px;"><span class="stat-label">Lucky Color</span><span class="stat-value" style="font-size:10px;">${luckyColor}</span></div>`;
 
-(function () {
-    const user = sessionStorage.getItem('loggedInUser');
-    const db = firebase.database();
-
-    /* Welcome */
-    const welcomeMsg = document.getElementById('mainWelcomeMsg');
-    if (welcomeMsg) welcomeMsg.innerText = user || '—';
-
-    if (user) { checkLeaveStatus(user); autoFillYesterdayLeave(user); }
-
-    let now = getJakartaDate();
-    let viewDate = new Date(now);
-    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-    const todayStr = `${y}-${m}-${d}`;
-    let standardTime = "", hasCheckedMissing = false;
-    const btnIn = document.getElementById('btnIn');
-    const timeInput = document.getElementById('manualTime');
-
-    /* Live date label */
-    document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'Asia/Jakarta'}).toUpperCase();
-
-    /* ── Today's In/Out display ── */
-    function updateTodayStrip(data) {
-        const rec = data && data[user] ? data[user] : null;
-        const inEl = document.getElementById('todayInDisplay');
-        const outEl = document.getElementById('todayOutDisplay');
-        if (!rec) { inEl.textContent = '—'; outEl.textContent = '—'; return; }
-        if (typeof rec === 'string') { inEl.textContent = rec; outEl.textContent = '—'; return; }
-        if (rec.attend) {
-            const m = rec.attend.match(/\d{1,2}:\d{2}/);
-            const prefix = rec.attend.includes('LATE') ? '⚠ ' : '';
-            inEl.textContent = prefix + (m ? m[0] : rec.attend);
-            inEl.style.color = rec.attend.includes('LATE') ? 'var(--red)' : 'var(--green)';
-        } else { inEl.textContent = '—'; }
-        if (rec.leave) {
-            const m = rec.leave.match(/\d{1,2}:\d{2}/);
-            outEl.textContent = m ? m[0] : rec.leave;
-        } else { outEl.textContent = '—'; }
-    }
-    db.ref(`attendance/${todayStr}`).on('value', snap => updateTodayStrip(snap.val()));
-
-    /* ── Leave Status Alert ── */
-    function checkLeaveStatus(uid) {
-        db.ref(`leaves/${uid}/${new Date().getFullYear()}`).on('value', snap => {
-            const leaves = snap.val(); if (!leaves) return;
-            const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
-            const alertDiv = document.getElementById('leaveStatusAlert');
-            const content = document.getElementById('leaveAlertContent');
-            const icon = document.getElementById('leaveAlertIcon');
-            const title = document.getElementById('leaveAlertTitle');
-            const msg = document.getElementById('leaveAlertMsg');
-            if (target) {
-                alertDiv.classList.add('visible');
-                if (target.status === 'Pending') {
-                    content.className = 'sm-leave-alert pending animate-pulse-slow';
-                    icon.innerText = '⏳'; title.className = 'sm-leave-alert-title pending'; title.innerText = 'Leave Request Pending';
-                    msg.innerText = `${target.type} (${target.startDate}) awaiting approval.`;
-                } else {
-                    content.className = 'sm-leave-alert rejected';
-                    icon.innerText = '🚫'; title.className = 'sm-leave-alert-title rejected'; title.innerText = 'Leave Request Rejected';
-                    msg.innerText = `${target.type} was rejected. Check admin memo.`;
-                }
-            } else { alertDiv.classList.remove('visible'); }
-        });
-    }
-
-    /* ── Auto Fill Yesterday Leave ── */
-    function autoFillYesterdayLeave(uid) {
-        const now = getJakartaDate(), dow = now.getDay();
-        const target = getJakartaDate();
-        if (dow === 1) target.setDate(now.getDate()-3); else target.setDate(now.getDate()-1);
-        const ty=target.getFullYear(), tm=String(target.getMonth()+1).padStart(2,'0'), td=String(target.getDate()).padStart(2,'0');
-        const tStr=`${ty}-${tm}-${td}`, tdow=target.getDay();
-        if (tdow===0||tdow===6) return;
-        db.ref('settings/config/autoLeave').once('value', cs => {
-            const autoLeaveTime = cs.val()||"18:00";
-            db.ref('attendance/'+tStr).once('value', snap => {
-                const all=snap.val(); if (!all) return;
-                const my=all[uid];
-                if (my&&typeof my==='object'&&my.attend&&!my.leave) {
-                    db.ref(`attendance/${tStr}/${uid}`).update({leave:autoLeaveTime}).then(()=>{ if(typeof renderCalendar==='function') renderCalendar(); });
-                }
-            });
-        });
-    }
-
-    /* ── Live Time ── */
-    function updateLiveTime() {
-        if (document.activeElement===timeInput) return;
-        const n=getJakartaDate();
-        timeInput.value=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-    }
-    setInterval(updateLiveTime, 1000); updateLiveTime();
-    timeInput.addEventListener('input', e => {
-        let v=e.target.value.replace(/[^0-9]/g,'');
-        if(v.length>=5) v=v.substring(0,2)+':'+v.substring(2,4)+':'+v.substring(4,6);
-        else if(v.length>=3) v=v.substring(0,2)+':'+v.substring(2,4);
-        e.target.value=v;
-    });
-
-    function isValidTime(t) { return t && /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t); }
-
-    /* ── Config ── */
-    let config = { LLMAPIkey:"", autoLeave:"18:00", stdAttendance:"08:00" };
-    db.ref('settings/config').on('value', snap => {
-        const data=snap.val(); if(data) { config={...config,...data}; const e=document.getElementById('displayStdTime'); if(e) e.innerText=config.stdAttendance; standardTime=config.stdAttendance; }
-    });
-    db.ref('settings/config/stdAttendance').on('value', snap => {
-        const v=snap.val(); if(v) { standardTime=v; const e=document.getElementById('displayStdTime'); if(e) e.innerText=v; if(btnIn) btnIn.disabled=false; }
-    });
-
-    /* ── AI ── */
-    let isAILoading=false;
-    async function fetchAIComment(type, time, userName) {
-        if (!config.LLMAPIkey||isAILoading) return getFallbackMessage(type);
-        isAILoading=true;
-        let weatherInfo="sedang bagus";
-        try { const wr=await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true"); const wd=await wr.json(); if(wd.current_weather) weatherInfo=`${wd.current_weather.temperature}°C`; } catch(e){}
-        const isAttend=type==='attend';
-        const prompt=isAttend?`[ATTENDANCE] User:${userName} Time:${time} Jakarta Temp:${weatherInfo} 1.Greet+mention temp 2.One short Indonesian Peribahasa 3.Short tebak-tebakan about coffee/work. Indonesian only.`:`[LEAVING] User:${userName} Time:${time} 1.Thank for hard work 2.One Indonesian Peribahasa about resting 3.Short witty office joke. Indonesian only.`;
-        try {
-            const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${config.LLMAPIkey}`},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"system",content:"Respond in Indonesian, concise under 3 sentences."},{role:"user",content:prompt}],temperature:0.8,max_tokens:250})});
-            if(res.status===429) return getFallbackMessage(type);
-            const data=await res.json(); return data.choices[0].message.content.trim();
-        } catch(e) { return getFallbackMessage(type); } finally { setTimeout(()=>{isAILoading=false;},2000); }
-    }
-    function getFallbackMessage(type) { return type==='attend'?"Selamat pagi! Semoga hari Anda menyenangkan! 😊":"Terima kasih atas kerja keras Anda hari ini! Selamat beristirahat! 👏"; }
-    function showAIPopup(message) {
-        const overlay=document.createElement('div'); overlay.className='missing-modal-overlay';
-        overlay.innerHTML=`<div class="missing-modal border-blue-500/50 border-2 text-center"><p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4">AI Assistant Message</p><div class="text-white text-lg font-bold leading-relaxed mb-6">"${message}"</div><button onclick="this.parentElement.parentElement.remove()" class="close-modal-btn w-full py-3 hover:bg-blue-600 transition-colors">OK, NOTED!</button></div>`;
-        document.body.appendChild(overlay);
-    }
-
-    /* ── Handle Attendance ── */
-    window.handleAttendance = function(type) {
-        if(!type||typeof type!=='string') return;
-        const btn=type==='attend'?document.getElementById('btnIn'):document.getElementById('btnOut');
-        if(btn.disabled) return;
-        const rawTime=timeInput.value;
-        if(!isValidTime(rawTime)) { alert("Please enter a valid time (HH:mm:ss)."); return; }
-        btn.disabled=true; btn.style.opacity="0.5";
-        const parts=rawTime.split(':'), storageTime=`${parts[0]}:${parts[1]}`;
-        db.ref('users/'+user+'/WarnFlag').once('value', wSnap => {
-            const warnFlag=wSnap.val();
-            db.ref('attendance/'+todayStr+'/'+user).once('value', snap => {
-                const cur=snap.val()||{};
-                if(type==='attend'&&cur.attend) { alert("Attendance time has already been set."); btn.disabled=false; btn.style.opacity="1"; return; }
-                let finalVal=storageTime;
-                if(type==='attend') {
-                    if(!standardTime) { alert("Standard time is loading..."); btn.disabled=false; btn.style.opacity="1"; return; }
-                    if(warnFlag==="off") { finalVal=`ATT(${storageTime})`; }
-                    else { const [iH,iM]=storageTime.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number); finalVal=(iH*60+iM<=sH*60+sM)?`ATT(${storageTime})`:`LATE(${storageTime})`; }
-                }
-                if(confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-                    db.ref('attendance/'+todayStr+'/'+user).update({[type]:finalVal})
-                    .then(async()=>{ if(!isAILoading){const aiMsg=await fetchAIComment(type,storageTime,user);showAIPopup(aiMsg);} })
-                    .finally(()=>{ btn.disabled=false; btn.style.opacity="1"; });
-                } else { btn.disabled=false; btn.style.opacity="1"; }
-            });
-        });
-    };
-
-    /* ── Stats ── */
-    function updateAttendanceStats(data) {
-        const vy=viewDate.getFullYear(), vm=viewDate.getMonth()+1;
-        let total=0,late=0,att=0,totalLeaveMins=0,leaveCnt=0;
-        Object.keys(data).forEach(ds=>{
-            const [yr,mo]=ds.split('-').map(Number);
-            if(yr===vy&&mo===vm) {
-                const rec=data[ds][user];
-                if(rec&&typeof rec==='object'&&rec.attend) {
-                    total++; if(rec.attend.includes("LATE")) late++; else if(rec.attend.includes("ATT")) att++;
-                    if(rec.leave){const tm=rec.leave.match(/(\d{2}):(\d{2})/);if(tm){totalLeaveMins+=(parseInt(tm[1])*60+parseInt(tm[2]));leaveCnt++;}}
-                }
-            }
-        });
-        const ratio=total>0?Math.round((late/total)*100):0;
-        const pct=document.getElementById('lateRatioPercent');
-        const bar=document.getElementById('lateRatioBar');
-        const card=document.getElementById('weeklySummaryCard');
-        const status=document.getElementById('lateRatioStatus');
-        const warnIcon=document.getElementById('warningIcon');
-        if(pct) pct.innerText=`${ratio}%`;
-        if(bar&&card&&status&&warnIcon) {
-            bar.style.width=`${ratio}%`;
-            if(ratio>=50) {
-                bar.className="sm-bar-fill warning"; card.classList.add('warning-pulse');
-                status.innerText="Aku terlambat!"; status.className="sm-stats-status warning animate-blink";
-                if(pct){pct.classList.add('animate-blink','warning');}
-                warnIcon.classList.add('visible');
-            } else {
-                bar.className="sm-bar-fill"; card.classList.remove('warning-pulse');
-                status.innerText="GOOD STANDING"; status.className="sm-stats-status";
-                if(pct){pct.classList.remove('animate-blink','warning');}
-                warnIcon.classList.remove('visible');
-            }
-        }
-        const sc=document.getElementById('statCounts'); if(sc) sc.innerText=`T:${total} | A:${att} | L:${late}`;
-        const avg=document.getElementById('avgLeaveTime');
-        if(avg) {
-            if(leaveCnt>0){const a=Math.round(totalLeaveMins/leaveCnt);avg.innerText=`Avg Out: ${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}`;}
-            else avg.innerText="Avg Out: --:--";
-        }
-    }
-
-    /* ── Toggle Input Mode ── */
-    window.toggleInputMode = function() {
-        const status=document.getElementById('specialStatus').value;
-        const tw=document.getElementById('timeInputWrapper');
-        const ba=document.getElementById('buttonArea');
-        const sba=document.getElementById('specialButtonArea');
-        if(status!=="") { tw.style.opacity="0.3"; tw.style.pointerEvents="none"; ba.style.display="none"; sba.style.display="block"; }
-        else { tw.style.opacity="1"; tw.style.pointerEvents=""; ba.style.display=""; sba.style.display="none"; }
-    };
-
-    window.handleSpecialStatus = function() {
-        const status=document.getElementById('specialStatus').value; if(!status) return;
-        if(confirm(`Set status to ${status}?`)) {
-            db.ref('attendance/'+todayStr+'/'+user).set(status).then(()=>{ alert("Success."); document.getElementById('specialStatus').value=""; toggleInputMode(); });
-        }
-    };
-
-    /* ── Calendar ── */
-    window.goToday = function() { viewDate=getJakartaDate(); renderCalendar(); };
-    window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth()+offset); renderCalendar(); };
-
-    function renderCalendar() {
-        const year=viewDate.getFullYear(), month=viewDate.getMonth();
-        const firstDay=new Date(year,month,1).getDay(), lastDate=new Date(year,month+1,0).getDate();
-        const mye=document.getElementById('currentMonthYear');
-        if(mye) mye.innerText=viewDate.toLocaleString('en-US',{month:'long',year:'numeric'}).toUpperCase();
-        db.ref('attendance').off();
-        db.ref('attendance').on('value', snap => {
-            const tbody=document.getElementById('calendarBody'); if(!tbody) return;
-            const data=snap.val()||{};
-            updateAttendanceStats(data);
-            if(!hasCheckedMissing){checkMissingRecords(data);hasCheckedMissing=true;}
-            tbody.innerHTML=''; let dc=1;
-            for(let i=0;i<6;i++){
-                let row=document.createElement('tr');
-                for(let j=0;j<7;j++){
-                    let cell=document.createElement('td');
-                    if(i===0&&j<firstDay||dc>lastDate){row.appendChild(cell);continue;}
-                    const dStr=`${year}-${String(month+1).padStart(2,'0')}-${String(dc).padStart(2,'0')}`;
-                    const rec=data[dStr]?data[dStr][user]:null;
-                    if(j===0) cell.classList.add('sun-cell');
-                    else if(j===6) cell.classList.add('sat-cell');
-                    if(dStr===todayStr) cell.classList.add('today-highlight');
-                    cell.style.cursor='pointer';
-                    cell.onclick=()=>openEditPopup(dStr,rec);
-                    const numCls=j===0?'sun':j===6?'sat':dStr===todayStr?'today':'';
-                    let content=`<div class="sm-cal-date ${numCls}">${dc}</div>`;
-                    if(rec){
-                        if(typeof rec==='string'){
-                            content+=`<span class="time-label other-color">${rec}</span>`;
-                        } else {
-                            let at=rec.attend||"";
-                            if(at){const am=at.match(/(\d{1,2}:\d{2})/),px=at.includes("LATE")?"LATE":"ATT",cl=at.includes("ATT")?"att-color":"late-color";content+=`<span class="time-label ${cl}">☀${am?px+'('+am[1]+')':at}</span>`;}
-                            if(rec.leave){const lm=rec.leave.match(/(\d{1,2}:\d{2})/);content+=`<span class="time-label out-time">🌙${lm?lm[1]:rec.leave}</span>`;}
-                        }
-                    }
-                    cell.innerHTML=content; row.appendChild(cell); dc++;
-                }
-                tbody.appendChild(row); if(dc>lastDate) break;
-            }
-        });
-    }
-
-    /* ── Edit Popup ── */
-window.openEditPopup = function(dateStr, currentRec) {
-    if(document.getElementById('editPopup')) return;
-    
-    // 미래 날짜 체크
-    const clickedDate = new Date(dateStr);
-    const today = new Date(todayStr);
-    const isFutureDate = clickedDate > today;
-    
-    let attVal="",leaveVal="",isAttReadOnly=false,isLeaveInfo=false,leaveTypeText="";
-    const leaveCodes=["PEL","ANL","HAL","SIL","SPL","WO"];
-    
-    // 미래 날짜인 경우: 휴가 타입만 선택 가능
-    if(isFutureDate) {
-        const overlay=document.createElement('div'); 
-        overlay.id='editPopup'; 
-        overlay.className='edit-modal-overlay';
+    // ④ 인도네시아 뉴스 (RSS → allorigins 프록시)
+    try {
+        const rssUrl = 'https://news.google.com/rss/search?q=indonesia+electric+vehicle+OR+motor+listrik+OR+mobil+listrik&hl=id&gl=ID&ceid=ID:id';
+        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxy);
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item')).slice(0, 10);
         
-        overlay.innerHTML=`
-        <div class="edit-modal">
-            <div class="mb-4 text-center">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">📅 Future Date Leave</p>
-                <h3 class="text-white font-black text-lg">${dateStr}</h3>
-                <p class="text-[9px] text-slate-500 mt-2">You can only set leave type for future dates</p>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2">Select Leave Type</label>
-                    <select id="futureLeaveType" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-sm">
-                        <option value="">--- Select Leave Type ---</option>
-                        <option value="WO">WO — Work Out</option>
-                        <option value="PEL">PEL — Personal Leave</option>
-                        <option value="ANL">ANL — Annual Leave</option>
-                        <option value="HAL">HAL — Half Day Leave</option>
-                        <option value="SIL">SIL — Sick Leave</option>
-                        <option value="SPL">SPL — Special Leave</option>
-                    </select>
-                </div>
-<div class="grid grid-cols-3 gap-2 mt-6">
-    <button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">
-        Cancel
-    </button>
-    <button onclick="deleteFutureLeave('${dateStr}')" class="bg-rose-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-rose-500/20">
-        Delete
-    </button>
-    <button onclick="saveFutureLeave('${dateStr}')" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">
-        Save
-    </button>
-</div>
-                </div>
-            </div>
-        </div>`;
-        
-        document.body.appendChild(overlay);
-        return;
-    }
-    
-    // 기존 코드 (과거/오늘 날짜 처리) - 변경 없음
-    if(currentRec){
-        if(typeof currentRec==='string'){
-            if(leaveCodes.includes(currentRec)){
-                isLeaveInfo=true;
-                leaveTypeText=currentRec;
-            }
-            attVal=currentRec;
-            isAttReadOnly=true;
+        if(items.length > 0) {
+            const evKeywords = ['listrik','electric','ev','byd','wuling','hyundai','battery','baterai'];
+            document.getElementById('indo-news-list').innerHTML = items.map(item => {
+                const title = item.querySelector('title')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || '#';
+                const isEV = evKeywords.some(k => title.toLowerCase().includes(k));
+                return `<div class="news-item" onclick="window.open('${link}','_blank')">
+                    ${isEV ? '<span class="news-badge ev">EV</span>' : '<span class="news-badge">NEWS</span>'}${title.substring(0,60)}${title.length>60?'...':''}
+                </div>`;
+            }).join('');
+        } else {
+            throw new Error('No items');
         }
-        else{
-            if(currentRec.attend){
-                const tm=currentRec.attend.match(/(\d{1,2}:\d{2})/);
-                if(tm){
-                    const[h,mn]=tm[1].split(':');
-                    attVal=`${h.padStart(2,'0')}:${mn}`;
-                }else{
-                    if(leaveCodes.includes(currentRec.attend)){
-                        isLeaveInfo=true;
-                        leaveTypeText=currentRec.attend;
-                    }
-                    attVal=currentRec.attend;
-                }
-                isAttReadOnly=true;
-            }
-            if(currentRec.leave){
-                const lm=currentRec.leave.match(/(\d{1,2}:\d{2})/);
-                if(lm){
-                    const[h,mn]=lm[1].split(':');
-                    leaveVal=`${h.padStart(2,'0')}:${mn}`;
-                }else leaveVal=currentRec.leave;
-            }
-        }
+    } catch(e) {
+        // RSS 실패 시 하드코딩 뉴스
+        const fallbackNews = [
+            {t:'Pemerintah dorong percepatan kendaraan listrik nasional',ev:true},
+            {t:'PLN perluas jaringan SPKLU di seluruh Indonesia',ev:true},
+            {t:'Motor listrik lokal semakin diminati konsumen Indonesia',ev:true},
+            {t:'BYD Indonesia luncurkan model terbaru dengan harga kompetitif',ev:true},
+            {t:'Subsidi motor listrik 2025 resmi diperpanjang pemerintah',ev:true},
+            {t:'Industri baterai EV Indonesia terus berkembang pesat',ev:true},
+            {t:'Wuling Air EV raih penjualan tertinggi bulan ini',ev:true},
+            {t:'Pemerintah bangun 1000 SPKLU baru di Jawa-Bali',ev:true},
+            {t:'Pertumbuhan ekonomi Indonesia Q1 2025 capai target',ev:false},
+            {t:'Bank Indonesia pertahankan suku bunga acuan',ev:false},
+        ];
+        document.getElementById('indo-news-list').innerHTML = fallbackNews.map(n=>
+            `<div class="news-item">${n.ev?'<span class="news-badge ev">EV</span>':'<span class="news-badge">NEWS</span>'}${n.t}</div>`
+        ).join('');
     }
-    
-    const overlay=document.createElement('div'); 
-    overlay.id='editPopup'; 
-    overlay.className='edit-modal-overlay';
-    
-    let footerButtons=isLeaveInfo?
-        `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>`
-        :
-        `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
-        <button onclick="saveEditRecord('${dateStr}',${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
-    
-    overlay.innerHTML=`
-    <div class="edit-modal">
-        <div class="mb-4 text-center">
-            <p class="text-[10px] font-black ${isLeaveInfo?'text-amber-500':(isAttReadOnly?'text-rose-500':'text-emerald-500')} uppercase tracking-widest mb-1">
-                ${isLeaveInfo?'📅 Leave Information':(isAttReadOnly?'⚠️ Attendance Locked':'✍️ Attendance Missing')}
-            </p>
-            <h3 class="text-white font-black text-lg">${dateStr}</h3>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
-                ${isLeaveInfo?
-                    `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>`
-                    :
-                    `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly?'readonly':''} class="w-full ${isAttReadOnly?'bg-slate-800 text-slate-400 border-slate-700':'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`
-                }
-            </div>
-            ${!isLeaveInfo?
-                `<div>
-                    <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
-                    <div class="flex gap-2">
-                        <input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
-                        <button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete">🗑️</button>
-                    </div>
-                </div>`
-                :
-                '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'
-            }
-            <div class="${isLeaveInfo?'':'grid grid-cols-2'} gap-3 mt-6">
-                ${footerButtons}
-            </div>
-        </div>
-    </div>`;
-    
-    document.body.appendChild(overlay);
-};
-
-window.saveFutureLeave = function(dateStr) {
-    const leaveType = document.getElementById('futureLeaveType').value;
-    
-    if(!leaveType) {
-        alert("Please select a leave type.");
-        return;
-    }
-    
-    // 기존 데이터 확인
-    db.ref(`attendance/${dateStr}/${user}`).once('value', snapshot => {
-        const existingData = snapshot.val();
-        
-        // 동일한 휴가 타입이 이미 저장되어 있는지 확인
-        if(existingData === leaveType) {
-            alert("You have already applied for the same leave type!");
-            return;
-        }
-        
-        // 다른 휴가 타입이거나 데이터가 없으면 저장 진행
-        if(confirm(`Set ${leaveType} for ${dateStr}?`)) {
-            db.ref(`attendance/${dateStr}/${user}`).set(leaveType)
-            .then(() => {
-                alert("Future leave has been saved successfully.");
-                document.getElementById('editPopup').remove();
-                if(typeof renderCalendar === 'function') renderCalendar();
-            })
-            .catch(e => {
-                console.error(e);
-                alert("Failed to save: " + e.message);
-            });
-        }
-    });
-};
-
-window.deleteFutureLeave = function(dateStr) {
-    if(!confirm(`Delete leave record for ${dateStr}?`)) {
-        return;
-    }
-    
-    db.ref(`attendance/${dateStr}/${user}`).remove()
-    .then(() => {
-        alert("Leave record has been deleted successfully.");
-        document.getElementById('editPopup').remove();
-        if(typeof renderCalendar === 'function') renderCalendar();
-    })
-    .catch(e => {
-        console.error(e);
-        alert("Failed to delete: " + e.message);
-    });
-};
-
-    window.deleteLeaveTime = function(dateStr) {
-        if(!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
-        db.ref(`attendance/${dateStr}/${user}/leave`).remove()
-        .then(()=>{alert("Leave time has been deleted.");const p=document.getElementById('editPopup');if(p)p.remove();if(typeof renderCalendar==='function')renderCalendar();})
-        .catch(e=>{console.error(e);alert("Failed to delete record.");});
-    };
-
-    window.saveEditRecord = function(dateStr, isAttReadOnly) {
-        const newAtt=document.getElementById('editAttTime').value;
-        const newLeave=document.getElementById('editLeaveTime').value;
-        const updateData={};
-        if(!isAttReadOnly&&newAtt){
-            if(typeof standardTime==='undefined'){alert("Standard time loading...");return;}
-            const[iH,iM]=newAtt.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number);
-            updateData.attend=(iH*60+iM<=sH*60+sM)?`ATT(${newAtt})`:`LATE(${newAtt})`;
-        }
-        if(newLeave) updateData.leave=newLeave;
-        if(Object.keys(updateData).length===0){alert("No changes to save.");return;}
-        if(confirm(`Save changes for ${dateStr}?`)){
-            firebase.database().ref('attendance/'+dateStr+'/'+user).update(updateData)
-            .then(()=>{alert("Record updated successfully.");document.getElementById('editPopup').remove();if(typeof renderCalendar==='function')renderCalendar();})
-            .catch(e=>alert("Error: "+e.message));
-        }
-    };
-
-    /* ── Missing Records Check ── */
-    async function checkMissingRecords() {
-        if(!user) return;
-        try {
-            const uSnap=await db.ref(`users/${user}/WarnFlag`).once('value');
-            if(uSnap.val()==="off") return;
-            const ts=getJakartaDate().toISOString().split('T')[0];
-            if(localStorage.getItem('hideReportPopup')===ts) return;
-            const attSnap=await db.ref('attendance').once('value');
-            const attData=attSnap.val()||{};
-            const missing=[]; const today=getJakartaDate();
-            for(let i=1;i<=6;i++){
-                const cd=new Date(today); cd.setDate(today.getDate()-i);
-                const dw=cd.getDay(); if(dw===0||dw===6) continue;
-                const cy=cd.getFullYear(),cm=String(cd.getMonth()+1).padStart(2,'0'),cdd=String(cd.getDate()).padStart(2,'0');
-                const dStr=`${cy}-${cm}-${cdd}`;
-                const attStatus=(attData[dStr]&&attData[dStr][user])?attData[dStr][user]:null;
-                const leaveCodes=["ANL","PEL","HAL","SIL","SPL"];
-                if(leaveCodes.includes(attStatus)) continue;
-                const snap=await db.ref(`reports/${dStr}/${user}`).once('value');
-                if(!snap.exists()) missing.push({date:`${dStr} (${cd.toLocaleDateString('en-US',{weekday:'short'})})`,status:"Work Report"});
-            }
-            if(missing.length>0) showMissingPopup(missing);
-        } catch(e){console.error(e);}
-    }
-
-    function showMissingPopup(missingInfo) {
-        if(document.getElementById('missingPopup')) return;
-        const overlay=document.createElement('div'); overlay.id='missingPopup'; overlay.className='missing-modal-overlay';
-        let listHtml=missingInfo.map(i=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center"><div class="text-left"><p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${i.date}</p><p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${i.status}</span></p></div><div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div></div>`).join('');
-        overlay.innerHTML=`<div class="missing-modal text-center"><div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20"><span class="text-2xl">✍️</span></div><h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3><p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p><div class="flex items-center gap-2 mb-6"><span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span><span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span></div><div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div><div class="space-y-3"><button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button><button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button></div></div>`;
-        document.body.appendChild(overlay);
-    }
-
-    window.hidePopupToday = function() {
-        localStorage.setItem('hideReportPopup', getJakartaDate().toISOString().split('T')[0]);
-        const p=document.getElementById('missingPopup'); if(p) p.remove();
-    };
-
-    document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); },800); });
-    renderCalendar();
 })();
+
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const now = new Date();
+        document.getElementById('dayName').textContent = days[now.getDay()];
+        document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
+
+        /* ── [기능 5] 4D 틸트 효과 (기존 유지) ── */
+        if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+            document.querySelectorAll('.menu-card').forEach(card => {
+                let targetRotateX = 0, targetRotateY = 0, currentRotateX = 0, currentRotateY = 0, rafId = null;
+                const lerp = (s, e, f) => s + (e - s) * f;
+                const animate = () => {
+                    currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
+                    currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
+                    card.style.transform = `perspective(2000px) translateY(-15px) translateZ(60px) scale(1.05) rotateX(${8 + currentRotateX}deg) rotateY(${currentRotateY}deg)`;
+                    rafId = requestAnimationFrame(animate);
+                };
+                card.addEventListener('mouseenter', () => rafId = requestAnimationFrame(animate));
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    targetRotateX = -((e.clientY - (rect.top + rect.height/2)) / (rect.height/2)) * 10;
+                    targetRotateY = ((e.clientX - (rect.left + rect.width/2)) / (rect.width/2)) * 10;
+                });
+                card.addEventListener('mouseleave', () => {
+                    cancelAnimationFrame(rafId);
+                    targetRotateX = 0; targetRotateY = 0;
+                    card.style.transform = '';
+                });
+            });
+        }
+    })();
 </script>
+
+</body>
+</html>

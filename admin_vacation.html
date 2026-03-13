@@ -63,7 +63,7 @@
         <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
             <h3 class="text-sm font-black text-white mb-4 flex items-center gap-2 uppercase italic">
                 <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-                Pending Leave Requests
+                Pending Vacation Requests
             </h3>
             <div id="pendingLeaveList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
@@ -83,7 +83,7 @@
     <div class="flex justify-between items-center mb-4">
         <h3 class="text-sm font-black text-white uppercase italic flex items-center gap-2">
             <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
-            <span id="statsTitle">Staff Leave Statistics (Yearly)</span>
+            <span id="statsTitle">Staff Vacation Statistics (Yearly)</span>
         </h3>
         <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
             <button onclick="toggleStatsMode('year')" id="btnStatYear" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all bg-indigo-600 text-white">YEAR</button>
@@ -350,7 +350,7 @@ function calculateStats(attData, year) {
     const filterPrefix = statsMode === 'year' ? year.toString() : `${year}-${currentMonth}`;
     
     // 제목 업데이트
-    statsTitle.innerText = statsMode === 'year' ? `Staff Leave Statistics (${year})` : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
+    statsTitle.innerText = statsMode === 'year' ? `Staff Vacation Statistics (${year})` : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
 
     let stats = {};
     Object.entries(attData).forEach(([date, dayLogs]) => {

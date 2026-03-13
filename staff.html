@@ -127,7 +127,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
             <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
             <button onclick="switchTab('setting')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
             <div class="mt-5 pt-5 border-t border-white/5">
-                <button onclick="location.href='staff_list.html'" class="w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest text-blue-400 font-black bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-2xl"><span>⬅️</span> Main Menu</button>
+                <button onclick="location.href='staff_main.html'" class="w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest text-blue-400 font-black bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-2xl"><span>⬅️</span> Main Menu</button>
             </div>
         </nav>
         <div class="pt-5 border-t border-white/5">
@@ -143,7 +143,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
     </div>
 </main>
 <nav class="lg:hidden fixed bottom-5 left-5 right-5 glass-panel rounded-[2rem] px-2 py-3 z-[2000] flex justify-around items-center border border-white/10 shadow-2xl">
-    <button onclick="location.href='staff_list.html'" class="flex flex-col items-center gap-1.5 text-blue-400 group transition-transform active:scale-90">
+    <button onclick="location.href='staff_main.html'" class="flex flex-col items-center gap-1.5 text-blue-400 group transition-transform active:scale-90">
         <span class="text-xl">⬅️</span><span class="text-[8px] font-black uppercase tracking-tighter">Menu</span>
     </button>
     <div class="w-[1px] h-8 bg-white/10 mx-1"></div>
@@ -251,7 +251,7 @@ checkTodayBirthdays();
 window.switchTab = function(t) {
     const pB = document.querySelectorAll('.pc-tab-btn'); 
     const mB = document.querySelectorAll('.mobile-tab-btn');
-    const tabMapping = { dash: 'staff_main.html', work: 'staff_report.html', schedule: 'staff_calendar.html', vacation: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
+    const tabMapping = { dash: 'staff_dashboard.html', work: 'staff_report.html', schedule: 'staff_calendar.html', vacation: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
     const activeTab = tabMapping[t] ? t : 'dash';
     pB.forEach(b => b.classList.remove('tab-active')); 
     mB.forEach(b => b.classList.remove('mobile-tab-active'));
