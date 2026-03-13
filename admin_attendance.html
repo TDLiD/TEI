@@ -27,22 +27,36 @@
     }
 
     /* ── 모바일 전용 ── */
-    @media (max-width: 768px) {
-        .calendar-table thead { display: none; }
+@media (max-width: 768px) {
+    /* table 구조 전체를 block으로 해제 */
+    .calendar-table,
+    .calendar-table thead,
+    .calendar-table tbody,
+    .calendar-table colgroup,
+    .calendar-table col,
+    .calendar-table tr,
+    .calendar-table td,
+    .calendar-table th { 
+        display: block !important; 
+        width: 100% !important;
+    }
+    .calendar-table thead { display: none !important; }
+    .calendar-table colgroup { display: none !important; }
 
-        #full_att_calendar_body {
-            display: flex; flex-direction: column;
-            gap: 14px; padding: 4px;
-        }
-        #full_att_calendar_body tr { display: contents; }
-        #full_att_calendar_body td {
-            display: block;
-            width: 100% !important;
-            height: auto !important;
-            border: none !important;
-            padding: 0 !important;
-        }
-        #full_att_calendar_body td:empty { display: none; }
+    #full_att_calendar_body {
+        display: flex !important; flex-direction: column;
+        gap: 14px; padding: 4px;
+    }
+    #full_att_calendar_body tr { display: contents !important; }
+    #full_att_calendar_body td {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        border: none !important;
+        padding: 0 !important;
+        box-sizing: border-box;
+    }
+    #full_att_calendar_body td:empty { display: none !important; }
 
         /* 모바일 카드: sunday/saturday 배경 재정의 */
         .mobile-date-card.sunday-bg  { background: linear-gradient(145deg, #2d1a1e 0%, #1a0d10 100%) !important; border: 1px solid rgba(244,63,94,0.2) !important; }
@@ -311,15 +325,68 @@ window.renderAttendanceFull = function () {
                 
                 const isMobile = window.innerWidth <= 768;
 
-                if (isMobile) {
-                    // 모바일: 오늘 날짜부터 역순으로 표시
-                    // 이번 달을 보고 있다면 '오늘'부터 시작, 이전 달을 보고 있다면 '말일'부터 시작
-                    let startDay = isCurrentMonth ? now.getDate() : lastDate;
+if (isMobile) {
+    // 모바일: tbody 직접 div로 교체하여 table 구조 완전히 우회
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;flex-direction:column;gap:14px;padding:4px;width:100%;';
+    let startDay = isCurrentMonth ? now.getDate() : lastDate;
+    for (let d = startDay; d >= 1; d--) {
+        const dateObj = new Date(year, month, d);
+        const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = dStr === todayStr;
+        const dayOfWeekIdx = dateObj.getDay();
+        const dayOfWeek = dateObj.toLocaleString('en-US', { weekday: 'long' });
+        let weekendClass = dayOfWeekIdx === 0 ? 'sunday-bg' : (dayOfWeekIdx === 6 ? 'saturday-bg' : '');
+        let dateColorClass = isToday ? 'text-blue-400' : (dayOfWeekIdx === 0 ? 'text-rose-500' : (dayOfWeekIdx === 6 ? 'text-blue-500' : 'text-white'));
+        
+        const card = document.createElement('div');
+        card.className = `mobile-date-card ${isToday ? 'today-highlight' : weekendClass}`;
 
-                    for (let d = startDay; d >= 1; d--) {
-                        createDateCell(d, year, month, data, todayStr, true, currentTbody);
-                    }
+        const dayRecords = data[dStr] || {};
+        const recordEntries = Object.entries(dayRecords);
+
+        let recordsHtml = '';
+        if (recordEntries.length > 0) {
+            recordEntries.forEach(([name, info]) => {
+                const safeInfo = encodeURIComponent(JSON.stringify(info));
+                let attHtml = '';
+                if (typeof info === 'string') {
+                    attHtml = `<span class="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-500 font-black text-[10px] border border-amber-500/20">${info}</span>`;
                 } else {
+                    const displayAttend = formatTimeShort(info.attend || "");
+                    const displayLeave = formatTimeShort(info.leave || "");
+                    const sClass = (info.attend || "").includes("LATE") ? "text-rose-500" : "text-emerald-500";
+                    attHtml = `<div class="flex flex-col items-end gap-0.5"><span class="${sClass} font-black tracking-tighter">☀️ ${displayAttend}</span>${displayLeave ? `<span class="text-slate-400 font-black tracking-tighter">🌙 ${displayLeave}</span>` : ''}</div>`;
+                }
+                recordsHtml += `<div onclick="window.openEditAttendance('${name}','${dStr}','${safeInfo}')" class="attendance-record-item flex justify-between items-center p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/30 cursor-pointer hover:bg-slate-700 hover:border-blue-500/50 transition-all active:scale-[0.98]"><span class="truncate font-black text-slate-200 text-[11px]" style="max-width:55%">${name}</span>${attHtml}</div>`;
+            });
+        } else {
+            recordsHtml = `<div class="text-[10px] text-slate-600 font-bold italic py-4 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-800">NO RECORDS</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="mobile-card-header">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-lg font-black ${dateColorClass}">${d}</span>
+                    <span class="text-[10px] font-bold ${dayOfWeekIdx===0?'text-rose-500/70':(dayOfWeekIdx===6?'text-blue-500/70':'text-slate-500')} uppercase tracking-widest">${dayOfWeek}</span>
+                </div>
+                ${isToday ? '<span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black tracking-tighter shadow-lg shadow-blue-500/40">TODAY</span>' : ''}
+            </div>
+            <div class="mobile-record-list">${recordsHtml}</div>`;
+        wrapper.appendChild(card);
+    }
+    // tbody 대신 wrapper div를 table 부모에 직접 삽입
+    const tableEl = currentTbody.closest('table');
+    if (tableEl && tableEl.parentNode) {
+        tableEl.parentNode.replaceChild(wrapper, tableEl);
+        // 월 변경 시 다시 table로 복원할 수 있도록 저장
+        wrapper.id = 'mobile-calendar-wrapper';
+    } else {
+        currentTbody.innerHTML = '';
+        currentTbody.appendChild(wrapper);
+    }
+}
+ else {
                     // 데스크톱: 표준 그리드 (1일부터 표시)
                     const firstDay = new Date(year, month, 1).getDay();
                     let dateNum = 1;
@@ -402,9 +469,32 @@ function createDateCell(dateNum, year, month, data, todayStr, isMobile, parentEl
             parentElement.appendChild(cell);
         }
 
-        window.changeFullMonth = (offset) => { viewDate.setMonth(viewDate.getMonth() + offset); window.renderAttendanceFull(); };
-        window.goTodayFull = () => { viewDate = new Date(); window.renderAttendanceFull(); };
-        
+window.changeFullMonth = (offset) => {
+    viewDate.setMonth(viewDate.getMonth() + offset);
+    restoreTableIfNeeded();
+    window.renderAttendanceFull();
+};
+window.goTodayFull = () => {
+    viewDate = new Date();
+    restoreTableIfNeeded();
+    window.renderAttendanceFull();
+};  
+
+function restoreTableIfNeeded() {
+    const mobileWrapper = document.getElementById('mobile-calendar-wrapper');
+    if (mobileWrapper && mobileWrapper.parentNode) {
+        const table = document.querySelector('.calendar-table') || createFreshTable();
+        mobileWrapper.parentNode.replaceChild(table, mobileWrapper);
+    }
+}
+
+function createFreshTable() {
+    const t = document.createElement('table');
+    t.className = 'calendar-table';
+    t.innerHTML = `<colgroup><col class="weekend"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekend"></colgroup><tbody id="full_att_calendar_body"></tbody>`;
+    return t;
+}
+      
         let resizeTimer;
         window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(window.renderAttendanceFull, 250); });
         
