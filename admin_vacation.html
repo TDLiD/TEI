@@ -85,10 +85,38 @@
             <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
             <span id="statsTitle">Staff Vacation Statistics (Yearly)</span>
         </h3>
-        <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <button onclick="toggleStatsMode('year')" id="btnStatYear" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all bg-indigo-600 text-white">YEAR</button>
-            <button onclick="toggleStatsMode('month')" id="btnStatMonth" class="px-3 py-1 text-[9px] font-black rounded-lg transition-all text-slate-400 hover:text-white">MONTH</button>
-        </div>
+
+<div class="flex items-center gap-2">
+    <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+        <button onclick="toggleStatsMode('year')" id="btnStatYear"
+            class="px-3 py-1 text-[9px] font-black rounded-lg transition-all bg-indigo-600 text-white">YEAR</button>
+        <button onclick="toggleStatsMode('month')" id="btnStatMonth"
+            class="px-3 py-1 text-[9px] font-black rounded-lg transition-all text-slate-400 hover:text-white">MONTH</button>
+    </div>
+    <!-- 연도 선택 -->
+    <select id="statsYearSelect"
+        onchange="onStatsYearChange()"
+        class="bg-slate-800 border border-slate-700 text-white text-[9px] font-black rounded-xl px-2 py-1 outline-none focus:border-indigo-500">
+    </select>
+    <!-- 월 선택 (MONTH 탭일 때만 표시) -->
+    <select id="statsMonthSelect"
+        onchange="onStatsMonthChange()"
+        class="hidden bg-slate-800 border border-slate-700 text-white text-[9px] font-black rounded-xl px-2 py-1 outline-none focus:border-indigo-500">
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+    </select>
+</div>
+
     </div>
 
             <div id="staffStatsContainer" class="overflow-x-auto">
@@ -160,13 +188,83 @@ let statsMode = 'year'; // 'year' 또는 'month'
 
 window.toggleStatsMode = function(mode) {
     statsMode = mode;
-    // 버튼 스타일 업데이트
-    getEl('btnStatYear').className = mode === 'year' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
-    getEl('btnStatMonth').className = mode === 'month' ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white" : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
-    
-    // 달력 렌더링 시 통계도 다시 계산됨
+
+    getEl('btnStatYear').className  = mode === 'year'
+        ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white"
+        : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+    getEl('btnStatMonth').className = mode === 'month'
+        ? "px-3 py-1 text-[9px] font-black rounded-lg bg-indigo-600 text-white"
+        : "px-3 py-1 text-[9px] font-black rounded-lg text-slate-400 hover:text-white";
+
+    // 월 선택 셀렉트 표시/숨김
+    const monthSel = getEl('statsMonthSelect');
+    if (monthSel) monthSel.classList.toggle('hidden', mode !== 'month');
+
+    // 연도 셀렉트 초기화 (최초 1회 또는 모드 전환 시)
+    initStatsYearSelect();
+
     renderAdminCalendar();
 };
+
+// 연도 셀렉트 초기화 (attendance 데이터에서 존재하는 연도 수집)
+function initStatsYearSelect() {
+    const sel = getEl('statsYearSelect');
+    if (!sel) return;
+
+    db.ref('attendance').once('value', snap => {
+        const attData = snap.val() || {};
+        const years = new Set();
+
+        Object.keys(attData).forEach(dateStr => {
+            const yr = dateStr.split('-')[0];
+            if (yr) years.add(yr);
+        });
+
+        // leaves에서도 연도 수집
+        db.ref('leaves').once('value', lSnap => {
+            const leavesData = lSnap.val() || {};
+            Object.values(leavesData).forEach(userYears => {
+                Object.keys(userYears || {}).forEach(yr => years.add(String(yr)));
+            });
+
+            const sortedYears = Array.from(years).sort((a, b) => b - a);
+            const currentSelected = sel.value || String(currentViewDate.getFullYear());
+
+            sel.innerHTML = sortedYears.map(yr =>
+                `<option value="${yr}" ${yr === currentSelected ? 'selected' : ''}>${yr}</option>`
+            ).join('');
+
+            // currentViewDate 연도를 셀렉트 값에 맞춤
+            if (sortedYears.includes(currentSelected)) {
+                currentViewDate.setFullYear(parseInt(currentSelected));
+            }
+
+            // 월 셀렉트 현재 달 선택
+            const monthSel = getEl('statsMonthSelect');
+            if (monthSel) {
+                const currentMonth = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+                monthSel.value = currentMonth;
+            }
+        });
+    });
+}
+
+// 연도 변경 시
+window.onStatsYearChange = function() {
+    const sel = getEl('statsYearSelect');
+    if (!sel) return;
+    currentViewDate.setFullYear(parseInt(sel.value));
+    renderAdminCalendar();
+};
+
+// 월 변경 시
+window.onStatsMonthChange = function() {
+    const sel = getEl('statsMonthSelect');
+    if (!sel) return;
+    currentViewDate.setMonth(parseInt(sel.value) - 1);
+    renderAdminCalendar();
+};
+
 
             let currentEditRef = null;
             let currentLeaveData = null;       
@@ -348,13 +446,13 @@ function calculateStats(attData, year) {
 
     const currentMonth = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const filterPrefix = statsMode === 'year' ? year.toString() : `${year}-${currentMonth}`;
-    
-    // 제목 업데이트
-    statsTitle.innerText = statsMode === 'year' ? `Staff Vacation Statistics (${year})` : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
+    statsTitle.innerText = statsMode === 'year'
+        ? `Staff Vacation Statistics (${year})`
+        : `Staff Leave Statistics (${currentViewDate.toLocaleString('en-US', { month: 'long' })})`;
 
+    // attendance 기반 통계
     let stats = {};
     Object.entries(attData).forEach(([date, dayLogs]) => {
-        // 모드에 따라 년도(YYYY) 또는 년-월(YYYY-MM)로 필터링
         if (date.startsWith(filterPrefix)) {
             Object.entries(dayLogs).forEach(([staffName, status]) => {
                 if (leaveTypes.includes(status)) {
@@ -366,15 +464,138 @@ function calculateStats(attData, year) {
         }
     });
 
-    statsBody.innerHTML = Object.keys(stats).length > 0 
-        ? Object.entries(stats).map(([name, s]) => `
-            <tr class="hover:bg-white/5 transition border-b border-slate-800/50">
-                <td class="font-bold text-white py-3">${name}</td>
-                <td>${s.PEL}</td><td>${s.ANL}</td><td>${s.HAL}</td><td>${s.SIL}</td><td>${s.SPL}</td>
-                <td class="font-black text-indigo-400">${s.total}</td>
-            </tr>`).join('')
-        : `<tr><td colspan="7" class="py-8 text-center text-slate-600 font-bold italic text-xs">No data for this ${statsMode}.</td></tr>`;
+    // 모든 staff 불러와서 0이어도 표시
+    db.ref('users').once('value', snap => {
+        const users = snap.val() || {};
+        const allStaff = Object.keys(users).filter(n => n.toLowerCase() !== 'admin');
+
+        // stats에 없는 staff도 0으로 추가
+        allStaff.forEach(name => {
+            if (!stats[name]) stats[name] = { PEL:0, ANL:0, HAL:0, SIL:0, SPL:0, total:0 };
+        });
+
+        statsBody.innerHTML = allStaff.length > 0
+            ? allStaff.sort().map(name => {
+                const s = stats[name];
+                return `
+                    <tr class="hover:bg-white/5 transition border-b border-slate-800/50">
+                        <td class="font-bold text-white py-3">
+                            <button onclick="showStaffLeaveDetail('${name}')"
+                                class="text-blue-400 hover:text-blue-300 hover:underline font-black transition-colors text-left">
+                                ${name}
+                            </button>
+                        </td>
+                        <td>${s.PEL}</td><td>${s.ANL}</td><td>${s.HAL}</td><td>${s.SIL}</td><td>${s.SPL}</td>
+                        <td class="font-black text-indigo-400">${s.total}</td>
+                    </tr>`;
+            }).join('')
+            : `<tr><td colspan="7" class="py-8 text-center text-slate-600 font-bold italic text-xs">No staff found.</td></tr>`;
+    });
 }
+
+window.showStaffLeaveDetail = function(staffName) {
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    const thisMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+    db.ref(`leaves/${staffName}`).once('value', snap => {
+        const allYearsData = snap.val();
+        if (!allYearsData) {
+            console.warn(`No leave data found for ${staffName}`);
+        }
+
+        let allApproved = [];
+
+        // ▼ 연도 키 숫자/문자 모두 처리, status 없는 ATT 출처도 포함
+        Object.keys(allYearsData || {}).forEach(yr => {
+            const yearData = allYearsData[yr];
+            if (!yearData || typeof yearData !== 'object') return;
+
+            Object.keys(yearData).forEach(id => {
+                const item = yearData[id];
+                if (!item || !item.startDate) return;
+
+                // Approved 이거나 attendance에서 자동 추가된 항목 모두 포함
+                if (item.status === 'Approved' || item.source === 'attendance') {
+                    allApproved.push({ id, year: parseInt(yr), ...item });
+                }
+            });
+        });
+
+        const monthPrefix = `${thisYear}-${thisMonth}`;
+        const thisMonthItems = allApproved.filter(i => i.startDate.startsWith(monthPrefix));
+        const thisYearItems  = allApproved.filter(i => i.startDate.startsWith(`${thisYear}`));
+        const overallItems   = [...allApproved].sort((a, b) => {
+            // 연도 내림차순 → 날짜 내림차순
+            if (b.year !== a.year) return b.year - a.year;
+            return (b.requestedAt || 0) - (a.requestedAt || 0);
+        });
+
+        const sumDays = arr => arr.reduce((acc, i) => acc + (i.totalWeekdays || 0), 0);
+
+        const renderSection = (label, color, items, totalDays) => {
+            let html = `
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[9px] font-black uppercase tracking-widest ${color}">${label}</span>
+                        <span class="text-[9px] font-black ${color} bg-slate-800 px-3 py-1 rounded-full">
+                            ${totalDays} day${totalDays !== 1 ? 's' : ''} used
+                        </span>
+                    </div>
+                    <div class="h-px bg-slate-700 mb-2"></div>`;
+
+            if (items.length === 0) {
+                html += `<p class="text-[10px] text-slate-600 italic text-center py-2">No records</p>`;
+            } else {
+                items.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0)).forEach(item => {
+                    const sourceTag = item.source === 'attendance'
+                        ? `<span class="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded ml-1">ATT</span>`
+                        : '';
+                    const yearTag = `<span class="text-[8px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded ml-1">${item.year || ''}</span>`;
+                    const dateRange = item.endDate !== item.startDate
+                        ? `${item.startDate} → ${item.endDate}`
+                        : item.startDate;
+                    html += `
+                        <div class="flex items-center justify-between py-2 border-b border-slate-800/50">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[9px] font-black text-indigo-400">${item.type}${sourceTag}${yearTag}</span>
+                                <span class="text-[9px] text-slate-400 font-mono">${dateRange}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-500 ml-2">${item.totalWeekdays || 0}d</span>
+                        </div>`;
+                });
+            }
+            html += `</div>`;
+            return html;
+        };
+
+        const bodyHtml = `
+            <div class="space-y-2 text-white">
+                ${renderSection(`This Month (${thisYear}.${thisMonth})`, 'text-indigo-400', thisMonthItems, sumDays(thisMonthItems))}
+                ${renderSection(`This Year (${thisYear})`,               'text-emerald-400', thisYearItems,  sumDays(thisYearItems))}
+                ${renderSection('Overall',                                'text-slate-400',   overallItems,   sumDays(overallItems))}
+            </div>`;
+
+        if (typeof window.openAdminCustomModal === 'function') {
+            window.openAdminCustomModal(
+                `🏖️ ${staffName} — Leave History`,
+                bodyHtml
+            );
+        } else {
+            const modal = getEl('leaveAdminModal');
+            if (!modal) return;
+            getEl('modalStaffName').innerText = `${staffName} — Leave History`;
+            const reasonEl = getEl('displayLeaveReason');
+            if (reasonEl) reasonEl.innerHTML = bodyHtml;
+            ['displayLeaveType','displayLeaveDates','adminLeaveStatus','adminLeaveMemo'].forEach(id => {
+                const el = getEl(id);
+                if (el) el.closest('div') && (el.closest('.space-y-4 > div').style.display = 'none');
+            });
+            modal.classList.remove('hidden');
+        }
+    });
+};
+
 
 window.openLeaveAdminModal = function(uid, year, id, encodedData) {
     const modal = getEl('leaveAdminModal');

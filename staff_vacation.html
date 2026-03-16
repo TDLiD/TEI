@@ -213,55 +213,148 @@ for(let i=0; i<firstDay; i++) html += `<td></td>`;
     window.goToToday = function() { currentViewDate = new Date(); renderCalendar(); };
 
 function loadLeaveHistory() {
-    const year = new Date().getFullYear();
-    const historyRef = db.ref(`leaves/${user}/${year}`);
-    
-    // 이전에 걸려있던 리스너가 있다면 해제 (중복 실행 방지)
-    historyRef.off(); 
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    const thisMonth = String(now.getMonth() + 1).padStart(2, '0');
+    const LEAVE_TYPES = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
 
-    historyRef.on('value', snap => {
-        const tbody = document.getElementById('leaveHistoryBody');
-        
-        // 중요: tbody가 현재 화면에 없으면 함수를 즉시 종료하여 에러 방지
-        if (!tbody) {
-            console.warn("leaveHistoryBody not found. Skipping render.");
-            return;
+    // 이전 리스너 참조 저장용
+    let leaveListenerRef = null;
+
+    // 페이지 언로드 시 리스너 해제
+    function detachLeaveListener() {
+        if (leaveListenerRef) {
+            leaveListenerRef.off('value');
+            leaveListenerRef = null;
         }
+    }
 
-        tbody.innerHTML = '';
-        const data = snap.val();
-        if (!data) return;
+    // staff.html 탭 전환 시 정리될 수 있도록 window에 등록
+    window._leavePageCleanup = detachLeaveListener;
 
-        const dataList = Object.entries(data).sort((a,b) => b[1].requestedAt - a[1].requestedAt);
-        
-        dataList.forEach(([id, data]) => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-white/5 transition-colors cursor-pointer";
-            
-            // 클릭 이벤트 내에서도 요소 존재 여부 확인 후 모달 열기
-            tr.onclick = () => {
-                if (typeof window.openLeaveModal === 'function') {
-                    window.openLeaveModal(id, data);
-                }
-            };
+    // ── Step 1: attendance 스캔 후 누락된 휴가 leaves에 추가 ──
+    db.ref('attendance').once('value', attSnap => {
+        const attData = attSnap.val() || {};
+        const writes = [];
 
-            const statusColor = data.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
-            const adminMemoHTML = data.adminMemo ? 
-                `<div class="flex items-center gap-1.5 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[100px]">${data.adminMemo}</span></div>` : `-`;
-            
-            tr.innerHTML = `
-                <td class="py-4 font-black text-indigo-400">${data.type}</td>
-                <td class="py-4 text-slate-300 font-mono text-[11px]">${data.startDate} ${data.endDate !== data.startDate ? '→ ' + data.endDate : ''}</td>
-                <td class="py-4 text-slate-500 max-w-[150px] truncate">${data.reason || '-'}</td>
-                <td class="py-4 text-[10px] font-bold uppercase tracking-tight">${adminMemoHTML}</td>
-                <td class="py-4 font-bold ${statusColor} text-[10px] uppercase">${data.status}</td>
-                <td class="py-4 text-right"><span class="text-[10px] text-slate-600 font-bold tracking-widest">EDIT</span></td>
-            `;
-            tbody.appendChild(tr);
+        Object.entries(attData).forEach(([dateStr, dayData]) => {
+            if (!dayData || typeof dayData !== 'object') return;
+            const attYear = parseInt(dateStr.split('-')[0]);
+
+            Object.entries(dayData).forEach(([name, info]) => {
+                if (name !== user) return;
+                if (typeof info !== 'string') return;
+                const leaveType = info.trim().toUpperCase();
+                if (!LEAVE_TYPES.includes(leaveType)) return;
+
+                writes.push(
+                    db.ref(`leaves/${user}/${attYear}`).once('value').then(leaveSnap => {
+                        const yearLeaves = leaveSnap.val() || {};
+                        const isDuplicate = Object.values(yearLeaves).some(item =>
+                            item.startDate <= dateStr && item.endDate >= dateStr
+                        );
+                        if (isDuplicate) return;
+                        return db.ref(`leaves/${user}/${attYear}`).push({
+                            type: leaveType,
+                            startDate: dateStr,
+                            endDate: dateStr,
+                            reason: '(From attendance record)',
+                            status: 'Approved',
+                            requestedAt: new Date(dateStr).getTime(),
+                            reviewedAt: new Date(dateStr).getTime(),
+                            totalWeekdays: 1,
+                            source: 'attendance'
+                        });
+                    })
+                );
+            });
+        });
+
+        Promise.all(writes).then(() => {
+            startLeaveListener();
         });
     });
-}
 
+    // ── Step 2: leaves 리스너 ──
+    function startLeaveListener() {
+        leaveListenerRef = db.ref(`leaves/${user}`);
+
+        leaveListenerRef.on('value', snap => {
+            // DOM 존재 여부 먼저 확인 — 없으면 리스너 즉시 해제
+            const tbody = document.getElementById('leaveHistoryBody');
+            if (!tbody) {
+                detachLeaveListener();
+                return;
+            }
+
+            const allYearsData = snap.val() || {};
+            let allApproved = [];
+
+            Object.entries(allYearsData).forEach(([yr, yearData]) => {
+                if (!yearData || typeof yearData !== 'object') return;
+                Object.entries(yearData).forEach(([id, item]) => {
+                    if (item && item.status === 'Approved') {
+                        allApproved.push({ id, year: parseInt(yr), ...item });
+                    }
+                });
+            });
+
+            const monthPrefix = `${thisYear}-${thisMonth}`;
+            const thisMonthItems = allApproved.filter(i => i.startDate && i.startDate.startsWith(monthPrefix));
+            const thisYearItems  = allApproved.filter(i => i.startDate && i.startDate.startsWith(`${thisYear}`));
+            const overallItems   = allApproved;
+            const sumDays = arr => arr.reduce((acc, i) => acc + (i.totalWeekdays || 0), 0);
+
+            const renderSection = (label, color, items, totalDays) => {
+                let html = `
+                    <tr>
+                        <td colspan="6" class="pt-6 pb-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-black uppercase tracking-widest ${color}">${label}</span>
+                                <span class="text-[9px] font-black ${color} bg-slate-800 px-3 py-1 rounded-full">${totalDays} day${totalDays !== 1 ? 's' : ''} used</span>
+                            </div>
+                            <div class="h-px bg-slate-800 mt-2"></div>
+                        </td>
+                    </tr>`;
+
+                if (items.length === 0) {
+                    html += `<tr><td colspan="6" class="py-3 text-center text-[10px] text-slate-600 italic">No records</td></tr>`;
+                } else {
+                    items.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0)).forEach(item => {
+                        const statusColor = item.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
+                        const sourceTag = item.source === 'attendance'
+                            ? `<span class="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded ml-1">ATT</span>`
+                            : '';
+                        const memoHtml = item.adminMemo
+                            ? `<div class="flex items-center gap-1 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[80px] text-[10px]">${item.adminMemo}</span></div>`
+                            : `-`;
+                        const dateRange = item.endDate !== item.startDate
+                            ? `${item.startDate} → ${item.endDate}`
+                            : item.startDate;
+                        const safeItem = JSON.stringify(item).replace(/'/g, "&#39;").replace(/"/g, '&quot;');
+
+                        html += `
+                            <tr class="hover:bg-white/5 transition-colors cursor-pointer"
+                                onclick="window.openLeaveModal('${item.id}', JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(item))}')))">
+                                <td class="py-3 font-black text-indigo-400">${item.type}${sourceTag}</td>
+                                <td class="py-3 text-slate-300 font-mono text-[11px]">${dateRange}</td>
+                                <td class="py-3 text-slate-500 max-w-[120px] truncate text-[11px]">${item.reason || '-'}</td>
+                                <td class="py-3">${memoHtml}</td>
+                                <td class="py-3 font-bold ${statusColor} text-[10px] uppercase">${item.status}</td>
+                                <td class="py-3 text-right text-[10px] text-slate-600 font-bold">${item.totalWeekdays || 0}d</td>
+                            </tr>`;
+                    });
+                }
+                return html;
+            };
+
+            tbody.innerHTML =
+                renderSection(`This Month (${thisYear}.${thisMonth})`, 'text-indigo-400', thisMonthItems, sumDays(thisMonthItems)) +
+                renderSection(`This Year (${thisYear})`,               'text-emerald-400', thisYearItems,  sumDays(thisYearItems))  +
+                renderSection('Overall',                                'text-slate-400',   overallItems,   sumDays(overallItems));
+        });
+    }
+}
 
 window.openLeaveModal = function(id = null, data = null) {
     editingId = id; editingData = data;

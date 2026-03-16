@@ -249,6 +249,12 @@ async function checkTodayBirthdays() {
 fetchJakartaWeather();
 checkTodayBirthdays();
 window.switchTab = function(t) {
+    // ▼ 탭 전환 시 이전 페이지 리스너 정리
+    if (typeof window._leavePageCleanup === 'function') {
+        window._leavePageCleanup();
+        window._leavePageCleanup = null;
+    }
+
     const pB = document.querySelectorAll('.pc-tab-btn'); 
     const mB = document.querySelectorAll('.mobile-tab-btn');
     const tabMapping = { dash: 'staff_dashboard.html', work: 'staff_report.html', schedule: 'staff_calendar.html', vacation: 'staff_vacation.html', statistic: 'staff_statistic.html', setting: 'staff_setting.html', all: 'staff_allatt.html' };
