@@ -19,6 +19,11 @@
                 <div id="currentAvatarDisplay" class="w-12 h-12 rounded-full border border-slate-700 bg-slate-900 overflow-hidden flex items-center justify-center">
                     <div class="animate-pulse w-full h-full bg-slate-800"></div>
                 </div>
+<!-- currentAvatarDisplay div 닫히는 태그 아래 추가 -->
+<div class="mt-3 flex items-center justify-between px-1">
+    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Last Login</span>
+    <span id="lastLoginDisplay" class="text-[9px] text-slate-500 font-mono">—</span>
+</div>
                 <div>
                     <div id="displayUserName" class="text-white font-bold text-base uppercase tracking-tight">Loading...</div>
                     <div class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Staff Member</div>
@@ -56,6 +61,16 @@
        placeholder="Loading password..."
        autocomplete="new-password"
        title="Must be 8+ characters with uppercase, lowercase, and numbers">
+
+<!-- input type="password" 닫는 태그 아래, toggleBtn div 위에 추가 -->
+<div class="mt-2 flex gap-1 h-1">
+    <div id="pwBar1" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+    <div id="pwBar2" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+    <div id="pwBar3" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+    <div id="pwBar4" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+</div>
+<p id="pwStrengthLabel" class="text-[9px] text-slate-600 mt-1 font-bold uppercase tracking-widest"></p>
+
                     
                     <button type="button" id="togglePwBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors z-10">
                         <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 pointer-events-none">
@@ -74,6 +89,15 @@
                        autocomplete="new-password">
                 <p id="pwMatchMessage" class="text-[10px] mt-2 font-bold hidden"></p>
             </div>
+<!-- password label div 바로 위에 추가 -->
+<div>
+    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Display Name</label>
+    <input type="text" id="settingDisplayName"
+           class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+           placeholder="Enter your display name"
+           maxlength="20">
+    <p class="text-[9px] text-slate-600 mt-1">Shown on dashboard and reports</p>
+</div>
         </div>
 
         <div>
@@ -134,59 +158,89 @@
     };
 
     // 3. 비밀번호 실시간 일치 체크
-const pwStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+// 3. 비밀번호 강도 & 일치 체크
+    const pwStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
-function checkMatch() {
-    const p1 = pwInput.value;
-    const p2 = confirmInput.value;
+    function getPwStrength(pw) {
+        let score = 0;
+        if (pw.length >= 8)          score++;
+        if (/[A-Z]/.test(pw))        score++;
+        if (/[0-9]/.test(pw))        score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        return score;
+    }
 
-    // 패스워드 강도 검사 (입력 즉시)
-    if (p1 && !pwStrengthRegex.test(p1)) {
+    function updatePwStrengthBar(pw) {
+        const score  = getPwStrength(pw);
+        const bars   = [1,2,3,4].map(n => document.getElementById(`pwBar${n}`));
+        const label  = document.getElementById('pwStrengthLabel');
+        const colors = ['bg-rose-500','bg-orange-500','bg-amber-500','bg-emerald-500'];
+        const labels = ['Weak','Fair','Good','Strong'];
+        bars.forEach((b, i) => {
+            if (!b) return;
+            b.className = `flex-1 rounded-full transition-all duration-300 ${i < score ? colors[score-1] : 'bg-slate-700'}`;
+        });
+        if (label) label.textContent = pw ? (labels[score-1] || '') : '';
+    }
+
+    function checkMatch() {
+        const p1 = pwInput.value;
+        const p2 = confirmInput.value;
+
+        updatePwStrengthBar(p1);
+
+        if (p1 && !pwStrengthRegex.test(p1)) {
+            pwMessage.classList.remove('hidden');
+            pwMessage.textContent = "✕ Min 8 chars with uppercase, lowercase & number required";
+            pwMessage.className = "text-[10px] mt-2 font-bold text-rose-500";
+            saveBtn.disabled = true;
+            return;
+        }
+
+        if (!p2) { pwMessage.classList.add('hidden'); saveBtn.disabled = false; return; }
+
         pwMessage.classList.remove('hidden');
-        pwMessage.textContent = "✕ Min 8 chars with uppercase, lowercase & number required";
-        pwMessage.className = "text-[10px] mt-2 font-bold text-rose-500";
-        saveBtn.disabled = true;
-        return;
+        if (p1 === p2) {
+            pwMessage.textContent = "✓ Passwords match";
+            pwMessage.className = "text-[10px] mt-2 font-bold text-emerald-500";
+            saveBtn.disabled = false;
+        } else {
+            pwMessage.textContent = "✕ Passwords do not match";
+            pwMessage.className = "text-[10px] mt-2 font-bold text-rose-500";
+            saveBtn.disabled = true;
+        }
     }
 
-    if (!p2) { pwMessage.classList.add('hidden'); saveBtn.disabled = false; return; }
-
-    pwMessage.classList.remove('hidden');
-    if (p1 === p2) {
-        pwMessage.textContent = "✓ Passwords match";
-        pwMessage.className = "text-[10px] mt-2 font-bold text-emerald-500";
-        saveBtn.disabled = false;
-    } else {
-        pwMessage.textContent = "✕ Passwords do not match";
-        pwMessage.className = "text-[10px] mt-2 font-bold text-rose-500";
-        saveBtn.disabled = true;
-    }
-}
-pwInput.oninput = checkMatch;
-confirmInput.oninput = checkMatch;
+    pwInput.oninput      = checkMatch;
+    confirmInput.oninput = checkMatch;
 
     // 4. 데이터 로드 및 초기화
     if (user) {
         firebase.database().ref('users/' + user).once('value').then(snap => {
             const data = snap.val();
             if (data) {
-setTimeout(() => {
-        pwInput.value = data.password || "";
-        // 생일 정보 불러오기 추가
-        if (data.birthday) {
-            document.getElementById('settingBirthDate').value = data.birthday;
-        }
-        if (data.birthType) {
-            document.getElementById('settingBirthType').value = data.birthType;
-        }
-    }, 150);
+                setTimeout(() => {
+                    pwInput.value = data.password || "";
+                    if (data.birthday) document.getElementById('settingBirthDate').value = data.birthday;
+                    if (data.birthType) document.getElementById('settingBirthType').value = data.birthType;
+                }, 150);
 
                 pwInput.placeholder = "Enter password";
                 document.getElementById('displayUserName').textContent = data.name || user;
-                
+
+                if (data.displayName) document.getElementById('settingDisplayName').value = data.displayName;
+
+    if (data.lastLogin) {
+        const d = new Date(data.lastLogin);
+        const el = document.getElementById('lastLoginDisplay');
+        if (el) el.textContent = d.toLocaleString('en-US', {
+            month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        });
+    }
+
                 const currentImg = data.profileImg || 'image-001.webp';
                 hiddenInput.value = currentImg;
-                
                 updateAvatarWithFade(currentImg);
                 renderGrid(currentImg);
             }
@@ -274,7 +328,9 @@ firebase.database().ref('users/' + user).update({
         password: passValue,
         profileImg: hiddenInput.value,
         birthday: birthValue,    // Firebase에 저장될 필드
-        birthType: birthTypeValue // Firebase에 저장될 필드 (Solar/Lunar)
+        birthType: birthTypeValue, // Firebase에 저장될 필드 (Solar/Lunar)
+    displayName:  document.getElementById('settingDisplayName').value.trim() || user, // ← 여기
+
     }).then(() => {
             alert("Changes saved successfully!");
             // UI 복구 (location.reload() 제거)
