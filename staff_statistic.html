@@ -26,6 +26,29 @@
         <button onclick="switchStatTab('att')" id="tabBtnAtt" class="stat-tab-btn active pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Attendance Stats</button>
         <button onclick="switchStatTab('leave')" id="tabBtnLeave" class="stat-tab-btn pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Leave Stats</button>
     </div>
+<!-- 첫 번째 section.stat-card 바로 위에 추가 -->
+<div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Attendance Days</div>
+        <div id="sumCardAtt" class="text-2xl font-black text-emerald-400">—</div>
+        <div id="sumCardAttPct" class="text-[10px] text-slate-500 mt-1">—%</div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Days</div>
+        <div id="sumCardLate" class="text-2xl font-black text-rose-400">—</div>
+        <div id="sumCardLatePct" class="text-[10px] text-slate-500 mt-1">—%</div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Leave Days</div>
+        <div id="sumCardLeave" class="text-2xl font-black text-amber-400">—</div>
+        <div id="sumCardLeavePct" class="text-[10px] text-slate-500 mt-1">—%</div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Punctuality</div>
+        <div id="sumCardPunct" class="text-2xl font-black text-blue-400">—</div>
+        <div id="sumCardPunctLabel" class="text-[10px] text-slate-500 mt-1">On-time rate</div>
+    </div>
+</div>
 
     <section class="stat-card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -43,6 +66,14 @@
             <canvas id="monthlyChart"></canvas>
         </div>
     </section>
+<section id="leaveHistSection" class="stat-card" style="display:none;">
+    <h3 class="text-xl font-black text-yellow-400 mb-6 flex items-center gap-2">
+        🕐 Checkout Time Distribution (This Month)
+    </h3>
+    <div class="chart-container">
+        <canvas id="leaveHistChart"></canvas>
+    </div>
+</section>
 
     <section class="stat-card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -104,7 +135,8 @@
         let monthViewDate = new Date(); 
         let yearViewDate = new Date();
         let currentTab = 'att';
-        
+            let showOnlyMe = false;
+    const currentUser = sessionStorage.getItem('loggedInUser') || '';
         const typeColors = {
             'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
             'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
@@ -121,6 +153,10 @@
             const titles = ['statTitleMonth', 'statTitleYear', 'statTitleOverall'];
             const label = tab === 'att' ? 'Attendance' : 'Leave';
             titles.forEach(id => document.getElementById(id).innerText = label);
+    // ▼ 히스토그램 섹션 표시/숨김
+    const histSection = document.getElementById('leaveHistSection');
+    if (histSection) histSection.style.display = tab === 'leave' ? 'block' : 'none';
+    // ▲ 추가
             processAndRender();
         };
 
@@ -196,6 +232,7 @@
             }
         }
 
+// ▼ 교체: renderLeaveHistogram 호출을 processAndRender 안으로 이동
         function processAndRender() {
             if (!cachedData || !document.getElementById('monthlyChart')) return;
             const monthKey = monthViewDate.toISOString().substring(0, 7);
@@ -231,9 +268,38 @@
                     }
                 });
             });
+
             renderChart('monthlyChart', 'month', stats.month);
             renderChart('yearlyChart', 'year', stats.year);
             renderChart('overallChart', 'overall', stats.overall);
+            if (currentTab === 'att') updateSummaryCards(stats.month);
+            if (currentTab === 'leave') renderLeaveHistogram(stats.month); // ← 함수 안으로 이동
+        }
+
+        function updateSummaryCards(monthStats) {
+            if (!currentUser || !monthStats[currentUser]) return;
+            const my = monthStats[currentUser];
+            const att   = my['ATT']  || 0;
+            const late  = my['LATE'] || 0;
+            const leaveTypes = ['WO','PEL','ANL','HAL','SIL','SPL'];
+            const leave = leaveTypes.reduce((s, t) => s + (my[t] || 0), 0);
+            const total = att + late + leave;
+            const punct = (att + late) > 0 ? Math.round((att / (att + late)) * 100) : 0;
+            const attPct  = total > 0 ? Math.round(((att + late) / total) * 100) : 0;
+            const latePct = (att + late) > 0 ? Math.round((late / (att + late)) * 100) : 0;
+            const leavePct = total > 0 ? Math.round((leave / total) * 100) : 0;
+
+            const el = id => document.getElementById(id);
+            if (el('sumCardAtt'))      el('sumCardAtt').innerText      = att + late;
+            if (el('sumCardAttPct'))   el('sumCardAttPct').innerText   = attPct + '% of total';
+            if (el('sumCardLate'))     el('sumCardLate').innerText     = late;
+            if (el('sumCardLatePct'))  el('sumCardLatePct').innerText  = latePct + '% of attended';
+            if (el('sumCardLeave'))    el('sumCardLeave').innerText    = leave;
+            if (el('sumCardLeavePct')) el('sumCardLeavePct').innerText = leavePct + '% of total';
+            if (el('sumCardPunct'))    el('sumCardPunct').innerText    = punct + '%';
+
+            const punctEl = el('sumCardPunct');
+            if (punctEl) punctEl.style.color = punct >= 90 ? '#10b981' : punct >= 70 ? '#f59e0b' : '#f43f5e';
         }
 
         function renderChart(canvasId, chartType, chartData) {
@@ -346,6 +412,57 @@
                 });
             }
         }
+
+function renderLeaveHistogram(monthData) {
+    const canvas = document.getElementById('leaveHistChart');
+    if (!canvas) return;
+    const existing = Chart.getChart(canvas);
+    if (existing) existing.destroy();
+
+    // 30분 단위 버킷 생성 (17:30 ~ 21:30)
+    const buckets = {};
+    for (let h = 17; h <= 21; h++) {
+        buckets[`${h}:00`] = 0;
+        buckets[`${h}:30`] = 0;
+    }
+    buckets['22:00'] = 0;
+
+    Object.values(monthData).forEach(points => {
+        points.forEach(p => {
+            const totalMins = Math.round(p.y * 60);
+            const bucket = Math.floor(totalMins / 30) * 30;
+            const h = Math.floor(bucket / 60);
+            const m = bucket % 60;
+            const key = `${h}:${m === 0 ? '00' : '30'}`;
+            if (buckets[key] !== undefined) buckets[key]++;
+        });
+    });
+
+    new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(buckets),
+            datasets: [{
+                label: 'Checkout Count',
+                data: Object.values(buckets),
+                backgroundColor: Object.keys(buckets).map(k => {
+                    const h = parseInt(k.split(':')[0]);
+                    return h <= 18 ? '#10b981' : h <= 19 ? '#f59e0b' : '#f43f5e';
+                }),
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#94a3b8', font: { size: 10 } } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' },
+                     grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+        }
+    });
+}
 
         setTimeout(() => { initStats(); }, 300);
         window.refreshStatistics = processAndRender;
