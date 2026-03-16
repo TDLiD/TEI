@@ -210,7 +210,7 @@
 <div class="db-root animate-fadeIn">
 
     <!-- ① Alert Banner -->
-    <div id="leave_alert_banner" class="hidden" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('leave')}else if(window.switchAdminTab){switchAdminTab('leave')}">
+    <div id="leave_alert_banner" class="hidden" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
         <div class="db-alert">
             <div class="db-alert-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
             <div class="db-alert-text">
@@ -243,7 +243,7 @@
         </div>
 
         <!-- This Week Vacationers -->
-        <div class="db-vacation-card" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('leave')}else if(window.switchAdminTab){switchAdminTab('leave')}">
+        <div class="db-vacation-card" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
             <div class="db-vacation-header">
                 <div class="db-vacation-title"><span class="db-vacation-dot"></span>Vacationers This Week</div>
                 <div id="week_range_text" class="db-week-range"></div>
@@ -369,13 +369,18 @@ function switchDbTab(tab) {
 
     window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
 
-    window.openAdminCustomModal = function(titleHtml, bodyHtml) {
-        document.getElementById('modalHeaderArea').innerHTML = titleHtml;
-        document.getElementById('modalBodyArea').innerHTML = bodyHtml;
-        const m = document.getElementById('customAdminModal');
-        m.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    };
+// 기존 선언 전체를 아래로 교체
+// dashboard 전용 모달 제어 (admin.html의 restoreCoreModalFunctions가 없을 때만 등록)
+if (!window._coreModalRestored) {
+window.openAdminCustomModal = function(titleHtml, bodyHtml) {
+    // titleHtml도 innerHTML을 사용해야 태그가 정상 출력됩니다.
+    document.getElementById('modalHeaderArea').innerHTML = titleHtml; 
+    document.getElementById('modalBodyArea').innerHTML = bodyHtml;
+    
+    const m = document.getElementById('customAdminModal');
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+};
 
     window.closeAdminCustomModal = function() {
         if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
@@ -387,6 +392,7 @@ function switchDbTab(tab) {
         m.classList.remove('open');
         document.body.style.overflow = '';
     };
+}
 
     window.renderWeeklyLeaves = function() {
         const container = document.getElementById('weekly_leave_container');
@@ -705,46 +711,52 @@ window.renderRecentSchedule = function() {
         });
     };
 
-    // ── Open Edit Attendance ──
-    window.openEditAttendance = function(name, date, infoEncoded) {
-        const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, isSpecial = typeof info === 'string', isNew = name === '';
-        db.ref('users').once('value', userSnap => {
-            const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-            let nameFieldHtml = isNew
-                ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
-                : `<span class="text-lg font-black text-white">${name}</span>`;
-            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew?'New Registration':'Edit Attendance'}</span>${nameFieldHtml}<span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}','${date}',${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
-            window.openAdminCustomModal(titleHtml, bodyHtml);
+window.openEditAttendance = function(name, date, infoEncoded) {
+    const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, 
+          isSpecial = typeof info === 'string', 
+          isNew = name === '';
 
-            setTimeout(() => {
-                const positionPicker = (fp) => {
-                    const rect = fp.input.getBoundingClientRect();
-                    const cal = fp.calendarContainer;
-                    cal.style.setProperty('position', 'fixed', 'important');
-                    cal.style.setProperty('z-index', '999999', 'important');
-                    cal.style.setProperty('top', (rect.bottom + 4) + 'px', 'important');
-                    cal.style.setProperty('left', rect.left + 'px', 'important');
-                    cal.style.setProperty('width', rect.width + 'px', 'important');
-                    cal.classList.remove('arrowTop', 'arrowBottom');
-                };
-                const config = {
-                        enableTime: true, noCalendar: true, dateFormat: "H:i",
-                        time_24hr: true, locale: flatpickr.l10ns.ko || flatpickr.l10ns.default, theme: "dark", disableMobile: true,
-                        onOpen: function(_, __, fp) {
-                        requestAnimationFrame(() => positionPicker(fp));
-                        setTimeout(() => positionPicker(fp), 0);
-                        setTimeout(() => positionPicker(fp), 50);
-                    }
-                };
-                if (attStartPicker) attStartPicker.destroy();
-                if (attEndPicker) attEndPicker.destroy();
-                const aEl = document.getElementById("editAttend"), lEl = document.getElementById("editLeave");
-                if (aEl) attStartPicker = flatpickr(aEl, config);
-                if (lEl) attEndPicker = flatpickr(lEl, config);
-            }, 100);
-        });
-    };
+    db.ref('users').once('value', userSnap => {
+        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+        let nameFieldHtml = isNew
+            ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
+            : `<span class="text-lg font-black text-white">${name}</span>`;
+        
+        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew?'New Registration':'Edit Attendance'}</span>${nameFieldHtml}<span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
+        const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}','${date}',${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
+        
+        // 1. 모달 기본 오픈
+        window.openAdminCustomModal(titleHtml, bodyHtml);
+
+        // 3. 시간 선택기(flatpickr) 초기화 및 위치 조정
+        setTimeout(() => {
+            const positionPicker = (fp) => {
+                const rect = fp.input.getBoundingClientRect();
+                const cal = fp.calendarContainer;
+                cal.style.setProperty('position', 'fixed', 'important');
+                cal.style.setProperty('z-index', '999999', 'important');
+                cal.style.setProperty('top', (rect.bottom + 4) + 'px', 'important');
+                cal.style.setProperty('left', rect.left + 'px', 'important');
+                cal.style.setProperty('width', rect.width + 'px', 'important');
+                cal.classList.remove('arrowTop', 'arrowBottom');
+            };
+            const config = {
+                enableTime: true, noCalendar: true, dateFormat: "H:i",
+                time_24hr: true, locale: flatpickr.l10ns.ko || flatpickr.l10ns.default, theme: "dark", disableMobile: true,
+                onOpen: function(_, __, fp) {
+                    requestAnimationFrame(() => positionPicker(fp));
+                    setTimeout(() => positionPicker(fp), 0);
+                    setTimeout(() => positionPicker(fp), 50);
+                }
+            };
+            if (window.attStartPicker) window.attStartPicker.destroy();
+            if (window.attEndPicker) window.attEndPicker.destroy();
+            const aEl = document.getElementById("editAttend"), lEl = document.getElementById("editLeave");
+            if (aEl) window.attStartPicker = flatpickr(aEl, config);
+            if (lEl) window.attEndPicker = flatpickr(lEl, config);
+        }, 200); // 렌더링 안정성을 위해 200ms로 소폭 상향
+    });
+};
 
     window.processAttendanceSave = function(name, date, isNew) {
         const finalName = isNew ? document.getElementById('editName').value : name;
