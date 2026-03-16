@@ -53,6 +53,29 @@
         </div>
         <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Shared Team Schedule</p>
     </div>
+<!-- 달력 상단 flex div 아래에 추가 -->
+<div class="flex gap-3 mb-4 flex-wrap">
+    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <span class="text-[10px] font-black text-slate-400 uppercase">Total</span>
+        <span id="statTotal" class="text-sm font-black text-white">0</span>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-[10px] font-black text-slate-400 uppercase">Mine</span>
+        <span id="statMine" class="text-sm font-black text-emerald-400">0</span>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span class="text-[10px] font-black text-slate-400 uppercase">Upcoming</span>
+        <span id="statUpcoming" class="text-sm font-black text-amber-400">0</span>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+        <span class="text-[10px] font-black text-slate-400 uppercase">Urgent</span>
+        <span id="statUrgent" class="text-sm font-black text-red-400">0</span>
+    </div>
+</div>
     <div class="bg-slate-950 rounded-[2rem] border border-slate-800 overflow-hidden shadow-2xl">
         <table class="schedule-cal w-full border-collapse table-auto">
             <thead>
@@ -63,6 +86,13 @@
             <tbody id="scheduleBody"></tbody>
         </table>
     </div>
+<div class="mt-6 bg-slate-950 rounded-[2rem] border border-slate-800 p-6">
+    <h3 class="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+        <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+        Upcoming This Month
+    </h3>
+    <div id="upcomingList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+</div>
 </div>
 <div id="eventModal" class="hidden fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto pt-4 pb-20 px-4">
     <div class="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2rem] p-6 sm:p-8 shadow-2xl mx-auto my-4">
@@ -323,7 +353,6 @@
     }
 
 function renderSchedule() {
-    // DOM이 없는 환경(페이지 이탈 후 등)에서 실행 방지
     if (!document.getElementById('scheduleBody') || !document.getElementById('calMonthYear')) {
         db.ref('shared_schedules').off();
         return;
@@ -333,24 +362,104 @@ function renderSchedule() {
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
     const monthYearEl = document.getElementById('calMonthYear');
-    if (monthYearEl) { 
-        monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }); 
+    if (monthYearEl) {
+        monthYearEl.innerText = calViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     }
-    
+
     const scheduleRef = db.ref('shared_schedules');
-    scheduleRef.off(); 
+    scheduleRef.off();
     scheduleRef.on('value', snap => {
         const events = snap.val() || {};
         const tbody = document.getElementById('scheduleBody');
         if (!tbody) { scheduleRef.off(); return; }
-        tbody.innerHTML = ''; 
-        
+        tbody.innerHTML = '';
+
+        // ── Stats 업데이트 ──
+        (function updateStats() {
+            const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+            const todayStr = new Date().toISOString().split('T')[0];
+            let total = 0, mine = 0, upcoming = 0, urgent = 0;
+            Object.values(events).forEach(ev => {
+                const sDate = ev.start.split('T')[0];
+                if (!sDate.startsWith(monthStr)) return;
+                total++;
+                if (ev.author === user) mine++;
+                if (sDate >= todayStr) upcoming++;
+                if (ev.category === 'urgent') urgent++;
+            });
+            const s = document.getElementById('statTotal');
+            const m = document.getElementById('statMine');
+            const u = document.getElementById('statUpcoming');
+            const r = document.getElementById('statUrgent');
+            if (s) s.innerText = total;
+            if (m) m.innerText = mine;
+            if (u) u.innerText = upcoming;
+            if (r) r.innerText = urgent;
+        })();
+
+        // ── Upcoming List 업데이트 ──
+        (function renderUpcomingList() {
+            const listEl = document.getElementById('upcomingList');
+            if (!listEl) return;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+
+            const upcoming = Object.entries(events)
+                .filter(([, ev]) => {
+                    const s = ev.start.split('T')[0];
+                    return s >= todayStr && s.startsWith(monthStr);
+                })
+                .sort(([, a], [, b]) => a.start.localeCompare(b.start))
+                .slice(0, 8);
+
+            if (upcoming.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-600 italic text-center py-4">No upcoming events this month.</p>`;
+                return;
+            }
+
+            const catColors = {
+                default: '#3b82f6', vacation: '#10b981',
+                urgent: '#ef4444', meeting: '#f59e0b', admin: '#a855f7'
+            };
+
+            listEl.innerHTML = upcoming.map(([id, ev]) => {
+                const sDate = ev.start.split('T')[0];
+                const isToday = sDate === todayStr;
+                const color = ev.adminMemo
+                    ? catColors.admin
+                    : (catColors[ev.category] || catColors.default);
+                const timeStr = ev.allDay
+                    ? 'All Day'
+                    : (ev.start.includes('T') ? ev.start.split('T')[1].slice(0,5) : '');
+                const evJson = JSON.stringify(ev).replace(/"/g, '&quot;');
+
+                return `
+                    <div onclick="window.openEditModal('${id}', ${evJson})"
+                         class="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800
+                                cursor-pointer hover:border-slate-600 transition-all">
+                        <div class="w-1 h-10 rounded-full flex-shrink-0" style="background:${color}"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-black text-white truncate">${ev.title}</span>
+                                ${isToday ? '<span class="text-[8px] bg-purple-600 text-white px-1.5 py-0.5 rounded font-black flex-shrink-0">TODAY</span>' : ''}
+                            </div>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] text-slate-500 font-mono">${sDate.substring(5).replace('-','/')}</span>
+                                ${timeStr ? `<span class="text-[10px] text-slate-600">${timeStr}</span>` : ''}
+                                <span class="text-[10px] text-slate-600">${ev.author || ''}</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        })();
+
+        // ── 달력 그리드 렌더링 ──
         const sortedEvents = Object.keys(events).map(id => ({
             id, ...events[id],
             sDate: events[id].start.split('T')[0],
             eDate: events[id].end.split('T')[0]
         })).sort((a, b) => (new Date(b.eDate) - new Date(b.sDate)) || a.sDate.localeCompare(b.sDate));
-        
+
         const eventSlots = {};
         const dayOccupancy = {};
         sortedEvents.forEach(ev => {
@@ -382,19 +491,17 @@ function renderSchedule() {
             let maxSlotsInWeek = 0;
             let hasHolidayInWeek = false;
 
-            // 1단계: 해당 주(Row)의 날짜 배열 생성 및 휴일 여부 파악
             for (let j = 0; j < 7; j++) {
-                if ((i === 0 && j < firstDay) || dateNum > lastDate) { 
-                    weekDates.push(null); 
-                } else { 
+                if ((i === 0 && j < firstDay) || dateNum > lastDate) {
+                    weekDates.push(null);
+                } else {
                     const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
-                    weekDates.push(dStr); 
+                    weekDates.push(dStr);
                     if (holidayData[dStr]) hasHolidayInWeek = true;
-                    dateNum++; 
+                    dateNum++;
                 }
             }
-            
-            // 2단계: 해당 주(Row)의 최대 슬롯 높이 계산
+
             weekDates.forEach(dStr => {
                 if (dStr && dayOccupancy[dStr]) {
                     const dayMaxSlot = Math.max(...Array.from(dayOccupancy[dStr]), -1);
@@ -402,13 +509,10 @@ function renderSchedule() {
                 }
             });
 
-            // 3단계: 주 단위 공통 top 위치 결정 (휴일이 주에 하루라도 있으면 모두 아래로 밀기)
-            // 휴일이 있으면 시작점을 58px로, 없으면 38px로 통일하여 정렬 유지
-            const commonBaseTop = hasHolidayInWeek ? 58 : 38; 
+            const commonBaseTop = hasHolidayInWeek ? 58 : 38;
             const calculatedHeight = commonBaseTop + (maxSlotsInWeek * 28) + 15;
             tr.style.height = Math.max(140, calculatedHeight) + 'px';
 
-            // 4단계: TD 생성 및 이벤트 렌더링
             weekDates.forEach((dStr, j) => {
                 const td = document.createElement('td');
                 if (dStr) {
@@ -437,9 +541,9 @@ function renderSchedule() {
                                     <span class="date-text ${isToday ? 'is-today' : ''} ${dateColorClass}">
                                         ${parseInt(dStr.split('-')[2])}
                                     </span>
-${holidayName ? `<div style="font-size:9px; color:rgba(239,68,68,0.8); font-weight:bold; line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; pointer-events:none; max-width:100%; width:0; min-width:100%;">${holidayName}</div>` : ''}
+                                    ${holidayName ? `<div style="font-size:9px;color:rgba(239,68,68,0.8);font-weight:bold;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;pointer-events:none;max-width:100%;width:0;min-width:100%;">${holidayName}</div>` : ''}
                                 </div>`;
-                    
+
                     sortedEvents.filter(ev => dStr >= ev.sDate && dStr <= ev.eDate).forEach(ev => {
                         if (dStr === ev.sDate || j === 0) {
                             const slot = eventSlots[ev.id];
@@ -449,19 +553,17 @@ ${holidayName ? `<div style="font-size:9px; color:rgba(239,68,68,0.8); font-weig
                             const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
                             const catClass = ev.adminMemo ? 'bg-cat-admin' : `bg-cat-${ev.category || 'default'}`;
 
-                            // commonBaseTop을 사용하여 줄 전체의 일정 높이를 동기화
-                            html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})" 
-                                  class="event-item ${isCont} ${willCont} ${catClass}" 
-                                  style="top: ${commonBaseTop + (slot * 28)}px; width: calc(${span * 100}% - 8px);"
-                                  draggable="true"
-                                  ondragstart="window.handleDragStart(event, '${ev.id}')"
-                                  ondragend="window.handleDragEnd(event)"
-                                  ontouchstart="window.handleTouchStart(event, '${ev.id}')"
-                                  ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')"
-                                  >
-                                  <span class="ev-title-text">${isCont ? '' : ev.title}</span>
-                                  <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
-                             </div>`;
+                            html += `<div onclick="event.stopPropagation(); window.openEditModal('${ev.id}', ${evData})"
+                                          class="event-item ${isCont} ${willCont} ${catClass}"
+                                          style="top: ${commonBaseTop + (slot * 28)}px; width: calc(${span * 100}% - 8px);"
+                                          draggable="true"
+                                          ondragstart="window.handleDragStart(event, '${ev.id}')"
+                                          ondragend="window.handleDragEnd(event)"
+                                          ontouchstart="window.handleTouchStart(event, '${ev.id}')"
+                                          ontouchend="window.handleTouchEnd(event, '${ev.id}', '${dStr}')">
+                                          <span class="ev-title-text">${isCont ? '' : ev.title}</span>
+                                          <span class="ev-author-text">${isCont ? '' : (ev.author || 'Staff')}</span>
+                                     </div>`;
                         }
                     });
                     td.innerHTML = html;

@@ -191,6 +191,19 @@
             <div id="todayOutDisplay" class="sm-today-val out">—</div>
         </div>
     </div>
+<!-- leaveStatusAlert div 바로 위에 추가 -->
+<div id="streakCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+    <span style="font-size:22px;">🔥</span>
+    <div>
+        <div style="font-size:8px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Attendance Streak</div>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-top:2px;">
+            <span id="streakCount" style="font-size:20px;font-weight:900;color:var(--amber);">0</span>
+            <span style="font-size:9px;font-weight:700;color:var(--muted);">consecutive days</span>
+        </div>
+    </div>
+    <div id="streakBadge" style="margin-left:auto;display:none;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:6px;font-size:8px;font-weight:900;color:var(--amber);"></div>
+</div>
+
 </div>
 
 <div id="leaveStatusAlert">
@@ -210,38 +223,87 @@
                 <div class="sm-panel-title">Attendance Panel</div>
             </div>
 
-            <div id="timeInputWrapper" class="sm-time-block">
-                <div class="sm-time-label">Time (24H)</div>
-                <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8" class="sm-time-input">
-            </div>
+<div style="display:flex;gap:8px;margin-bottom:10px;align-items:stretch;">
+    <div style="flex:1;">
+        <div class="sm-time-label">Time (24H)</div>
+        <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8"
+               class="sm-time-input" style="height:44px;font-size:18px;padding:8px;">
+    </div>
+    <div style="flex:1;">
+        <div class="sm-time-label">Status</div>
+        <select id="specialStatus" onchange="toggleInputMode()"
+                class="sm-select" style="margin-bottom:0;height:44px;">
+            <option value="">--- REGULAR ---</option>
+            <option value="WO">WO — Work Out</option>
+            <option value="PEL">PEL — Personal Leave</option>
+            <option value="ANL">ANL — Annual Leave</option>
+            <option value="HAL">HAL — Half Day Leave</option>
+            <option value="SIL">SIL — Sick Leave</option>
+            <option value="SPL">SPL — Special Leave</option>
+        </select>
+    </div>
+</div>
 
-            <select id="specialStatus" onchange="toggleInputMode()" class="sm-select">
-                <option value="">--- REGULAR (IN / OUT) ---</option>
-                <option value="WO">WO — Work Out</option>
-                <option value="PEL">PEL — Personal Leave</option>
-                <option value="ANL">ANL — Annual Leave</option>
-                <option value="HAL">HAL — Half Day Leave</option>
-                <option value="SIL">SIL — Sick Leave</option>
-                <option value="SPL">SPL — Special Leave</option>
-            </select>
+<div style="display:flex;gap:8px;align-items:stretch;">
+    <div id="buttonArea" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1.5;">
+        <button id="btnIn" onclick="handleAttendance('attend')" class="sm-btn in">SET IN</button>
+        <button id="btnOut" onclick="handleAttendance('leave')" class="sm-btn out">SET OUT</button>
+    </div>
+    <div id="specialButtonArea" style="display:none;flex:1.5;">
+        <button onclick="handleSpecialStatus()" class="sm-btn special" style="height:100%;">SAVE STATUS</button>
+    </div>
+    <button onclick="window.switchTab && window.switchTab('all')"
+            style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+                   gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+                   padding:8px 6px;cursor:pointer;transition:all 0.2s;color:var(--text);">
+        <img src="images/gif/click.gif" alt="click" style="width:22px;height:22px;object-fit:contain;">
+        <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;text-align:center;line-height:1.3;">All Staff</span>
+    </button>
+</div>
+</div><!-- sm-panel 닫기 -->
 
-            <div id="buttonArea" class="sm-btn-row">
-                <button id="btnIn" onclick="handleAttendance('attend')" class="sm-btn in">SET IN</button>
-                <button id="btnOut" onclick="handleAttendance('leave')" class="sm-btn out">SET OUT</button>
+<!-- sm-all-staff-btn 바로 위에 추가 -->
+<div id="monthSummaryCard" class="sm-panel" style="padding: 14px 16px;">
+    <div class="sm-panel-header" style="margin-bottom: 10px;">
+        <div class="sm-panel-title">📊 This Month Summary</div>
+        <div id="summaryMonthLabel" style="font-size:9px;font-weight:900;color:var(--blue);"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+
+        <!-- 좌: 3개 카운터 -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;">
+            <div style="background:var(--green-dim);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Present</div>
+                <div id="sumPresent" style="font-size:16px;font-weight:900;color:var(--green);">—</div>
             </div>
-            <div id="specialButtonArea" style="display:none; margin-bottom:10px;">
-                <button onclick="handleSpecialStatus()" class="sm-btn special">SAVE STATUS</button>
+            <div style="background:var(--red-dim);border:1px solid rgba(244,63,94,0.2);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Late</div>
+                <div id="sumLate" style="font-size:16px;font-weight:900;color:var(--red);">—</div>
+            </div>
+            <div style="background:var(--amber-dim);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:6px;text-align:center;">
+                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Leave</div>
+                <div id="sumLeave" style="font-size:16px;font-weight:900;color:var(--amber);">—</div>
             </div>
         </div>
 
-        <!-- All Staff Button -->
-        <button onclick="window.switchTab && window.switchTab('all')" class="sm-all-staff-btn">
-            <img src="images/gif/click.gif" alt="click">
-            <span>All Staff Record</span>
-            <span class="arrow">❯</span>
-        </button>
+        <!-- 우: Attendance Rate 바 -->
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;">Rate</span>
+                <span id="sumRatePct" style="font-size:9px;font-weight:900;color:var(--blue);">--%</span>
+            </div>
+            <div class="sm-bar" style="margin-bottom:4px;">
+                <div id="sumRateBar" class="sm-bar-fill" style="width:0%;background:var(--green);"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+                <span id="sumAvgIn"  style="font-size:8px;font-weight:700;color:var(--muted);">Avg In: --:--</span>
+                <span id="sumAvgOut" style="font-size:8px;font-weight:700;color:var(--muted);">Avg Out: --:--</span>
+            </div>
+        </div>
 
     </div>
+</div>
 
     <!-- ══ RIGHT PANEL: Calendar ══ -->
     <div class="sm-right">
@@ -400,17 +462,50 @@ function getJakartaDate() {
     }
 
     /* ── Live Time ── */
+/* ── Live Time ── */
     function updateLiveTime() {
-        if (document.activeElement===timeInput) return;
-        const n=getJakartaDate();
-        timeInput.value=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+        if (document.activeElement === timeInput) return;
+        const n = getJakartaDate();
+        timeInput.value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
     }
-    setInterval(updateLiveTime, 1000); updateLiveTime();
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
+
+    /* ── Late Warning ── */
+    function checkLateWarning() {
+        if (!standardTime) return;
+        const now = getJakartaDate();
+        const [sH, sM] = standardTime.split(':').map(Number);
+        const stdMins = sH * 60 + sM;
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        const btn = document.getElementById('btnIn');
+        if (!btn) return;
+        db.ref(`attendance/${todayStr}/${user}/attend`).once('value', snap => {
+            if (snap.val()) {
+                btn.style.background = 'var(--green)';
+                btn.innerHTML = 'SET IN';
+                return;
+            }
+            if (nowMins > stdMins + 5) {
+                btn.style.background = 'linear-gradient(135deg,#f43f5e,#dc2626)';
+                btn.innerHTML = `⚠ SET IN (LATE +${nowMins - stdMins}m)`;
+            } else if (nowMins > stdMins - 10) {
+                btn.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+                btn.innerHTML = `⏰ SET IN (Hurry!)`;
+            } else {
+                btn.style.background = 'var(--green)';
+                btn.innerHTML = 'SET IN';
+            }
+        });
+    }
+    setInterval(checkLateWarning, 30000);
+    checkLateWarning();
+
     timeInput.addEventListener('input', e => {
-        let v=e.target.value.replace(/[^0-9]/g,'');
-        if(v.length>=5) v=v.substring(0,2)+':'+v.substring(2,4)+':'+v.substring(4,6);
-        else if(v.length>=3) v=v.substring(0,2)+':'+v.substring(2,4);
-        e.target.value=v;
+        let v = e.target.value.replace(/[^0-9]/g, '');
+        if (v.length >= 5) v = v.substring(0,2) + ':' + v.substring(2,4) + ':' + v.substring(4,6);
+        else if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
+        e.target.value = v;
     });
 
     function isValidTime(t) { return t && /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t); }
@@ -549,6 +644,102 @@ function getJakartaDate() {
             const tbody=document.getElementById('calendarBody'); if(!tbody) return;
             const data=snap.val()||{};
             updateAttendanceStats(data);
+// renderCalendar 함수 안 updateAttendanceStats 호출 아래에 추가
+function updateMonthSummary(data) {
+    const vy = viewDate.getFullYear(), vm = viewDate.getMonth();
+    const monthStr = `${vy}-${String(vm+1).padStart(2,'0')}`;
+    const leaveTypes = ['PEL','ANL','HAL','SIL','SPL','WO'];
+
+    let present = 0, late = 0, leave = 0, workdays = 0;
+    let totalInMins = 0, inCount = 0, totalOutMins = 0, outCount = 0;
+
+    // 이번 달 평일만 순회
+    const lastDay = new Date(vy, vm+1, 0).getDate();
+    for (let d = 1; d <= lastDay; d++) {
+        const dow = new Date(vy, vm, d).getDay();
+        if (dow === 0 || dow === 6) continue;
+        const dStr = `${monthStr}-${String(d).padStart(2,'0')}`;
+        const today = getJakartaDate().toISOString().split('T')[0];
+        if (dStr > today) continue; // 미래 날짜 제외
+        workdays++;
+
+        const rec = data[dStr]?.[user];
+        if (!rec) continue;
+
+        if (typeof rec === 'string') {
+            if (leaveTypes.includes(rec)) leave++;
+        } else if (rec.attend) {
+            if (leaveTypes.includes(rec.attend)) { leave++; continue; }
+            present++;
+            if (rec.attend.includes('LATE')) late++;
+
+            // 평균 IN 계산
+            const inMatch = rec.attend.match(/(\d{1,2}):(\d{2})/);
+            if (inMatch) { totalInMins += parseInt(inMatch[1])*60 + parseInt(inMatch[2]); inCount++; }
+
+            // 평균 OUT 계산
+            if (rec.leave) {
+                const outMatch = rec.leave.match(/(\d{1,2}):(\d{2})/);
+                if (outMatch) { totalOutMins += parseInt(outMatch[1])*60 + parseInt(outMatch[2]); outCount++; }
+            }
+        }
+    }
+
+    const rate = workdays > 0 ? Math.round((present / workdays) * 100) : 0;
+    const toTime = mins => `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+    const barColor = rate >= 90 ? 'var(--green)' : rate >= 70 ? 'var(--amber)' : 'var(--red)';
+
+    const el = id => document.getElementById(id);
+    if (el('sumPresent'))   el('sumPresent').innerText   = present;
+    if (el('sumLate'))      el('sumLate').innerText      = late;
+    if (el('sumLeave'))     el('sumLeave').innerText     = leave;
+    if (el('sumRatePct'))   el('sumRatePct').innerText   = rate + '%';
+    if (el('sumRateBar'))   { el('sumRateBar').style.width = rate + '%'; el('sumRateBar').style.background = barColor; }
+    if (el('sumAvgIn'))     el('sumAvgIn').innerText     = inCount  > 0 ? `Avg In: ${toTime(Math.round(totalInMins/inCount))}`   : 'Avg In: --:--';
+    if (el('sumAvgOut'))    el('sumAvgOut').innerText    = outCount > 0 ? `Avg Out: ${toTime(Math.round(totalOutMins/outCount))}` : 'Avg Out: --:--';
+
+    const lbl = el('summaryMonthLabel');
+    if (lbl) lbl.innerText = viewDate.toLocaleString('en-US',{month:'short',year:'numeric'}).toUpperCase();
+}
+
+// renderCalendar 안 updateAttendanceStats(data); 호출 바로 아래에 추가
+updateMonthSummary(data);
+
+// renderCalendar 함수 안 updateMonthSummary 호출 아래에 추가
+async function updateStreak() {
+    const leaveTypes = ['PEL','ANL','HAL','SIL','SPL','WO'];
+    let streak = 0;
+    const today = getJakartaDate();
+
+    for (let i = 0; i <= 60; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const dow = d.getDay();
+        if (dow === 0 || dow === 6) continue; // 주말 제외
+
+        const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const rec = data[dStr]?.[user];
+
+        if (!rec) break; // 기록 없으면 스트릭 종료
+        if (typeof rec === 'string' && leaveTypes.includes(rec)) continue; // 휴가는 스트릭 유지
+        if (typeof rec === 'object' && rec.attend) { streak++; continue; }
+        break;
+    }
+
+    const countEl = document.getElementById('streakCount');
+    const badgeEl = document.getElementById('streakBadge');
+    if (countEl) countEl.innerText = streak;
+    if (badgeEl) {
+        if (streak >= 30)      { badgeEl.style.display='block'; badgeEl.innerText='🏆 LEGENDARY'; }
+        else if (streak >= 20) { badgeEl.style.display='block'; badgeEl.innerText='💎 DIAMOND'; }
+        else if (streak >= 10) { badgeEl.style.display='block'; badgeEl.innerText='⭐ EXCELLENT'; }
+        else if (streak >= 5)  { badgeEl.style.display='block'; badgeEl.innerText='✨ GOOD'; }
+        else badgeEl.style.display = 'none';
+    }
+}
+
+updateStreak(); // 호출
+
             if(!hasCheckedMissing){checkMissingRecords(data);hasCheckedMissing=true;}
             tbody.innerHTML=''; let dc=1;
             for(let i=0;i<6;i++){

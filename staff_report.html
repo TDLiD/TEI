@@ -199,6 +199,21 @@
         <span class="text-[10px] font-black text-slate-500 uppercase">Report Unwritten Date:</span>
         <div id="missingDates" class="text-xs font-mono flex flex-wrap gap-x-2 italic">-</div>
     </div>
+    <div class="flex flex-col gap-1 mt-2 pt-3 border-t border-slate-700">
+        <div class="flex justify-between items-center">
+            <span class="text-[10px] font-black text-slate-500 uppercase">Monthly Achievement</span>
+            <span id="achievePct" class="text-[10px] font-black text-cyan-400">--%</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-2">
+            <div id="achieveBar" class="h-2 rounded-full transition-all duration-500"
+                 style="width:0%;background:linear-gradient(90deg,#3b82f6,#10b981)"></div>
+        </div>
+        <div class="flex justify-between text-[9px] text-slate-600 mt-0.5">
+            <span id="achieveDetail">0 written / 0 workdays</span>
+            <span id="achieveStreak" class="text-amber-500 font-bold"></span>
+        </div>
+    </div>
+
 </div>
             <div id="staffListArea" class="staff-list-container hidden">
                 <div class="staff-list-title"><span>Staff Reports - <span id="targetDateDisplay"></span></span><span id="staffCount" class="text-blue-500">0 persons</span></div>
@@ -663,6 +678,50 @@ if (writtenDatesContainer && missingDatesContainer) {
             document.getElementById('countPending').innerText = summaryCount["Pending"];
             document.getElementById('countProgress').innerText = summaryCount["In Progress"];
         }
+
+        // ▼ 여기에 추가 (summaryCount 업데이트 바로 다음)
+        (async function updateAchievement() {
+            const now = new Date();
+            const y = now.getFullYear(), mo = now.getMonth();
+            let workdays = 0, written = 0, streak = 0, streakActive = true;
+
+            for (let d = 1; d <= now.getDate(); d++) {
+                const dow = new Date(y, mo, d).getDay();
+                if (dow === 0 || dow === 6) continue;
+
+                const dStr = `${y}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const attVal = allAttendance[dStr]?.[user];
+
+                // 휴가일은 workday에서 제외
+                if (['PEL','ANL','HAL','SIL','SPL'].includes(attVal)) continue;
+
+                workdays++;
+                if (allReports[dStr]?.[user]) {
+                    written++;
+                    if (streakActive) streak++;
+                } else {
+                    streakActive = false;
+                }
+            }
+
+            const pct = workdays > 0 ? Math.round((written / workdays) * 100) : 0;
+            const barColor = pct >= 90
+                ? 'linear-gradient(90deg,#10b981,#06b6d4)'
+                : pct >= 70
+                    ? 'linear-gradient(90deg,#3b82f6,#10b981)'
+                    : 'linear-gradient(90deg,#f59e0b,#ef4444)';
+
+            const barEl    = document.getElementById('achieveBar');
+            const pctEl    = document.getElementById('achievePct');
+            const detailEl = document.getElementById('achieveDetail');
+            const streakEl = document.getElementById('achieveStreak');
+
+            if (barEl)    { barEl.style.width = pct + '%'; barEl.style.background = barColor; }
+            if (pctEl)    pctEl.innerText = pct + '%';
+            if (detailEl) detailEl.innerText = `${written} written / ${workdays} workdays`;
+            if (streakEl) streakEl.innerText = streak > 1 ? `🔥 ${streak} day streak!` : '';
+        })();
+
 
     } catch (error) {
         console.error("Calendar Rendering Error:", error);
