@@ -248,8 +248,18 @@ async function checkTodayBirthdays() {
 
 fetchJakartaWeather();
 checkTodayBirthdays();
+
 window.switchTab = function(t) {
     // ▼ 탭 전환 시 이전 페이지 리스너 정리
+    try {
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        firebase.database().ref(`attendance/${todayStr}`).off();
+        firebase.database().ref('attendance').off();
+        firebase.database().ref('settings/config').off();
+        firebase.database().ref('settings/config/stdAttendance').off();
+    } catch(e) { console.warn('Listener cleanup error:', e); }
+
     if (typeof window._leavePageCleanup === 'function') {
         window._leavePageCleanup();
         window._leavePageCleanup = null;

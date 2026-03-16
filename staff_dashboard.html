@@ -397,11 +397,12 @@ function getJakartaDate() {
     document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'Asia/Jakarta'}).toUpperCase();
 
     /* ── Today's In/Out display ── */
-    function updateTodayStrip(data) {
-        const rec = data && data[user] ? data[user] : null;
-        const inEl = document.getElementById('todayInDisplay');
-        const outEl = document.getElementById('todayOutDisplay');
-        if (!rec) { inEl.textContent = '—'; outEl.textContent = '—'; return; }
+function updateTodayStrip(data) {
+    const inEl = document.getElementById('todayInDisplay');
+    const outEl = document.getElementById('todayOutDisplay');
+    if (!inEl || !outEl) return; // ← DOM 없으면 즉시 종료
+    const rec = data && data[user] ? data[user] : null;
+    if (!rec) { inEl.textContent = '—'; outEl.textContent = '—'; return; }
         if (typeof rec === 'string') { inEl.textContent = rec; outEl.textContent = '—'; return; }
         if (rec.attend) {
             const m = rec.attend.match(/\d{1,2}:\d{2}/);
@@ -414,8 +415,13 @@ function getJakartaDate() {
             outEl.textContent = m ? m[0] : rec.leave;
         } else { outEl.textContent = '—'; }
     }
-    db.ref(`attendance/${todayStr}`).on('value', snap => updateTodayStrip(snap.val()));
-
+db.ref(`attendance/${todayStr}`).on('value', snap => {
+    if (!document.getElementById('todayInDisplay')) {
+        db.ref(`attendance/${todayStr}`).off();
+        return;
+    }
+    updateTodayStrip(snap.val());
+});
     /* ── Leave Status Alert ── */
     function checkLeaveStatus(uid) {
         db.ref(`leaves/${uid}/${new Date().getFullYear()}`).on('value', snap => {
