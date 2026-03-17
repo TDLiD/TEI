@@ -96,6 +96,7 @@ h3.text-xl {
 }
 
 /* ── Avatar Display ── */
+/* ── Avatar Display ── */
 #currentAvatarDisplay {
     border: 2px solid var(--border2) !important;
     border-radius: 50% !important;
@@ -107,6 +108,13 @@ h3.text-xl {
     overflow: hidden;
     transition: all 0.3s ease;
 }
+
+/* 이미지 자체도 원형으로 설정 */
+#currentAvatarDisplay img {
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+
 #currentAvatarDisplay:hover {
     box-shadow: 
         inset 0 2px 8px rgba(0,0,0,0.4),
