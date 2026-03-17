@@ -491,13 +491,17 @@ window.openProfileImagePicker = function() {
             }
         };
 
-        /* --- [수정] 프로필 이미지 로드 함수 --- */
 /* --- [수정된] 프로필 이미지 로드 함수 --- */
 const loadProfileImg = (userId) => {
     if (!userId) return;
-    database.ref(`users/${userId}/profileImg`).once('value', (snap) => {
-        const imgFileName = snap.val();
+    database.ref(`users/${userId}`).once('value', (snap) => {  // ← profileImg → 전체 노드
+        const userData = snap.val() || {};
+        const imgFileName = userData.profileImg;
+        const displayName = userData.displayName || userId;    // ← displayName 추출
         const greetingEl = document.getElementById('userGreeting');
+        
+        // 인사말을 displayName으로 업데이트
+        if (greetingEl) greetingEl.innerText = displayName;   // ← 추가
         
         // 1. 기존에 이미 생성된 컨테이너가 있다면 삭제
         const oldContainer = document.querySelector('.profile-container');

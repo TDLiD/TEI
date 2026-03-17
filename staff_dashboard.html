@@ -380,8 +380,13 @@ function getJakartaDate() {
     const db = firebase.database();
 
     /* Welcome */
-    const welcomeMsg = document.getElementById('mainWelcomeMsg');
-    if (welcomeMsg) welcomeMsg.innerText = user || '—';
+const welcomeMsg = document.getElementById('mainWelcomeMsg');
+if (welcomeMsg) {
+    welcomeMsg.innerText = user || '—'; // 로딩 전 fallback
+    firebase.database().ref(`users/${user}/displayName`).once('value', snap => {
+        welcomeMsg.innerText = snap.val() || user || '—';
+    });
+}
 
     if (user) { checkLeaveStatus(user); autoFillYesterdayLeave(user); }
 

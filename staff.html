@@ -178,16 +178,22 @@ window.closeProfileModal = () => document.getElementById('profileCustomModal').c
 window.openProfileImagePicker = function() { let g = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-4">`; PROFILE_IMAGES.forEach(i => { g += `<div onclick="saveStaffProfile('${i}')" class="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 hover:scale-105 transition-all shadow-lg"><img src="images/profile/${i}" class="w-full h-full object-cover"></div>`; }); g += `</div>`; openProfileModal('Change Profile', g); };
 window.saveStaffProfile = function(i) { if(!confirm("변경하시겠습니까?")) return; db.ref('users/' + loggedInUser).update({ profileImg: i, profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP }).then(() => closeProfileModal()); };
 if(loggedInUser) { 
-    document.getElementById('desktopUser').innerText = loggedInUser; 
-    if(document.getElementById('mobileUserName')) document.getElementById('mobileUserName').innerText = loggedInUser;
-    db.ref('users/' + loggedInUser).on('value', snap => { 
-        const ud = snap.val(); if (!ud) return; 
-        const pi = ud.profileImg || 'image-001.webp'; 
-        const ec = document.getElementById('navEmojiContainer'); 
-        if(ec) { ec.innerHTML = `<img src="images/profile/${pi}" class="nav-profile-img shadow-xl shadow-blue-500/20"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>`; } 
-        const mpi = document.getElementById('mobileProfileImg');
-        if(mpi) { mpi.innerHTML = `<img src="images/profile/${pi}" class="w-full h-full object-cover">`; }
-    }); 
+document.getElementById('desktopUser').innerText = loggedInUser;
+if(document.getElementById('mobileUserName')) document.getElementById('mobileUserName').innerText = loggedInUser;
+db.ref('users/' + loggedInUser).on('value', snap => { 
+    const ud = snap.val(); if (!ud) return; 
+    const pi = ud.profileImg || 'image-001.webp';
+    const displayName = ud.displayName || loggedInUser; // ← 추가
+    const ec = document.getElementById('navEmojiContainer'); 
+    if(ec) { ec.innerHTML = `<img src="images/profile/${pi}" class="nav-profile-img shadow-xl shadow-blue-500/20"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>`; } 
+    const mpi = document.getElementById('mobileProfileImg');
+    if(mpi) { mpi.innerHTML = `<img src="images/profile/${pi}" class="w-full h-full object-cover">`; }
+    // ↓ 추가: displayName으로 유저명 덮어쓰기
+    const du = document.getElementById('desktopUser');
+    if(du) du.innerText = displayName;
+    const mu = document.getElementById('mobileUserName');
+    if(mu) mu.innerText = displayName;
+}); 
 }
 // 스크립트 내 checkTodayBirthdays 함수 (Line 135 부근) 수정
 async function checkTodayBirthdays() {
