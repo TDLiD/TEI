@@ -333,7 +333,7 @@ window.showAllStaffBirthdays = function() {
                     <div class="flex items-center gap-3">
                         <img src="${imgSrc}" class="w-8 h-8 rounded-full border border-white/10 object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${u.id}'">
                         <div class="flex flex-col">
-                            <span class="text-xs font-black text-white uppercase">${u.id}</span>
+<span class="text-xs font-black text-white uppercase">${u.displayName || u.id}</span>
                             <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${u.role || 'Staff'}</span>
                         </div>
                     </div>
