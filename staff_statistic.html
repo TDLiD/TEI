@@ -1,25 +1,292 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1.5rem; padding: 2rem; margin-bottom: 2rem; }
-    .chart-container { position: relative; height: 300px; width: 100%; }
-    .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
-    .stat-tab-btn { transition: all 0.3s; position: relative; }
-    .stat-tab-btn.active { color: #facc15; }
-    .stat-tab-btn.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #facc15; border-radius: 2px; }
+/* ══════════════════════════════════════════
+   STAFF STATISTIC — 3D DARK COCKPIT THEME
+   Deep navy + gold/amber command center
+   SF Mono data readability
+══════════════════════════════════════════ */
 
-    /* 모달이 메뉴 바(Sidebar) 등 모든 요소를 덮도록 z-index를 최대로 설정 */
-    #statDetailModal {
-        z-index: 9999 !important;
-        position: fixed !important;
-        inset: 0 !important;
-    }
+:root {
+    --bg:        #040810;
+    --surface:   #080f1e;
+    --surface2:  #0d1628;
+    --surface3:  #111e33;
+    --border:    rgba(255,255,255,0.06);
+    --border2:   rgba(255,255,255,0.12);
+    --text:      #f1f5f9;
+    --muted:     #475569;
+    --dim:       #1e293b;
+    --gold:      #facc15;
+    --green:     #10b981;
+    --red:       #f43f5e;
+    --blue:      #3b82f6;
+    --amber:     #f59e0b;
+    --cyan:      #06b6d4;
+    --green-dim: rgba(16,185,129,0.12);
+    --red-dim:   rgba(244,63,94,0.12);
+    --blue-dim:  rgba(59,130,246,0.12);
+    --amber-dim: rgba(245,158,11,0.12);
+    --gold-dim:  rgba(250,204,21,0.1);
+}
 
-    /* 스크롤바 커스텀 (모달 내부) */
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Stat Card (3D) ── */
+.stat-card {
+    position: relative;
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
+    border: 1px solid var(--border);
+    border-top: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 8px 28px rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), box-shadow 0.35s ease;
+    overflow: hidden;
+}
+.stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(250,204,21,0.25), transparent);
+    pointer-events: none;
+}
+.stat-card::after {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(250,204,21,0.06), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.stat-card:hover {
+    transform: translateY(-3px) rotateX(2deg);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.09),
+        0 20px 44px rgba(0,0,0,0.6),
+        0 4px 14px rgba(0,0,0,0.4);
+}
+
+/* ── Chart Container — 작게 ── */
+.chart-container {
+    position: relative;
+    height: 220px;
+    width: 100%;
+}
+
+/* ── Summary Cards ── */
+#summaryCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+@media (min-width: 640px) {
+    #summaryCards { grid-template-columns: repeat(4, 1fr); }
+}
+
+#summaryCards > div {
+    position: relative;
+    background: linear-gradient(145deg, var(--surface2), var(--surface));
+    border: 1px solid var(--border);
+    border-top: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+}
+#summaryCards > div::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+}
+#summaryCards > div:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 12px 28px rgba(0,0,0,0.55);
+}
+
+/* ── Tab Nav ── */
+.flex.gap-6.border-b {
+    border-color: var(--border) !important;
+    background: linear-gradient(145deg, var(--surface2), var(--surface));
+    border-radius: 14px 14px 0 0;
+    padding: 10px 16px 0 !important;
+    margin-bottom: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.stat-tab-btn {
+    transition: all 0.25s;
+    position: relative;
+    font-family: 'SF Mono', monospace;
+    font-size: 9px !important;
+    letter-spacing: 0.12em;
+    color: var(--muted) !important;
+    padding-bottom: 10px !important;
+}
+.stat-tab-btn:hover { color: var(--text) !important; }
+.stat-tab-btn.active {
+    color: var(--gold) !important;
+    text-shadow: 0 0 12px rgba(250,204,21,0.4);
+}
+.stat-tab-btn.active::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(250,204,21,0.5);
+}
+
+/* ── Nav Buttons ── */
+.nav-btn {
+    font-family: 'SF Mono', monospace;
+    font-size: 9px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.06em;
+    border-radius: 8px;
+    transition: all 0.2s;
+    padding: 5px 10px;
+    color: var(--muted);
+}
+.nav-btn:hover {
+    background: rgba(59,130,246,0.12) !important;
+    color: #60a5fa !important;
+    box-shadow: 0 0 10px rgba(59,130,246,0.15);
+}
+
+/* Nav btn wrapper */
+.flex.bg-slate-800.rounded-lg {
+    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+/* ── Chart title ── */
+.stat-card h3 {
+    font-family: 'SF Mono', 'Fira Code', monospace !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: var(--gold) !important;
+    text-shadow: 0 0 16px rgba(250,204,21,0.25);
+}
+
+/* ── Section header row ── */
+.stat-card .flex.flex-col.md\\:flex-row {
+    margin-bottom: 14px !important;
+}
+
+/* ── Summary card labels/values ── */
+#summaryCards .text-\[9px\] {
+    font-family: 'SF Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--muted) !important;
+}
+#summaryCards .text-2xl {
+    font-family: 'SF Mono', monospace;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-shadow: 0 0 16px currentColor;
+}
+#summaryCards .text-\[10px\] {
+    font-family: 'SF Mono', monospace;
+    color: var(--muted) !important;
+}
+
+/* ── Modal ── */
+#statDetailModal {
+    z-index: 9999 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0,0,0,0.88) !important;
+    backdrop-filter: blur(12px) !important;
+}
+#statDetailModal > div {
+    background: linear-gradient(145deg, #0d1628, #080f1e) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-top: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 24px !important;
+    box-shadow:
+        0 40px 80px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,255,255,0.07) !important;
+    animation: modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes modalIn {
+    from { opacity:0; transform: scale(0.93) translateY(20px); }
+    to   { opacity:1; transform: none; }
+}
+#statDetailModal .p-6.border-b {
+    background: rgba(255,255,255,0.02) !important;
+    border-color: var(--border) !important;
+}
+#statDetailModal thead tr {
+    background: var(--surface2) !important;
+    border-color: var(--border) !important;
+}
+#statDetailModal thead th {
+    color: var(--muted) !important;
+    font-family: 'SF Mono', monospace;
+    font-size: 8px !important;
+    letter-spacing: 0.12em;
+}
+#statDetailModal tbody tr:hover {
+    background: rgba(59,130,246,0.05) !important;
+}
+#statDetailModal .p-4.bg-slate-900\/30 {
+    background: rgba(4,8,16,0.5) !important;
+    border-color: var(--border) !important;
+}
+
+/* ── Scrollbar ── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--surface2); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* ── Leave Histogram card ── */
+#leaveHistSection {
+    border-color: rgba(250,204,21,0.15) !important;
+}
+#leaveHistSection::before {
+    background: linear-gradient(90deg, transparent, rgba(250,204,21,0.2), transparent) !important;
+}
+
+/* ── Summary card color accents ── */
+#summaryCards > div:nth-child(1) { border-top-color: rgba(16,185,129,0.3); }
+#summaryCards > div:nth-child(1)::before {
+    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.2), transparent);
+}
+#summaryCards > div:nth-child(2) { border-top-color: rgba(244,63,94,0.3); }
+#summaryCards > div:nth-child(2)::before {
+    background: linear-gradient(90deg, transparent, rgba(244,63,94,0.2), transparent);
+}
+#summaryCards > div:nth-child(3) { border-top-color: rgba(245,158,11,0.3); }
+#summaryCards > div:nth-child(3)::before {
+    background: linear-gradient(90deg, transparent, rgba(245,158,11,0.2), transparent);
+}
+#summaryCards > div:nth-child(4) { border-top-color: rgba(59,130,246,0.3); }
+#summaryCards > div:nth-child(4)::before {
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
+}
+
+/* ── Fade in animation ── */
+.animate-fadeIn { animation: fadeIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+
+/* ── Utility overrides ── */
+.space-y-8 > * + * { margin-top: 0 !important; }
+.space-y-8 { display: flex; flex-direction: column; gap: 0; }
+.pb-10 { padding-bottom: 40px; }
 </style>
+
 
 <div class="animate-fadeIn space-y-8 pb-10">
     <div class="flex gap-6 border-b border-slate-800 px-2">
