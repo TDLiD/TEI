@@ -304,12 +304,20 @@
     // ══════════════════════════════════════
     //  refreshDashboard
     // ══════════════════════════════════════
-    window.refreshDashboard = function() {
-        if (!dashboardData) return;
-        const s = document.getElementById('staffFilter').value;
-        const y = document.getElementById('yearFilter').value;
-        const m = document.getElementById('monthFilter').value;
-        const stats = processData(dashboardData, s, y, m);
+window.refreshDashboard = function() {
+    if (!dashboardData) return;
+
+    const staffEl  = document.getElementById('staffFilter');
+    const yearEl   = document.getElementById('yearFilter');
+    const monthEl  = document.getElementById('monthFilter');
+
+    // DOM이 없으면 즉시 종료 (탭 전환 후 소멸 대비)
+    if (!staffEl || !yearEl || !monthEl) return;
+
+    const s = staffEl.value;
+    const y = yearEl.value;
+    const m = monthEl.value;
+    const stats = processData(dashboardData, s, y, m);
 
         updateKPIs(stats);
         updateCharts(stats, m === 'all');
