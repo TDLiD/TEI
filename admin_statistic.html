@@ -1,10 +1,55 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-    .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 2rem; padding: 1.5rem; margin-bottom: 1.5rem; }
-    @media (min-width: 768px) { .stat-card { padding: 2rem; margin-bottom: 2rem; } }
-    .chart-container { position: relative; height: 500px; width: 100%; }
-    @media (min-width: 768px) { .chart-container { height: 400px; } }
+.stat-card {
+    background: linear-gradient(145deg, #0d1424 0%, #080d18 100%);
+    border: 1px solid #1a2540;
+    border-top: 1px solid #243050;
+    border-radius: 1.5rem;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+    pointer-events: none;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+@media (min-width: 768px) { .stat-card { padding: 1.5rem; margin-bottom: 1.2rem; } }
+.chart-container { position: relative; height: 280px; width: 100%; }
+@media (min-width: 768px) { .chart-container { height: 260px; } }
+
+/* 3D 원근감 래퍼 */
+.chart-3d-wrap {
+    perspective: 1200px;
+    perspective-origin: 50% 40%;
+}
+.chart-3d-inner {
+    transform: rotateX(6deg) scale(0.98);
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(5,8,18,0.6);
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.6),
+        0 8px 16px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    padding: 12px;
+}
+.stat-card:hover .chart-3d-inner {
+    transform: rotateX(2deg) scale(1);
+}
+
     .nav-btn { transition: all 0.2s ease; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     .nav-btn:active { scale: 0.95; }
@@ -48,7 +93,8 @@
                 </div>
             </div>
         </div>
-        <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+<div class="chart-3d-wrap"><div class="chart-3d-inner"><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div></div>
+
     </section>
 
     <section class="stat-card">
@@ -66,7 +112,7 @@
                 </div>
             </div>
         </div>
-        <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+<div class="chart-3d-wrap"><div class="chart-3d-inner"><div class="chart-container"><canvas id="yearlyChart"></canvas></div></div></div>
     </section>
 
     <section class="stat-card">
@@ -76,7 +122,7 @@
             </h3>
             <button onclick="exportToExcel('overall')" class="export-btn">Export Excel</button>
         </div>
-        <div class="chart-container"><canvas id="overallChart"></canvas></div>
+<div class="chart-3d-wrap"><div class="chart-3d-inner"><div class="chart-container"><canvas id="overallChart"></canvas></div></div></div>
     </section>
 </div>
 
@@ -105,11 +151,13 @@
 </div>
 
 <script>
-    window.switchAdminStatTab = function(mode) {
-        if (typeof window._switchLogic === 'function') {
-            window._switchLogic(mode);
-        }
-    };
+window.switchAdminStatTab = function(mode) {
+    // DOM이 준비되지 않은 경우 대비
+    if (!document.getElementById('tabAtt')) return;
+    if (typeof window._switchLogic === 'function') {
+        window._switchLogic(mode);
+    }
+};
 
     (function() {
         const db = firebase.database();
@@ -264,8 +312,11 @@
             } catch (e) { console.error(e); }
         };
 
-        function processAndRender() {
-            if (!cachedData || !document.getElementById('monthlyChart')) return;
+function processAndRender() {
+    if (!cachedData) return;
+    if (!document.getElementById('monthlyChart') || 
+        !document.getElementById('yearlyChart') || 
+        !document.getElementById('overallChart')) return;
             const mKey = monthViewDate.toISOString().substring(0, 7);
             const yKey = yearViewDate.getFullYear().toString();
             
@@ -307,34 +358,72 @@
             if (currentMode === 'att') {
                 const users = Object.keys(chartData).sort();
                 const types = Object.keys(typeColors).filter(k => k !== 'LEAVE');
-                const ds = types.map(t => ({
-                    label: t,
-                    data: users.map(u => chartData[u][t] || 0),
-                    backgroundColor: typeColors[t],
-                    borderRadius: 4
-                })).filter(d => d.data.some(v => v > 0));
+const ds = types.map(t => ({
+    label: t,
+    data: users.map(u => chartData[u][t] || 0),
+    backgroundColor: typeColors[t] + 'cc',
+    hoverBackgroundColor: typeColors[t],
+    borderColor: typeColors[t],
+    borderWidth: 1,
+    borderRadius: 6,
+    borderSkipped: false,
+})).filter(d => d.data.some(v => v > 0));
 
                 config = {
                     type: 'bar',
                     data: { labels: users, datasets: ds },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        indexAxis: isMobile ? 'y' : 'x',
-                        // 클릭 시 팝업 띄우기
-                        onClick: (e, activeEls) => {
-                            if (activeEls.length > 0) {
-                                const index = activeEls[0].index;
-                                const label = charts[chartType].data.labels[index];
-                                showUserDetail(label, chartType);
-                            }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { color: '#64748b' } },
-                            x: { ticks: { color: '#94a3b8' } }
-                        },
-                        plugins: { legend: { labels: { color: '#f8fafc' } } }
-                    }
+options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: isMobile ? 'y' : 'x',
+    onClick: (e, activeEls) => {
+        if (activeEls.length > 0) {
+            const index = activeEls[0].index;
+            const label = charts[chartType].data.labels[index];
+            showUserDetail(label, chartType);
+        }
+    },
+    animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+        delay: (ctx) => ctx.dataIndex * 60
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 1 },
+            border: { dash: [4,4] },
+            ticks: { color: '#475569', font: { size: 10, weight: '700' } }
+        },
+        x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 10, weight: '900' } }
+        }
+    },
+    plugins: {
+        legend: {
+            labels: {
+                color: '#94a3b8',
+                font: { size: 10, weight: '700' },
+                boxWidth: 10, boxHeight: 10,
+                borderRadius: 3, useBorderRadius: true,
+                padding: 16
+            }
+        },
+        tooltip: {
+            backgroundColor: 'rgba(8,12,24,0.95)',
+            borderColor: 'rgba(59,130,246,0.3)',
+            borderWidth: 1,
+            titleColor: '#f8fafc',
+            bodyColor: '#94a3b8',
+            padding: 12,
+            cornerRadius: 10,
+            titleFont: { weight: '900', size: 12 },
+            bodyFont: { size: 11 },
+            boxWidth: 10, boxHeight: 10, boxPadding: 4
+        }
+    }
+}
                 };
             } else {
                 const ds = Object.entries(chartData).map(([u, p], i) => ({
@@ -346,17 +435,50 @@
                 config = {
                     type: 'line',
                     data: { datasets: ds },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        scales: {
-                            x: { type: 'category', ticks: { color: '#94a3b8', font: { size: 10 } } },
-                            y: { 
-                                min: 17.5, max: 23.0, 
-                                ticks: { color: '#94a3b8', font: { size: 9 }, callback: v => { let h = Math.floor(v); let m = Math.round((v - h) * 60); return `${h}:${m.toString().padStart(2, '0')}`; } } 
-                            }
-                        },
-                        plugins: { legend: { labels: { color: '#f8fafc' } } }
-                    }
+options: {
+    responsive: true, maintainAspectRatio: false,
+    animation: { duration: 800, easing: 'easeOutQuart' },
+    scales: {
+        x: {
+            type: 'category',
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 10, weight: '700' } }
+        },
+        y: {
+            min: 17.5, max: 23.0,
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            border: { dash: [4,4] },
+            ticks: {
+                color: '#94a3b8', font: { size: 9 },
+                callback: v => { let h = Math.floor(v); let m = Math.round((v-h)*60); return `${h}:${m.toString().padStart(2,'0')}`; }
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            labels: {
+                color: '#94a3b8', font: { size: 10, weight: '700' },
+                boxWidth: 10, boxHeight: 2,
+                borderRadius: 2, useBorderRadius: true, padding: 14
+            }
+        },
+        tooltip: {
+            backgroundColor: 'rgba(8,12,24,0.95)',
+            borderColor: 'rgba(59,130,246,0.3)',
+            borderWidth: 1,
+            titleColor: '#f8fafc', bodyColor: '#94a3b8',
+            padding: 12, cornerRadius: 10,
+            callbacks: {
+                label: ctx => {
+                    const v = ctx.parsed.y;
+                    const h = Math.floor(v);
+                    const m = Math.round((v-h)*60);
+                    return ` ${ctx.dataset.label}: ${h}:${m.toString().padStart(2,'0')}`;
+                }
+            }
+        }
+    }
+}
                 };
             }
             charts[chartType] = new Chart(ctx, config);
