@@ -6,39 +6,99 @@
     :root { --glass: rgba(15, 23, 42, 0.7); --accent: #3b82f6; }
     body { background: #020617; color: #f8fafc; font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
 
-    /* Glass Effect */
     .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.5rem; }
     .glass-hover:hover { border-color: var(--accent); transform: translateY(-2px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    /* Heatmap Square */
-    .hp-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(30, 41, 59, 0.5); }
+    .hp-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(30, 41, 59, 0.5); cursor: pointer; transition: transform 0.15s; }
+    .hp-cell:hover { transform: scale(1.4); }
     .hp-1 { background: #1e3a8a; } .hp-2 { background: #2563eb; } .hp-3 { background: #3b82f6; } .hp-4 { background: #60a5fa; }
 
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
 
     @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-pulse-soft { animation: pulse-soft 2s infinite; }
+
+    /* ── Drill-down Modal ── */
+    #drillModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+    #drillModal.open { display:flex; }
+    .drill-inner { background:#0f172a; border:1px solid #1e293b; border-radius:1.5rem; width:100%; max-width:720px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; }
+    .drill-header { padding:1.5rem; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+    .drill-body { overflow-y:auto; padding:1.5rem; flex:1; }
+    .drill-day { margin-bottom:1.5rem; }
+    .drill-day-title { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.15em; color:#475569; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .drill-task { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:8px 12px; font-size:11px; color:#cbd5e1; line-height:1.6; margin-bottom:4px; border-left:3px solid #3b82f6; }
+    .drill-task.maintenance { border-left-color:#f59e0b; }
+    .drill-task.innovation { border-left-color:#10b981; }
+
+    /* ── Calendar Heatmap ── */
+    .cal-heatmap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .cal-cell { aspect-ratio:1; border-radius:3px; background:rgba(30,41,59,0.4); cursor:pointer; position:relative; transition:transform 0.15s; }
+    .cal-cell:hover { transform:scale(1.2); z-index:10; }
+    .cal-cell.submitted { background:#1d4ed8; }
+    .cal-cell.submitted.high { background:#3b82f6; }
+    .cal-cell.no-submit { background:rgba(244,63,94,0.3); border:1px solid rgba(244,63,94,0.2); }
+    .cal-cell.weekend { background:rgba(255,255,255,0.03); }
+    .cal-cell.future { background:rgba(255,255,255,0.02); opacity:0.4; }
+    .cal-day-label { font-size:7px; font-weight:900; color:#334155; text-transform:uppercase; text-align:center; padding-bottom:2px; }
+
+    /* ── Missing Alert ── */
+    .missing-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.25); border-radius:8px; padding:4px 10px; font-size:9px; font-weight:900; color:#f43f5e; text-transform:uppercase; letter-spacing:0.08em; }
+    .missing-badge.warn { background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.25); color:#f59e0b; }
+
+    /* ── Compare Mode ── */
+    .compare-bar { height:6px; border-radius:99px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── Ranking clickable ── */
+    .rank-item { cursor:pointer; border-radius:12px; padding:8px; transition:background 0.2s; }
+    .rank-item:hover { background:rgba(59,130,246,0.08); }
+
+    /* ── Snapshot cards ── */
+    .snap-card { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 16px; }
+
+    /* ── Tab Pills ── */
+    .tab-pill { padding:6px 14px; border-radius:99px; font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:0.1em; cursor:pointer; transition:all 0.2s; color:#475569; }
+    .tab-pill.active { background:#1e40af; color:#fff; }
 </style>
 
+<!-- ══════════════════════════════════════════════ -->
+<!--  DRILL-DOWN MODAL                             -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="drillModal">
+    <div class="drill-inner">
+        <div class="drill-header">
+            <div>
+                <p class="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Work Report Detail</p>
+                <h2 id="drillName" class="text-xl font-black text-white"></h2>
+                <p id="drillMeta" class="text-[10px] text-slate-500 mt-1"></p>
+            </div>
+            <button onclick="closeDrill()" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+        </div>
+        <div class="drill-body" id="drillBody"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  MAIN LAYOUT                                  -->
+<!-- ══════════════════════════════════════════════ -->
 <div class="max-w-[1600px] mx-auto p-4 md:p-10 space-y-8">
+
+    <!-- Header -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <h1 class="text-3xl font-black tracking-tighter uppercase italic">Work <span class="text-blue-500">Core</span> <span class="text-[10px] bg-slate-800 px-2 py-1 rounded ml-2">PRO v4.0</span></h1>
+                <h1 class="text-3xl font-black tracking-tighter uppercase italic">Work <span class="text-blue-500">Core</span> <span class="text-[10px] bg-slate-800 px-2 py-1 rounded ml-2">PRO v5.0</span></h1>
             </div>
             <p class="text-slate-500 text-xs font-bold tracking-[0.3em] uppercase">Intelligence Engine & Predictive Analytics</p>
         </div>
-
-        <div class="glass p-2 flex items-center gap-1 shadow-2xl border-slate-800">
+        <div class="glass p-2 flex items-center gap-1 shadow-2xl border-slate-800 flex-wrap">
             <select id="staffFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400 transition-colors">
                 <option value="all">EVERYONE</option>
             </select>
-            <div class="w-px h-4 bg-slate-800 mx-2"></div>
+            <div class="w-px h-4 bg-slate-800 mx-1"></div>
             <select id="yearFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-2 py-2 outline-none cursor-pointer hover:text-blue-400"></select>
             <select id="monthFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400">
                 <option value="all">FULL YEAR</option>
@@ -50,6 +110,10 @@
         </div>
     </header>
 
+    <!-- ── Snapshot Summary Cards ── -->
+    <div id="snapshotRow" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+
+    <!-- ── KPI Cards ── -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div class="glass p-6 glass-hover relative overflow-hidden group">
             <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"/></svg></div>
@@ -70,47 +134,90 @@
         </div>
     </div>
 
+    <!-- ── Main Grid ── -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 space-y-8">
+
+            <!-- Trend Chart -->
             <div class="glass p-8">
                 <div class="flex justify-between items-center mb-8">
                     <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
                         <span class="w-1 h-4 bg-blue-500"></span> Production Dynamics
                     </h3>
-                    <div id="heatmap" class="flex gap-1"></div> </div>
-                <div class="h-[400px]">
-                    <canvas id="mainTrendChart"></canvas>
+                    <div id="heatmap" class="flex gap-1 flex-wrap justify-end max-w-[200px]"></div>
                 </div>
+                <div class="h-[350px]"><canvas id="mainTrendChart"></canvas></div>
             </div>
 
+            <!-- Calendar Heatmap (NEW) -->
+            <div class="glass p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
+                        <span class="w-1 h-4 bg-emerald-500"></span> Submission Calendar
+                    </h3>
+                    <div class="flex items-center gap-3 text-[9px] font-bold text-slate-500">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-500 inline-block"></span> Submitted</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-rose-500/50 inline-block"></span> Missing</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-white/10 inline-block"></span> Weekend</span>
+                    </div>
+                </div>
+                <div id="calHeatmap" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- Radar + Tasks -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="glass p-6">
                     <h3 class="font-black text-[10px] uppercase tracking-widest mb-6 text-slate-400 italic">Work Pattern Radar</h3>
-                    <div class="h-[250px] flex justify-center">
-                        <canvas id="radarChart"></canvas>
-                    </div>
+                    <div class="h-[250px] flex justify-center"><canvas id="radarChart"></canvas></div>
                 </div>
                 <div class="glass p-6 overflow-hidden">
-                    <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 text-slate-400 italic">Task Distribution</h3>
-                    <div id="taskList" class="space-y-3 max-h-[250px] overflow-y-auto pr-2 text-[11px]"></div>
+                    <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 text-slate-400 italic">Top Keywords</h3>
+                    <div id="taskList" class="space-y-2 max-h-[250px] overflow-y-auto pr-2 text-[11px]"></div>
                 </div>
+            </div>
+
+            <!-- Compare Mode (NEW) -->
+            <div class="glass p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
+                        <span class="w-1 h-4 bg-purple-500"></span> Staff Compare
+                    </h3>
+                </div>
+                <div class="flex gap-3 mb-5 flex-wrap">
+                    <select id="compareA" class="bg-slate-800 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 outline-none text-slate-200"></select>
+                    <span class="text-slate-600 self-center font-black">VS</span>
+                    <select id="compareB" class="bg-slate-800 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 outline-none text-slate-200"></select>
+                    <button onclick="runCompare()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition">Compare</button>
+                </div>
+                <div id="compareResult"></div>
             </div>
         </div>
 
+        <!-- Right Column -->
         <div class="space-y-8">
+
+            <!-- Power Rankings -->
             <div class="glass p-8 bg-gradient-to-br from-slate-900/50 to-transparent">
                 <h3 class="font-black text-xs uppercase tracking-widest mb-6 italic text-blue-400">Power Rankings</h3>
-                <div id="staffRanking" class="space-y-6"></div>
+                <p class="text-[9px] text-slate-600 mb-4 uppercase tracking-widest">Click name to view details</p>
+                <div id="staffRanking" class="space-y-4"></div>
             </div>
 
+            <!-- Missing Submissions (NEW) -->
+            <div class="glass p-6 border-t border-amber-500/20">
+                <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 italic flex items-center gap-2">
+                    <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span> Missing Submissions
+                </h3>
+                <div id="missingPanel" class="space-y-2 text-[10px]"></div>
+            </div>
+
+            <!-- Anomaly Detection -->
             <div class="glass p-6 border-t border-rose-500/20">
                 <h3 class="font-black text-[10px] uppercase tracking-widest mb-4 italic flex items-center gap-2">
                     <span class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span> Anomaly Detection
                 </h3>
                 <div id="riskScan" class="space-y-2 text-[10px]">
-                    <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/10 text-rose-200">
-                        Scanning for workflow bottlenecks...
-                    </div>
+                    <div class="p-3 rounded-xl bg-rose-500/5 border border-rose-500/10 text-rose-200">Scanning for workflow bottlenecks...</div>
                 </div>
             </div>
         </div>
@@ -120,14 +227,15 @@
 <script>
 (function() {
     let dashboardData = null;
+    let usersData = {};       // { userId: { displayName, ... } }
     let mainChart = null;
-    let radarChart = null;
+    let radarChartInst = null;
 
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
 
-    // Init Filters
+    // ── Init Year Filter ──
     const yearSelect = document.getElementById('yearFilter');
     for (let i = 0; i < 3; i++) {
         const y = currentYear - i;
@@ -137,10 +245,26 @@
     }
     document.getElementById('monthFilter').value = currentMonth;
 
+    // ── displayName helper ──
+    function dName(id) {
+        return (usersData[id] && usersData[id].displayName) ? usersData[id].displayName : id;
+    }
+
+    // ── Load users for displayName ──
+    if (window.db) {
+        db.ref('users').once('value', snap => {
+            usersData = snap.val() || {};
+        });
+    }
+
+    // ══════════════════════════════════════
+    //  processData
+    // ══════════════════════════════════════
     function processData(data, filterStaff, selYear, selMonth) {
         const stats = {
             total: 0, innovation: 0, days: {}, staff: {}, tasks: {},
-            radar: { innovation: 0, consistency: 0, volume: 0, maintenance: 0, speed: 0 }
+            radar: { innovation: 0, consistency: 0, volume: 0, maintenance: 0, speed: 0 },
+            rawByStaff: {}   // { staffId: { date: [lines] } }
         };
         const prefix = selMonth === 'all' ? `${selYear}` : `${selYear}-${selMonth}`;
 
@@ -148,40 +272,38 @@
             if (!date.startsWith(prefix)) return;
             Object.keys(data[date]).forEach(person => {
                 if (filterStaff !== 'all' && person !== filterStaff) return;
-                
+
                 const lines = (data[date][person].todo || "").split('\n').filter(l => l.trim().length > 2);
                 if (!stats.staff[person]) stats.staff[person] = { t: 0, n: 0, activeDays: new Set() };
                 if (!stats.days[date]) stats.days[date] = 0;
+                if (!stats.rawByStaff[person]) stats.rawByStaff[person] = {};
+                stats.rawByStaff[person][date] = lines;
 
                 stats.staff[person].activeDays.add(date);
-
                 lines.forEach(line => {
                     stats.total++;
                     stats.days[date]++;
                     stats.staff[person].t++;
-                    
                     const isNew = !line.includes('유지') && !line.includes('반복');
                     if (isNew) { stats.innovation++; stats.staff[person].n++; }
-
-                    const taskName = line.replace(/[0-9\-\.\>]/g, '').trim().substring(0, 18);
-                    if (taskName.length > 2) {
-                        stats.tasks[taskName] = (stats.tasks[taskName] || 0) + 1;
-                    }
+                    const taskName = line.replace(/[0-9\-\.\>]/g, '').trim().substring(0, 20);
+                    if (taskName.length > 2) stats.tasks[taskName] = (stats.tasks[taskName] || 0) + 1;
                 });
             });
         });
 
-        // Calc Radar for selected view
         const dayCount = Object.keys(stats.days).length || 1;
-        stats.radar.innovation = (stats.innovation / (stats.total || 1)) * 100;
-        stats.radar.volume = Math.min(100, (stats.total / (dayCount * 5)) * 100);
-        stats.radar.consistency = (dayCount / 30) * 100;
-        stats.radar.speed = Math.min(100, (stats.total / dayCount) * 10);
-        stats.radar.maintenance = 100 - stats.radar.innovation;
-
+        stats.radar.innovation   = (stats.innovation / (stats.total || 1)) * 100;
+        stats.radar.volume       = Math.min(100, (stats.total / (dayCount * 5)) * 100);
+        stats.radar.consistency  = (dayCount / 30) * 100;
+        stats.radar.speed        = Math.min(100, (stats.total / dayCount) * 10);
+        stats.radar.maintenance  = 100 - stats.radar.innovation;
         return stats;
     }
 
+    // ══════════════════════════════════════
+    //  refreshDashboard
+    // ══════════════════════════════════════
     window.refreshDashboard = function() {
         if (!dashboardData) return;
         const s = document.getElementById('staffFilter').value;
@@ -194,36 +316,106 @@
         updateStaffRanking(stats);
         renderHeatmap(stats);
         renderTasks(stats);
+        renderSnapshotCards(stats, s, y, m);
+        renderCalendarHeatmap(s, y, m);
+        renderMissingPanel(s, y, m);
+        renderAnomalyDetection(stats, s, y, m);
+        populateCompareSelects(stats);
     };
 
+    // ══════════════════════════════════════
+    //  KPIs
+    // ══════════════════════════════════════
     function updateKPIs(stats) {
         animateValue("kpi-total", stats.total);
-        animateValue("kpi-innovation", Math.round((stats.innovation/(stats.total||1))*100), "%");
+        animateValue("kpi-innovation", Math.round((stats.innovation / (stats.total || 1)) * 100), "%");
         animateValue("kpi-velocity", (stats.total / (Object.keys(stats.days).length || 1)).toFixed(1));
         animateValue("kpi-active", Object.keys(stats.staff).length);
     }
 
+    // ══════════════════════════════════════
+    //  Snapshot Summary Cards (NEW)
+    // ══════════════════════════════════════
+    function renderSnapshotCards(stats, filterStaff, selYear, selMonth) {
+        const el = document.getElementById('snapshotRow');
+        if (!el) return;
+
+        // Most active staff
+        const topStaff = Object.entries(stats.staff).sort((a,b) => b[1].t - a[1].t)[0];
+        const topName = topStaff ? dName(topStaff[0]) : '—';
+        const topCount = topStaff ? topStaff[1].t : 0;
+
+        // Longest streak
+        let longestStreak = 0, longestWho = '—';
+        Object.entries(stats.staff).forEach(([p, d]) => {
+            const sorted = Array.from(d.activeDays).sort();
+            let streak = 1, max = 1;
+            for (let i = 1; i < sorted.length; i++) {
+                const diff = (new Date(sorted[i]) - new Date(sorted[i-1])) / 86400000;
+                if (diff === 1) { streak++; max = Math.max(max, streak); }
+                else streak = 1;
+            }
+            if (max > longestStreak) { longestStreak = max; longestWho = dName(p); }
+        });
+
+        // Today's submitters
+        const todayStr = now.toISOString().split('T')[0];
+        const todaySubmitters = dashboardData[todayStr] ? Object.keys(dashboardData[todayStr]).length : 0;
+
+        // This week avg
+        const weekDays = []; for (let i=0;i<7;i++){ const d=new Date(now); d.setDate(now.getDate()-i); weekDays.push(d.toISOString().split('T')[0]); }
+        let weekTotal = 0;
+        weekDays.forEach(d => { if(dashboardData[d]) weekTotal += Object.keys(dashboardData[d]).length; });
+        const weekAvg = (weekTotal / 7).toFixed(1);
+
+        el.innerHTML = `
+        <div class="snap-card flex flex-col gap-1">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🏆 Top Performer</p>
+            <p class="text-lg font-black text-white truncate">${topName}</p>
+            <p class="text-[10px] text-blue-400 font-bold">${topCount} tasks</p>
+        </div>
+        <div class="snap-card flex flex-col gap-1">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🔥 Longest Streak</p>
+            <p class="text-lg font-black text-white truncate">${longestWho}</p>
+            <p class="text-[10px] text-amber-400 font-bold">${longestStreak} consecutive days</p>
+        </div>
+        <div class="snap-card flex flex-col gap-1">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📋 Today's Reports</p>
+            <p class="text-lg font-black text-emerald-400">${todaySubmitters}</p>
+            <p class="text-[10px] text-slate-500 font-bold">staff submitted</p>
+        </div>
+        <div class="snap-card flex flex-col gap-1">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📈 7-Day Avg</p>
+            <p class="text-lg font-black text-purple-400">${weekAvg}</p>
+            <p class="text-[10px] text-slate-500 font-bold">submissions/day</p>
+        </div>`;
+    }
+
+    // ══════════════════════════════════════
+    //  Charts
+    // ══════════════════════════════════════
     function updateCharts(stats, isYearly) {
-        // Line Chart
         const labels = Object.keys(stats.days).sort();
         const chartLabels = labels.map(l => isYearly ? l.split('-')[1]+'월' : l.split('-')[2]+'일');
         const chartData = labels.map(l => stats.days[l]);
 
         if (mainChart) mainChart.destroy();
-        mainChart = new Chart(document.getElementById('mainTrendChart').getContext('2d'), {
+        const mc = document.getElementById('mainTrendChart');
+        if (!mc) return;
+        mainChart = new Chart(mc.getContext('2d'), {
             type: 'line',
             data: {
                 labels: chartLabels,
                 datasets: [{
-                    label: 'Workflow',
+                    label: 'Tasks',
                     data: chartData,
                     borderColor: '#3b82f6',
-                    borderWidth: 4,
+                    borderWidth: 3,
                     pointBackgroundColor: '#3b82f6',
-                    pointRadius: 0,
+                    pointRadius: 3,
                     pointHoverRadius: 6,
                     fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                    backgroundColor: 'rgba(59,130,246,0.06)',
                     tension: 0.4
                 }]
             },
@@ -237,127 +429,416 @@
             }
         });
 
-        // Radar Chart
-        if (radarChart) radarChart.destroy();
-        radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
+        if (radarChartInst) radarChartInst.destroy();
+        const rc = document.getElementById('radarChart');
+        if (!rc) return;
+        radarChartInst = new Chart(rc.getContext('2d'), {
             type: 'radar',
             data: {
                 labels: ['Innovation', 'Consistency', 'Volume', 'Speed', 'Stability'],
                 datasets: [{
                     data: [stats.radar.innovation, stats.radar.consistency, stats.radar.volume, stats.radar.speed, stats.radar.maintenance],
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    backgroundColor: 'rgba(59,130,246,0.15)',
                     borderColor: '#3b82f6',
-                    pointRadius: 0
+                    pointRadius: 3,
+                    pointBackgroundColor: '#3b82f6'
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255,255,255,0.05)' },
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        pointLabels: { color: '#94a3b8', font: { size: 9 } },
-                        ticks: { display: false, max: 100 }
-                    }
-                },
+                scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#94a3b8', font: { size: 9 } }, ticks: { display: false, max: 100 } } },
                 plugins: { legend: { display: false } }
             }
         });
     }
 
+    // ══════════════════════════════════════
+    //  Heatmap Dots
+    // ══════════════════════════════════════
     function renderHeatmap(stats) {
         const container = document.getElementById('heatmap');
+        if (!container) return;
         container.innerHTML = '';
-        Object.values(stats.days).slice(-20).forEach(count => {
+        Object.entries(stats.days).slice(-28).forEach(([date, count]) => {
             const level = count > 10 ? 'hp-4' : count > 6 ? 'hp-3' : count > 3 ? 'hp-2' : count > 0 ? 'hp-1' : '';
             const cell = document.createElement('div');
             cell.className = `hp-cell ${level}`;
+            cell.title = `${date}: ${count} tasks`;
             container.appendChild(cell);
         });
     }
 
+    // ══════════════════════════════════════
+    //  Calendar Heatmap (NEW)
+    // ══════════════════════════════════════
+    function renderCalendarHeatmap(filterStaff, selYear, selMonth) {
+        const el = document.getElementById('calHeatmap');
+        if (!el) return;
+
+        const month = selMonth === 'all' ? currentMonth : selMonth;
+        const year = parseInt(selYear);
+        const mo = parseInt(month) - 1;
+        const firstDay = new Date(year, mo, 1).getDay();
+        const lastDate = new Date(year, mo + 1, 0).getDate();
+        const todayStr = now.toISOString().split('T')[0];
+
+        const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        let html = `<div style="min-width:280px">`;
+        html += `<div class="cal-heatmap-grid mb-1">${dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>`;
+        html += `<div class="cal-heatmap-grid">`;
+
+        // Empty cells before month start
+        for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+        for (let d = 1; d <= lastDate; d++) {
+            const mm = String(mo + 1).padStart(2,'0');
+            const dd = String(d).padStart(2,'0');
+            const dateStr = `${year}-${mm}-${dd}`;
+            const dow = new Date(year, mo, d).getDay();
+            const isWeekend = dow === 0 || dow === 6;
+            const isFuture = dateStr > todayStr;
+
+            let cls = 'cal-cell';
+            let title = dateStr;
+            let count = 0;
+
+            if (isWeekend) { cls += ' weekend'; }
+            else if (isFuture) { cls += ' future'; }
+            else if (dashboardData && dashboardData[dateStr]) {
+                const dayData = dashboardData[dateStr];
+                if (filterStaff === 'all') {
+                    count = Object.keys(dayData).length;
+                    cls += count > 3 ? ' submitted high' : ' submitted';
+                    title = `${dateStr}: ${count} reports`;
+                } else {
+                    if (dayData[filterStaff]) {
+                        count = (dayData[filterStaff].todo || '').split('\n').filter(l=>l.trim().length>2).length;
+                        cls += ' submitted' + (count > 5 ? ' high' : '');
+                        title = `${dateStr}: ${count} tasks`;
+                    } else {
+                        cls += ' no-submit';
+                        title = `${dateStr}: No submission`;
+                    }
+                }
+            } else {
+                if (!isWeekend && !isFuture) cls += ' no-submit';
+            }
+
+            html += `<div class="${cls}" title="${title}" style="position:relative;">
+                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:900;color:rgba(255,255,255,0.5);">${d}</span>
+            </div>`;
+        }
+        html += `</div></div>`;
+        el.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════
+    //  Missing Submissions Panel (NEW)
+    // ══════════════════════════════════════
+    function renderMissingPanel(filterStaff, selYear, selMonth) {
+        const el = document.getElementById('missingPanel');
+        if (!el || !dashboardData) return;
+
+        const month = selMonth === 'all' ? currentMonth : selMonth;
+        const year = parseInt(selYear);
+        const mo = parseInt(month) - 1;
+        const lastDate = new Date(year, mo + 1, 0).getDate();
+        const todayStr = now.toISOString().split('T')[0];
+        const mm = String(mo + 1).padStart(2,'0');
+
+        // Get all staff in dataset
+        const allStaff = new Set();
+        Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => allStaff.add(s)); });
+
+        const missingMap = {}; // { staffId: [dates] }
+
+        for (let d = 1; d <= lastDate; d++) {
+            const dd = String(d).padStart(2,'0');
+            const dateStr = `${year}-${mm}-${dd}`;
+            if (dateStr > todayStr) continue;
+            const dow = new Date(year, mo, d).getDay();
+            if (dow === 0 || dow === 6) continue;
+
+            const submitted = dashboardData[dateStr] ? Object.keys(dashboardData[dateStr]) : [];
+            const targetStaffs = filterStaff === 'all' ? Array.from(allStaff) : [filterStaff];
+
+            targetStaffs.forEach(s => {
+                if (!submitted.includes(s)) {
+                    if (!missingMap[s]) missingMap[s] = [];
+                    missingMap[s].push(dateStr);
+                }
+            });
+        }
+
+        const entries = Object.entries(missingMap).sort((a,b) => b[1].length - a[1].length);
+        if (entries.length === 0) {
+            el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No missing submissions this period!</div>`;
+            return;
+        }
+
+        el.innerHTML = entries.slice(0,8).map(([s, dates]) => {
+            const severity = dates.length >= 5 ? 'missing-badge' : 'missing-badge warn';
+            return `<div class="flex items-center justify-between p-2 rounded-lg bg-white/2 border border-white/5">
+                <span class="text-[10px] font-bold text-slate-300 truncate">${dName(s)}</span>
+                <span class="${severity}">${dates.length} days</span>
+            </div>`;
+        }).join('');
+
+        if (entries.length > 8) {
+            el.innerHTML += `<p class="text-[9px] text-slate-600 text-right mt-1">+${entries.length-8} more</p>`;
+        }
+    }
+
+    // ══════════════════════════════════════
+    //  Anomaly Detection (Enhanced)
+    // ══════════════════════════════════════
+    function renderAnomalyDetection(stats, filterStaff, selYear, selMonth) {
+        const el = document.getElementById('riskScan');
+        if (!el) return;
+        const anomalies = [];
+
+        // Sudden drop detection
+        const dayKeys = Object.keys(stats.days).sort();
+        if (dayKeys.length >= 4) {
+            const recent = dayKeys.slice(-3).map(k => stats.days[k]);
+            const prev = dayKeys.slice(-6,-3).map(k => stats.days[k]);
+            const recentAvg = recent.reduce((a,b)=>a+b,0)/recent.length;
+            const prevAvg = prev.reduce((a,b)=>a+b,0)/prev.length;
+            if (prevAvg > 0 && recentAvg < prevAvg * 0.5) {
+                anomalies.push({ type:'warn', msg:`Output dropped ${Math.round((1-recentAvg/prevAvg)*100)}% in last 3 days` });
+            }
+        }
+
+        // Low innovation detection
+        Object.entries(stats.staff).forEach(([p, d]) => {
+            if (d.t >= 5 && d.n === 0) anomalies.push({ type:'risk', msg:`${dName(p)}: 0% innovation (all repetitive)` });
+        });
+
+        // Overload detection
+        Object.entries(stats.staff).forEach(([p, d]) => {
+            const avg = d.t / (d.activeDays.size || 1);
+            if (avg > 15) anomalies.push({ type:'warn', msg:`${dName(p)}: ${avg.toFixed(1)} tasks/day avg — high load` });
+        });
+
+        if (anomalies.length === 0) {
+            el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No anomalies detected</div>`;
+            return;
+        }
+        el.innerHTML = anomalies.slice(0,5).map(a => `
+            <div class="p-3 rounded-xl ${a.type==='risk'?'bg-rose-500/5 border border-rose-500/10 text-rose-200':'bg-amber-500/5 border border-amber-500/10 text-amber-200'}">
+                ${a.type==='risk'?'⚠️':'🔍'} ${a.msg}
+            </div>`).join('');
+    }
+
+    // ══════════════════════════════════════
+    //  Staff Rankings (clickable)
+    // ══════════════════════════════════════
     function updateStaffRanking(stats) {
-        const html = Object.entries(stats.staff)
+        const el = document.getElementById('staffRanking');
+        if (!el) return;
+        const medals = ['🥇','🥈','🥉'];
+        el.innerHTML = Object.entries(stats.staff)
             .sort((a,b) => b[1].t - a[1].t)
-            .slice(0, 5)
-            .map(([name, d]) => {
-                const perc = Math.round((d.n / d.t) * 100);
+            .slice(0, 7)
+            .map(([name, d], i) => {
+                const perc = Math.round((d.n / (d.t||1)) * 100);
+                const selY = document.getElementById('yearFilter').value;
+                const selM = document.getElementById('monthFilter').value;
                 return `
-                <div>
+                <div class="rank-item" onclick="openDrill('${name}','${selY}','${selM}')">
                     <div class="flex justify-between text-[11px] mb-2 font-bold">
-                        <span class="text-slate-200 uppercase">${name}</span>
-                        <span class="text-blue-400">${d.t} Tasks</span>
+                        <span class="text-slate-200 flex items-center gap-2">${medals[i]||'#'+(i+1)} <span class="uppercase">${dName(name)}</span></span>
+                        <span class="text-blue-400">${d.t} tasks</span>
                     </div>
-                    <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-500" style="width: ${perc}%"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full compare-bar" style="width:${perc}%"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-500 font-bold">${perc}% new</span>
                     </div>
                 </div>`;
-            }).join('');
-        document.getElementById('staffRanking').innerHTML = html || '<p class="text-slate-600 text-xs italic">No data</p>';
+            }).join('') || '<p class="text-slate-600 text-xs italic">No data</p>';
     }
 
+    // ══════════════════════════════════════
+    //  Tasks / Keywords
+    // ══════════════════════════════════════
     function renderTasks(stats) {
-        const sorted = Object.entries(stats.tasks).sort((a,b) => b[1] - a[1]).slice(0, 10);
-        document.getElementById('taskList').innerHTML = sorted.map(([name, count]) => `
-            <div class="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors group">
-                <span class="text-slate-400 group-hover:text-slate-200 truncate pr-4">${name}...</span>
-                <span class="bg-slate-800 px-2 py-0.5 rounded text-[9px] text-blue-400 font-bold">${count}</span>
-            </div>
-        `).join('');
+        const el = document.getElementById('taskList');
+        if (!el) return;
+        const sorted = Object.entries(stats.tasks).sort((a,b) => b[1] - a[1]).slice(0, 12);
+        const max = sorted[0] ? sorted[0][1] : 1;
+        el.innerHTML = sorted.map(([name, count]) => `
+            <div class="group">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-slate-400 group-hover:text-slate-200 truncate pr-2 text-[10px]">${name}</span>
+                    <span class="text-[9px] text-blue-400 font-bold flex-shrink-0">${count}</span>
+                </div>
+                <div class="w-full h-0.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-600/50 rounded-full transition-all" style="width:${Math.round(count/max*100)}%"></div>
+                </div>
+            </div>`).join('');
     }
 
+    // ══════════════════════════════════════
+    //  Compare Mode (NEW)
+    // ══════════════════════════════════════
+    function populateCompareSelects(stats) {
+        const staffList = Object.keys(stats.staff).sort();
+        ['compareA','compareB'].forEach((id,idx) => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = staffList.map(s=>`<option value="${s}">${dName(s)}</option>`).join('');
+            if (staffList.includes(cur)) sel.value = cur;
+            else if (staffList[idx]) sel.value = staffList[idx];
+        });
+    }
+
+    window.runCompare = function() {
+        const a = document.getElementById('compareA').value;
+        const b = document.getElementById('compareB').value;
+        const el = document.getElementById('compareResult');
+        if (!el || !dashboardData || a === b) {
+            if (el) el.innerHTML = `<p class="text-[10px] text-slate-500 italic">Please select two different staff members.</p>`;
+            return;
+        }
+        const selY = document.getElementById('yearFilter').value;
+        const selM = document.getElementById('monthFilter').value;
+        const stats = processData(dashboardData, 'all', selY, selM);
+        const sa = stats.staff[a] || { t:0, n:0, activeDays: new Set() };
+        const sb = stats.staff[b] || { t:0, n:0, activeDays: new Set() };
+        const maxT = Math.max(sa.t, sb.t, 1);
+
+        const metrics = [
+            { label:'Total Tasks', va: sa.t, vb: sb.t, max: maxT, suffix:'' },
+            { label:'Innovation Rate', va: Math.round(sa.n/(sa.t||1)*100), vb: Math.round(sb.n/(sb.t||1)*100), max: 100, suffix:'%' },
+            { label:'Active Days', va: sa.activeDays.size, vb: sb.activeDays.size, max: 31, suffix: 'days' },
+            { label:'Avg Tasks/Day', va: +(sa.t/(sa.activeDays.size||1)).toFixed(1), vb: +(sb.t/(sb.activeDays.size||1)).toFixed(1), max: 20, suffix:'' },
+        ];
+
+        el.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 mb-4 text-center">
+            <div class="bg-blue-600/10 border border-blue-500/20 rounded-xl py-2 px-3">
+                <p class="text-[9px] text-slate-500 uppercase font-black">Staff A</p>
+                <p class="text-sm font-black text-white">${dName(a)}</p>
+            </div>
+            <div class="bg-purple-600/10 border border-purple-500/20 rounded-xl py-2 px-3">
+                <p class="text-[9px] text-slate-500 uppercase font-black">Staff B</p>
+                <p class="text-sm font-black text-white">${dName(b)}</p>
+            </div>
+        </div>
+        ${metrics.map(m => `
+        <div class="mb-4">
+            <div class="flex justify-between text-[9px] text-slate-500 font-bold uppercase mb-1">
+                <span>${m.label}</span>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-black text-blue-400 w-12 text-right">${m.va}${m.suffix}</span>
+                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden flex">
+                    <div class="h-full bg-blue-500 rounded-full compare-bar" style="width:${Math.round(m.va/m.max*50)}%;margin-left:auto;"></div>
+                    <div class="h-full bg-purple-500 rounded-full compare-bar" style="width:${Math.round(m.vb/m.max*50)}%;"></div>
+                </div>
+                <span class="text-[10px] font-black text-purple-400 w-12">${m.vb}${m.suffix}</span>
+            </div>
+        </div>`).join('')}`;
+    };
+
+    // ══════════════════════════════════════
+    //  Drill-down Modal (NEW)
+    // ══════════════════════════════════════
+    window.openDrill = function(staffId, selYear, selMonth) {
+        if (!dashboardData) return;
+        const modal = document.getElementById('drillModal');
+        const bodyEl = document.getElementById('drillBody');
+        const nameEl = document.getElementById('drillName');
+        const metaEl = document.getElementById('drillMeta');
+        if (!modal || !bodyEl) return;
+
+        const prefix = selMonth === 'all' ? selYear : `${selYear}-${selMonth}`;
+        nameEl.innerText = dName(staffId);
+
+        const entries = Object.entries(dashboardData)
+            .filter(([date]) => date.startsWith(prefix) && dashboardData[date][staffId])
+            .sort((a,b) => b[0].localeCompare(a[0]));
+
+        let totalTasks = 0;
+        let html = '';
+        entries.forEach(([date, dayData]) => {
+            const lines = (dayData[staffId].todo || '').split('\n').filter(l => l.trim().length > 2);
+            if (lines.length === 0) return;
+            totalTasks += lines.length;
+            const dow = new Date(date).toLocaleDateString('en-US', { weekday:'short' });
+            html += `<div class="drill-day">
+                <div class="drill-day-title">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                    ${date} (${dow}) — ${lines.length} tasks
+                </div>
+                ${lines.map(line => {
+                    const isMaint = line.includes('유지') || line.includes('반복');
+                    return `<div class="drill-task ${isMaint?'maintenance':'innovation'}">${line.trim()}</div>`;
+                }).join('')}
+            </div>`;
+        });
+
+        metaEl.innerText = `${entries.length} days reported · ${totalTasks} total tasks`;
+        bodyEl.innerHTML = html || `<p class="text-slate-500 text-sm italic text-center py-10">No data for this period.</p>`;
+        modal.classList.add('open');
+    };
+
+    window.closeDrill = function() {
+        const modal = document.getElementById('drillModal');
+        if (modal) modal.classList.remove('open');
+    };
+    document.getElementById('drillModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDrill();
+    });
+
+    // ══════════════════════════════════════
+    //  Animate Value
+    // ══════════════════════════════════════
     function animateValue(id, end, suffix = "") {
         const obj = document.getElementById(id);
         if (!obj) return;
-        let start = 0;
-        const duration = 1000;
+        const duration = 800;
         const startTime = performance.now();
-        function update(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const val = parseFloat(start) + (parseFloat(end) - parseFloat(start)) * progress;
+        function update(t) {
+            const progress = Math.min((t - startTime) / duration, 1);
+            const val = parseFloat(end) * progress;
             obj.innerText = (id.includes('velocity') ? val.toFixed(1) : Math.floor(val)) + suffix;
             if (progress < 1) requestAnimationFrame(update);
         }
         requestAnimationFrame(update);
     }
 
-if (window.db) {
-        // 기존 리스너 중복 방지를 위해 off() 호출 권장
-        db.ref('reports').off('value'); 
+    // ══════════════════════════════════════
+    //  Firebase Load
+    // ══════════════════════════════════════
+    if (window.db) {
+        db.ref('reports').off('value');
         db.ref('reports').on('value', snap => {
             dashboardData = snap.val() || {};
-            
+
             const staffs = new Set();
-            Object.values(dashboardData).forEach(d => {
-                if(d) Object.keys(d).forEach(s => staffs.add(s));
-            });
+            Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => staffs.add(s)); });
 
             const sel = document.getElementById('staffFilter');
-            
-            // [방어 코드] 요소가 존재하지 않으면 실행 중단 (에러 방지 핵심)
-            if (!sel) return; 
-
-            const current = sel.value; 
-            
+            if (!sel) return;
+            const current = sel.value;
             sel.innerHTML = '<option value="all">EVERYONE</option>';
             staffs.forEach(s => {
                 const opt = document.createElement('option');
-                opt.value = s; 
-                opt.innerText = s.toUpperCase();
+                opt.value = s;
+                opt.innerText = (usersData[s] && usersData[s].displayName) ? usersData[s].displayName.toUpperCase() : s.toUpperCase();
                 sel.appendChild(opt);
             });
-            
-            if (Array.from(sel.options).some(opt => opt.value === current)) {
-                sel.value = current;
-            } else {
-                sel.value = 'all';
-            }
-            
-            if (typeof window.refreshDashboard === 'function') {
-                window.refreshDashboard();
-            }
+            if (Array.from(sel.options).some(o => o.value === current)) sel.value = current;
+            else sel.value = 'all';
+
+            if (typeof window.refreshDashboard === 'function') window.refreshDashboard();
         });
     }
+
+    window.addEventListener('resize', () => { if (dashboardData) refreshDashboard(); });
 })();
 </script>
