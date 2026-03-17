@@ -117,7 +117,9 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                     </span>
                 </div>
             </div>
-            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">➡️ Logout</button>
+<button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4 animate-pulse">
+    ➡️ Logout
+</button>
         </div>
 <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
@@ -271,6 +273,12 @@ fetchJakartaWeather();
 checkTodayBirthdays();
 
 window.switchTab = function(t) {
+    // Firebase 초기화 확인
+    if (!firebase.apps.length) {
+        console.warn('Firebase not ready yet, retrying...');
+        setTimeout(() => window.switchTab(tabName), 300);
+        return;
+    }
     // ▼ 탭 전환 시 이전 페이지 리스너 정리
     try {
         const now = new Date();
@@ -307,11 +315,21 @@ window.loadHTML = async function(u) {
         executeScripts(f);
     } catch (e) { document.getElementById('contentFrame').innerHTML = `<div class="p-10 glass-panel text-center text-rose-500 font-black">PAGE NOT FOUND</div>`; }
 }
-function executeScripts(con) {
-    con.querySelectorAll('script').forEach(os => {
-        const ns = document.createElement('script'); Array.from(os.attributes).forEach(at => ns.setAttribute(at.name, at.value));
-        if (os.src) { ns.src = os.src; ns.async = false; } else { ns.textContent = os.textContent; }
-        document.head.appendChild(ns).parentNode.removeChild(ns);
+function executeScripts(container) {
+    container.querySelectorAll('script').forEach(oldScript => {
+        // Firebase SDK 스크립트는 이미 staff.html에 로드되어 있으므로 재실행 건너뜀
+        const src = oldScript.getAttribute('src') || '';
+        const skipPatterns = [
+            'firebase-app', 'firebase-database', 'firebase-auth',
+            'firebase-storage', 'firebase-firestore',
+            'gstatic.com/firebasejs'
+        ];
+        if (skipPatterns.some(p => src.includes(p))) return;
+
+        const newScript = document.createElement('script');
+        [...oldScript.attributes].forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode.replaceChild(newScript, oldScript);
     });
 }
 async function fetchJakartaWeather() {
