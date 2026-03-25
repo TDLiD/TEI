@@ -69,7 +69,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     <div class="flex items-center gap-3">
         <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
             <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-                <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                <img src="images/profile/admin/image-001.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
             </div>
             <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
         </div>
@@ -113,7 +113,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
             <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
                 <div class="relative group cursor-pointer shadow-lg" onclick="openProfileImagePicker()">
                     <div class="admin-profile-img-container rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-blue-500/10 transition-transform group-hover:scale-105">
-                        <img src="images/profile/admin/1.gif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                        <img src="images/profile/admin/image-001.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
                     </div>
                     <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">🎂</div>
                 </div>
@@ -166,7 +166,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
             <h3 id="modalTitle" class="text-lg font-black text-white uppercase tracking-widest italic"></h3>
             <button onclick="closeAdminCustomModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl hover:bg-white/10 rounded-full">&times;</button>
         </div>
-        <div id="modalBody" class="p-8 max-h-[60vh] overflow-y-auto no-scrollbar text-slate-300"></div>
+<div id="modalBody" class="p-8 max-h-[85vh] overflow-y-auto no-scrollbar text-slate-300"></div>
     </div>
 </div>
 
@@ -188,14 +188,24 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     if (!window.db) window.db = firebase.database();
 })();
 
-const PROFILE_IMAGES = ['1.gif', '1.webp', '2.gif', '2.webp', '3.gif', '3.webp', '4.gif', '5.gif', '6.gif'];
-
+const PROFILE_IMAGES = [
+    'image-001.jfif', 'image-001.jpg', 'image-001.webp', 
+    'image-002.jfif', 'image-002.jpg', 
+    'image-003.jfif', 'image-003.jpg', 
+    'image-004.jfif', 'image-004.jpg', 
+    'image-005.jfif', 'image-005.jpg', 
+    'image-006.jfif', 'image-007.jfif', 
+    'image-008.jfif', 'image-009.jfif', 
+    'image-010.jfif', 'image-011.jfif', 'image-012.jfif'
+];
 window.openProfileImagePicker = function() {
     let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4 mb-8">`;
     PROFILE_IMAGES.forEach(img => {
         gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md"><img src="images/profile/admin/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
     });
     gridHtml += `</div>`;
+    
+    // 프로필 변경 및 생일 설정 구역
     gridHtml += `
         <div class="mt-6 pt-6 border-t border-slate-800">
             <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest">Admin Birthday Setting</h4>
@@ -217,16 +227,23 @@ window.openProfileImagePicker = function() {
                 </div>
             </div>
         </div>
-        <div class="mt-6 pt-6 border-t border-slate-800">
-            <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest">🎂 Staff Birthday List</h4>
-            <div id="birthdayListInModal" class="space-y-2">
-                <div class="text-[10px] text-slate-600 italic text-center py-4">Loading...</div>
+        
+        <div class="mt-8 pt-6 border-t border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                    <span>🎂 Staff Birthdays</span>
+                </h4>
+            </div>
+<div id="birthdayListInModal" class="space-y-2 pr-1">
+                <div class="text-[10px] text-slate-600 italic text-center py-4">Loading Staff Data...</div>
             </div>
         </div>`;
 
     openAdminCustomModal('Admin Profile & Birthday', gridHtml);
 
+    // 데이터 로딩 및 표시 로직
     setTimeout(() => {
+        // 1. 관리자 기존 정보 세팅
         db.ref('users/Admin').once('value', snap => {
             const data = snap.val();
             if (data) {
@@ -234,27 +251,48 @@ window.openProfileImagePicker = function() {
                 if (data.birthType) { const el = document.getElementById('adminBirthType'); if (el) el.value = data.birthType; }
             }
         });
+
+        // 2. 전체 Staff 생일 목록 가져오기 (staff.html 스타일 적용)
         db.ref('users').once('value', snap => {
             const users = snap.val() || {};
             const container = document.getElementById('birthdayListInModal');
             if (!container) return;
+
             const today = new Date();
             const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-            const list = Object.keys(users).filter(uid => users[uid].birthday).sort((a,b) => users[a].birthday.substring(5).localeCompare(users[b].birthday.substring(5)));
-            if (list.length === 0) { container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`; return; }
+            
+            // 생일 정보가 있는 사용자만 필터링 및 월/일 기준 정렬
+            const list = Object.keys(users)
+                .filter(uid => users[uid].birthday)
+                .sort((a,b) => users[a].birthday.substring(5).localeCompare(users[b].birthday.substring(5)));
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`;
+                return;
+            }
+
             container.innerHTML = list.map(uid => {
                 const u = users[uid];
                 const bType = u.birthType || 'Solar';
                 const bDate = u.birthday.replace(/-/g, '.');
                 const isToday = u.birthday.substring(5) === tMonthDay;
                 const pImg = u.profileImg || '';
-                const imgSrc = uid.toLowerCase() === 'admin' ? (pImg.includes('/') ? pImg : `images/profile/admin/${pImg || '1.gif'}`) : (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-001.webp'}`);
-                const typeColor = bType === 'Lunar' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-blue-400 bg-blue-500/10 border-blue-500/20';
-                return `<div class="flex items-center justify-between p-3 rounded-xl border ${isToday ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/5'} hover:bg-white/5 transition-colors">
+                
+                // 이미지 경로 처리
+                const imgSrc = uid.toLowerCase() === 'admin' 
+                    ? (pImg.includes('/') ? pImg : `images/profile/admin/${pImg || 'image-001.jfif'}`) 
+                    : (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-001.webp'}`);
+
+                const typeColor = bType === 'Lunar' || bType === '음력' 
+                    ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' 
+                    : 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+
+                return `
+                <div class="flex items-center justify-between p-3 rounded-xl border ${isToday ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/5'} hover:bg-white/5 transition-colors">
                     <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-7 h-7 rounded-full border border-white/10 object-cover flex-shrink-0" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
+                        <img src="${imgSrc}" class="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
                         <div class="flex flex-col">
-                            <span class="text-[11px] font-black text-white uppercase">${uid}${isToday ? ' <span class="text-[8px] bg-yellow-500 text-black px-1.5 py-0.5 rounded font-black">🎂 TODAY</span>' : ''}</span>
+                            <span class="text-[11px] font-black text-white uppercase">${uid}${isToday ? ' <span class="text-[8px] bg-yellow-500 text-black px-1.5 py-0.5 rounded font-black ml-1">🎂 TODAY</span>' : ''}</span>
                             <span class="text-[9px] text-slate-500 font-bold uppercase">${u.role || 'Staff'}</span>
                         </div>
                     </div>
@@ -265,7 +303,7 @@ window.openProfileImagePicker = function() {
                 </div>`;
             }).join('');
         });
-    }, 50);
+    }, 100);
 };
 
 window.saveAdminBirthday = function() {
