@@ -189,15 +189,16 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
 })();
 
 const PROFILE_IMAGES = [
-    'image-001.jfif', 'image-001.jpg', 'image-001.webp', 
+    'image-001.jfif', 'image-001.jpg', 'image-001.webp', 'image-002.webp',
     'image-002.jfif', 'image-002.jpg', 
     'image-003.jfif', 'image-003.jpg', 
     'image-004.jfif', 'image-004.jpg', 
-    'image-005.jfif', 'image-005.jpg', 
-    'image-006.jfif', 'image-007.jfif', 
-    'image-008.jfif', 'image-009.jfif', 
-    'image-010.jfif', 'image-011.jfif', 'image-012.jfif'
+    'image-005.jfif', 'image-005.jpg', 'image-006.jpg',
+    'image-006.jfif', 'image-007.jfif', 'image-007.jpg','image-008.jpg',
+    'image-008.jfif', 'image-009.jfif', 'image-009.jpg', 'image-010.jpg',
+    'image-010.jfif', 'image-012.jfif'
 ];
+    
 window.openProfileImagePicker = function() {
     let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4 mb-8">`;
     PROFILE_IMAGES.forEach(img => {
