@@ -696,17 +696,38 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     function renderGrid(currentImg) {
         grid.innerHTML = "";
         const emojis = [];
+
+        // 1. .webp 파일 추가 (image-001~005 및 개별 파일)
         for (let i = 1; i <= 5; i++) emojis.push(`image-${String(i).padStart(3, '0')}.webp`);
+        emojis.push('image-03.webp', 'image-06.webp');
+
+        // 2. .gif 파일 추가 (image-01 ~ image-27)
         for (let i = 1; i <= 27; i++) emojis.push(`image-${String(i).padStart(2, '0')}.gif`);
 
+        // 3. .jfif 파일 추가 (리스트에 존재하는 번호들)
+        const jfifNums = [1, 4, 7, 9, 11, 13, 15, 17, 19, 21, 23];
+        jfifNums.forEach(num => emojis.push(`image-${String(num).padStart(2, '0')}.jfif`));
+
+        // 4. .jpg 파일 추가 (리스트에 존재하는 번호들)
+        const jpgNums = [2, 5, 8, 10, 12, 14, 16, 18, 20, 22];
+        jpgNums.forEach(num => emojis.push(`image-${String(num).padStart(2, '0')}.jpg`));
+
+        // 생성된 리스트로 그리드 렌더링
         emojis.forEach(name => {
             const wrap = document.createElement('div');
-            const active = name === currentImg;
+            // 만약 DB에 저장된 값이 풀경로(images/profile/...)라면 파일명만 추출해서 비교
+            const pureCurrentImg = currentImg ? currentImg.split('/').pop() : "";
+            const active = name === pureCurrentImg;
+            
             wrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${active ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
-            wrap.innerHTML = `<img src="images/profile/${name}" class="w-full h-auto rounded-md object-cover aspect-square">`;
+            wrap.innerHTML = `<img src="images/profile/${name}" class="w-full h-auto rounded-md object-cover aspect-square" onerror="this.parentElement.style.display='none'">`;
+            
             wrap.onclick = () => {
                 const kids = grid.children;
-                for(let k of kids) { k.classList.remove('border-blue-500', 'bg-blue-500/20'); k.classList.add('border-transparent'); }
+                for(let k of kids) { 
+                    k.classList.remove('border-blue-500', 'bg-blue-500/20'); 
+                    k.classList.add('border-transparent'); 
+                }
                 wrap.classList.remove('border-transparent');
                 wrap.classList.add('border-blue-500', 'bg-blue-500/20');
                 
