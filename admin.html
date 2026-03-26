@@ -69,7 +69,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     <div class="flex items-center gap-3">
         <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
             <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-                <img src="images/profile/admin/image-001.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
             </div>
             <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
         </div>
@@ -113,7 +113,7 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
             <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
                 <div class="relative group cursor-pointer shadow-lg" onclick="openProfileImagePicker()">
                     <div class="admin-profile-img-container rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-blue-500/10 transition-transform group-hover:scale-105">
-                        <img src="images/profile/admin/image-001.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                        <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
                     </div>
                     <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">🎂</div>
                 </div>
@@ -189,20 +189,29 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
 })();
 
 const PROFILE_IMAGES = [
-    'image-001.jfif', 'image-001.jpg', 'image-001.webp', 'image-002.webp',
-    'image-002.jfif', 'image-002.jpg', 
-    'image-003.jfif', 'image-003.jpg', 
-    'image-004.jfif', 'image-004.jpg', 
-    'image-005.jfif', 'image-005.jpg', 'image-006.jpg',
-    'image-006.jfif', 'image-007.jfif', 'image-007.jpg','image-008.jpg',
-    'image-008.jfif', 'image-009.jfif', 'image-009.jpg', 'image-010.jpg',
-    'image-010.jfif', 'image-012.jfif'
+    // 기본 WebP 이미지
+    'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
+    
+    // GIF 애니메이션 이미지 (01~27)
+    'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
+    'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
+    'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
+    'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
+    'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
+    'image-26.gif', 'image-27.gif',
+
+    // 새로 추가된 이미지 (jfif, jpg, webp 추가분)
+    'image-01.jfif', 'image-02.jpg', 'image-03.webp', 'image-04.jfif', 'image-05.jpg',
+    'image-06.webp', 'image-07.jfif', 'image-08.jpg', 'image-09.jfif', 'image-10.jpg',
+    'image-11.jfif', 'image-12.jpg', 'image-13.jfif', 'image-14.jpg', 'image-15.jfif',
+    'image-16.jpg', 'image-17.jfif', 'image-18.jpg', 'image-19.jfif', 'image-20.jpg',
+    'image-21.jfif', 'image-22.jpg', 'image-23.jfif'
 ];
     
 window.openProfileImagePicker = function() {
     let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4 mb-8">`;
     PROFILE_IMAGES.forEach(img => {
-        gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md"><img src="images/profile/admin/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
+        gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md"><img src="images/profile/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
     });
     gridHtml += `</div>`;
     
@@ -281,7 +290,7 @@ window.openProfileImagePicker = function() {
                 
                 // 이미지 경로 처리
                 const imgSrc = uid.toLowerCase() === 'admin' 
-                    ? (pImg.includes('/') ? pImg : `images/profile/admin/${pImg || 'image-001.jfif'}`) 
+                    ? (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-01.jfif'}`) 
                     : (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-001.webp'}`);
 
                 const typeColor = bType === 'Lunar' || bType === '음력' 
@@ -328,7 +337,7 @@ window.saveAdminBirthday = function() {
 };
 
 window.saveAdminProfile = function(imgName) {
-    const path = `images/profile/admin/${imgName}`;
+    const path = `images/profile/${imgName}`;
     if (!confirm("Would you like to change your admin profile to this image?")) return;
     db.ref('users/Admin').update({ profileImg: path, updatedAt: firebase.database.ServerValue.TIMESTAMP })
     .then(() => {
@@ -414,7 +423,7 @@ window.showAllStaffBirthdays = function() {
                 const bType = u.birthType || "Solar";
                 const bDate = u.birthday.replace(/-/g, '.');
                 const pImg = u.profileImg || 'image-001.webp';
-                const imgSrc = key === 'Admin' ? (pImg.includes('/') ? pImg : `images/profile/admin/${pImg}`) : (pImg.includes('/') ? pImg : `images/profile/${pImg}`);
+                const imgSrc = key === 'Admin' ? (pImg.includes('/') ? pImg : `images/profile/${pImg}`) : (pImg.includes('/') ? pImg : `images/profile/${pImg}`);
                 html += `<div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
                     <div class="flex items-center gap-3">
                         <img src="${imgSrc}" class="w-8 h-8 rounded-full border border-white/10 object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${key}'">
