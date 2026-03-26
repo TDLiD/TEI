@@ -117,9 +117,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                     </span>
                 </div>
             </div>
-<button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4 animate-pulse">
-    ➡️ Logout
-</button>
+            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">➡️ Logout</button>
         </div>
 <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
@@ -174,7 +172,27 @@ if (!loggedInUser) { location.href = "index.html"; }
 const firebaseConfig = { apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ", authDomain: "tdlid-dailyreport.firebaseapp.com", databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com", projectId: "tdlid-dailyreport", storageBucket: "tdlid-dailyreport.firebasestorage.app", messagingSenderId: "922333077514", appId: "1:922333077514:web:8914e5b06ac1f417707ff3", measurementId: "G-1TVZQYHWDL" };
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const PROFILE_IMAGES = ['image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp', 'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 'image-26.gif', 'image-27.gif'];
+
+const PROFILE_IMAGES = [
+    // 기본 WebP 이미지
+    'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
+    
+    // GIF 애니메이션 이미지 (01~27)
+    'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
+    'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
+    'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
+    'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
+    'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
+    'image-26.gif', 'image-27.gif',
+
+    // 새로 추가된 이미지 (jfif, jpg, webp 추가분)
+    'image-01.jfif', 'image-02.jpg', 'image-03.webp', 'image-04.jfif', 'image-05.jpg',
+    'image-06.webp', 'image-07.jfif', 'image-08.jpg', 'image-09.jfif', 'image-10.jpg',
+    'image-11.jfif', 'image-12.jpg', 'image-13.jfif', 'image-14.jpg', 'image-15.jfif',
+    'image-16.jpg', 'image-17.jfif', 'image-18.jpg', 'image-19.jfif', 'image-20.jpg',
+    'image-21.jfif', 'image-22.jpg', 'image-23.jfif'
+];
+
 window.openProfileModal = function(title, bodyHtml) { const m = document.getElementById('profileCustomModal'); document.getElementById('modalTitle').innerText = title; document.getElementById('modalBody').innerHTML = bodyHtml; m.classList.remove('hidden'); };
 window.closeProfileModal = () => document.getElementById('profileCustomModal').classList.add('hidden');
 window.openProfileImagePicker = function() { let g = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-4">`; PROFILE_IMAGES.forEach(i => { g += `<div onclick="saveStaffProfile('${i}')" class="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 hover:scale-105 transition-all shadow-lg"><img src="images/profile/${i}" class="w-full h-full object-cover"></div>`; }); g += `</div>`; openProfileModal('Change Profile', g); };
@@ -273,12 +291,6 @@ fetchJakartaWeather();
 checkTodayBirthdays();
 
 window.switchTab = function(t) {
-    // Firebase 초기화 확인
-    if (!firebase.apps.length) {
-        console.warn('Firebase not ready yet, retrying...');
-        setTimeout(() => window.switchTab(tabName), 300);
-        return;
-    }
     // ▼ 탭 전환 시 이전 페이지 리스너 정리
     try {
         const now = new Date();
@@ -315,21 +327,11 @@ window.loadHTML = async function(u) {
         executeScripts(f);
     } catch (e) { document.getElementById('contentFrame').innerHTML = `<div class="p-10 glass-panel text-center text-rose-500 font-black">PAGE NOT FOUND</div>`; }
 }
-function executeScripts(container) {
-    container.querySelectorAll('script').forEach(oldScript => {
-        // Firebase SDK 스크립트는 이미 staff.html에 로드되어 있으므로 재실행 건너뜀
-        const src = oldScript.getAttribute('src') || '';
-        const skipPatterns = [
-            'firebase-app', 'firebase-database', 'firebase-auth',
-            'firebase-storage', 'firebase-firestore',
-            'gstatic.com/firebasejs'
-        ];
-        if (skipPatterns.some(p => src.includes(p))) return;
-
-        const newScript = document.createElement('script');
-        [...oldScript.attributes].forEach(attr => newScript.setAttribute(attr.name, attr.value));
-        newScript.textContent = oldScript.textContent;
-        oldScript.parentNode.replaceChild(newScript, oldScript);
+function executeScripts(con) {
+    con.querySelectorAll('script').forEach(os => {
+        const ns = document.createElement('script'); Array.from(os.attributes).forEach(at => ns.setAttribute(at.name, at.value));
+        if (os.src) { ns.src = os.src; ns.async = false; } else { ns.textContent = os.textContent; }
+        document.head.appendChild(ns).parentNode.removeChild(ns);
     });
 }
 async function fetchJakartaWeather() {
