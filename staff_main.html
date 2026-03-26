@@ -228,6 +228,51 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
     object-fit: cover; 
     display: block; 
 }
+/* 선택된 이미지 강조 스타일 */
+.profile-option.active {
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 15px var(--blue-glow);
+    transform: scale(1.05);
+}
+
+/* 모달 하단 버튼 영역 */
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn-cancel {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.btn-save {
+    background: var(--blue);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-save:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
 </style>
 
 </head>
@@ -318,7 +363,7 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
             <h2 id="modalTitle" style="margin:0; font-size:1.2rem; color:white;">Select Profile</h2>
             <button onclick="closeProfileModal()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px;">&times;</button>
         </div>
-        <div id="modalBody" class="profile-grid">
+<div id="modalBody" style="padding:0;">
             </div>
     </div>
 </div>
@@ -365,6 +410,8 @@ window.handleLogout = () => {
 };
 
 /* ── [2] 프로필 관리 관련 ── */
+let selectedImgTmp = null; // 선택된 이미지를 임시 저장할 변수
+
 window.openProfileModal = (title, bodyHtml) => { 
     const m = document.getElementById('profileCustomModal'); 
     if(document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = title; 
@@ -375,16 +422,79 @@ window.openProfileModal = (title, bodyHtml) => {
 window.closeProfileModal = () => {
     const m = document.getElementById('profileCustomModal');
     if(m) m.style.display = 'none';
+    selectedImgTmp = null; // 닫을 때 초기화
 };
 
+// 1. 프로필 선택창 열기 (Save/Cancel 버튼 포함)
 window.openProfileImagePicker = () => { 
-    let html = PROFILE_IMAGES.map(img => `
-        <div onclick="saveStaffProfile('${img}')" class="profile-option" style="cursor:pointer; aspect-ratio:1/1; border-radius:12px; overflow:hidden;">
-            <img src="images/profile/${img}" style="width:100%; height:100%; object-fit:cover;">
+    selectedImgTmp = null; // 초기화
+    
+    // 이미지 그리드 생성
+    let gridHtml = PROFILE_IMAGES.map(img => `
+        <div onclick="selectImgTemp(this, '${img}')" class="profile-option">
+            <img src="images/profile/${img}" loading="lazy">
         </div>`).join('');
-    openProfileModal('Change Profile', html); 
+
+    // 최종 모달 바디 구성 (그리드 + 푸터 버튼)
+    let fullHtml = `
+        <div class="profile-grid">${gridHtml}</div>
+        <div class="modal-footer">
+            <button class="modal-btn btn-cancel" onclick="closeProfileModal()">Cancel</button>
+            <button id="btnSaveProfile" class="modal-btn btn-save" onclick="confirmSaveProfile()" disabled>Save Profile</button>
+        </div>
+    `;
+    
+    // openProfileModal을 사용하되, modalBody에 직접 넣기 위해 로직을 조금 변경하거나 기존 함수 호출
+    const m = document.getElementById('profileCustomModal'); 
+    if(document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = 'Change Profile'; 
+    if(document.getElementById('modalBody')) {
+        // 기존 grid 스타일 제거 (fullHtml에 포함되므로)
+        document.getElementById('modalBody').classList.remove('profile-grid'); 
+        document.getElementById('modalBody').innerHTML = fullHtml;
+    }
+    if(m) m.style.display = 'flex'; 
 };
 
+// 2. 이미지 임시 선택 (클릭 시 테두리 변경)
+window.selectImgTemp = (el, fileName) => {
+    // 모든 옵션에서 active 제거
+    document.querySelectorAll('.profile-option').forEach(opt => opt.classList.remove('active'));
+    // 현재 선택 요소에 active 추가
+    el.classList.add('active');
+    
+    selectedImgTmp = fileName;
+    
+    // Save 버튼 활성화
+    const saveBtn = document.getElementById('btnSaveProfile');
+    if(saveBtn) saveBtn.disabled = false;
+};
+
+// 3. 최종 저장 버튼 클릭 시
+window.confirmSaveProfile = async () => {
+    if (!selectedImgTmp) return;
+
+    const userId = sessionStorage.getItem('loggedInUser') || (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
+    
+    if (!userId) {
+        alert("Session expired. Please login again.");
+        return;
+    }
+
+    // 버튼 로딩 상태 표시
+    const saveBtn = document.getElementById('btnSaveProfile');
+    saveBtn.innerText = "Saving...";
+    saveBtn.disabled = true;
+
+    try {
+        await database.ref(`users/${userId}/profileImg`).set(selectedImgTmp);
+        closeProfileModal();
+    } catch (e) { 
+        console.error(e);
+        alert("Failed to update profile."); 
+        saveBtn.innerText = "Save Profile";
+        saveBtn.disabled = false;
+    }
+};
 
 // ── 프로필 리스너 중복 방지를 위한 전역 변수 ──
 let profileListener = null;

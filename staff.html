@@ -58,6 +58,55 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb {
 aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
     background: rgba(59,130,246,0.6);
 }
+/* 프로필 선택 강조 스타일 */
+.profile-option-active {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* 모달 하단 버튼 영역 수정 */
+.modal-footer-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 20px 0 10px 0; /* 패딩 조정 */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky; /* 하단 고정 */
+    bottom: 0;
+    background: #0f172a; /* 배경색을 주어 리스트 글자와 겹치지 않게 함 (원래 배경색과 통일) */
+    z-index: 20;
+}
+
+.modal-footer-btns button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 1rem;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+}
+
+.btn-modal-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-modal-save {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-modal-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
     </style>
 
 </head>
@@ -195,7 +244,83 @@ const PROFILE_IMAGES = [
 
 window.openProfileModal = function(title, bodyHtml) { const m = document.getElementById('profileCustomModal'); document.getElementById('modalTitle').innerText = title; document.getElementById('modalBody').innerHTML = bodyHtml; m.classList.remove('hidden'); };
 window.closeProfileModal = () => document.getElementById('profileCustomModal').classList.add('hidden');
-window.openProfileImagePicker = function() { let g = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-4">`; PROFILE_IMAGES.forEach(i => { g += `<div onclick="saveStaffProfile('${i}')" class="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 hover:scale-105 transition-all shadow-lg"><img src="images/profile/${i}" class="w-full h-full object-cover"></div>`; }); g += `</div>`; openProfileModal('Change Profile', g); };
+
+/* ── 프로필 관리 관련 수정 ── */
+let tempSelectedProfileImg = null; // 선택된 이미지를 임시로 담을 변수
+
+window.openProfileImagePicker = function() { 
+    tempSelectedProfileImg = null; 
+    
+    let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-4">`; 
+    PROFILE_IMAGES.forEach(i => { 
+        gridHtml += `
+            <div onclick="selectProfileTemp(this, '${i}')" class="profile-opt group relative aspect-square rounded-2xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-white/20 transition-all shadow-lg">
+                <img src="images/profile/${i}" class="w-full h-full object-cover">
+            </div>`; 
+    }); 
+    gridHtml += `</div>`; 
+
+    // 1. modalBody에는 이미지 그리드만 넣습니다.
+    document.getElementById('modalBody').innerHTML = gridHtml;
+    
+    // 2. modalBody 다음에 버튼 영역을 추가합니다. (기존 영역이 있다면 교체)
+    let footerHtml = `
+        <div class="modal-footer-btns px-8 pb-8">
+            <button class="btn-modal-cancel btn-3d" onclick="closeProfileModal()">Cancel</button>
+            <button id="btnConfirmProfile" class="btn-modal-save btn-3d" onclick="confirmSaveProfile()" disabled>Save Identity</button>
+        </div>
+    `;
+    
+    // 타이틀 변경 및 모달 열기
+    document.getElementById('modalTitle').innerText = 'Change Profile';
+    
+    // 버튼이 중복 생성되지 않도록 처리 후 삽입
+    const existingFooter = document.querySelector('.modal-footer-btns');
+    if(existingFooter) existingFooter.remove();
+    document.getElementById('modalBody').insertAdjacentHTML('afterend', footerHtml);
+
+    document.getElementById('profileCustomModal').classList.remove('hidden');
+};
+
+// 이미지를 클릭했을 때 (임시 선택)
+window.selectProfileTemp = function(element, fileName) {
+    // 모든 옵션에서 active 클래스 제거
+    document.querySelectorAll('.profile-opt').forEach(opt => {
+        opt.classList.remove('profile-option-active');
+    });
+    
+    // 클릭한 요소에 active 클래스 추가
+    element.classList.add('profile-option-active');
+    
+    // 임시 변수에 파일명 저장 및 Save 버튼 활성화
+    tempSelectedProfileImg = fileName;
+    const saveBtn = document.getElementById('btnConfirmProfile');
+    if(saveBtn) saveBtn.disabled = false;
+};
+
+// 최종 Save 버튼을 눌렀을 때 실행되는 함수
+window.confirmSaveProfile = function() {
+    if(!tempSelectedProfileImg) return;
+    
+    const saveBtn = document.getElementById('btnConfirmProfile');
+    const originalText = saveBtn.innerText;
+    
+    // 로딩 상태 표시
+    saveBtn.innerText = "SAVING...";
+    saveBtn.disabled = true;
+
+    db.ref('users/' + loggedInUser).update({ 
+        profileImg: tempSelectedProfileImg, 
+        profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP 
+    }).then(() => {
+        closeProfileModal();
+        // 별도의 alert 없이 실시간 데이터 업데이트(onValue)로 처리됨
+    }).catch(e => {
+        alert("Save failed: " + e.message);
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+    });
+};
 
 window.saveStaffProfile = function(i) { 
     if(!confirm("Do you want to change?")) return; 
