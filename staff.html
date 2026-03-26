@@ -155,7 +155,10 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                         <span id="weatherTemp" class="text-[11px] font-black text-white">--°C</span>
                         <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
                     </div>
-                    <button onclick="showAllStaffBirthdays()" class="mt-2 ml-1 text-[9px] font-bold text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-1">🎂 Staff Birthdays</button>
+<button onclick="showAllStaffBirthdays()" class="mt-2 ml-1 text-[9px] font-bold text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-1">
+    <img src="images/gif/birth.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
+</button>
+
                     <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
                         <span class="text-[10px] font-black text-yellow-500 birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
                         <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
@@ -166,13 +169,13 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                     </span>
                 </div>
             </div>
-            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">➡️ Logout</button>
+            <button onclick="logout()" class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-4">🖐️ Logout 🔓</button>
         </div>
 <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
             <button onclick="switchTab('dash')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
             <button onclick="switchTab('work')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
             <button onclick="switchTab('schedule')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
-            <button onclick="switchTab('vacation')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏖️</span> Vacation</button>
+            <button onclick="switchTab('vacation')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
             <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
             <button onclick="switchTab('setting')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
             <div class="mt-5 pt-5 border-t border-white/5">
@@ -215,12 +218,40 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
         <div id="modalBody" class="p-8 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
     </div>
 </div>
+
 <script>
+// 1. 로그인 체크
 const loggedInUser = sessionStorage.getItem('loggedInUser');
 if (!loggedInUser) { location.href = "index.html"; }
-const firebaseConfig = { apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ", authDomain: "tdlid-dailyreport.firebaseapp.com", databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com", projectId: "tdlid-dailyreport", storageBucket: "tdlid-dailyreport.firebasestorage.app", messagingSenderId: "922333077514", appId: "1:922333077514:web:8914e5b06ac1f417707ff3", measurementId: "G-1TVZQYHWDL" };
+
+// 2. Firebase 초기화 (이 정보는 노출되어도 DB 규칙이 설정되어 있다면 안전합니다)
+const firebaseConfig = { 
+    apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ", 
+    authDomain: "tdlid-dailyreport.firebaseapp.com", 
+    databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com", 
+    projectId: "tdlid-dailyreport", 
+    storageBucket: "tdlid-dailyreport.firebasestorage.app", 
+    messagingSenderId: "922333077514", 
+    appId: "1:922333077514:web:8914e5b06ac1f417707ff3", 
+    measurementId: "G-1TVZQYHWDL" 
+};
+
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+// 3. 전역 변수로 API KEY 선언 (어디서든 쓸 수 있게)
+let dynamicApiKey = "";
+
+// 4. DB에서 GoogleCAPI 값을 동적으로 로드
+db.ref('settings/config/GoogleCAPI').once('value').then((snap) => {
+    dynamicApiKey = snap.val();
+    console.log("API Key loaded from Firebase.");
+    
+    // [중요] 키가 로드된 후에 실행되어야 하는 함수들을 여기서 호출합니다.
+    // 만약 날씨 정보를 가져오는 함수가 있다면:
+    // fetchJakartaWeather(dynamicApiKey); 
+    
+}).catch(e => console.error("Key Load Error:", e));
 
 const PROFILE_IMAGES = [
     // 기본 WebP 이미지
