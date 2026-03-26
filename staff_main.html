@@ -61,7 +61,41 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 .menu-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,2.5vw,20px);width:100%;max-width:800px;margin-bottom:clamp(1.5rem,4vh,2.5rem);perspective:2000px;transform-style:preserve-3d;}
 @media (max-width:640px) {.menu-grid {grid-template-columns:repeat(2,1fr);max-width:100%;gap:clamp(10px,3vw,14px);padding:0 0.5rem;}}
 @media (min-width:641px) and (max-width:1024px) {.menu-grid {grid-template-columns:repeat(2,1fr);max-width:500px;}}
-.menu-card {position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);padding:clamp(16px,4vw,28px) clamp(10px,3vw,20px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,3vw,14px);cursor:pointer;overflow:hidden;transform-style:preserve-3d;transform:translateZ(0);transition:all 0.5s cubic-bezier(0.16,1,0.3,1);animation:card-in 0.7s cubic-bezier(0.16,1,0.3,1) both;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 2px rgba(255,255,255,0.1),0 15px 30px rgba(0,0,0,0.4),0 5px 15px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.15),inset 0 -1px 1px rgba(0,0,0,0.25);will-change:transform,box-shadow;}
+.menu-card {
+    position: relative;
+    /* 배경 및 테두리 유지 */
+    background: linear-gradient(135deg, rgba(16,32,60,0.9) 0%, rgba(8,18,36,0.8) 100%);
+    border: 1.5px solid var(--border);
+    border-radius: clamp(18px, 4vw, 24px);
+    
+    /* [수정] 상하 패딩을 늘려 중앙 정렬 강화 (기존 16~28px -> 24~40px) */
+    padding: clamp(24px, 6vw, 40px) clamp(10px, 3vw, 20px);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    /* [수정] 아이콘과 글자 사이 간격 최적화 (기존 10~14px -> 12~18px) */
+    gap: clamp(12px, 3.5vw, 18px);
+    
+    cursor: pointer;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transform: translateZ(0);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    
+    /* 그림자 효과 유지 */
+    box-shadow: 0 1px 2px rgba(255,255,255,0.1), 
+                0 15px 30px rgba(0,0,0,0.4), 
+                0 5px 15px rgba(0,0,0,0.3), 
+                inset 0 1px 1px rgba(255,255,255,0.15), 
+                inset 0 -1px 1px rgba(0,0,0,0.25);
+    will-change: transform, box-shadow;
+}
 @media (hover:hover) {.menu-card:hover {transform:translateY(-15px) translateZ(60px) scale(1.05) rotateX(8deg);border-color:rgba(59,130,246,0.6);background:linear-gradient(135deg,rgba(59,130,246,0.25) 0%,rgba(6,182,212,0.2) 100%);box-shadow:0 2px 4px rgba(255,255,255,0.2),0 30px 60px rgba(0,0,0,0.7),0 15px 35px rgba(59,130,246,0.4),0 0 40px rgba(59,130,246,0.3),inset 0 1px 2px rgba(255,255,255,0.3),inset 0 -1px 2px rgba(0,0,0,0.3);}
 .menu-card:hover .card-label {color:#fff;text-shadow:0 0 15px rgba(59,130,246,0.7),0 2px 8px rgba(0,0,0,0.8);transform:translateZ(20px);}
 .menu-card:hover .card-icon-wrap {transform:translateZ(40px) scale(1.15) rotateY(8deg);filter:drop-shadow(0 15px 30px rgba(0,0,0,0.6)) drop-shadow(0 0 25px rgba(59,130,246,0.5));}
@@ -93,21 +127,10 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
 .day-name {font-size:clamp(8px,1.5vw,10px);letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.5);transform:translateZ(10px);}
 .day-number {font-size:clamp(1.5rem,5vw,2.2rem);font-weight:900;line-height:1;color:rgba(255,255,255,0.08);letter-spacing:-0.04em;text-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translateZ(5px);}
 .divider {width:1px;height:clamp(28px,6vw,32px);background:linear-gradient(180deg,transparent,var(--border-2),transparent);transform:translateZ(5px);}
-@media (max-height:700px) {.header-section {margin-bottom:1rem;}.menu-grid {gap:8px;margin-bottom:1rem;}.menu-card {padding:12px 8px;gap:8px;}}
 @media (max-height:600px) {.greeting {font-size:clamp(1.5rem,4vw,2.5rem);}.live-time,.sub-label {font-size:8px;}}
 @media (orientation:landscape) and (max-height:500px) {.content-wrapper {justify-content:flex-start;padding-top:1rem;}.header-section {margin-bottom:0.75rem;}.menu-grid {margin-bottom:1rem;}}
 /* 상태 정보 텍스트 스타일 */
-.card-status {
-    font-size: clamp(8px, 1.6vw, 10px);
-    font-weight: 500;
-    color: var(--cyan); /* 강조색 */
-    margin-top: 4px;
-    opacity: 0.9;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    z-index: 2;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
+
 /* 1. 프로필 이미지 컨테이너 (연필 아이콘 배치를 위해 추가) */
 .profile-container {
     position: relative;
@@ -205,80 +228,26 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
     object-fit: cover; 
     display: block; 
 }
-/* 뉴스 & 정보 카드 */
-.info-card {
-    position:relative;background:linear-gradient(135deg,rgba(16,32,60,0.9) 0%,rgba(8,18,36,0.8) 100%);
-    border:1.5px solid var(--border);border-radius:clamp(18px,4vw,24px);
-    padding:clamp(14px,3vw,22px);width:100%;max-width:800px;box-sizing:border-box;
-    margin-top:0;
-    margin-bottom:2rem;
-    animation:reveal-down 1s cubic-bezier(0.16,1,0.3,1) 0.4s both;
-    box-shadow:0 15px 30px rgba(0,0,0,0.4),inset 0 1px 1px rgba(255,255,255,0.1);
-    overflow:visible; /* hidden → visible */
-}
-
-.info-card::after {
-    content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
-    background:linear-gradient(90deg,transparent,rgba(6,182,212,0.6),rgba(129,140,248,0.6),transparent);
-    filter:blur(1px);opacity:0.8;
-    pointer-events:none;
-}
-.info-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.info-section {background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:12px;}
-.info-title {font-size:8px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
-.news-item {font-size:9px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5;cursor:pointer;transition:color 0.2s;}
-
-@media (max-width:768px) {
-    .info-grid {grid-template-columns:1fr;}
-    .info-card {margin-bottom:1rem;padding:clamp(12px,3vw,18px);border-radius:16px;}
-    .info-section {border-radius:10px;padding:10px;}
-    .news-item {font-size:10px;padding:6px 0;}
-    .info-title {font-size:9px;}
-    .stat-label {font-size:9px;}
-    .stat-value {font-size:12px;}
-    .quote-text {font-size:10px;}
-    .lucky-num {width:24px;height:24px;font-size:9px;}
-}
-
-.news-item:hover {color:var(--cyan);}
-.news-item:last-child {border-bottom:none;}
-.news-badge {display:inline-block;font-size:7px;font-weight:900;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.2);color:var(--blue);border:1px solid rgba(59,130,246,0.3);margin-right:4px;}
-.news-badge.ev {background:rgba(16,185,129,0.2);color:#10b981;border-color:rgba(16,185,129,0.3);}
-.stat-row {display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
-.stat-row:last-child {border-bottom:none;}
-.stat-label {font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.stat-value {font-size:11px;font-weight:900;color:#fff;}
-.lucky-nums {display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
-.lucky-num {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;}
-.quote-text {font-size:9px;color:var(--text);line-height:1.6;font-style:italic;margin-top:4px;}
-.quote-author {font-size:8px;color:var(--cyan);font-weight:700;margin-top:4px;text-align:right;}
-.info-loading {font-size:9px;color:var(--muted);text-align:center;padding:10px;animation:pulse 1.5s infinite;}
 </style>
 
 </head>
 <body>
 
-    <!-- ── Background (요일별 동적) ─────────────── -->
     <div id="dynamicBg"></div>
 
-    <!-- ── Ambient orbs (4D 깊이감) ──────────────────────────── -->
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
     <div class="orb orb-c"></div>
 
-    <!-- ── Day indicator (top-right) ─────────────── -->
     <div class="day-indicator">
         <span class="day-name" id="dayName"></span>
         <span class="day-number" id="dayNumber"></span>
     </div>
 
-<!-- ── Main content ──────────────────────────── -->
 <div class="content-wrapper">
 
-    <!-- 메인 섹션: 뷰포트 높이 내 중앙 정렬 -->
     <div class="main-section">
 
-        <!-- Header -->
         <div class="header-section">
             <div class="live-time">
                 <span class="live-dot"></span>
@@ -291,7 +260,6 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
             <p class="sub-label">Select Task To Continue</p>
         </div>
 
-        <!-- Menu Cards (4D Enhanced) -->
         <div class="menu-grid">
             <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
                 <div class="card-glow"></div>
@@ -299,75 +267,37 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
                     <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
                 </div>
                 <span class="card-label">Attendance</span>
-
-<span class="card-status" id="status-attendance" style="display:none;"></span>
-<div id="status-attendance-detail" style="width:100%;font-size:clamp(7px,1.5vw,9px);color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-top:2px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-        <span style="color:var(--muted);">Chk-In</span>
-        <span id="att-in-stat" style="color:var(--cyan);font-weight:700;">--/--</span>
-        <span id="att-in-pct" style="color:var(--muted);">--%</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-<span style="color:var(--muted);">LATE</span>
-<span id="att-late-stat" style="color:var(--gold);font-weight:700;">--/--</span>
-<span id="att-late-pct" style="color:var(--gold);opacity:0.7;">--%</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-        <span style="color:var(--muted);">Chk-Out</span>
-        <span id="att-out-stat" style="color:var(--violet);font-weight:700;">--/--</span>
-        <span id="att-out-pct" style="color:var(--muted);">--%</span>
-    </div>
-</div>
+                <span class="card-status" id="status-attendance" style="display:none;"></span>
             </div>
+
             <div class="menu-card" onclick="navigateTo('staff_report.html')">
                 <div class="card-glow"></div>
                 <div class="card-icon-wrap">
                     <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
                 </div>
                 <span class="card-label">Work<br>Report</span>
-<span class="card-status" id="status-report" style="display:none;"></span>
-<div id="status-report-detail" style="width:100%;font-size:clamp(7px,1.5vw,9px);color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-top:2px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-        <span style="color:var(--muted);">Report/Days</span>
-        <span id="rpt-done-stat" style="color:var(--violet);font-weight:700;">--/--</span>
-        <span id="rpt-done-pct" style="color:var(--muted);">--%</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-        <span style="color:var(--muted);">Sum/Todo</span>
-        <span id="rpt-sum-stat" style="color:var(--cyan);font-weight:700;">--/--</span>
-        <span id="rpt-sum-pct" style="color:var(--muted);">--%</span>
-    </div>
-</div>
+                <span class="card-status" id="status-report" style="display:none;"></span>
             </div>
+
             <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
                 <div class="card-glow"></div>
                 <div class="card-icon-wrap">
                     <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
                 </div>
                 <span class="card-label">Calendar</span>
-<span class="card-status" id="status-calendar" style="display:none;"></span>
-<div id="status-calendar-detail" style="width:100%;margin-top:2px;">
-    <div id="cal-schedule-list" style="display:flex;flex-direction:column;gap:3px;width:100%;">
-        <div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">Loading...</div>
-    </div>
-</div>
+                <span class="card-status" id="status-calendar" style="display:none;"></span>
             </div>
+
             <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
                 <div class="card-glow"></div>
                 <div class="card-icon-wrap">
                     <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
                 </div>
                 <span class="card-label">Vacation</span>
-<span class="card-status" id="status-vacation" style="display:none;"></span>
-<div id="status-vacation-detail" style="width:100%;margin-top:2px;">
-    <div id="vac-schedule-list" style="display:flex;flex-direction:column;gap:3px;width:100%;">
-        <div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">Loading...</div>
-    </div>
-</div>
+                <span class="card-status" id="status-vacation" style="display:none;"></span>
             </div>
         </div>
 
-        <!-- Bottom actions -->
         <div class="bottom-actions">
             <button class="action-btn settings" onclick="navigateTo('staff_setting.html')">
                 <div class="action-icon">⚙️</div>
@@ -380,668 +310,239 @@ body::before {content:'';position:fixed;inset:0;z-index:1;background-image:url("
             </button>
         </div>
 
-    </div><!-- /.main-section -->
+    </div></div><input type="file" id="profileInput" accept="image/*" style="display: none;" />
 
-    <!-- Info Card: 스크롤하면 보이는 영역 -->
-    <div class="info-card">
-<div class="info-grid" style="grid-template-columns:1fr;">
-
-            <!-- 우측: 날씨 + 명언 + 행운 -->
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <div class="info-section">
-                    <div class="info-title">🌤 Jakarta Weather</div>
-                    <div id="weather-info"><div class="info-loading">Loading...</div></div>
-                </div>
-                <div class="info-section">
-                    <div class="info-title">💬 Quote of the Day</div>
-                    <div id="quote-info"><div class="info-loading">Loading...</div></div>
-                </div>
-                <div class="info-section">
-                    <div class="info-title">🍀 Your Lucky Numbers</div>
-                    <div id="lucky-info"><div class="info-loading">Loading...</div></div>
-                </div>
-            </div>
+<div id="profileCustomModal" class="profile-modal-overlay" onclick="if(event.target===this) closeProfileModal()">
+    <div class="profile-modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="modalTitle" style="margin:0; font-size:1.2rem; color:white;">Select Profile</h2>
+            <button onclick="closeProfileModal()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px;">&times;</button>
         </div>
-    </div>
-
-</div><!-- /.content-wrapper -->
-
-<div id="profileCustomModal" class="profile-modal-overlay" onclick="closeProfileModal()">
-    <div class="profile-modal" onclick="event.stopPropagation()">
-        <h3 id="modalTitle" style="color:#fff;text-align:center;font-weight:800;letter-spacing:0.1em;margin-bottom:15px;">SELECT PROFILE</h3>
-        <div id="modalBody" class="profile-grid"></div>
-        <button onclick="closeProfileModal()" style="width:100%;margin-top:20px;padding:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;font-weight:700;cursor:pointer;">CLOSE</button>
+        <div id="modalBody" class="profile-grid">
+            </div>
     </div>
 </div>
-    <input type="file" id="profileInput" accept="image/*" style="display: none;" />
 
 <script>
-    /* ═══════════════════════════════════════════
-        DYNAMIC BACKGROUND & CORE LOGIC
-    ═══════════════════════════════════════════ */
-    (function() {
-        // 1. 사용자 확인 및 기본 설정
-        const user = sessionStorage.getItem('loggedInUser');
-        if (!user) location.href = 'index.html';
-        document.getElementById('userGreeting').innerText = user || '—';
-
-        const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        /* --- [수정] 새로운 프로필 이미지 리스트 정의 --- */
-        const PROFILE_IMAGES = [
-            'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp', 
-            'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
-            'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
-            'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
-            'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
-            'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
-            'image-26.gif', 'image-27.gif'
-        ];
-
-/* --- [수정] 공통 모달 열기 함수 --- */
-window.openProfileModal = function(title, bodyHtml) { 
-    const m = document.getElementById('profileCustomModal'); 
-    const t = document.getElementById('modalTitle');
-    const b = document.getElementById('modalBody');
+/* ── [0] 전역 변수 및 설정 ── */
+let database;
+const PROFILE_IMAGES = [
+    // 기본 WebP 이미지
+    'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
     
-    if(t) t.innerText = title; 
-    if(b) b.innerHTML = bodyHtml; 
-    // classList 대신 style.display로 확실하게 제어
+    // GIF 애니메이션 이미지 (01~27)
+    'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
+    'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
+    'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
+    'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
+    'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
+    'image-26.gif', 'image-27.gif',
+
+    // 새로 추가된 이미지 (jfif, jpg, webp 추가분)
+    'image-01.jfif', 'image-02.jpg', 'image-03.webp', 'image-04.jfif', 'image-05.jpg',
+    'image-06.webp', 'image-07.jfif', 'image-08.jpg', 'image-09.jfif', 'image-10.jpg',
+    'image-11.jfif', 'image-12.jpg', 'image-13.jfif', 'image-14.jpg', 'image-15.jfif',
+    'image-16.jpg', 'image-17.jfif', 'image-18.jpg', 'image-19.jfif', 'image-20.jpg',
+    'image-21.jfif', 'image-22.jpg', 'image-23.jfif'
+];
+
+/* ── [1] 네비게이션 및 인증 관련 ── */
+window.navigateTo = (page) => {
+    sessionStorage.setItem('targetPage', page);
+    location.href = 'staff.html';
+};
+
+window.handleLogout = () => {
+    if (confirm("Do you want to logout?")) {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().signOut().finally(() => location.replace('index.html'));
+        } else {
+            location.replace('index.html');
+        }
+    }
+};
+
+/* ── [2] 프로필 관리 관련 ── */
+window.openProfileModal = (title, bodyHtml) => { 
+    const m = document.getElementById('profileCustomModal'); 
+    if(document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = title; 
+    if(document.getElementById('modalBody')) document.getElementById('modalBody').innerHTML = bodyHtml; 
     if(m) m.style.display = 'flex'; 
 };
 
-/* --- [수정] 모달 닫기 함수 --- */
-window.closeProfileModal = function() {
+window.closeProfileModal = () => {
     const m = document.getElementById('profileCustomModal');
     if(m) m.style.display = 'none';
 };
 
-        /* --- [수정] 프로필 이미지 피커 실행 함수 --- */
-window.openProfileImagePicker = function() { 
-    let g = ""; // 바깥쪽 div 제거
-    PROFILE_IMAGES.forEach(i => { 
-        g += `<div onclick="saveStaffProfile('${i}')" 
-                   class="profile-option"
-                   style="border: 2px solid transparent; transition: all 0.2s; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; cursor: pointer;">
-                <img src="images/profile/${i}" style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.src='https://ui-avatars.com/api/?name=Error&background=random'">
-              </div>`; 
-    }); 
-    openProfileModal('Change Profile', g); 
+window.openProfileImagePicker = () => { 
+    let html = PROFILE_IMAGES.map(img => `
+        <div onclick="saveStaffProfile('${img}')" class="profile-option" style="cursor:pointer; aspect-ratio:1/1; border-radius:12px; overflow:hidden;">
+            <img src="images/profile/${img}" style="width:100%; height:100%; object-fit:cover;">
+        </div>`).join('');
+    openProfileModal('Change Profile', html); 
 };
 
-        /* --- [수정] DB 저장 함수 --- */
-        window.saveStaffProfile = async function(fileName) {
-            const userId = sessionStorage.getItem('loggedInUser');
-            if (!userId) return;
 
-            if (confirm("이 이미지로 프로필을 변경하시겠습니까?")) {
-                try {
-                    await database.ref(`users/${userId}/profileImg`).set(fileName);
-                    const currentImg = document.querySelector('.profile-img');
-                    if (currentImg) currentImg.src = `images/profile/${fileName}`;
-                    alert("Profile updated!");
-                    closeProfileModal();
-                } catch (e) {
-                    console.error(e);
-                    alert("Update failed.");
-                }
-            }
-        };
+// ── 프로필 리스너 중복 방지를 위한 전역 변수 ──
+let profileListener = null;
 
-/* --- [수정된] 프로필 이미지 로드 함수 --- */
+// 1. 프로필 이미지 로드 및 클릭 이벤트 연결 (수정본)
 const loadProfileImg = (userId) => {
     if (!userId) return;
-    database.ref(`users/${userId}`).once('value', (snap) => {  // ← profileImg → 전체 노드
+
+    // [추가] 이전 리스너가 살아있다면 먼저 제거하여 메모리 누수 및 CPU 부하 방지
+    if (profileListener) {
+        database.ref(`users/${userId}`).off('value', profileListener);
+    }
+
+    // [수정] 새로운 리스너를 변수에 할당하여 관리
+    profileListener = database.ref(`users/${userId}`).on('value', (snap) => {
         const userData = snap.val() || {};
         const imgFileName = userData.profileImg;
-        const displayName = userData.displayName || userId;    // ← displayName 추출
+        const displayName = userData.displayName || userId;
         const greetingEl = document.getElementById('userGreeting');
-        
-        // 인사말을 displayName으로 업데이트
-        if (greetingEl) greetingEl.innerText = displayName;   // ← 추가
-        
-        // 1. 기존에 이미 생성된 컨테이너가 있다면 삭제
-        const oldContainer = document.querySelector('.profile-container');
-        if (oldContainer) oldContainer.remove();
 
-        // 2. 전체를 감싸는 컨테이너 생성
-        const container = document.createElement('div');
-        container.className = 'profile-container';
-        container.onclick = () => openProfileImagePicker();
+        if (greetingEl) greetingEl.innerText = displayName;
 
-        // 3. 이미지 요소 생성
-        const imgEl = document.createElement('img');
-        imgEl.className = 'profile-img';
-        imgEl.src = imgFileName ? `images/profile/${imgFileName}` : 'images/default-profile.png';
-        imgEl.onerror = () => { imgEl.src = 'https://ui-avatars.com/api/?name=' + userId; };
-        
-        // 4. 연필 아이콘 생성
-        const editIcon = document.createElement('div');
-        editIcon.className = 'profile-edit-icon';
-        editIcon.innerHTML = '✏️'; // 또는 <i class="fas fa-pen"></i> 등 아이콘 폰트
+        let container = document.querySelector('.profile-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'profile-container';
+            // 클릭 시 팝업 열기
+            container.onclick = () => openProfileImagePicker();
+            
+            const imgEl = document.createElement('img');
+            imgEl.className = 'profile-img';
+            
+            const editIcon = document.createElement('div');
+            editIcon.className = 'profile-edit-icon';
+            editIcon.innerHTML = '✏️';
 
-        // 5. 구조 조립 및 화면 삽입
-        container.appendChild(imgEl);
-        container.appendChild(editIcon);
-        
-        // 인사말(span) 바로 뒤에 삽입
-        greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
+            container.appendChild(imgEl);
+            container.appendChild(editIcon);
+            
+            // 인사가 표시되는 요소 옆에 삽입
+            if (greetingEl && greetingEl.parentNode) {
+                greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
+            }
+        }
+
+        const img = container.querySelector('.profile-img');
+        if (img) {
+            // 새 이미지 경로 설정
+            const newSrc = imgFileName ? `images/profile/${imgFileName}` : 'images/default-profile.png';
+            
+            // 현재 이미지와 다를 때만 업데이트 (불필요한 리렌더링 방지)
+            if (img.getAttribute('src') !== newSrc) {
+                img.src = newSrc;
+            }
+            
+            img.onerror = () => { 
+                img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`; 
+            };
+        }
     });
 };
 
-        /* ── [기능 3] 실시간 상태 정보 (기존 유지) ── */
-        const updateStaffStatus = (userId) => {
-            if (!userId) return;
-            const getLastWorkDay = () => {
-                const d = new Date();
-                const dayOfWeek = d.getDay();
-                if (dayOfWeek === 1) d.setDate(d.getDate() - 3);
-                else if (dayOfWeek === 0) d.setDate(d.getDate() - 2);
-                else d.setDate(d.getDate() - 1);
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const date = String(d.getDate()).padStart(2, '0');
-                return `${y}-${m}-${date}`;
-            };
-            const targetDateStr = getLastWorkDay();
+// 2. 프로필 저장 함수 (로그인 세션 확인 로직 강화)
+window.saveStaffProfile = async (fileName) => {
+    // sessionStorage 외에 firebase 현재 사용자 확인
+    const userId = sessionStorage.getItem('loggedInUser') || (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
+    
+    if (!userId) {
+        alert("Session expired. Please login again.");
+        return;
+    }
 
-            database.ref(`attendance/${targetDateStr}/${userId}`).on('value', (snap) => {
-                const data = snap.val();
-                const el = document.getElementById('status-attendance');
-                if(el) {
-                    const inTime = (data && data.attend) ? data.attend : "Not Checked-in";
-                    const outTime = (data && data.leave) ? data.leave : "Not Checked-Out";
-                    el.innerHTML = `Yesterday In: ${inTime}<br>Yesterday Out: ${outTime}`;
-                    el.style.color = (data && (data.attend || data.leave)) ? "var(--cyan)" : "var(--rose)";
-                }
-            });
-
-            database.ref(`reports/${targetDateStr}/${userId}`).on('value', (snap) => {
-                const data = snap.val();
-                const el = document.getElementById('status-report');
-                if(el) {
-                    if (data && data.todo && data.todo.trim() !== "") {
-                        el.innerText = "Yesterday Report: Submitted";
-                        el.style.color = "var(--cyan)";
-                    } else {
-                        el.innerText = "Yesterday Report: Required";
-                        el.style.color = "var(--rose)";
-                    }
-                }
-            });
-
-            database.ref(`schedules/${userId}/today_next`).on('value', (snap) => {
-                const nextEvent = snap.val();
-                const el = document.getElementById('status-calendar');
-                if(el) el.innerText = nextEvent ? `Next: ${nextEvent}` : "No more plans";
-            });
-
-            database.ref(`staff_info/${userId}/vacation_left`).on('value', (snap) => {
-                const days = snap.val() || 0;
-                const el = document.getElementById('status-vacation');
-                if(el) el.innerText = `${days} Days Left`;
-            });
-        };
-
-        // 초기 실행
-        if (user) {
-            loadProfileImg(user);
-            updateStaffStatus(user);
+    if (confirm("Change profile image?")) {
+        try {
+            await database.ref(`users/${userId}/profileImg`).set(fileName);
+            closeProfileModal(); // 페이지 리로드 대신 모달만 닫음 (onValue가 실시간 반영)
+        } catch (e) { 
+            console.error(e);
+            alert("Failed to update profile."); 
         }
+    }
+};
 
-// ── 날짜 기반 배경 이미지 설정 ──
+/* ── [3] 메인 실행 로직 ── */
+document.addEventListener('DOMContentLoaded', () => {
+    const user = sessionStorage.getItem('loggedInUser');
+    if (!user) { location.href = 'index.html'; return; }
+
+    // Firebase 초기화
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCBYlhoIPDtXnPrKugo_AQ7dYVCEyMyO-w", 
+        authDomain: "tdlid-dailyreport.firebaseapp.com",
+        databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+        projectId: "tdlid-dailyreport",
+        storageBucket: "tdlid-dailyreport.appspot.com"
+    };
+
+    if (!firebase.apps.length) {
+        const app = firebase.initializeApp(firebaseConfig);
+        database = app.database();
+    } else {
+        database = firebase.database();
+    }
+
+    // 초기 데이터 로드
+    firebase.auth().onAuthStateChanged(() => loadProfileImg(user));
+
+    // 시계 기능
+    const updateClock = () => {
+        const el = document.getElementById('liveTime');
+        if(el) el.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+    };
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 날짜/요일 표시
+    const daysArr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const now = new Date();
+    if(document.getElementById('dayName')) document.getElementById('dayName').textContent = daysArr[now.getDay()];
+    if(document.getElementById('dayNumber')) document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
+
+    // 4D 틸트 효과
+    if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+        document.querySelectorAll('.menu-card').forEach(card => {
+            let targetX = 0, targetY = 0, currentX = 0, currentY = 0, rafId = null, isAnim = false;
+            const lerp = (s, e, f) => s + (e - s) * f;
+            const animate = () => {
+                if (!isAnim) return;
+                currentX = lerp(currentX, targetX, 0.1);
+                currentY = lerp(currentY, targetY, 0.1);
+                card.style.transform = `perspective(1000px) rotateX(${currentX}deg) rotateY(${currentY}deg) scale(1.05)`;
+                rafId = requestAnimationFrame(animate);
+            };
+            card.addEventListener('mouseenter', () => { isAnim = true; rafId = requestAnimationFrame(animate); });
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                targetX = -((e.clientY - (rect.top + rect.height/2)) / (rect.height/2)) * 10;
+                targetY = ((e.clientX - (rect.left + rect.width/2)) / (rect.width/2)) * 10;
+            });
+            card.addEventListener('mouseleave', () => {
+                isAnim = false;
+                if (rafId) cancelAnimationFrame(rafId);
+                card.style.transform = '';
+            });
+        });
+    }
+});
+
+// 배경 이미지 자동 설정 (즉시 실행)
 (function setBgImage() {
-    const totalImages = 10;
     const day = new Date().getDate();
-    const imgIndex = ((day - 1) % totalImages) + 1;
-    const fileName = `image-${String(imgIndex).padStart(3, '0')}.gif`;
+    const imgIndex = ((day - 1) % 10) + 1;
     const bgEl = document.getElementById('dynamicBg');
     if (bgEl) {
-        bgEl.style.backgroundImage = `url('images/gif/cats/${fileName}')`;
+        bgEl.style.backgroundImage = `url('images/gif/cats/image-${String(imgIndex).padStart(3, '0')}.gif')`;
         bgEl.style.opacity = '1';
     }
 })();
-
-        window.navigateTo = (page) => {
-            sessionStorage.setItem('targetPage', page);
-            location.href = 'staff.html';
-        };
-
-        window.handleLogout = () => {
-            if (confirm("Do you want to logout?")) {
-                sessionStorage.clear();
-                localStorage.removeItem('loggedInUser');
-                location.replace('index.html');
-            }
-        };
-
-        function updateClock() {
-            document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-/* ── Daily Info Panel ── */
-(async function loadDailyInfo() {
-    // ① 날씨 (Jakarta - Open-Meteo 무료)
-    try {
-        const wr = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FJakarta&forecast_days=1');
-        const wd = await wr.json();
-        const cw = wd.current_weather;
-        const wCodes = {0:'☀️ Clear',1:'🌤 Mainly Clear',2:'⛅ Partly Cloudy',3:'☁️ Overcast',45:'🌫 Foggy',48:'🌫 Icy Fog',51:'🌦 Drizzle',61:'🌧 Rain',71:'❄️ Snow',80:'🌧 Showers',95:'⛈ Thunderstorm'};
-        const desc = wCodes[cw.weathercode] || '🌡 ' + cw.weathercode;
-        const max = wd.daily.temperature_2m_max[0], min = wd.daily.temperature_2m_min[0];
-        document.getElementById('weather-info').innerHTML = `
-            <div class="stat-row"><span class="stat-label">Condition</span><span class="stat-value" style="font-size:10px;">${desc}</span></div>
-            <div class="stat-row"><span class="stat-label">Now</span><span class="stat-value" style="color:var(--cyan);">${cw.temperature}°C</span></div>
-            <div class="stat-row"><span class="stat-label">High / Low</span><span class="stat-value" style="font-size:10px;">${max}° / ${min}°</span></div>
-            <div class="stat-row"><span class="stat-label">Wind</span><span class="stat-value" style="font-size:10px;">${cw.windspeed} km/h</span></div>`;
-    } catch(e) {
-        document.getElementById('weather-info').innerHTML = '<div class="info-loading">Weather unavailable</div>';
-    }
-
-    // ② 명언 (랜덤 고정 리스트)
-    const quotes = [
-        {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
-        {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
-        {q:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
-        {q:"Success is not final, failure is not fatal.",a:"Winston Churchill"},
-        {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
-        {q:"The harder you work, the luckier you get.",a:"Gary Player"},
-        {q:"Dream big and dare to fail.",a:"Norman Vaughan"},
-        {q:"Act as if what you do makes a difference. It does.",a:"William James"},
-        {q:"Quality is not an act, it is a habit.",a:"Aristotle"},
-        {q:"Energy and persistence conquer all things.",a:"Benjamin Franklin"},
-        {q:"Opportunities don't happen. You create them.",a:"Chris Grosser"},
-        {q:"Great things never come from comfort zones.",a:"Unknown"},
-        {q:"Push yourself, because no one else is going to do it for you.",a:"Unknown"},
-        {q:"Little things make big days.",a:"Unknown"},
-        {q:"It's going to be hard, but hard is not impossible.",a:"Unknown"},
-    ];
-    const todaySeed = new Date().getDate() + new Date().getMonth() * 31;
-    const q = quotes[todaySeed % quotes.length];
-    document.getElementById('quote-info').innerHTML = `
-        <div class="quote-text">"${q.q}"</div>
-        <div class="quote-author">— ${q.a}</div>`;
-
-    // ③ 행운 번호 (오늘 날짜 시드 기반)
-    const seed = new Date().getFullYear() * 10000 + (new Date().getMonth()+1) * 100 + new Date().getDate();
-    const rand = (s, min, max) => { let x = Math.sin(s) * 10000; return min + Math.floor((x - Math.floor(x)) * (max - min + 1)); };
-    const nums = [], colors = ['#3b82f6','#06b6d4','#818cf8','#f59e0b','#10b981','#f43f5e'];
-    for(let i = 0; i < 6; i++) { let n; do { n = rand(seed + i * 7, 1, 49); } while(nums.includes(n)); nums.push(n); }
-    const luckyColor = ['Red 🔴','Blue 🔵','Green 🟢','Gold 🟡','Purple 🟣','White ⚪'][rand(seed, 0, 5)];
-    document.getElementById('lucky-info').innerHTML = `
-        <div class="lucky-nums">${nums.map((n,i)=>`<div class="lucky-num" style="background:${colors[i]};box-shadow:0 0 8px ${colors[i]}60;">${n}</div>`).join('')}</div>
-        <div class="stat-row" style="margin-top:8px;"><span class="stat-label">Lucky Color</span><span class="stat-value" style="font-size:10px;">${luckyColor}</span></div>`;
-
-})();
-
-/* ── Attendance Monthly Stats ── */
-(function loadAttMonthlyStats() {
-    const userId = sessionStorage.getItem('loggedInUser');
-    if (!userId) return;
-
-    const now = new Date();
-    const y = now.getFullYear();
-    const mo = now.getMonth();
-    const today = now.getDate();
-
-    // 이번 달 1일~오늘 중 평일(월~금)만 수집
-    const workdays = [];
-    for (let d = 1; d <= today; d++) {
-        const dow = new Date(y, mo, d).getDay();
-        if (dow !== 0 && dow !== 6) {
-            const mm = String(mo + 1).padStart(2, '0');
-            const dd = String(d).padStart(2, '0');
-            workdays.push(`${y}-${mm}-${dd}`);
-        }
-    }
-    const total = workdays.length;
-    if (total === 0) return;
-
-    // admin attendTime 기준 읽기 (없으면 08:00)
-    database.ref('settings/config/attendTime').once('value', snap => {
-        const stdHour = parseInt(snap.val() || '8', 10);
-
-        const promises = workdays.map(dateStr =>
-            database.ref(`attendance/${dateStr}/${userId}`).once('value')
-                .then(s => ({ date: dateStr, val: s.val() }))
-        );
-
-        Promise.all(promises).then(results => {
-            let inCount = 0, lateCount = 0, outCount = 0;
-
-results.forEach(({ val }) => {
-    if (!val) return;
-
-    if (val.attend) {
-        inCount++;
-        if (val.attend.toUpperCase().startsWith('LATE')) {
-            lateCount++;
-        }
-    }
-
-    if (val.leave) outCount++;
-});
-
-            const inPct   = Math.round((inCount   / total)   * 100);
-            const latePct = inCount > 0 ? Math.round((lateCount / inCount) * 100) : 0;
-            const outPct  = Math.round((outCount  / total)   * 100);
-
-            document.getElementById('att-in-stat').textContent   = `${inCount}/${total}`;
-            document.getElementById('att-in-pct').textContent    = `${inPct}%`;
-            document.getElementById('att-late-stat').textContent = `${lateCount}/${inCount}`;
-            document.getElementById('att-late-pct').textContent  = `${latePct}%`;
-            document.getElementById('att-out-stat').textContent  = `${outCount}/${total}`;
-            document.getElementById('att-out-pct').textContent   = `${outPct}%`;
-        });
-    });
-})();
-
-/* ── Work Report Monthly Stats ── */
-(function loadReportMonthlyStats() {
-    const userId = sessionStorage.getItem('loggedInUser');
-    if (!userId) return;
-
-    const now = new Date();
-    const y = now.getFullYear();
-    const mo = now.getMonth();
-    const today = now.getDate();
-
-    // 이번 달 평일(월~금)만 수집
-    const workdays = [];
-    for (let d = 1; d <= today; d++) {
-        const dow = new Date(y, mo, d).getDay();
-        if (dow !== 0 && dow !== 6) {
-            const mm = String(mo + 1).padStart(2, '0');
-            const dd = String(d).padStart(2, '0');
-            workdays.push(`${y}-${mm}-${dd}`);
-        }
-    }
-    const total = workdays.length;
-    if (total === 0) return;
-
-    const promises = workdays.map(dateStr =>
-        database.ref(`reports/${dateStr}/${userId}`).once('value')
-            .then(s => ({ date: dateStr, val: s.val() }))
-    );
-
-    Promise.all(promises).then(results => {
-        let doneCount = 0, sumCount = 0;
-
-        results.forEach(({ val }) => {
-            if (!val) return;
-
-            // report 저장 여부 — todo 필드 존재시 카운트
-            if (val.todo && val.todo.trim() !== '') {
-                doneCount++;
-
-                // summary 항목 입력 여부
-                if (val.summary && val.summary.trim() !== '') {
-                    sumCount++;
-                }
-            }
-        });
-
-        const donePct = Math.round((doneCount / total)   * 100);
-        const sumPct  = doneCount > 0 ? Math.round((sumCount / doneCount) * 100) : 0;
-
-        document.getElementById('rpt-done-stat').textContent = `${doneCount}/${total}`;
-        document.getElementById('rpt-done-pct').textContent  = `${donePct}%`;
-        document.getElementById('rpt-sum-stat').textContent  = `${sumCount}/${doneCount}`;
-        document.getElementById('rpt-sum-pct').textContent   = `${sumPct}%`;
-    });
-})();
-
-/* ── Calendar Monthly Schedule ── */
-(function loadCalendarMonthlyStats() {
-    const userId = sessionStorage.getItem('loggedInUser');
-    if (!userId) return;
-
-    const now = new Date();
-    const y = now.getFullYear();
-    const mo = now.getMonth();
-    const mm = String(mo + 1).padStart(2, '0');
-    const monthStart = `${y}-${mm}-01`;
-    const lastDay = new Date(y, mo + 1, 0).getDate();
-    const monthEnd = `${y}-${mm}-${String(lastDay).padStart(2, '0')}`;
-
-    const listEl = document.getElementById('cal-schedule-list');
-    if (!listEl) return;
-
-    database.ref('shared_schedules').once('value', snap => {
-        const raw = snap.val();
-        if (!raw) {
-            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No schedule</div>`;
-            return;
-        }
-
-        // 이번 달에 걸치는 항목 필터 (start <= monthEnd && end >= monthStart)
-        const all = Object.values(raw)
-            .filter(v => v && typeof v === 'object')
-            .filter(v => {
-                const s = v.start || '';
-                const e = v.end   || v.start || '';
-                return s <= monthEnd && e >= monthStart;
-            })
-            .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-
-        if (all.length === 0) {
-            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No schedule this month</div>`;
-            return;
-        }
-
-        // author 기준 색상 (본인=cyan, 타인=muted계열)
-        const authorColors = ['var(--cyan)','var(--violet)','var(--gold)','#10b981','var(--rose)','var(--blue)'];
-        const authorMap = {};
-        let colorIdx = 0;
-        const getAuthorColor = (author) => {
-            if (author === userId) return 'var(--cyan)';
-            if (!authorMap[author]) { authorMap[author] = authorColors[colorIdx++ % authorColors.length]; }
-            return authorMap[author];
-        };
-
-        listEl.innerHTML = all.slice(0, 4).map(v => {
-            const title   = v.title || '(No title)';
-            const author  = v.author || '--';
-            const color   = getAuthorColor(author);
-
-            // 날짜 표시: 단일일 vs 기간
-            const s = v.start || '';
-            const e = v.end   || v.start || '';
-            const sDisp = s.substring(5).replace('-', '/');
-            const eDisp = e.substring(5).replace('-', '/');
-            const dateDisp = (s === e) ? sDisp : `${sDisp}~${eDisp}`;
-
-            return `
-            <div style="width:100%;display:flex;flex-direction:column;gap:1px;
-                        padding:3px 5px;border-radius:5px;
-                        background:rgba(255,255,255,0.04);
-                        border-left:2px solid ${color};
-                        box-sizing:border-box;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:2px;">
-                    <span style="font-size:clamp(7px,1.5vw,9px);font-weight:700;color:#fff;
-                                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-                                 max-width:65%;">${title}</span>
-                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
-                                 white-space:nowrap;flex-shrink:0;">${dateDisp}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-size:clamp(6px,1.2vw,8px);color:${color};
-                                 font-weight:700;">${author}</span>
-                    ${v.allDay ? `<span style="font-size:clamp(5px,1.1vw,7px);color:var(--muted);">ALL DAY</span>` : ''}
-                </div>
-            </div>`;
-        }).join('');
-
-        if (all.length > 4) {
-            listEl.innerHTML += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
-                                             text-align:right;padding-top:1px;">+${all.length - 4} more</div>`;
-        }
-    });
-})();
-
-/* ── Vacation Monthly Stats ── */
-(function loadVacationMonthlyStats() {
-    const userId = sessionStorage.getItem('loggedInUser');
-    if (!userId) return;
-
-    const now = new Date();
-    const y = now.getFullYear();
-    const mo = now.getMonth();
-    const mm = String(mo + 1).padStart(2, '0');
-    const monthStart = `${y}-${mm}-01`;
-    const lastDay = new Date(y, mo + 1, 0).getDate();
-    const monthEnd = `${y}-${mm}-${String(lastDay).padStart(2, '0')}`;
-
-    const listEl = document.getElementById('vac-schedule-list');
-    if (!listEl) return;
-
-    // leaves 전체 읽기 (모든 유저)
-    database.ref('leaves').once('value', snap => {
-        const raw = snap.val();
-        if (!raw) {
-            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No vacation</div>`;
-            return;
-        }
-
-        const myItems    = [];  // 본인 approved
-        const otherItems = [];  // 타인 approved
-
-        // leaves/{userName}/{year}/{recordId}
-        Object.entries(raw).forEach(([userName, yearData]) => {
-            if (!yearData || typeof yearData !== 'object') return;
-            Object.values(yearData).forEach(yearRecords => {
-                if (!yearRecords || typeof yearRecords !== 'object') return;
-                Object.values(yearRecords).forEach(v => {
-                    if (!v || v.status !== 'Approved') return;
-                    const s = v.startDate || '';
-                    const e = v.endDate   || v.startDate || '';
-                    // 이번 달에 걸치는 항목만
-                    if (s > monthEnd || e < monthStart) return;
-
-                    const item = {
-                        name:      userName,
-                        startDate: s,
-                        endDate:   e,
-                        type:      v.type || '',
-                        days:      v.totalWeekdays || '',
-                        reason:    v.reason || '',
-                    };
-
-                    if (userName === userId) myItems.push(item);
-                    else otherItems.push(item);
-                });
-            });
-        });
-
-        // 날짜순 정렬
-        const sortByDate = arr => arr.sort((a, b) => a.startDate.localeCompare(b.startDate));
-        sortByDate(myItems);
-        sortByDate(otherItems);
-
-        if (myItems.length === 0 && otherItems.length === 0) {
-            listEl.innerHTML = `<div style="font-size:clamp(7px,1.5vw,9px);color:var(--muted);text-align:center;">No approved vacation this month</div>`;
-            return;
-        }
-
-        const typeColor = {
-            'AL':  'var(--cyan)',
-            'PEL': 'var(--gold)',
-            'SL':  'var(--rose)',
-            'UL':  'var(--muted)',
-        };
-        const getTypeColor = t => typeColor[t] || 'var(--violet)';
-
-        const renderItem = (v, isMine) => {
-            const sDisp = v.startDate.substring(5).replace('-', '/');
-            const eDisp = v.endDate.substring(5).replace('-', '/');
-            const dateDisp = (v.startDate === v.endDate) ? sDisp : `${sDisp}~${eDisp}`;
-            const color = isMine ? 'var(--cyan)' : 'var(--muted)';
-            const tColor = getTypeColor(v.type);
-            const daysDisp = v.days ? `${v.days}d` : '';
-
-            return `
-            <div style="width:100%;display:flex;flex-direction:column;gap:1px;
-                        padding:3px 5px;border-radius:5px;
-                        background:${isMine ? 'rgba(6,182,212,0.06)' : 'rgba(255,255,255,0.03)'};
-                        border-left:2px solid ${color};
-                        box-sizing:border-box;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:2px;">
-                    <span style="font-size:clamp(7px,1.5vw,9px);font-weight:700;
-                                 color:${color};white-space:nowrap;flex-shrink:0;">${v.name}</span>
-                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
-                                 white-space:nowrap;">${dateDisp}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-size:clamp(6px,1.2vw,8px);color:${tColor};
-                                 font-weight:700;">${v.type}</span>
-                    <span style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);">${daysDisp}</span>
-                </div>
-            </div>`;
-        };
-
-        let html = '';
-
-        // ── 본인 섹션
-        if (myItems.length > 0) {
-            html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--cyan);
-                                  font-weight:900;letter-spacing:0.1em;
-                                  margin-bottom:2px;">MY LEAVE</div>`;
-            html += myItems.map(v => renderItem(v, true)).join('');
-        }
-
-        // ── 타인 섹션
-        if (otherItems.length > 0) {
-            html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
-                                  font-weight:900;letter-spacing:0.1em;
-                                  margin-top:${myItems.length > 0 ? '5px' : '0'};
-                                  margin-bottom:2px;">TEAM LEAVE</div>`;
-            const showOthers = otherItems.slice(0, 3);
-            html += showOthers.map(v => renderItem(v, false)).join('');
-            if (otherItems.length > 3) {
-                html += `<div style="font-size:clamp(6px,1.2vw,8px);color:var(--muted);
-                                      text-align:right;padding-top:1px;">+${otherItems.length - 3} more</div>`;
-            }
-        }
-
-        listEl.innerHTML = html;
-    });
-})();
-
-        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-        const now = new Date();
-        document.getElementById('dayName').textContent = days[now.getDay()];
-        document.getElementById('dayNumber').textContent = String(now.getDate()).padStart(2, '0');
-
-        /* ── [기능 5] 4D 틸트 효과 (기존 유지) ── */
-        if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
-            document.querySelectorAll('.menu-card').forEach(card => {
-                let targetRotateX = 0, targetRotateY = 0, currentRotateX = 0, currentRotateY = 0, rafId = null;
-                const lerp = (s, e, f) => s + (e - s) * f;
-                const animate = () => {
-                    currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
-                    currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
-                    card.style.transform = `perspective(2000px) translateY(-15px) translateZ(60px) scale(1.05) rotateX(${8 + currentRotateX}deg) rotateY(${currentRotateY}deg)`;
-                    rafId = requestAnimationFrame(animate);
-                };
-                card.addEventListener('mouseenter', () => rafId = requestAnimationFrame(animate));
-                card.addEventListener('mousemove', e => {
-                    const rect = card.getBoundingClientRect();
-                    targetRotateX = -((e.clientY - (rect.top + rect.height/2)) / (rect.height/2)) * 10;
-                    targetRotateY = ((e.clientX - (rect.left + rect.width/2)) / (rect.width/2)) * 10;
-                });
-                card.addEventListener('mouseleave', () => {
-                    cancelAnimationFrame(rafId);
-                    targetRotateX = 0; targetRotateY = 0;
-                    card.style.transform = '';
-                });
-            });
-        }
-    })();
 </script>
 
 </body>
