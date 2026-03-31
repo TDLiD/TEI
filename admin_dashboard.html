@@ -675,82 +675,167 @@ window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         });
     };
 
-    window.updateQuickStats = function() {
-        const today = new Date(), todayStr = today.toLocaleDateString('sv-SE');
+   // updateQuickStats 함수 내의 Attendance 부분(A) 전체 교체
+window.updateQuickStats = function() {
+    const today = new Date(), todayStr = today.toLocaleDateString('sv-SE');
 
-        // A. Attendance
-        db.ref('users').on('value', snap => {
-            const allStaff = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-            db.ref(`attendance/${todayStr}`).on('value', attSnap => {
-                const att = attSnap.val() || {};
-                let checked = 0, pNames = [], lNames = [];
-                Object.entries(att).forEach(([n, i]) => {
-                    if (n.toLowerCase() === 'admin') return;
-                    checked++; pNames.push(n);
-                    if (i && i.attend && i.attend.includes("LATE")) lNames.push(n);
-                });
-                const miss = allStaff.filter(n => !pNames.includes(n));
-                const el = document.getElementById('stat_attendance');
-                if (el) el.innerHTML = `
-                    <div class="db-stat-value blue">${checked}/${allStaff.length}</div>
-                    <div class="db-stat-sub" title="${miss.join(', ')}">${miss.length ? '✗ ' + miss.join(', ') : '✓ All Checked'}</div>
-                    ${lNames.length ? `<div class="db-stat-late">⚠ Late: ${lNames.join(', ')}</div>` : ''}`;
-            });
-        });
-
-        // B. Last Leave
-        const findLastActiveData = () => {
-            let d = new Date(today), attempts = 0;
-            const tryNext = (d) => {
-                d.setDate(d.getDate() - 1);
-                const dStr = d.toLocaleDateString('sv-SE'), dayNum = d.getDate();
-                db.ref(`attendance/${dStr}`).once('value', snap => {
-                    const data = snap.val(); attempts++;
-                    const has = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
-                    if (has || attempts >= 10) renderLastLeave(data || {}, dStr, dayNum);
-                    else tryNext(d);
-                });
-            };
-            const renderLastLeave = (yAtt, dStr, dayNum) => {
-                db.ref('users').once('value', uSnap => {
-                    const total = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
-                    let html = '', cnt = 0;
-                    Object.entries(yAtt).forEach(([n, i]) => {
-                        if (n.toLowerCase() === 'admin') return;
-                        if (i && typeof i === 'object' && i.leave && i.leave.trim()) { cnt++; html += `<div style="font-size:9px;color:#94a3b8;font-weight:700;margin-top:2px;">${n} ${i.leave}</div>`; }
+    // A. Attendance (수정됨)
+    db.ref('users').on('value', snap => {
+        const allStaff = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+        db.ref(`attendance/${todayStr}`).on('value', attSnap => {
+            const att = attSnap.val() || {};
+            let attendedList = []; // 출석한 직원 리스트
+            
+            Object.entries(att).forEach(([name, info]) => {
+                if (name.toLowerCase() === 'admin') return;
+                
+                if (typeof info === 'object' && info.attend) {
+                    const timeMatch = info.attend.match(/(\d{1,2}:\d{2})/);
+                    const inTime = timeMatch ? timeMatch[1] : '--:--';
+                    const isLate = info.attend.includes('LATE');
+                    
+                    let outTime = '--:--';
+                    if (info.leave) {
+                        const outMatch = info.leave.match(/(\d{1,2}:\d{2})/);
+                        outTime = outMatch ? outMatch[1] : info.leave;
+                    }
+                    
+                    attendedList.push({
+                        name: name,
+                        inTime: inTime,
+                        outTime: outTime,
+                        isLate: isLate
                     });
-                    const ord = n => { if(n>3&&n<21) return 'th'; switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';} };
-                    const lbl = document.getElementById('yesterday_leave_label');
-                    if (lbl) lbl.innerText = `Last Leave (${dayNum}${ord(dayNum)})`;
-                    const el = document.getElementById('stat_leave_yesterday');
-                    if (el) el.innerHTML = `<div class="db-stat-value rose">${cnt}/${total}</div><div style="margin-top:4px;">${cnt > 0 ? html : '<span style="font-size:8px;color:#334155;font-weight:700;">(No Records)</span>'}</div>`;
-                });
-            };
-            tryNext(d);
-        };
-        findLastActiveData();
+                }
+            });
+            
+            // 시간순 정렬
+            attendedList.sort((a, b) => a.inTime.localeCompare(b.inTime));
+            
+            // HTML 생성
+            const el = document.getElementById('stat_attendance');
+            if (el) {
+                let listHtml = '';
+                if (attendedList.length > 0) {
+                    listHtml = attendedList.map(staff => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,0.3);">
+                            <span style="font-size:9px;font-weight:900;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${staff.name}</span>
+                            <div style="display:flex;gap:4px;align-items:center;">
+                                <span style="font-size:8px;font-weight:800;color:${staff.isLate ? '#f87171' : '#34d399'};font-family:monospace;">${staff.inTime}</span>
+                                <span style="font-size:8px;color:#334155;">→</span>
+                                <span style="font-size:8px;font-weight:700;color:${staff.outTime === '--:--' ? '#334155' : '#60a5fa'};font-family:monospace;">${staff.outTime}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    listHtml = '<span style="font-size:9px;color:#334155;font-style:italic;">No attendance yet</span>';
+                }
+                
+                el.innerHTML = `
+                    <div class="db-stat-value blue">${attendedList.length}/${allStaff.length}</div>
+                    <div style="margin-top:8px;max-height:120px;overflow-y:auto;padding-right:4px;" class="custom-scrollbar">
+                        ${listHtml}
+                    </div>
+                `;
+            }
+        });
+    });
 
-        // C. Reports
-        db.ref(`reports/${todayStr}`).on('value', snap => {
-            const reported = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+    // B. Last Leave (기존 코드 유지)
+    const findLastActiveData = () => {
+        let d = new Date(today), attempts = 0;
+        const tryNext = (d) => {
+            d.setDate(d.getDate() - 1);
+            const dStr = d.toLocaleDateString('sv-SE'), dayNum = d.getDate();
+            db.ref(`attendance/${dStr}`).once('value', snap => {
+                const data = snap.val(); attempts++;
+                const has = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
+                if (has || attempts >= 10) renderLastLeave(data || {}, dStr, dayNum);
+                else tryNext(d);
+            });
+        };
+        const renderLastLeave = (yAtt, dStr, dayNum) => {
             db.ref('users').once('value', uSnap => {
                 const total = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
-                const el = document.getElementById('stat_pending');
-                if (el) el.innerHTML = `<div class="db-stat-value amber">${reported.length}/${total}</div><div class="db-stat-sub" title="${reported.join(', ')}">${reported.length ? reported.join(', ') : '(No Reports Yet)'}</div>`;
+                let html = '', cnt = 0;
+                Object.entries(yAtt).forEach(([n, i]) => {
+                    if (n.toLowerCase() === 'admin') return;
+                    if (i && typeof i === 'object' && i.leave && i.leave.trim()) { cnt++; html += `<div style="font-size:9px;color:#94a3b8;font-weight:700;margin-top:2px;">${n} ${i.leave}</div>`; }
+                });
+                const ord = n => { if(n>3&&n<21) return 'th'; switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';} };
+                const lbl = document.getElementById('yesterday_leave_label');
+                if (lbl) lbl.innerText = `Last Leave (${dayNum}${ord(dayNum)})`;
+                const el = document.getElementById('stat_leave_yesterday');
+                if (el) el.innerHTML = `<div class="db-stat-value rose">${cnt}/${total}</div><div style="margin-top:4px;">${cnt > 0 ? html : '<span style="font-size:8px;color:#334155;font-weight:700;">(No Records)</span>'}</div>`;
             });
-        });
-
-        // D. Schedules
-        db.ref('shared_schedules').on('value', snap => {
-            let cnt = 0;
-            Object.values(snap.val() || {}).forEach(ev => {
-                const s = (ev.start||ev.startDate||'').split('T')[0], e = (ev.end||ev.endDate||s).split('T')[0];
-                if (s && e && todayStr >= s && todayStr <= e) cnt++;
-            });
-            const el = document.getElementById('stat_schedules');
-            if (el) el.innerHTML = `<div class="db-stat-value purple">${cnt}</div>`;
-        });
+        };
+        tryNext(d);
     };
+    findLastActiveData();
+
+// C. Reports (어제 작성자 리스트 표시 버전)
+db.ref(`reports/${todayStr}`).on('value', snap => {
+    const todayReported = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+    
+    db.ref('users').once('value', uSnap => {
+        const allStaff = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+        const total = allStaff.length;
+        
+        // 어제 날짜 계산
+        const yesterday = new Date(); // today 변수가 선언되어 있다면 new Date(today) 사용
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
+        
+        // 어제 리포트 가져오기
+        db.ref(`reports/${yesterdayStr}`).once('value', ySnap => {
+            // 어제 실제로 리포트를 작성한 스태프 리스트
+            const yesterdayReported = Object.keys(ySnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+            
+            const el = document.getElementById('stat_pending');
+            if (el) {
+                let yesterdayHtml = '';
+                
+                if (yesterdayReported.length > 0) {
+                    // 작성자가 있을 경우 초록색 테마로 리스트 표시
+                    yesterdayHtml = `
+                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);">
+                            <div style="font-size:8px;color:#34d399;font-weight:900;text-transform:uppercase;margin-bottom:4px;">✓ Yesterday Completed</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:3px;">
+                                ${yesterdayReported.map(n => `<span style="font-size:8px;color:#f1f5f9;font-weight:700;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);padding:2px 6px;border-radius:4px;">${n}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 작성자가 아무도 없을 경우
+                    yesterdayHtml = `
+                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);">
+                            <div style="font-size:8px;color:#94a3b8;font-weight:900;text-transform:uppercase;">No reports from yesterday</div>
+                        </div>
+                    `;
+                }
+                
+                el.innerHTML = `
+                    <div class="db-stat-value amber">${todayReported.length}/${total}</div>
+                    <div class="db-stat-sub" title="${todayReported.join(', ')}">${todayReported.length ? todayReported.join(', ') : '(No Reports Yet)'}</div>
+                    ${yesterdayHtml}
+                `;
+            }
+        });
+    });
+});
+
+    // D. Schedules (기존 코드 유지)
+    db.ref('shared_schedules').on('value', snap => {
+        let cnt = 0;
+        Object.values(snap.val() || {}).forEach(ev => {
+            const s = (ev.start||ev.startDate||'').split('T')[0], e = (ev.end||ev.endDate||s).split('T')[0];
+            if (s && e && todayStr >= s && todayStr <= e) cnt++;
+        });
+        const el = document.getElementById('stat_schedules');
+        if (el) el.innerHTML = `<div class="db-stat-value purple">${cnt}</div>`;
+    });
+};
+
 
 // ── Calendar State ──
 const calState = {

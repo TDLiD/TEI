@@ -379,12 +379,14 @@ async function updateAdminWeather() {
 
 async function checkStaffBirthdays() {
     const today = new Date();
-    const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const tMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const lunar = Lunar.fromDate(today);
-    const lMonthDay = `${String(lunar.getMonth()).padStart(2,'0')}-${String(lunar.getDay()).padStart(2,'0')}`;
+    const lMonthDay = `${String(lunar.getMonth()).padStart(2, '0')}-${String(lunar.getDay()).padStart(2, '0')}`;
+
     db.ref('users').once('value', snap => {
         const users = snap.val();
         if (!users) return;
+
         let birthdayMessages = [];
         Object.keys(users).forEach(id => {
             const u = users[id];
@@ -392,23 +394,39 @@ async function checkStaffBirthdays() {
             const bMonthDay = u.birthday.substring(5);
             const type = u.birthType || "Solar";
             const bDateFull = u.birthday.replace(/-/g, '.');
+
             const isSolarMatch = (type === "Solar" || type === "양력") && bMonthDay === tMonthDay;
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
-            if (isSolarMatch || isLunarMatch) birthdayMessages.push(`${id}: ${bDateFull}`);
+
+            if (isSolarMatch || isLunarMatch) {
+                birthdayMessages.push(`${id}: ${bDateFull}`);
+            }
         });
+
+        // 1. 사용할 모든 DOM 요소를 먼저 선언합니다. (ReferenceError 방지)
         const alertBox = document.getElementById('adminBirthdayAlert');
         const nameText = document.getElementById('adminBirthdayNames');
-        if (alertBox && nameText) {
-            if (birthdayMessages.length > 0) { alertBox.classList.remove('hidden'); nameText.innerHTML = birthdayMessages.join('<br>'); }
-            else alertBox.classList.add('hidden');
-        }
         const mobAlert = document.getElementById('mobileBirthdayAlert');
         const mobNames = document.getElementById('mobileBirthdayNames');
-        if (birthdayMessages.length > 0) {
-            if (mobAlert) mobAlert.classList.remove('hidden');
-            if (mobNames) mobNames.innerHTML = birthdayMessages.join('<br>');
-        } else {
-            if (mobAlert) mobAlert.classList.add('hidden');
+
+        // 2. PC 버전 업데이트 (요소가 존재할 때만 실행)
+        if (alertBox && nameText) {
+            if (birthdayMessages.length > 0) {
+                alertBox.classList.remove('hidden');
+                nameText.innerHTML = birthdayMessages.join('<br>');
+            } else {
+                alertBox.classList.add('hidden');
+            }
+        }
+
+        // 3. 모바일 버전 업데이트 (요소가 존재할 때만 실행)
+        if (mobAlert && mobNames) {
+            if (birthdayMessages.length > 0) {
+                mobAlert.classList.remove('hidden');
+                mobNames.innerHTML = birthdayMessages.join('<br>');
+            } else {
+                mobAlert.classList.add('hidden');
+            }
         }
     });
 }

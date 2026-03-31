@@ -97,7 +97,7 @@
     text-transform: uppercase; letter-spacing: 0.14em;
 }
 .sm-hero-name {
-    font-size: 22px; font-weight: 900; color: var(--text);
+    font-size: 18px; font-weight: 900; color: var(--text);
     letter-spacing: -0.02em; margin-top: 2px; line-height: 1;
     text-shadow: 0 0 20px rgba(59,130,246,0.2);
 }
@@ -486,20 +486,6 @@
 .sm-cal-table td.sun-cell .sm-cal-date,
 .sm-cal-table td.sat-cell .sm-cal-date { font-size: 7px; }
 
-/* ── Streak Card ── */
-#streakCard {
-    background: linear-gradient(145deg, var(--surface2), var(--surface)) !important;
-    border: 1px solid var(--border) !important;
-    border-top: 1px solid var(--border2) !important;
-    border-radius: 14px !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 14px rgba(0,0,0,0.35) !important;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-#streakCard:hover {
-    transform: translateY(-3px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 10px 24px rgba(245,158,11,0.12) !important;
-}
-
 /* ── Month Summary Card ── */
 #monthSummaryCard {
     position: relative;
@@ -509,6 +495,71 @@
     position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
 }
+#allStaffTodayCard:hover {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 20px rgba(59,130,246,0.1);
+    transition: all 0.25s ease;
+}
+.staff-badge {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 7px;
+    font-weight: 900;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.staff-badge:hover { 
+    border-color: var(--blue); 
+    background: rgba(59,130,246,0.1);
+    transform: scale(1.05);
+}
+.staff-badge.present { color: var(--green); border-color: rgba(16,185,129,0.3); }
+.staff-badge.late { color: var(--red); border-color: rgba(244,63,94,0.3); }
+.staff-badge.absent { color: var(--muted); border-color: var(--border); opacity: 0.5; }
+.staff-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: all 0.2s;
+}
+.staff-row:hover {
+    border-color: var(--blue);
+    background: rgba(59,130,246,0.08);
+    transform: translateX(2px);
+}
+.staff-name {
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.staff-time {
+    font-size: 8px;
+    font-weight: 800;
+    font-family: 'SF Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 5px;
+}
+.staff-time.present {
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(16,185,129,0.2);
+}
+.staff-time.late {
+    color: var(--red);
+    background: var(--red-dim);
+    border: 1px solid rgba(244,63,94,0.2);
+}
+
 </style>
 
 <div class="sm-root">
@@ -538,17 +589,13 @@
             <div id="todayOutDisplay" class="sm-today-val out">—</div>
         </div>
     </div>
-<!-- leaveStatusAlert div 바로 위에 추가 -->
-<div id="streakCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
-    <span style="font-size:22px;">🔥</span>
-    <div>
-        <div style="font-size:8px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Attendance Streak</div>
-        <div style="display:flex;align-items:baseline;gap:4px;margin-top:2px;">
-            <span id="streakCount" style="font-size:20px;font-weight:900;color:var(--amber);">0</span>
-            <span style="font-size:9px;font-weight:700;color:var(--muted);">consecutive days</span>
-        </div>
+
+<div id="allStaffTodayCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:8px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">👥 Today's Attendance</div>
+        <div id="allStaffCount" style="font-size:9px;font-weight:800;color:var(--blue);">0</div>
     </div>
-    <div id="streakBadge" style="margin-left:auto;display:none;background:var(--amber-dim);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:6px;font-size:8px;font-weight:900;color:var(--amber);"></div>
+    <div id="allStaffList" style="display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto;" class="no-scrollbar"></div>
 </div>
 
 </div>
@@ -1063,40 +1110,72 @@ function updateMonthSummary(data) {
 // renderCalendar 안 updateAttendanceStats(data); 호출 바로 아래에 추가
 updateMonthSummary(data);
 
-// renderCalendar 함수 안 updateMonthSummary 호출 아래에 추가
-async function updateStreak() {
-    const leaveTypes = ['PEL','ANL','HAL','SIL','SPL','WO'];
-    let streak = 0;
-    const today = getJakartaDate();
-
-    for (let i = 0; i <= 60; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dow = d.getDay();
-        if (dow === 0 || dow === 6) continue; // 주말 제외
-
-        const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const rec = data[dStr]?.[user];
-
-        if (!rec) break; // 기록 없으면 스트릭 종료
-        if (typeof rec === 'string' && leaveTypes.includes(rec)) continue; // 휴가는 스트릭 유지
-        if (typeof rec === 'object' && rec.attend) { streak++; continue; }
-        break;
-    }
-
-    const countEl = document.getElementById('streakCount');
-    const badgeEl = document.getElementById('streakBadge');
-    if (countEl) countEl.innerText = streak;
-    if (badgeEl) {
-        if (streak >= 30)      { badgeEl.style.display='block'; badgeEl.innerText='🏆 LEGENDARY'; }
-        else if (streak >= 20) { badgeEl.style.display='block'; badgeEl.innerText='💎 DIAMOND'; }
-        else if (streak >= 10) { badgeEl.style.display='block'; badgeEl.innerText='⭐ EXCELLENT'; }
-        else if (streak >= 5)  { badgeEl.style.display='block'; badgeEl.innerText='✨ GOOD'; }
-        else badgeEl.style.display = 'none';
-    }
+// updateAllStaffToday 함수 전체 교체
+// updateAllStaffToday 함수 전체 교체
+async function updateAllStaffToday() {
+    const todayStr = getJakartaDate().toISOString().split('T')[0];
+    
+    // 모든 직원 목록 가져오기
+    const usersSnap = await db.ref('users').once('value');
+    const allUsers = usersSnap.val() || {};
+    const userList = Object.keys(allUsers).filter(uid => allUsers[uid].role !== 'admin');
+    
+    // 오늘 출석 데이터 가져오기
+    const attSnap = await db.ref(`attendance/${todayStr}`).once('value');
+    const attData = attSnap.val() || {};
+    
+    const attendedStaff = [];
+    
+    userList.forEach(uid => {
+        const displayName = allUsers[uid].displayName || uid;
+        const rec = attData[uid];
+        
+        if (rec) {
+            if (typeof rec === 'object' && rec.attend) {
+                const timeMatch = rec.attend.match(/(\d{1,2}:\d{2})/);
+                const inTime = timeMatch ? timeMatch[1] : '--:--';
+                const isLate = rec.attend.includes('LATE');
+                
+                // Checkout 시간 추출
+                let outTime = '--:--';
+                if (rec.leave) {
+                    const outMatch = rec.leave.match(/(\d{1,2}:\d{2})/);
+                    outTime = outMatch ? outMatch[1] : rec.leave;
+                }
+                
+                attendedStaff.push({
+                    name: displayName,
+                    inTime: inTime,
+                    outTime: outTime,
+                    isLate: isLate
+                });
+            }
+        }
+    });
+    
+    // 시간순 정렬 (빠른 시간부터)
+    attendedStaff.sort((a, b) => a.inTime.localeCompare(b.inTime));
+    
+    const rows = attendedStaff.map(staff => 
+        `<div class="staff-row">
+            <span class="staff-name">${staff.name}</span>
+            <div style="display:flex;gap:4px;align-items:center;">
+                <span class="staff-time ${staff.isLate ? 'late' : 'present'}">${staff.inTime}</span>
+                <span style="font-size:8px;color:var(--muted);">→</span>
+                <span class="staff-time" style="color:${staff.outTime === '--:--' ? 'var(--muted)' : '#60a5fa'};background:${staff.outTime === '--:--' ? 'rgba(100,116,139,0.1)' : 'rgba(59,130,246,0.12)'};border:1px solid ${staff.outTime === '--:--' ? 'rgba(100,116,139,0.15)' : 'rgba(59,130,246,0.2)'};">${staff.outTime}</span>
+            </div>
+        </div>`
+    );
+    
+    const listEl = document.getElementById('allStaffList');
+    const countEl = document.getElementById('allStaffCount');
+    
+    if (listEl) listEl.innerHTML = rows.length > 0 ? rows.join('') : '<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">No attendance yet</div>';
+    if (countEl) countEl.innerText = `${attendedStaff.length}`;
 }
 
-updateStreak(); // 호출
+// 4. updateAllStaffToday 함수 호출 추가
+updateAllStaffToday();
 
             if(!hasCheckedMissing){checkMissingRecords(data);hasCheckedMissing=true;}
             tbody.innerHTML=''; let dc=1;
