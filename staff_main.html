@@ -1257,54 +1257,6 @@ body::before {
         background-position: 0% 50%;
     }
 }
-/* 1. 이스터에그 이미지 설정 */
-.easter-egg-img {
-    position: fixed;
-    /* 모바일에서는 화면 너비의 40%, PC에서는 최대 500px */
-    width: 40vw !important; 
-    height: 40vw !important;
-    max-width: 500px !important;
-    max-height: 500px !important;
-    
-    z-index: 10000;
-    pointer-events: none;
-    object-fit: cover;
-    border-radius: 20px;
-    display: none;
-    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    /* 모바일 성능을 위해 하드웨어 가속 추가 */
-    will-change: left, top, transform;
-}
-
-/* 2. 화면 이동(궤도) 애니메이션 */
-@keyframes orbitAround {
-    0%   { left: 0%;   top: 0%;   transform: translate(-50%, -50%) rotate(0deg); }
-    25%  { left: 100%;  top: 0%;   transform: translate(-50%, -50%) rotate(90deg); }
-    50%  { left: 100%;  top: 100%; transform: translate(-50%, -50%) rotate(180deg); }
-    75%  { left: 0%;   top: 100%; transform: translate(-50%, -50%) rotate(270deg); }
-    100% { left: 0%;   top: 0%;   transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* 3. 화면 흔들기 애니메이션 */
-@keyframes shake-body {
-    0%, 100% { transform: translate(0, 0); }
-    10%, 30%, 50%, 70%, 90% { transform: translate(-8px, -8px); }
-    20%, 40%, 60%, 80% { transform: translate(8px, 8px); }
-}
-
-/* 흔들기 실행 클래스 */
-.apply-shake {
-    animation: shake-body 0.5s ease-in-out !important;
-}
-
-/* 4. 클릭 영역(Hello) 설정 */
-.greeting {
-    position: relative;
-    z-index: 10;           /* 클릭 우선순위 높임 */
-    cursor: default !important; /* 커서 모양 숨김 */
-    user-select: none;     /* 텍스트 선택(드래그) 방지 */
-}
 </style>
 
 </head>
@@ -1815,75 +1767,6 @@ window.openProfileImagePicker = openProfileImagePicker;
 window.closeProfileModal = closeProfileModal;
 window.selectImgTemp = selectImgTemp;
 window.confirmSaveProfile = confirmSaveProfile;
-
-(function() {
-    const eeImages = [
-        'images/easteregg/image-01.jpg', 'images/easteregg/image-02.jpg',
-        'images/easteregg/image-03.jpg', 'images/easteregg/image-04.jpg',
-        'images/easteregg/image-05.jpg', 'images/easteregg/image-06.jpg',
-        'images/easteregg/image-07.jpg'
-    ];
-
-    window.triggerEasterEgg = function(e) {
-        if(e) {
-            e.preventDefault(); // 모바일 줌/스크롤 방지
-            e.stopPropagation();
-        }
-
-        // 1. 화면 흔들기 효과
-        document.body.classList.remove('apply-shake');
-        void document.body.offsetWidth;
-        document.body.classList.add('apply-shake');
-        setTimeout(() => document.body.classList.remove('apply-shake'), 500);
-
-        // 2. 이미지 질주 로직
-        eeImages.forEach((src, index) => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.className = 'easter-egg-img';
-            
-            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
-            
-            Object.assign(img.style, {
-                filter: `drop-shadow(0 0 20px ${colors[index % colors.length]}) brightness(1.2)`,
-            });
-
-            document.body.appendChild(img);
-
-            setTimeout(() => {
-                img.style.display = 'block';
-                const duration = 8.0 + (Math.random() * 2.0); 
-                const rotations = 2;
-                
-                // 애니메이션 적용
-                img.style.animation = `orbitAround ${duration}s ease-in-out ${rotations} forwards`;
-                
-                // [수정] 전체 애니메이션 시간(duration * rotations)만큼 기다렸다가 제거
-                setTimeout(() => img.remove(), (duration * rotations * 1000) + 100);
-            }, index * 500); 
-        });
-    };
-
-    function initEasterEgg() {
-        const greetingElement = document.querySelector('.greeting');
-        if (greetingElement) {
-            greetingElement.style.cursor = 'default';
-            // PC 클릭과 모바일 터치 모두 대응
-            greetingElement.addEventListener('click', window.triggerEasterEgg);
-            greetingElement.addEventListener('touchstart', window.triggerEasterEgg, {passive: false});
-            console.log("Easter Egg Ready (Hybrid)!"); 
-        }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initEasterEgg);
-    } else {
-        initEasterEgg();
-    }
-    setTimeout(initEasterEgg, 1500);
-})();
-
-
 </script>
 
 </body>
