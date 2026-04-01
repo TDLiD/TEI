@@ -58,7 +58,14 @@ html, body {
 
 body {
     font-family: "Pretendard", system-ui, sans-serif;
-    background: var(--bg);
+    /* 배경 GIF 대신 짙은 배경색을 확실히 지정합니다 */
+    background: var(--bg); 
+    
+    /* 만약 GIF 대신 정지된 배경 이미지를 하나 쓰고 싶다면 아래 줄 주석을 해제하세요 */
+    /* background-image: url('images/background-static.jpg'); */
+    /* background-size: cover; */
+    /* background-position: center; */
+
     color: var(--text);
     display: flex;
     align-items: center;
@@ -651,7 +658,7 @@ body::before {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PROFILE SECTION
+   PROFILE SECTION (수정 기능 제거 버전)
    ══════════════════════════════════════════════════════════════ */
 .profile-container {
     position: relative;
@@ -660,7 +667,9 @@ body::before {
     justify-content: center;
     vertical-align: middle;
     margin-left: 14px;
-    cursor: pointer;
+    /* 클릭할 수 없도록 커서 고정 및 이벤트 제거 */
+    cursor: default; 
+    pointer-events: none; /* 클릭 및 모든 마우스 이벤트 차단 */
     z-index: 10;
     line-height: 0;
 }
@@ -672,194 +681,38 @@ body::before {
     border: 2.5px solid var(--cyan);
     object-fit: cover;
     display: block;
-    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    /* 호버 시 커지는 효과 제거를 위해 transition 유지 혹은 제거 */
     box-shadow: 
         0 0 18px var(--blue-glow),
         0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
+/* 연필 아이콘은 더 이상 필요 없으므로 완전히 숨김 */
 .profile-edit-icon {
-    position: absolute;
-    bottom: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    background: var(--blue);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: white;
-    border: 2px solid var(--bg);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
-    pointer-events: none;
-    z-index: 11;
-    transition: transform 0.3s ease;
+    display: none !important;
 }
 
+/* 호버 시 이미지가 커지거나 테두리가 변하는 효과 제거 */
 .profile-container:hover .profile-img {
-    transform: scale(1.12);
-    border-color: var(--blue);
+    transform: none; /* 확대 방지 */
+    border-color: var(--cyan); /* 기존 색상 유지 */
     box-shadow: 
-        0 0 25px rgba(59, 130, 246, 0.5),
-        0 8px 25px rgba(0, 0, 0, 0.6);
-}
-
-.profile-container:hover .profile-edit-icon {
-    transform: scale(1.1);
+        0 0 18px var(--blue-glow),
+        0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PROFILE MODAL
+   PROFILE MODAL (기능 삭제로 인해 아래 코드는 사실상 삭제해도 무방합니다)
    ══════════════════════════════════════════════════════════════ */
-.profile-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.profile-modal {
-    background: var(--surface);
-    border: 1.5px solid var(--border-2);
-    border-radius: 28px;
-    padding: 28px;
-    width: 90%;
-    max-width: 420px;
-    box-shadow: 
-        0 25px 60px rgba(0, 0, 0, 0.6),
-        0 0 50px rgba(59, 130, 246, 0.2);
-    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.profile-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 14px;
-    margin-top: 22px;
-    max-height: 320px;
-    overflow-y: auto;
-    padding: 12px;
-    align-items: start;
-}
-
-.profile-grid::-webkit-scrollbar {
-    width: 6px;
-}
-
-.profile-grid::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-.profile-grid::-webkit-scrollbar-thumb {
-    background: var(--blue);
-    border-radius: 10px;
-}
-
-.profile-option {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 14px;
-    cursor: pointer;
-    border: 2.5px solid transparent;
-    transition: all 0.3s ease;
-    overflow: hidden;
-    background: var(--surface-2);
-}
-
-.profile-option:hover {
-    border-color: var(--blue);
-    transform: scale(1.08);
-    z-index: 2;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-}
-
-.profile-option img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.profile-option.active {
-    border-color: var(--cyan) !important;
-    box-shadow: 0 0 20px var(--blue-glow);
-    transform: scale(1.08);
-}
-
-/* Modal Footer */
+/* 사용하지 않는 코드이므로 CSS 용량을 줄이려면 파일에서 삭제하세요. */
+.profile-modal-overlay,
+.profile-modal,
+.profile-grid,
+.profile-option,
 .modal-footer {
-    display: flex;
-    gap: 14px;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1.5px solid var(--border);
+    display: none !important;
 }
 
-.modal-btn {
-    flex: 1;
-    padding: 14px;
-    border-radius: 14px;
-    font-weight: 800;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    border: none;
-}
-
-.btn-cancel {
-    background: var(--surface-2);
-    color: var(--text);
-}
-
-.btn-cancel:hover {
-    background: rgba(16, 32, 60, 0.8);
-    transform: translateY(-2px);
-}
-
-.btn-save {
-    background: var(--blue);
-    color: white;
-    box-shadow: 0 5px 18px rgba(59, 130, 246, 0.4);
-}
-
-.btn-save:hover {
-    background: #4a90ff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
-}
-
-.btn-save:disabled {
-    background: var(--muted);
-    cursor: not-allowed;
-    opacity: 0.5;
-}
 
 /* ══════════════════════════════════════════════════════════════
    RESPONSIVE DESIGN - MOBILE OPTIMIZED
@@ -869,6 +722,7 @@ body::before {
 @media (max-width: 480px) {
     body {
         perspective: 1200px; /* 3D 효과 감소 */
+background-color: #03060f; /* 현재 설정된 어두운 남색 배경 */
     }
     
     .content-wrapper {
@@ -1263,8 +1117,6 @@ body::before {
 
 <body>
 
-    <div id="dynamicBg"></div>
-
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
     <div class="orb orb-c"></div>
@@ -1338,39 +1190,12 @@ body::before {
         </div>
     </div>
 
-    <input type="file" id="profileInput" accept="image/*" style="display: none;" />
-
-    <div id="profileCustomModal" class="profile-modal-overlay" onclick="if(event.target===this) closeProfileModal()">
-        <div class="profile-modal">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 id="modalTitle" style="margin:0; font-size:1.3rem; color:white; font-weight:800;">Select Profile</h2>
-                <button onclick="closeProfileModal()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:24px; transition:color 0.3s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--muted)'">&times;</button>
-            </div>
-            <div id="modalBody"></div>
-        </div>
-    </div>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
    GLOBAL CONFIGURATION
    ══════════════════════════════════════════════════════════════ */
 let database;
-let profileListener = null;
-
-const PROFILE_IMAGES = [
-    'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
-    'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
-    'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
-    'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
-    'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
-    'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
-    'image-26.gif', 'image-27.gif',
-    'image-01.jfif', 'image-02.jpg', 'image-03.webp', 'image-04.jfif', 'image-05.jpg',
-    'image-06.webp', 'image-07.jfif', 'image-08.jpg', 'image-09.jfif', 'image-10.jpg',
-    'image-11.jfif', 'image-12.jpg', 'image-13.jfif', 'image-14.jpg', 'image-15.jfif',
-    'image-16.jpg', 'image-17.jfif', 'image-18.jpg', 'image-19.jfif', 'image-20.jpg',
-    'image-21.jfif', 'image-22.jpg', 'image-23.jfif'
-];
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCBYlhoIPDtXnPrKugo_AQ7dYVCEyMyO-w",
@@ -1403,99 +1228,11 @@ const handleLogout = () => {
     }
 };
 
-/* ══════════════════════════════════════════════════════════════
-   PROFILE MANAGEMENT
-   ══════════════════════════════════════════════════════════════ */
-let selectedImgTmp = null;
-
-const openProfileModal = (title, bodyHtml) => {
-    const modal = document.getElementById('profileCustomModal');
-    const titleEl = document.getElementById('modalTitle');
-    const bodyEl = document.getElementById('modalBody');
-    
-    if (titleEl) titleEl.innerText = title;
-    if (bodyEl) bodyEl.innerHTML = bodyHtml;
-    if (modal) modal.style.display = 'flex';
-};
-
-const closeProfileModal = () => {
-    const modal = document.getElementById('profileCustomModal');
-    if (modal) modal.style.display = 'none';
-    selectedImgTmp = null;
-};
-
-const openProfileImagePicker = () => {
-    selectedImgTmp = null;
-    
-    const gridHtml = PROFILE_IMAGES.map(img => `
-        <div onclick="selectImgTemp(this, '${img}')" class="profile-option">
-            <img src="images/profile/${img}" loading="lazy" alt="Profile option">
-        </div>
-    `).join('');
-
-    const fullHtml = `
-        <div class="profile-grid">${gridHtml}</div>
-        <div class="modal-footer">
-            <button class="modal-btn btn-cancel" onclick="closeProfileModal()">Cancel</button>
-            <button id="btnSaveProfile" class="modal-btn btn-save" onclick="confirmSaveProfile()" disabled>Save Profile</button>
-        </div>
-    `;
-    
-    openProfileModal('Change Profile', fullHtml);
-};
-
-const selectImgTemp = (element, fileName) => {
-    document.querySelectorAll('.profile-option').forEach(opt => {
-        opt.classList.remove('active');
-    });
-    
-    element.classList.add('active');
-    selectedImgTmp = fileName;
-    
-    const saveBtn = document.getElementById('btnSaveProfile');
-    if (saveBtn) saveBtn.disabled = false;
-};
-
-const confirmSaveProfile = async () => {
-    if (!selectedImgTmp) return;
-
-    const userId = sessionStorage.getItem('loggedInUser') || 
-                   (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
-    
-    if (!userId) {
-        alert("Session expired. Please login again.");
-        return;
-    }
-
-    const saveBtn = document.getElementById('btnSaveProfile');
-    if (saveBtn) {
-        saveBtn.innerText = "Saving...";
-        saveBtn.disabled = true;
-    }
-
-    try {
-        await database.ref(`users/${userId}/profileImg`).set(selectedImgTmp);
-        closeProfileModal();
-    } catch (error) {
-        console.error('Profile update error:', error);
-        alert("Failed to update profile.");
-        
-        if (saveBtn) {
-            saveBtn.innerText = "Save Profile";
-            saveBtn.disabled = false;
-        }
-    }
-};
 
 const loadProfileImg = (userId) => {
     if (!userId || !database) return;
 
-    // Remove previous listener
-    if (profileListener) {
-        database.ref(`users/${userId}`).off('value', profileListener);
-    }
-
-    profileListener = database.ref(`users/${userId}`).on('value', (snapshot) => {
+    database.ref(`users/${userId}`).on('value', (snapshot) => {
         const userData = snapshot.val() || {};
         const imgFileName = userData.profileImg;
         const displayName = userData.displayName || userId;
@@ -1508,18 +1245,15 @@ const loadProfileImg = (userId) => {
         if (!container) {
             container = document.createElement('div');
             container.className = 'profile-container';
-            container.onclick = openProfileImagePicker;
+            // [삭제함] container.onclick = openProfileImagePicker; <-- 이 줄을 삭제해서 클릭을 막습니다.
             
             const imgEl = document.createElement('img');
             imgEl.className = 'profile-img';
             imgEl.alt = 'Profile';
             
-            const editIcon = document.createElement('div');
-            editIcon.className = 'profile-edit-icon';
-            editIcon.innerHTML = '✏️';
+            // [삭제함] editIcon 생성 및 추가 로직 삭제 (연필 모양 아이콘 제거)
 
             container.appendChild(imgEl);
-            container.appendChild(editIcon);
             
             if (greetingEl && greetingEl.parentNode) {
                 greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
@@ -1565,19 +1299,6 @@ const initDateDisplay = () => {
     if (dayNumberEl) dayNumberEl.textContent = String(now.getDate()).padStart(2, '0');
 };
 
-/* ══════════════════════════════════════════════════════════════
-   DYNAMIC BACKGROUND
-   ══════════════════════════════════════════════════════════════ */
-const setDynamicBackground = () => {
-    const day = new Date().getDate();
-    const imgIndex = ((day - 1) % 10) + 1;
-    const bgEl = document.getElementById('dynamicBg');
-    
-    if (bgEl) {
-        bgEl.style.backgroundImage = `url('images/gif/cats/image-${String(imgIndex).padStart(3, '0')}.gif')`;
-        bgEl.style.opacity = '1';
-    }
-};
 
 /* ══════════════════════════════════════════════════════════════
    3D TILT EFFECT (Desktop only)
@@ -1747,9 +1468,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize date display
     initDateDisplay();
 
-    // Set dynamic background
-    setDynamicBackground();
-
     // Initialize 3D tilt effect (Desktop)
     init3DTiltEffect();
     
@@ -1763,10 +1481,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Expose functions to global scope
 window.navigateTo = navigateTo;
 window.handleLogout = handleLogout;
-window.openProfileImagePicker = openProfileImagePicker;
-window.closeProfileModal = closeProfileModal;
-window.selectImgTemp = selectImgTemp;
-window.confirmSaveProfile = confirmSaveProfile;
+
 </script>
 
 </body>
