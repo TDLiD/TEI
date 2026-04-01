@@ -1257,20 +1257,24 @@ body::before {
         background-position: 0% 50%;
     }
 }
-/* 1. 이스터에그 이미지 설정 (사이즈 조정 및 중복 제거) */
+/* 1. 이스터에그 이미지 설정 */
 .easter-egg-img {
     position: fixed;
-    /* --- 사이즈 조절 영역 --- */
-    width: 500px !important;
-    height: 500px !important;
-    /* ------------------------ */
-    z-index: 10000;      /* 최상단 배치 */
-    pointer-events: none; /* 이미지 때문에 클릭이 막히는 것 방지 */
-    object-fit: cover;   /* 이미지 비율 유지 */
-    border-radius: 20px; /* 모서리 곡률 */
-    display: none;       /* 초기엔 숨김 */
-    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); /* 푸른색 광원 효과 */
-    border: 2px solid rgba(255, 255, 255, 0.2);   /* 미세한 테두리 */
+    /* 모바일에서는 화면 너비의 40%, PC에서는 최대 500px */
+    width: 40vw !important; 
+    height: 40vw !important;
+    max-width: 500px !important;
+    max-height: 500px !important;
+    
+    z-index: 10000;
+    pointer-events: none;
+    object-fit: cover;
+    border-radius: 20px;
+    display: none;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    /* 모바일 성능을 위해 하드웨어 가속 추가 */
+    will-change: left, top, transform;
 }
 
 /* 2. 화면 이동(궤도) 애니메이션 */
@@ -1812,7 +1816,6 @@ window.closeProfileModal = closeProfileModal;
 window.selectImgTemp = selectImgTemp;
 window.confirmSaveProfile = confirmSaveProfile;
 
-// Easter Egg Logic
 (function() {
     const eeImages = [
         'images/easteregg/image-01.jpg', 'images/easteregg/image-02.jpg',
@@ -1822,11 +1825,14 @@ window.confirmSaveProfile = confirmSaveProfile;
     ];
 
     window.triggerEasterEgg = function(e) {
-        if(e) e.stopPropagation(); // 이벤트 전파 방지
+        if(e) {
+            e.preventDefault(); // 모바일 줌/스크롤 방지
+            e.stopPropagation();
+        }
 
         // 1. 화면 흔들기 효과
         document.body.classList.remove('apply-shake');
-        void document.body.offsetWidth; // 리플로우 강제 발생
+        void document.body.offsetWidth;
         document.body.classList.add('apply-shake');
         setTimeout(() => document.body.classList.remove('apply-shake'), 500);
 
@@ -1836,13 +1842,9 @@ window.confirmSaveProfile = confirmSaveProfile;
             img.src = src;
             img.className = 'easter-egg-img';
             
-            // 판타스틱 효과: 랜덤 사이즈 + 네온 효과
-            const randomSize = 500;
             const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
             
             Object.assign(img.style, {
-                width: `${randomSize}px`,
-                height: `${randomSize}px`,
                 filter: `drop-shadow(0 0 20px ${colors[index % colors.length]}) brightness(1.2)`,
             });
 
@@ -1850,39 +1852,37 @@ window.confirmSaveProfile = confirmSaveProfile;
 
             setTimeout(() => {
                 img.style.display = 'block';
-                // 아주 빠르게 3바퀴 질주! (가속도 효과 포함)
                 const duration = 8.0 + (Math.random() * 2.0); 
-               // 2. 가속도 효과를 'linear'(일정하게) 또는 'ease-in-out'(부드럽게)으로 변경
-               // 3. 바퀴 수도 너무 많으면 지겨우니 1~2바퀴 정도로 조절 (아래는 2바퀴)
-               const rotations = 2;
-               img.style.animation = `orbitAround ${duration}s ease-in-out ${rotations} forwards`;                
-               // 애니메이션 종료 후 제거
-                setTimeout(() => img.remove(), (duration * 1000) + 500);
+                const rotations = 2;
+                
+                // 애니메이션 적용
+                img.style.animation = `orbitAround ${duration}s ease-in-out ${rotations} forwards`;
+                
+                // [수정] 전체 애니메이션 시간(duration * rotations)만큼 기다렸다가 제거
+                setTimeout(() => img.remove(), (duration * rotations * 1000) + 100);
             }, index * 500); 
         });
     };
 
-    // 확실한 클릭 바인딩을 위한 함수
     function initEasterEgg() {
         const greetingElement = document.querySelector('.greeting');
         if (greetingElement) {
             greetingElement.style.cursor = 'default';
-            greetingElement.removeAttribute('title');
-            // 기존 이벤트 제거 후 새로 등록 (중복 방지)
-            greetingElement.removeEventListener('click', window.triggerEasterEgg);
+            // PC 클릭과 모바일 터치 모두 대응
             greetingElement.addEventListener('click', window.triggerEasterEgg);
-            console.log("Easter Egg Ready!"); 
+            greetingElement.addEventListener('touchstart', window.triggerEasterEgg, {passive: false});
+            console.log("Easter Egg Ready (Hybrid)!"); 
         }
     }
 
-    // 페이지 로드 즉시 및 1초 후 재시도 (동적 생성 대응)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initEasterEgg);
     } else {
         initEasterEgg();
     }
-    setTimeout(initEasterEgg, 1500); // 넉넉하게 한 번 더 실행
+    setTimeout(initEasterEgg, 1500);
 })();
+
 
 </script>
 
