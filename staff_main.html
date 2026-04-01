@@ -14,34 +14,22 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════════
-   CSS VARIABLES & RESET
+   1. VARIABLES & RESET (최적화)
    ══════════════════════════════════════════════════════════════ */
 :root {
     --bg: #03060f;
     --surface: rgba(8, 18, 36, 0.85);
     --surface-2: rgba(16, 32, 60, 0.6);
-    --surface-glass: rgba(255, 255, 255, 0.05);
-    
     --blue: #3b82f6;
     --blue-glow: rgba(59, 130, 246, 0.25);
     --cyan: #06b6d4;
     --violet: #818cf8;
     --rose: #f43f5e;
-    --gold: #f59e0b;
-        --vh: 1vh;
-
-    --chrome: #e2e8f0;
     --text: #cbd5e1;
     --muted: #475569;
-    
     --border: rgba(255, 255, 255, 0.08);
     --border-2: rgba(255, 255, 255, 0.15);
-    --border-glow: rgba(59, 130, 246, 0.4);
-    
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 40px var(--blue-glow);
+    --vh: 1vh;
 }
 
 *, *::before, *::after {
@@ -54,1063 +42,225 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: var(--bg);
 }
 
 body {
     font-family: "Pretendard", system-ui, sans-serif;
-    /* 배경 GIF 대신 짙은 배경색을 확실히 지정합니다 */
-    background: var(--bg); 
-    
-    /* 만약 GIF 대신 정지된 배경 이미지를 하나 쓰고 싶다면 아래 줄 주석을 해제하세요 */
-    /* background-image: url('images/background-static.jpg'); */
-    /* background-size: cover; */
-    /* background-position: center; */
-
     color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
     -webkit-font-smoothing: antialiased;
-    perspective: 2000px;
     position: relative;
+    /* 과도한 3D 원근법 제거 (부하 방지) */
+    perspective: 1500px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BACKGROUND & ATMOSPHERE
+   2. ATMOSPHERE (부하 감소 처리)
    ══════════════════════════════════════════════════════════════ */
-#dynamicBg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: opacity 1s ease;
-}
-
-#dynamicBg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 60% at 10% 80%, rgba(129, 140, 248, 0.1) 0%, transparent 60%),
-        linear-gradient(180deg, rgba(3, 6, 15, 0.5) 0%, rgba(3, 6, 15, 0.8) 100%);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-}
-
-/* Film Grain Noise */
+/* 노이즈 효과를 고정 이미지 대신 가벼운 패턴으로 유지 */
 body::before {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 1;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.02;
     pointer-events: none;
 }
 
-/* Animated Orbs */
+/* 배경 오브(Orb) 최적화: 블러 반경 감소 및 애니메이션 단순화 */
 .orb {
     position: fixed;
     border-radius: 50%;
-    filter: blur(140px);
+    filter: blur(80px); /* 140px -> 80px로 감소 (GPU 부하 절감) */
     pointer-events: none;
     z-index: 1;
-    animation: orb-float 30s ease-in-out infinite alternate;
-    will-change: transform, opacity;
+    animation: orb-float 20s ease-in-out infinite alternate;
 }
 
-.orb-a {
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-    top: -25%;
-    right: -20%;
-}
-
-.orb-b {
-    width: 550px;
-    height: 550px;
-    background: radial-gradient(circle, rgba(129, 140, 248, 0.1) 0%, transparent 70%);
-    bottom: -20%;
-    left: -15%;
-    animation-delay: -10s;
-}
-
-.orb-c {
-    width: 450px;
-    height: 450px;
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
-    top: 50%;
-    right: 15%;
-    animation-delay: -18s;
-}
+.orb-a { width: 600px; height: 600px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); top: -20%; right: -10%; }
+.orb-b { width: 400px; height: 400px; background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); bottom: -10%; left: -10%; animation-delay: -5s; }
 
 @keyframes orb-float {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 0.6;
-    }
-    50% {
-        transform: translate(40px, 60px) scale(1.15);
-        opacity: 0.85;
-    }
-    100% {
-        transform: translate(25px, 45px) scale(1.1);
-        opacity: 0.65;
-    }
+    from { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    to { transform: translate(30px, 30px) scale(1.1); opacity: 0.7; }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   LAYOUT
+   3. LAYOUT & HEADER
    ══════════════════════════════════════════════════════════════ */
 .content-wrapper {
     position: relative;
     z-index: 2;
     width: 100%;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     overflow-y: auto;
-    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding: 1.5rem 1rem 4rem;
-    -ms-overflow-style: none;
+    padding: 2rem 1rem;
     scrollbar-width: none;
 }
+.content-wrapper::-webkit-scrollbar { display: none; }
 
-.content-wrapper::-webkit-scrollbar {
-    display: none;
-}
-
-.main-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: calc(100vh - 3rem);
-    /* 모바일에서 주소창 대응 */
-    min-height: calc(var(--vh, 1vh) * 100 - 3rem);
-    padding-bottom: 1rem;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   HEADER SECTION
-   ══════════════════════════════════════════════════════════════ */
 .header-section {
     text-align: center;
-    margin-bottom: clamp(2rem, 5vh, 4rem);
-    animation: reveal-down 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-    transform-style: preserve-3d;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+    animation: reveal 0.8s ease-out;
 }
 
 .live-time {
-    font-size: clamp(9px, 2vw, 11px);
+    font-size: 11px;
     letter-spacing: 0.4em;
-    text-transform: uppercase;
     color: var(--cyan);
-    margin-bottom: clamp(14px, 3vw, 18px);
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    opacity: 0.9;
-    transform: translateZ(25px);
     font-weight: 600;
 }
 
 .live-dot {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--cyan);
-    box-shadow: 
-        0 0 12px var(--cyan),
-        0 0 24px rgba(6, 182, 212, 0.6);
-    animation: pulse 2.5s ease-in-out infinite;
+    box-shadow: 0 0 10px var(--cyan);
+    animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-        box-shadow: 0 0 12px var(--cyan), 0 0 24px rgba(6, 182, 212, 0.6);
-    }
-    50% {
-        opacity: 0.3;
-        transform: scale(0.5);
-        box-shadow: 0 0 6px var(--cyan);
-    }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
 }
 
 .greeting {
-    font-size: clamp(2rem, 6vw, 4.2rem);
+    font-size: clamp(2rem, 6vw, 3.5rem);
     font-weight: 900;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
     color: #fff;
-    text-shadow: 
-        0 0 70px rgba(59, 130, 246, 0.5),
-        0 12px 35px rgba(0, 0, 0, 0.6);
-    margin-bottom: clamp(10px, 2.5vw, 14px);
-    transform: translateZ(50px);
+    margin-bottom: 10px;
 }
 
 .greeting span {
-    background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 50%, var(--violet) 100%);
-    background-size: 200% 200%;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradient-shift 5s ease infinite;
-    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.4));
-}
-
-@keyframes gradient-shift {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-.sub-label {
-    font-size: clamp(9px, 2vw, 11px);
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 700;
-    transform: translateZ(35px);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MENU GRID & CARDS (3D Enhanced)
+   4. MENU GRID & CARDS (최적화)
    ══════════════════════════════════════════════════════════════ */
 .menu-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: clamp(14px, 3vw, 24px);
+    gap: 20px;
     width: 100%;
-    max-width: 850px;
-    margin-bottom: clamp(2rem, 5vh, 3rem);
-    perspective: 2500px;
-    transform-style: preserve-3d;
+    max-width: 800px;
+    margin-bottom: 3rem;
 }
 
 .menu-card {
     position: relative;
-    background: linear-gradient(
-        135deg, 
-        rgba(16, 32, 60, 0.95) 0%, 
-        rgba(8, 18, 36, 0.9) 100%
-    );
-    border: 1.5px solid var(--border);
-    border-radius: clamp(20px, 5vw, 28px);
-    padding: clamp(28px, 7vw, 45px) clamp(12px, 3.5vw, 24px);
-    
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 35px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: clamp(14px, 4vw, 20px);
-    
+    gap: 15px;
     cursor: pointer;
-    overflow: hidden;
-    transform-style: preserve-3d;
-    transform: translateZ(0);
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    animation: card-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-    
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    
-    box-shadow: 
-        0 2px 4px rgba(255, 255, 255, 0.12),
-        0 18px 36px rgba(0, 0, 0, 0.5),
-        0 8px 20px rgba(0, 0, 0, 0.35),
-        inset 0 1px 2px rgba(255, 255, 255, 0.2),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.3);
-    
-    will-change: transform, box-shadow;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    /* 성능을 위해 복잡한 shadow 제거 */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
-/* Glass Morphism Overlay */
-.menu-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.12) 0%,
-        transparent 35%,
-        transparent 65%,
-        rgba(255, 255, 255, 0.08) 100%
-    );
-    pointer-events: none;
-    opacity: 0.7;
-    transition: opacity 0.5s ease;
-}
-
-/* Top Highlight Line */
-.menu-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 15%;
-    right: 15%;
-    height: 2.5px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(59, 130, 246, 0.7),
-        rgba(6, 182, 212, 0.7),
-        transparent
-    );
-    filter: blur(1px);
-    opacity: 0.9;
-}
-
-/* Card Glow Effect */
-.card-glow {
-    position: absolute;
-    width: clamp(90px, 22vw, 140px);
-    height: clamp(90px, 22vw, 140px);
-    border-radius: 50%;
-    background: radial-gradient(
-        circle,
-        rgba(59, 130, 246, 0.5) 0%,
-        rgba(6, 182, 212, 0.25) 40%,
-        transparent 70%
-    );
-    top: 8%;
-    left: 50%;
-    transform: translateX(-50%) translateZ(15px);
-    opacity: 0;
-    transition: opacity 0.6s ease, transform 0.6s ease;
-    pointer-events: none;
-    filter: blur(18px);
-}
-
-/* Icon Container */
 .card-icon-wrap {
-    width: clamp(56px, 14vw, 80px);
-    height: clamp(56px, 14vw, 80px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-    transform-style: preserve-3d;
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    filter: 
-        drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6))
-        drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+    width: 60px; height: 60px;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
 }
+.card-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
 
-.card-icon-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transform-style: preserve-3d;
-}
-
-/* Card Label */
 .card-label {
-    font-size: clamp(7.5px, 2vw, 12px);
+    font-size: 11px;
     font-weight: 800;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    letter-spacing: 0.25em;
     color: var(--text);
     text-align: center;
-    position: relative;
-    z-index: 2;
-    transform-style: preserve-3d;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    line-height: 1.6;
-    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
 }
 
-/* Hover Effects (Desktop) */
+/* 데스크톱 호버 효과 단순화 */
 @media (hover: hover) {
     .menu-card:hover {
-        transform: translateY(-18px) translateZ(70px) scale(1.08) rotateX(10deg);
-        border-color: rgba(59, 130, 246, 0.7);
-        background: linear-gradient(
-            135deg,
-            rgba(59, 130, 246, 0.3) 0%,
-            rgba(6, 182, 212, 0.25) 100%
-        );
-        box-shadow: 
-            0 3px 6px rgba(255, 255, 255, 0.25),
-            0 35px 70px rgba(0, 0, 0, 0.8),
-            0 18px 42px rgba(59, 130, 246, 0.5),
-            0 0 50px rgba(59, 130, 246, 0.4),
-            inset 0 1px 3px rgba(255, 255, 255, 0.35),
-            inset 0 -1px 3px rgba(0, 0, 0, 0.35);
-    }
-    
-    .menu-card:hover::before {
-        opacity: 1;
-        background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.25) 0%,
-            rgba(59, 130, 246, 0.15) 35%,
-            rgba(6, 182, 212, 0.15) 65%,
-            rgba(255, 255, 255, 0.2) 100%
-        );
-    }
-    
-    .menu-card:hover .card-label {
-        color: #fff;
-        text-shadow: 
-            0 0 18px rgba(59, 130, 246, 0.8),
-            0 3px 10px rgba(0, 0, 0, 0.9);
-        transform: translateZ(25px);
-    }
-    
-    .menu-card:hover .card-icon-wrap {
-        transform: translateZ(50px) scale(1.2) rotateY(10deg);
-        filter: 
-            drop-shadow(0 18px 36px rgba(0, 0, 0, 0.7))
-            drop-shadow(0 0 30px rgba(59, 130, 246, 0.6));
-    }
-    
-    .menu-card:hover .card-glow {
-        opacity: 1;
-        transform: translateX(-50%) translateZ(20px) scale(1.1);
-    }
-}
-
-/* Active State */
-.menu-card:active {
-    transform: scale(0.96) translateY(5px) translateZ(-15px);
-    box-shadow: 
-        0 6px 18px rgba(0, 0, 0, 0.6),
-        inset 0 1px 3px rgba(255, 255, 255, 0.15);
-}
-
-/* Card Animation Delays */
-.menu-card:nth-child(1) { animation-delay: 0.1s; }
-.menu-card:nth-child(2) { animation-delay: 0.2s; }
-.menu-card:nth-child(3) { animation-delay: 0.3s; }
-.menu-card:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes card-in {
-    from {
-        opacity: 0;
-        transform: translateY(50px) translateZ(-120px) scale(0.88) rotateX(25deg);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) translateZ(0) scale(1) rotateX(0deg);
-    }
-}
-
-@keyframes reveal-down {
-    from {
-        opacity: 0;
-        transform: translateY(-40px) translateZ(-60px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) translateZ(0);
+        transform: translateY(-8px);
+        background: rgba(59, 130, 246, 0.15);
+        border-color: var(--blue);
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
     }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BOTTOM ACTIONS
+   5. BOTTOM ACTIONS & OTHERS
    ══════════════════════════════════════════════════════════════ */
-.bottom-actions {
-    display: flex;
-    align-items: center;
-    gap: clamp(18px, 5vw, 45px);
-    animation: reveal-down 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
-    transform-style: preserve-3d;
-}
+.bottom-actions { display: flex; align-items: center; gap: 30px; }
 
 .action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(7px, 2.5vw, 10px);
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    background: none;
-    border: none;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-style: preserve-3d;
-}
-
-.action-btn:active {
-    transform: scale(0.93) translateZ(-12px);
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 
 .action-icon {
-    width: clamp(46px, 11vw, 52px);
-    height: clamp(46px, 11vw, 52px);
-    border-radius: clamp(14px, 3.5vw, 18px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(1.1rem, 3.5vw, 1.4rem);
-    border: 1.5px solid var(--border);
+    width: 48px; height: 48px;
+    border-radius: 15px;
     background: var(--surface);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-style: preserve-3d;
-    box-shadow: 
-        0 8px 20px rgba(0, 0, 0, 0.45),
-        0 3px 8px rgba(0, 0, 0, 0.35),
-        inset 0 1px 1px rgba(255, 255, 255, 0.15),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    transition: 0.3s;
 }
 
-@media (hover: hover) {
-    .action-btn.settings:hover .action-icon {
-        background: rgba(59, 130, 246, 0.25);
-        border-color: rgba(59, 130, 246, 0.6);
-        box-shadow: 
-            0 0 35px rgba(59, 130, 246, 0.5),
-            0 12px 30px rgba(0, 0, 0, 0.6);
-        transform: translateZ(18px) scale(1.1);
-    }
-    
-    .action-btn.logout:hover .action-icon {
-        background: rgba(244, 63, 94, 0.25);
-        border-color: rgba(244, 63, 94, 0.6);
-        box-shadow: 
-            0 0 35px rgba(244, 63, 94, 0.5),
-            0 12px 30px rgba(0, 0, 0, 0.6);
-        transform: translateZ(18px) scale(1.1);
-    }
-}
+.action-btn:active .action-icon { transform: scale(0.9); }
 
-.action-label {
-    font-size: clamp(8px, 2.2vw, 10px);
-    font-weight: 800;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-}
-
-.action-btn.settings .action-label {
-    color: var(--muted);
-}
-
-.action-btn.logout .action-label {
-    color: rgba(244, 63, 94, 0.8);
-}
-
-.divider {
-    width: 1.5px;
-    height: clamp(32px, 7vw, 36px);
-    background: linear-gradient(
-        180deg,
-        transparent,
-        var(--border-2),
-        transparent
-    );
-    transform: translateZ(8px);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   DAY INDICATOR
-   ══════════════════════════════════════════════════════════════ */
 .day-indicator {
-    position: fixed;
-    top: clamp(18px, 3.5vw, 24px);
-    right: clamp(18px, 3.5vw, 24px);
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-    animation: reveal-down 0.8s ease 0.25s both;
-    transform-style: preserve-3d;
+    position: fixed; top: 20px; right: 20px;
+    text-align: right; z-index: 10;
 }
+.day-name { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; }
+.day-number { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.1); }
 
-.day-name {
-    font-size: clamp(8.5px, 1.8vw, 11px);
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    transform: translateZ(12px);
-}
-
-.day-number {
-    font-size: clamp(1.8rem, 5.5vw, 2.5rem);
-    font-weight: 900;
-    line-height: 1;
-    color: rgba(255, 255, 255, 0.1);
-    letter-spacing: -0.04em;
-    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-    transform: translateZ(8px);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   PROFILE SECTION (수정 기능 제거 버전)
-   ══════════════════════════════════════════════════════════════ */
-.profile-container {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-    margin-left: 14px;
-    /* 클릭할 수 없도록 커서 고정 및 이벤트 제거 */
-    cursor: default; 
-    pointer-events: none; /* 클릭 및 모든 마우스 이벤트 차단 */
-    z-index: 10;
-    line-height: 0;
-}
-
+/* 프로필 (이미지만 표시) */
+.profile-container { margin-left: 10px; pointer-events: none; }
 .profile-img {
-    width: clamp(44px, 11vw, 66px);
-    height: clamp(44px, 11vw, 66px);
+    width: 50px; height: 50px;
     border-radius: 50%;
-    border: 2.5px solid var(--cyan);
+    border: 2px solid var(--cyan);
     object-fit: cover;
-    display: block;
-    /* 호버 시 커지는 효과 제거를 위해 transition 유지 혹은 제거 */
-    box-shadow: 
-        0 0 18px var(--blue-glow),
-        0 6px 20px rgba(0, 0, 0, 0.5);
-}
-
-/* 연필 아이콘은 더 이상 필요 없으므로 완전히 숨김 */
-.profile-edit-icon {
-    display: none !important;
-}
-
-/* 호버 시 이미지가 커지거나 테두리가 변하는 효과 제거 */
-.profile-container:hover .profile-img {
-    transform: none; /* 확대 방지 */
-    border-color: var(--cyan); /* 기존 색상 유지 */
-    box-shadow: 
-        0 0 18px var(--blue-glow),
-        0 6px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px var(--blue-glow);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PROFILE MODAL (기능 삭제로 인해 아래 코드는 사실상 삭제해도 무방합니다)
+   6. RESPONSIVE (미디어 쿼리 통합)
    ══════════════════════════════════════════════════════════════ */
-/* 사용하지 않는 코드이므로 CSS 용량을 줄이려면 파일에서 삭제하세요. */
-.profile-modal-overlay,
-.profile-modal,
-.profile-grid,
-.profile-option,
-.modal-footer {
-    display: none !important;
+@media (max-width: 600px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .greeting { font-size: 2.2rem; }
+    .menu-card { padding: 25px 10px; border-radius: 18px; }
+    .card-icon-wrap { width: 50px; height: 50px; }
+    .orb { display: none; } /* 모바일에서 배경 애니메이션 삭제 (성능 최우선) */
 }
 
-
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE DESIGN - MOBILE OPTIMIZED
-   ══════════════════════════════════════════════════════════════ */
-
-/* 모바일 우선 접근 - 작은 화면 (320px ~ 480px) */
-@media (max-width: 480px) {
-    body {
-        perspective: 1200px; /* 3D 효과 감소 */
-background-color: #03060f; /* 현재 설정된 어두운 남색 배경 */
-    }
-    
-    .content-wrapper {
-        padding: 0.75rem 0.5rem 3rem;
-    }
-    
-    .main-section {
-        min-height: auto;
-        justify-content: flex-start;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-    
-    .header-section {
-        margin-bottom: 1rem;
-    }
-    
-    .greeting {
-        font-size: clamp(1.5rem, 8vw, 2.2rem);
-    }
-    
-    .live-time, .sub-label {
-        font-size: 8px;
-        letter-spacing: 0.3em;
-    }
-    
-    /* 메뉴 그리드 - 모바일에서 2열 */
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        max-width: 100%;
-        padding: 0 0.25rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* 카드 패딩 최적화 */
-    .menu-card {
-        padding: clamp(20px, 5vw, 32px) clamp(8px, 2vw, 16px);
-        gap: clamp(10px, 3vw, 14px);
-        border-radius: 16px;
-    }
-    
-    /* 아이콘 크기 조정 */
-    .card-icon-wrap {
-        width: clamp(48px, 12vw, 64px);
-        height: clamp(48px, 12vw, 64px);
-    }
-    
-    .card-label {
-        font-size: clamp(7px, 1.8vw, 10px);
-        letter-spacing: 0.2em;
-    }
-    
-    /* 하단 액션 버튼 */
-    .bottom-actions {
-        gap: clamp(12px, 4vw, 20px);
-    }
-    
-    .action-icon {
-        width: clamp(40px, 10vw, 48px);
-        height: clamp(40px, 10vw, 48px);
-        font-size: clamp(1rem, 3vw, 1.2rem);
-    }
-    
-    .action-label {
-        font-size: 7px;
-        letter-spacing: 0.2em;
-    }
-    
-    /* 날짜 표시 */
-    .day-indicator {
-        top: 12px;
-        right: 12px;
-        gap: 3px;
-    }
-    
-    .day-name {
-        font-size: 7.5px;
-    }
-    
-    .day-number {
-        font-size: clamp(1.4rem, 5vw, 2rem);
-    }
-    
-    /* 프로필 이미지 */
-    .profile-img {
-        width: clamp(36px, 9vw, 52px);
-        height: clamp(36px, 9vw, 52px);
-        border: 2px solid var(--cyan);
-    }
-    
-    .profile-edit-icon {
-        width: 16px;
-        height: 16px;
-        font-size: 9px;
-        border: 1.5px solid var(--bg);
-    }
-    
-    .profile-container {
-        margin-left: 10px;
-    }
-    
-    /* 모달 최적화 */
-    .profile-modal {
-        width: 95%;
-        max-width: 360px;
-        padding: 20px;
-        border-radius: 20px;
-    }
-    
-    .profile-grid {
-        grid-template-columns: repeat(3, 1fr) !important; /* 모바일에서 3열 */
-        gap: 10px;
-        max-height: 280px;
-        padding: 8px;
-    }
-    
-    .profile-option {
-        border-radius: 10px;
-        border: 2px solid transparent;
-    }
-    
-    .modal-footer {
-        gap: 10px;
-        margin-top: 16px;
-        padding-top: 14px;
-    }
-    
-    .modal-btn {
-        padding: 12px;
-        font-size: 10px;
-        border-radius: 12px;
-    }
-    
-    /* 배경 효과 감소 */
-    .orb {
-        filter: blur(100px);
-    }
-    
-    .orb-a {
-        width: 500px;
-        height: 500px;
-    }
-    
-    .orb-b {
-        width: 400px;
-        height: 400px;
-    }
-    
-    .orb-c {
-        width: 350px;
-        height: 350px;
-    }
-    
-    /* 3D 효과 감소 (성능 최적화) */
-    .menu-card {
-        will-change: auto; /* 배터리 절약 */
-    }
-    
-    @media (hover: none) {
-        .menu-card:active {
-            transform: scale(0.95) translateY(2px);
-            transition: all 0.2s ease;
-        }
-    }
+@keyframes reveal {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* 중간 모바일 (481px ~ 640px) */
-@media (min-width: 481px) and (max-width: 640px) {
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: clamp(12px, 3vw, 14px);
-        max-width: 100%;
-        padding: 0 0.5rem;
-    }
-    
-    .header-section {
-        margin-bottom: 1.5rem;
-    }
-    
-    .profile-grid {
-        grid-template-columns: repeat(4, 1fr) !important;
-    }
-}
-
-/* 태블릿 세로 (641px ~ 768px) */
-@media (min-width: 641px) and (max-width: 768px) {
-    .content-wrapper {
-        padding: 1rem 0.75rem 4rem;
-    }
-    
-    .main-section {
-        min-height: auto;
-        justify-content: flex-start;
-        padding-top: 1rem;
-    }
-    
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 480px;
-        gap: 16px;
-    }
-    
-    .header-section {
-        margin-bottom: 1.5rem;
-    }
-}
-
-/* 태블릿 가로 (769px ~ 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .menu-grid {
-        grid-template-columns: repeat(4, 1fr);
-        max-width: 700px;
-        gap: 18px;
-    }
-}
-
-/* 낮은 높이 화면 (세로 공간 부족) */
-@media (max-height: 600px) {
-    .greeting {
-        font-size: clamp(1.4rem, 4vw, 2.2rem);
-        margin-bottom: 6px;
-    }
-    
-    .live-time, .sub-label {
-        font-size: 7.5px;
-        margin-bottom: 8px;
-    }
-    
-    .header-section {
-        margin-bottom: 0.75rem;
-    }
-    
-    .menu-grid {
-        margin-bottom: 0.75rem;
-    }
-    
-    .menu-card {
-        padding: clamp(16px, 4vw, 24px) clamp(8px, 2vw, 16px);
-    }
-}
-
-/* 아주 낮은 높이 (가로 모드) */
-@media (orientation: landscape) and (max-height: 500px) {
-    .content-wrapper {
-        justify-content: flex-start;
-        padding-top: 0.5rem;
-        padding-bottom: 2rem;
-    }
-    
-    .header-section {
-        margin-bottom: 0.5rem;
-    }
-    
-    .greeting {
-        font-size: clamp(1.2rem, 3.5vw, 1.8rem);
-        margin-bottom: 4px;
-    }
-    
-    .live-time {
-        margin-bottom: 6px;
-    }
-    
-    .menu-grid {
-        grid-template-columns: repeat(4, 1fr);
-        margin-bottom: 0.5rem;
-        gap: 12px;
-    }
-    
-    .menu-card {
-        padding: 12px 8px;
-        gap: 8px;
-    }
-    
-    .card-icon-wrap {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .bottom-actions {
-        gap: 16px;
-    }
-    
-    .action-icon {
-        width: 36px;
-        height: 36px;
-    }
-}
-
-/* 터치 디바이스 최적화 */
-@media (hover: none) and (pointer: coarse) {
-    /* 터치 타겟 크기 최소 44x44px 보장 */
-    .menu-card {
-        min-height: 120px;
-        padding: 16px 12px;
-    }
-    
-    .action-btn {
-        min-width: 44px;
-        min-height: 44px;
-    }
-    
-    /* 터치 피드백 개선 */
-    .menu-card:active {
-        transform: scale(0.96);
-        transition: transform 0.1s ease;
-    }
-    
-    .action-btn:active .action-icon {
-        transform: scale(0.92);
-    }
-    
-    /* 3D 효과 비활성화 (성능) */
-    .menu-card,
-    .action-icon,
-    .profile-img {
-        transform-style: flat;
-    }
-    
-    /* 호버 효과 제거 */
-    .menu-card:hover,
-    .action-btn:hover .action-icon,
-    .profile-container:hover .profile-img {
-        transform: none;
-        box-shadow: inherit;
-    }
-}
-
-/* 고해상도 디스플레이 */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    /* 선명한 텍스트 */
-    body {
-        -webkit-font-smoothing: subpixel-antialiased;
-    }
-    
-    /* 더 선명한 그림자 */
-    .menu-card {
-        box-shadow: 
-            0 1px 2px rgba(255, 255, 255, 0.15),
-            0 10px 20px rgba(0, 0, 0, 0.6),
-            0 4px 10px rgba(0, 0, 0, 0.4),
-            inset 0 0.5px 1px rgba(255, 255, 255, 0.25),
-            inset 0 -0.5px 1px rgba(0, 0, 0, 0.35);
-    }
-}
-
-/* 세이프 에어리어 지원 (아이폰 노치 대응) */
-@supports (padding: max(0px)) {
-    .content-wrapper {
-        padding-left: max(1rem, env(safe-area-inset-left));
-        padding-right: max(1rem, env(safe-area-inset-right));
-        padding-bottom: max(4rem, env(safe-area-inset-bottom));
-    }
-    
-    .day-indicator {
-        top: max(clamp(18px, 3.5vw, 24px), env(safe-area-inset-top));
-        right: max(clamp(18px, 3.5vw, 24px), env(safe-area-inset-right));
-    }
-}
-
-/* 다크모드 감지 (추가 최적화) */
-@media (prefers-color-scheme: dark) {
-    /* 이미 다크 테마이므로 추가 조정 없음 */
-}
-
-/* 애니메이션 감소 설정 준수 */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-    
-    .orb {
-        animation: none;
-    }
-    
-    .live-dot {
-        animation: none;
-    }
-    
-    .greeting span {
-        animation: none;
-        background-position: 0% 50%;
-    }
-}
+/* 불필요한 모달 CSS 삭제 */
+.profile-modal-overlay, .profile-edit-icon { display: none !important; }
 </style>
 
 </head>
