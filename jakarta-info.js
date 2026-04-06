@@ -27,48 +27,78 @@ window.JakartaInfo = window.JakartaInfo || {
         this.isInitialized = true;
     },
 
-    async fetchAllData() {
-        try {
-            const wRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true&hourly=pm2_5,precipitation_probability');
-            const wData = await wRes.json();
-            const currentHour = new Date().getHours();
-            
-            this.data.weather = {
-                temp: Math.round(wData.current_weather.temperature),
-                icon: this.getWeatherIcon(wData.current_weather.weathercode),
-                rain: wData.hourly.precipitation_probability[currentHour] + "%"
-            };
-            this.data.airQuality = this.getAQIStatus(wData.hourly.pm2_5[currentHour] || 0);
+async fetchAllData() {
+    try {
+        // 1. 날씨 정보 (기존 유지)
+        const wRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true&hourly=pm2_5,precipitation_probability');
+        const wData = await wRes.json();
+        const currentHour = new Date().getHours();
+        
+        this.data.weather = {
+            temp: Math.round(wData.current_weather.temperature),
+            icon: this.getWeatherIcon(wData.current_weather.weathercode),
+            rain: wData.hourly.precipitation_probability[currentHour] + "%"
+        };
+        this.data.airQuality = this.getAQIStatus(wData.hourly.pm2_5[currentHour] || 0);
 
-            const usdRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=IDR');
-            const usdData = await usdRes.json();
-            const krwRes = await fetch('https://api.frankfurter.app/latest?from=KRW&to=IDR');
-            const krwData = await krwRes.json();
+// 2. 환율 정보 (최적화 버전) ⭐
+try {
+    // exchangerate-api 사용 (무료, CORS 지원)
+    const exRes = await fetch('https://open.er-api.com/v6/latest/USD');
+    const exData = await exRes.json();
+    
+    const usdToIdr = exData.rates.IDR;
+    const usdToKrw = exData.rates.KRW;
+    const krwToIdr = usdToIdr / usdToKrw; // KRW → IDR 환율 계산
+    
+    // 이전 환율과 비교하여 실제 변동률 계산
+    const prevRate = parseFloat(localStorage.getItem('prevKrwRate') || krwToIdr);
+    const changePercent = ((krwToIdr - prevRate) / prevRate * 100).toFixed(2);
+    localStorage.setItem('prevKrwRate', krwToIdr.toString());
+    
+    // IDR 10,000 → KRW 변환 (정수로 반올림)
+    const idrToKrw10k = Math.round(10000 / krwToIdr).toLocaleString();
+    
+    this.data.exchange = {
+        usd: usdToIdr.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+        krw: krwToIdr.toFixed(2),
+        change: (changePercent >= 0 ? "+" : "") + changePercent + "%",
+        idrToKrw10k: idrToKrw10k
+    };
+    
+} catch (exchangeError) {
+    console.warn("환율 정보 로드 실패, 기본값 사용:", exchangeError);
+    
+    // 폴백: 이전 저장값 또는 기본값
+    const fallbackRate = localStorage.getItem('prevKrwRate') || '11.85';
+    const fallbackIdr = (parseFloat(fallbackRate) * 1430).toFixed(2); // 근사치 USD 환율
+    
+    this.data.exchange = {
+        usd: parseFloat(fallbackIdr).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+        krw: fallbackRate,
+        change: "+0.00%",
+        idrToKrw10k: Math.round(10000 / parseFloat(fallbackRate)).toLocaleString()
+    };
+}
 
-            const simulatedChange = (Math.random() * (0.8 - (-0.5)) + (-0.5)).toFixed(2);
-            const idrRate = krwData.rates.IDR;
-            const idrToKrw10k = (10000 / idrRate).toLocaleString(undefined, {maximumFractionDigits: 0});
+        // 3. 뉴스 정보 (기존 유지)
+        this.data.news = [
+            "BI, 기준금리 6.00% 동결 발표",
+            "자카르타 전철(MRT) 2단계 공사 현황 업데이트",
+            "인도네시아 4분기 GDP 성장률 예상치 상회",
+            "수도 이전(IKN) 관련 신규 인센티브 법안 통과"
+        ];
 
-            this.data.exchange = {
-                usd: usdData.rates.IDR.toLocaleString(),
-                krw: idrRate.toFixed(2),
-                change: (simulatedChange >= 0 ? "+" : "") + simulatedChange + "%",
-                idrToKrw10k: idrToKrw10k
-            };
-
-            this.data.news = [
-                "BI, 기준금리 6.00% 동결 발표",
-                "자카르타 전철(MRT) 2단계 공사 현황 업데이트",
-                "인도네시아 4분기 GDP 성장률 예상치 상회",
-                "수도 이전(IKN) 관련 신규 인센티브 법안 통과"
-            ];
-
-            this.updateTrafficInfo(currentHour);
-            this.render();
-        } catch (e) {
-            console.error("JakartaInfo Error:", e);
-        }
-    },
+        // 4. 교통 정보 업데이트
+        this.updateTrafficInfo(currentHour);
+        this.render();
+        
+    } catch (e) {
+        console.error("JakartaInfo Error:", e);
+        // 전체 실패 시 기본 렌더링
+        this.render();
+    }
+},
 
     updateTrafficInfo(hour) {
         if ((hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 20)) {
