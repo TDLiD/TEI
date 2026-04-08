@@ -156,27 +156,79 @@ body::before {
    ══════════════════════════════════════════════════════════════ */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr); /* 4 -> 2로 변경 (모바일 우선) */
+    gap: 16px;
     width: 100%;
-    max-width: 800px;
-    margin-bottom: 3rem;
+    max-width: 500px; /* 800 -> 500 */
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .menu-grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 900px;
+        gap: 20px;
+    }
 }
 
 .menu-card {
     position: relative;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
+    border: 1px solid var(--border-2);
     border-radius: 24px;
-    padding: 35px 15px;
+    padding: 30px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     cursor: pointer;
-    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-    /* 성능을 위해 복잡한 shadow 제거 */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+    transform-style: preserve-3d;
+}
+
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+}
+
+.menu-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(59,130,246,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+@media (hover: hover) {
+    .menu-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(16, 32, 60, 0.8));
+        border-color: var(--blue);
+        box-shadow: 
+            0 20px 40px rgba(59, 130, 246, 0.3),
+            0 0 30px rgba(59, 130, 246, 0.2),
+            inset 0 2px 0 rgba(255,255,255,0.15),
+            inset 0 -2px 0 rgba(0,0,0,0.4);
+    }
+    
+    .menu-card:hover::after {
+        opacity: 1;
+    }
+}
+
+.menu-card:active {
+    transform: translateY(-8px) scale(0.98);
 }
 
 .card-icon-wrap {
@@ -207,22 +259,87 @@ body::before {
 /* ══════════════════════════════════════════════════════════════
    5. BOTTOM ACTIONS & OTHERS
    ══════════════════════════════════════════════════════════════ */
-.bottom-actions { display: flex; align-items: center; gap: 30px; }
+.bottom-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 1rem;
+}
 
+@media (min-width: 768px) {
+    .bottom-actions {
+        max-width: 450px;
+        gap: 20px;
+    }
+}
 .action-btn {
-    background: none; border: none; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
+    border: 1px solid var(--border-2);
+    border-radius: 20px;
+    padding: 24px 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.4), transparent);
+}
+
+@media (hover: hover) {
+    .action-btn:hover {
+        transform: translateY(-8px) scale(1.02);
+        background: linear-gradient(145deg, rgba(129, 140, 248, 0.15), rgba(16, 32, 60, 0.8));
+        border-color: var(--violet);
+        box-shadow: 
+            0 15px 35px rgba(129, 140, 248, 0.25),
+            0 0 25px rgba(129, 140, 248, 0.15),
+            inset 0 2px 0 rgba(255,255,255,0.15);
+    }
+}
+
+.action-btn:active {
+    transform: translateY(-4px) scale(0.98);
 }
 
 .action-icon {
-    width: 48px; height: 48px;
-    border-radius: 15px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
-    transition: 0.3s;
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(59,130,246,0.15), rgba(16,32,60,0.5));
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s;
+    box-shadow: 
+        0 4px 12px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.1);
 }
+
+@media (min-width: 768px) {
+    .action-icon {
+        width: 60px;
+        height: 60px;
+    }
+}
+
 
 .action-btn:active .action-icon { transform: scale(0.9); }
 
@@ -261,6 +378,54 @@ body::before {
 
 /* 불필요한 모달 CSS 삭제 */
 .profile-modal-overlay, .profile-edit-icon { display: none !important; }
+.action-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+.card-icon-wrap {
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
+    transform-style: preserve-3d;
+    transition: transform 0.3s;
+}
+
+.menu-card:hover .card-icon-wrap {
+    transform: translateZ(20px) scale(1.1);
+}
+
+.card-icon-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+@media (max-width: 767px) {
+    .menu-card {
+        padding: 28px 12px;
+    }
+    
+    .card-icon-wrap {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .card-label {
+        font-size: 10px;
+    }
+    
+    .action-btn {
+        padding: 20px 15px;
+    }
+    
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.6rem;
+    }
+}
 </style>
 
 </head>
@@ -330,7 +495,6 @@ body::before {
                     <div class="action-icon">⚙️</div>
                     <span class="action-label">Settings</span>
                 </button>
-                <div class="divider"></div>
                 <button class="action-btn logout" onclick="handleLogout()">
                     <div class="action-icon">🚪</div>
                     <span class="action-label">Logout</span>

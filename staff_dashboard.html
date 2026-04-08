@@ -924,27 +924,6 @@ db.ref(`attendance/${todayStr}`).on('value', snap => {
         const v=snap.val(); if(v) { standardTime=v; const e=document.getElementById('displayStdTime'); if(e) e.innerText=v; if(btnIn) btnIn.disabled=false; }
     });
 
-    /* ── AI ── */
-    let isAILoading=false;
-    async function fetchAIComment(type, time, userName) {
-        if (!config.LLMAPIkey||isAILoading) return getFallbackMessage(type);
-        isAILoading=true;
-        let weatherInfo="sedang bagus";
-        try { const wr=await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true"); const wd=await wr.json(); if(wd.current_weather) weatherInfo=`${wd.current_weather.temperature}°C`; } catch(e){}
-        const isAttend=type==='attend';
-        const prompt=isAttend?`[ATTENDANCE] User:${userName} Time:${time} Jakarta Temp:${weatherInfo} 1.Greet+mention temp 2.One short Indonesian Peribahasa 3.Short tebak-tebakan about coffee/work. Indonesian only.`:`[LEAVING] User:${userName} Time:${time} 1.Thank for hard work 2.One Indonesian Peribahasa about resting 3.Short witty office joke. Indonesian only.`;
-        try {
-            const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${config.LLMAPIkey}`},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"system",content:"Respond in Indonesian, concise under 3 sentences."},{role:"user",content:prompt}],temperature:0.8,max_tokens:250})});
-            if(res.status===429) return getFallbackMessage(type);
-            const data=await res.json(); return data.choices[0].message.content.trim();
-        } catch(e) { return getFallbackMessage(type); } finally { setTimeout(()=>{isAILoading=false;},2000); }
-    }
-    function getFallbackMessage(type) { return type==='attend'?"Selamat pagi! Semoga hari Anda menyenangkan! 😊":"Terima kasih atas kerja keras Anda hari ini! Selamat beristirahat! 👏"; }
-    function showAIPopup(message) {
-        const overlay=document.createElement('div'); overlay.className='missing-modal-overlay';
-        overlay.innerHTML=`<div class="missing-modal border-blue-500/50 border-2 text-center"><p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4">AI Assistant Message</p><div class="text-white text-lg font-bold leading-relaxed mb-6">"${message}"</div><button onclick="this.parentElement.parentElement.remove()" class="close-modal-btn w-full py-3 hover:bg-blue-600 transition-colors">OK, NOTED!</button></div>`;
-        document.body.appendChild(overlay);
-    }
 
     /* ── Handle Attendance ── */
     window.handleAttendance = function(type) {
@@ -966,11 +945,11 @@ db.ref(`attendance/${todayStr}`).on('value', snap => {
                     if(warnFlag==="off") { finalVal=`ATT(${storageTime})`; }
                     else { const [iH,iM]=storageTime.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number); finalVal=(iH*60+iM<=sH*60+sM)?`ATT(${storageTime})`:`LATE(${storageTime})`; }
                 }
-                if(confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-                    db.ref('attendance/'+todayStr+'/'+user).update({[type]:finalVal})
-                    .then(async()=>{ if(!isAILoading){const aiMsg=await fetchAIComment(type,storageTime,user);showAIPopup(aiMsg);} })
-                    .finally(()=>{ btn.disabled=false; btn.style.opacity="1"; });
-                } else { btn.disabled=false; btn.style.opacity="1"; }
+if(confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+    db.ref('attendance/'+todayStr+'/'+user).update({[type]:finalVal})
+    .then(()=>{ alert("Success!"); })
+    .finally(()=>{ btn.disabled=false; btn.style.opacity="1"; });
+} else { btn.disabled=false; btn.style.opacity="1"; }
             });
         });
     };
