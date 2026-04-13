@@ -4,191 +4,185 @@
             <div class="w-1.5 h-6 bg-emerald-500 rounded-full"></div>DATABASE BACKUP / RESTORE
         </h2>
 
-<div class="flex flex-col sm:flex-row gap-3 md:gap-4">
-    <div class="relative group flex-1">
-        <button onclick="window.exportFullData()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 uppercase text-[11px] tracking-widest">Export JSON (Backup)</button>
-        <div class="absolute top-full left-0 mt-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
-            <div class="absolute bottom-full left-5 w-3 h-3 bg-slate-800 border-l border-t border-slate-700 transform rotate-45 translate-y-1.5"></div>
-            <div class="flex items-center gap-2 mb-2 text-emerald-500">
-                <div class="w-1 h-3 bg-emerald-500 rounded-full"></div>
-                <span class="font-black uppercase tracking-tighter">Export / Backup</span>
+        <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
+            <div class="relative group flex-1">
+                <button onclick="window.exportFullData()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 uppercase text-[11px] tracking-widest">Export JSON (Backup)</button>
+                <div class="absolute top-full left-0 mt-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                    <div class="absolute bottom-full left-5 w-3 h-3 bg-slate-800 border-l border-t border-slate-700 transform rotate-45 translate-y-1.5"></div>
+                    <div class="flex items-center gap-2 mb-2 text-emerald-500">
+                        <div class="w-1 h-3 bg-emerald-500 rounded-full"></div>
+                        <span class="font-black uppercase tracking-tighter">Export / Backup</span>
+                    </div>
+                    <ul class="space-y-2 leading-relaxed">
+                        <li class="flex gap-2">
+                            <span class="text-emerald-500">•</span>
+                            <span>Downloads the <strong class="text-white">entire database</strong> as a <strong class="text-white">.json</strong> file to your device.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-emerald-500">•</span>
+                            <span>Use this to create a <strong class="text-white">manual backup</strong> before making major changes.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-emerald-500">•</span>
+                            <span>Admin password verification is <strong class="text-white">required</strong> to proceed.</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="space-y-2 leading-relaxed">
-                <li class="flex gap-2">
-                    <span class="text-emerald-500">•</span>
-                    <span>Downloads the <strong class="text-white">entire database</strong> as a <strong class="text-white">.json</strong> file to your device.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-emerald-500">•</span>
-                    <span>Use this to create a <strong class="text-white">manual backup</strong> before making major changes.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-emerald-500">•</span>
-                    <span>Admin password verification is <strong class="text-white">required</strong> to proceed.</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-    <div class="relative group flex-1">
-        <button onclick="document.getElementById('importFile').click()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-2xl transition-all active:scale-95 uppercase text-[11px] tracking-widest">Import JSON (Restore)</button>
-        <div class="absolute top-full left-0 mt-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
-            <div class="absolute bottom-full left-5 w-3 h-3 bg-slate-800 border-l border-t border-slate-700 transform rotate-45 translate-y-1.5"></div>
-            <div class="flex items-center gap-2 mb-2 text-rose-500">
-                <div class="w-1 h-3 bg-rose-500 rounded-full"></div>
-                <span class="font-black uppercase tracking-tighter">Import / Restore</span>
+            <div class="relative group flex-1">
+                <button onclick="document.getElementById('importFile').click()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-black py-4 rounded-2xl transition-all active:scale-95 uppercase text-[11px] tracking-widest">Import JSON (Restore)</button>
+                <div class="absolute top-full left-0 mt-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                    <div class="absolute bottom-full left-5 w-3 h-3 bg-slate-800 border-l border-t border-slate-700 transform rotate-45 translate-y-1.5"></div>
+                    <div class="flex items-center gap-2 mb-2 text-rose-500">
+                        <div class="w-1 h-3 bg-rose-500 rounded-full"></div>
+                        <span class="font-black uppercase tracking-tighter">Import / Restore</span>
+                    </div>
+                    <ul class="space-y-2 leading-relaxed">
+                        <li class="flex gap-2">
+                            <span class="text-rose-500">•</span>
+                            <span>Restores the database from a previously exported <strong class="text-white">.json</strong> backup file.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-rose-500">•</span>
+                            <span><strong class="text-white">WARNING:</strong> This will completely <strong class="text-white">overwrite</strong> all current data and cannot be undone.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-rose-500">•</span>
+                            <span>Admin password verification is <strong class="text-white">required</strong> to proceed.</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="space-y-2 leading-relaxed">
-                <li class="flex gap-2">
-                    <span class="text-rose-500">•</span>
-                    <span>Restores the database from a previously exported <strong class="text-white">.json</strong> backup file.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-rose-500">•</span>
-                    <span><strong class="text-white">WARNING:</strong> This will completely <strong class="text-white">overwrite</strong> all current data and cannot be undone.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-rose-500">•</span>
-                    <span>Admin password verification is <strong class="text-white">required</strong> to proceed.</span>
-                </li>
-            </ul>
+            <input type="file" id="importFile" class="hidden" accept=".json" onchange="window.importFullData(event)">
         </div>
-    </div>
-    <input type="file" id="importFile" class="hidden" accept=".json" onchange="window.importFullData(event)">
-</div>
 
         <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">* WARNING: Restoring will overwrite all current database records. Admin password required.</p>
-    </div>
-<div class="mt-6 p-4 bg-slate-950/40 rounded-2xl border border-white/5">
-    <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Automated Backup Schedule
-    </h3>
-    <div class="flex flex-wrap gap-4 items-end">
-        <div>
-            <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Interval (주기)</label>
-            <select id="backup_interval" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-emerald-500 transition min-w-[100px]">
-                <option value="Daily">Daily (매일)</option>
-                <option value="Monday">Every Monday (매주 월)</option>
-                <option value="Monthly">Monthly (매월 1일)</option>
-            </select>
-        </div>
-<div class="relative group">
-    <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase cursor-help">
-        Time (시간: 00-23)
-        <i class="far fa-question-circle opacity-50"></i>
-    </label>
-    <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
-        <div class="flex items-center gap-2 mb-2 text-amber-500">
-            <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
-            <span class="font-black uppercase tracking-tighter">Usage Information</span>
-        </div>
-        <ul class="space-y-2 leading-relaxed">
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>Set the <strong class="text-white">hour (00–23)</strong> at which the automated backup will be triggered.</span>
-            </li>
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>The backup runs at <strong class="text-white">exactly :00 minutes</strong> of the selected hour.</span>
-            </li>
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>Uses <strong class="text-white">Jakarta time (WIB, UTC+7)</strong> as the reference timezone.</span>
-            </li>
-        </ul>
-        <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
-    </div>
-    <div class="flex items-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
-
-                <select id="backup_hour" class="bg-slate-900 text-white p-2 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500 font-mono text-sm min-w-[60px] text-center"></select>
-                <span class="text-slate-500 font-bold">:</span>
-                <span class="text-white font-mono text-sm px-2">00</span>
-            </div>
-        </div>
-        <button onclick="window.saveBackupConfig()" class="bg-slate-700 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest ml-auto">
-            Save Schedule
-        </button>
-    </div>
-</div>
-
-
-<div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
-    <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
-        <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>SYSTEM CONFIGURATION (24H)
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-<div class="space-y-3 relative group">
-    <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest cursor-help">
-        Standard Attendance Time (Attend)
-        <i class="far fa-question-circle opacity-50"></i>
-    </label>
-
-    <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
-        <div class="flex items-center gap-2 mb-2 text-amber-500">
-            <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
-            <span class="font-black uppercase tracking-tighter">Usage Information</span>
-        </div>
-        <ul class="space-y-2 leading-relaxed">
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>This time is the <strong class="text-white">standard check-in deadline</strong> for all staff members.</span>
-            </li>
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>If a staff member clocks in <strong class="text-white">after this time</strong>, their status will automatically be marked as <strong class="text-white">LATE</strong>.</span>
-            </li>
-            <li class="flex gap-2">
-                <span class="text-amber-500">•</span>
-                <span>Arrivals <strong class="text-white">at or before</strong> this time are recorded as <strong class="text-white">ATT (On Time)</strong>.</span>
-            </li>
-        </ul>
-        <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
-    </div>
-
-            <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
-                <select id="select_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
-                <span class="text-xl font-bold text-slate-500">:</span>
-                <select id="select_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
-            </div>
-        </div>
-
-        <div class="space-y-3 relative group">
-            <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest cursor-help">
-                Auto Leave Time (Leave)
-                <i class="far fa-question-circle opacity-50"></i>
-            </label>
-
-            <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
-                <div class="flex items-center gap-2 mb-2 text-amber-500">
-                    <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
-                    <span class="font-black uppercase tracking-tighter">Usage Information</span>
+        
+        <div class="mt-6 p-4 bg-slate-950/40 rounded-2xl border border-white/5">
+            <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Automated Backup Schedule
+            </h3>
+            <div class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase">Interval (주기)</label>
+                    <select id="backup_interval" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:border-emerald-500 transition min-w-[100px]">
+                        <option value="Daily">Daily (매일)</option>
+                        <option value="Monday">Every Monday (매주 월)</option>
+                        <option value="Monthly">Monthly (매월 1일)</option>
+                    </select>
                 </div>
-                <ul class="space-y-2 leading-relaxed">
-                    <li class="flex gap-2">
-                        <span class="text-amber-500">•</span>
-                        <span>This time is used as the <strong class="text-white">default checkout time</strong> for the automated system.</span>
-                    </li>
-                    <li class="flex gap-2">
-                        <span class="text-amber-500">•</span>
-                        <span>If a staff member <strong class="text-white">misses their checkout</strong> record yesterday, the system will automatically apply this time.</span>
-                    </li>
-                </ul>
-                <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
-            </div>
-
-            <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
-                <select id="leave_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
-                <span class="text-xl font-bold text-slate-500">:</span>
-                <select id="leave_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                <div class="relative group">
+                    <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 mb-2 ml-1 uppercase cursor-help">
+                        Time (시간: 00-23)
+                        <i class="far fa-question-circle opacity-50"></i>
+                    </label>
+                    <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                        <div class="flex items-center gap-2 mb-2 text-amber-500">
+                            <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                            <span class="font-black uppercase tracking-tighter">Usage Information</span>
+                        </div>
+                        <ul class="space-y-2 leading-relaxed">
+                            <li class="flex gap-2">
+                                <span class="text-amber-500">•</span>
+                                <span>Set the <strong class="text-white">hour (00–23)</strong> at which the automated backup will be triggered.</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-amber-500">•</span>
+                                <span>The backup runs at <strong class="text-white">exactly :00 minutes</strong> of the selected hour.</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-amber-500">•</span>
+                                <span>Uses <strong class="text-white">Jakarta time (WIB, UTC+7)</strong> as the reference timezone.</span>
+                            </li>
+                        </ul>
+                        <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+                        <select id="backup_hour" class="bg-slate-900 text-white p-2 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500 font-mono text-sm min-w-[60px] text-center"></select>
+                        <span class="text-slate-500 font-bold">:</span>
+                        <span class="text-white font-mono text-sm px-2">00</span>
+                    </div>
+                </div>
+                <button onclick="window.saveBackupConfig()" class="bg-slate-700 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-xl transition-all active:scale-95 uppercase text-[10px] tracking-widest ml-auto">
+                    Save Schedule
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="mt-8">
-        <button onclick="window.saveSystemConfig()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">Save Configuration</button>
-    </div>
-    <p id="current_time_display" class="mt-4 text-[11px] text-amber-500/70 font-bold italic ml-1">Current Setting: Loading...</p>
-</div>
+    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
+            <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>SYSTEM CONFIGURATION (24H)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-3 relative group">
+                <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest cursor-help">
+                    Standard Attendance Time (Attend)
+                    <i class="far fa-question-circle opacity-50"></i>
+                </label>
+                <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                    <div class="flex items-center gap-2 mb-2 text-amber-500">
+                        <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                        <span class="font-black uppercase tracking-tighter">Usage Information</span>
+                    </div>
+                    <ul class="space-y-2 leading-relaxed">
+                        <li class="flex gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>This time is the <strong class="text-white">standard check-in deadline</strong> for all staff members.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>If a staff member clocks in <strong class="text-white">after this time</strong>, their status will automatically be marked as <strong class="text-white">LATE</strong>.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>Arrivals <strong class="text-white">at or before</strong> this time are recorded as <strong class="text-white">ATT (On Time)</strong>.</span>
+                        </li>
+                    </ul>
+                    <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
+                    <select id="select_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                    <span class="text-xl font-bold text-slate-500">:</span>
+                    <select id="select_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                </div>
+            </div>
 
+            <div class="space-y-3 relative group">
+                <label class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest cursor-help">
+                    Auto Leave Time (Leave)
+                    <i class="far fa-question-circle opacity-50"></i>
+                </label>
+                <div class="absolute bottom-full left-0 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none">
+                    <div class="flex items-center gap-2 mb-2 text-amber-500">
+                        <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                        <span class="font-black uppercase tracking-tighter">Usage Information</span>
+                    </div>
+                    <ul class="space-y-2 leading-relaxed">
+                        <li class="flex gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>This time is used as the <strong class="text-white">default checkout time</strong> for the automated system.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-amber-500">•</span>
+                            <span>If a staff member <strong class="text-white">misses their checkout</strong> record yesterday, the system will automatically apply this time.</span>
+                        </li>
+                    </ul>
+                    <div class="absolute top-full left-5 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-slate-700 w-fit">
+                    <select id="leave_hour" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                    <span class="text-xl font-bold text-slate-500">:</span>
+                    <select id="leave_minute" class="bg-slate-900 text-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xl appearance-none cursor-pointer min-w-[70px] text-center"></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <button onclick="window.saveSystemConfig()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-amber-500/20 uppercase text-[11px] tracking-widest">Save Configuration</button>
+        </div>
+        <p id="current_time_display" class="mt-4 text-[11px] text-amber-500/70 font-bold italic ml-1">Current Setting: Loading...</p>
+    </div>
 
     <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm">
         <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
@@ -230,33 +224,33 @@
                         <th class="p-4 border-b border-slate-800">Staff Name</th>
                         <th class="p-4 border-b border-slate-800">Role</th>
                         <th class="p-4 border-b border-slate-800">Password</th>
-<th class="p-4 border-b border-slate-800 text-center">
-    <div class="relative group inline-flex items-center gap-1 cursor-help">
-        WARNING
-        <i class="far fa-question-circle opacity-50 text-[10px]"></i>
-        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none text-left">
-            <div class="flex items-center gap-2 mb-2 text-amber-500">
-                <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
-                <span class="font-black uppercase tracking-tighter">Usage Information</span>
-            </div>
-            <ul class="space-y-2 leading-relaxed">
-                <li class="flex gap-2">
-                    <span class="text-amber-500">•</span>
-                    <span>When set to <strong class="text-white">WARN On</strong>, a warning badge is displayed on the staff member's dashboard.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-amber-500">•</span>
-                    <span>Use this flag to <strong class="text-white">notify a specific staff member</strong> of disciplinary action or a personal alert.</span>
-                </li>
-                <li class="flex gap-2">
-                    <span class="text-amber-500">•</span>
-                    <span>The warning is <strong class="text-white">only visible to that staff member</strong> after they log in.</span>
-                </li>
-            </ul>
-            <div class="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
-        </div>
-    </div>
-</th>
+                        <th class="p-4 border-b border-slate-800 text-center">
+                            <div class="relative group inline-flex items-center gap-1 cursor-help">
+                                WARNING
+                                <i class="far fa-question-circle opacity-50 text-[10px]"></i>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:block w-72 p-4 bg-slate-800 border border-slate-700 text-slate-300 text-[11px] rounded-2xl shadow-2xl z-50 animate-fadeIn pointer-events-none text-left">
+                                    <div class="flex items-center gap-2 mb-2 text-amber-500">
+                                        <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                                        <span class="font-black uppercase tracking-tighter">Usage Information</span>
+                                    </div>
+                                    <ul class="space-y-2 leading-relaxed">
+                                        <li class="flex gap-2">
+                                            <span class="text-amber-500">•</span>
+                                            <span>When set to <strong class="text-white">WARN On</strong>, a warning badge is displayed on the staff member's dashboard.</span>
+                                        </li>
+                                        <li class="flex gap-2">
+                                            <span class="text-amber-500">•</span>
+                                            <span>Use this flag to <strong class="text-white">notify a specific staff member</strong> of disciplinary action or a personal alert.</span>
+                                        </li>
+                                        <li class="flex gap-2">
+                                            <span class="text-amber-500">•</span>
+                                            <span>The warning is <strong class="text-white">only visible to that staff member</strong> after they log in.</span>
+                                        </li>
+                                    </ul>
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 border-r border-b border-slate-700 transform rotate-45 -translate-y-1.5"></div>
+                                </div>
+                            </div>
+                        </th>
                         <th class="p-4 border-b border-slate-800 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -265,6 +259,69 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="bg-slate-900/50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-800 shadow-2xl backdrop-blur-sm mt-4 md:mt-6">
+        <h2 class="text-lg md:text-xl font-black text-white mb-5 md:mb-6 flex items-center gap-3">
+            <div class="w-1.5 h-6 bg-purple-500 rounded-full"></div>POPUP MANAGEMENT
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Popup Status</label>
+                <select id="popup_flag" class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-purple-500 transition">
+                    <option value="OFF">OFF (Disabled)</option>
+                    <option value="ON">ON (Active)</option>
+                </select>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Popup Message</label>
+                <input type="text" id="popup_msg" placeholder="e.g., Congratulations!" 
+                    class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-purple-500 transition">
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Start Date</label>
+                <input type="date" id="popup_start" 
+                    class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-purple-500 transition">
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">End Date</label>
+                <input type="date" id="popup_end" 
+                    class="w-full bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-purple-500 transition">
+            </div>
+
+            <div class="space-y-3 md:col-span-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Popup Image Path</label>
+                <div class="flex gap-3 items-end">
+                    <input type="text" id="popup_image" placeholder="images/popup/ray_wedding.png" 
+                        class="flex-1 bg-slate-800 border border-slate-700 p-3.5 rounded-xl text-white text-xs outline-none focus:border-purple-500 transition">
+                    
+                    <button onclick="window.previewPopupImage()" 
+                        class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3.5 px-5 rounded-xl text-[10px] uppercase tracking-widest transition">
+                        Preview
+                    </button>
+                </div>
+                <div class="mt-3 p-4 bg-slate-950/40 rounded-xl border border-white/5">
+                    <img id="popup_image_preview" src="" alt="Preview" 
+                        class="max-w-full max-h-64 mx-auto rounded-lg" 
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%2320293a%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23475569%22 font-size=%2214%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button onclick="window.savePopupConfig()" 
+                class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-purple-500/20 uppercase text-[11px] tracking-widest">
+                Save Popup Configuration
+            </button>
+        </div>
+        
+        <p class="mt-4 text-[10px] text-slate-500 font-medium leading-relaxed italic">
+            * Popup will only display if status is ON and current date is within the specified range.
+        </p>
     </div>
 </div>
 
@@ -369,6 +426,38 @@ if (String(enteredPw) === String(actualPw)) {
     });
 }
 
+
+// Popup 설정 저장 함수 (수정됨)
+window.savePopupConfig = async function() {
+    if (!(await verifyAdmin())) return;
+
+    const flag = document.getElementById('popup_flag').value;
+    const msg = document.getElementById('popup_msg').value.trim();
+    const startDate = document.getElementById('popup_start').value;
+    const endDate = document.getElementById('popup_end').value;
+    const imagePath = document.getElementById('popup_image').value.trim();
+
+    // 날짜 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+    const formatDate = (dateStr) => dateStr ? dateStr.replace(/-/g, '') : '';
+
+    const popupConfig = {
+        Flag: flag,
+        Msg: msg,
+        Start: formatDate(startDate),
+        End: formatDate(endDate),
+        Image: imagePath,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    db.ref('settings/config/Popup').set(popupConfig)
+        .then(() => {
+            alert(`Popup configuration saved!\nStatus: ${flag}\nPeriod: ${startDate} ~ ${endDate}`);
+        })
+        .catch(err => {
+            alert("Error saving popup config: " + err.message);
+        });
+};
+
 // --- 수정된 비밀번호 토글 함수 (에러 방지 및 아이콘 연동) ---
 window.toggleViewPw = function(inputId, btnEl) {
     const input = document.getElementById(inputId);
@@ -395,6 +484,102 @@ window.toggleViewPw = function(inputId, btnEl) {
     }
 };
 
+window.previewPopupImage = function() {
+
+    const imgInput = document.getElementById('popup_image');
+    const msgInput = document.getElementById('popup_msg');
+
+    if (!imgInput) {
+        console.error("popup_image not found");
+        return;
+    }
+
+    let imgPath = imgInput.value.trim();
+    const popupMsg = msgInput ? msgInput.value.trim() : '';
+
+    if (!imgPath) {
+        alert("Please enter image path first.");
+        return;
+    }
+
+    // 상대경로 보정
+    if (!imgPath.startsWith('http') &&
+        !imgPath.startsWith('./') &&
+        !imgPath.startsWith('/')) {
+
+        imgPath = `./${imgPath}`;
+    }
+
+    console.log("Preview Updated:", imgPath);
+    console.log("Popup Message:", popupMsg);
+
+    /* -----------------------------
+       Popup Modal 생성
+    ----------------------------- */
+
+    const overlay = document.createElement('div');
+
+    overlay.className =
+        "fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-6";
+
+    overlay.innerHTML = `
+
+        <div class="relative max-w-2xl w-full text-center space-y-4">
+
+            <!-- ⭐ 이미지 먼저 표시 -->
+            <img src="${imgPath}"
+                class="max-w-full max-h-[70vh] mx-auto rounded-xl shadow-2xl border border-white/10"
+                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%2320293a%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23475569%22 font-size=%2214%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+
+            <!-- ⭐ 메시지는 아래 -->
+            ${
+                popupMsg
+                ? `
+                <div class="
+                    bg-slate-900/80
+                    border border-white/10
+                    text-white
+                    font-bold
+                    text-lg
+                    px-6 py-4
+                    rounded-xl
+                    shadow-xl
+                ">
+                    ${popupMsg}
+                </div>
+                `
+                : ''
+            }
+
+            <!-- 닫기 버튼 -->
+            <button
+                class="absolute -top-3 -right-3 bg-red-600 hover:bg-red-500 text-white w-9 h-9 rounded-full font-black shadow-lg">
+                ✕
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    /* -----------------------------
+       닫기 기능
+    ----------------------------- */
+
+    // X 버튼
+    overlay.querySelector('button').onclick = () => {
+        document.body.removeChild(overlay);
+    };
+
+    // 배경 클릭
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    };
+
+};
+
 // 셀렉트 박스 옵션 초기화 함수 수정
 function initSelectors() {
     const hours = Array.from({length: 24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('');
@@ -417,38 +602,142 @@ function initSelectors() {
     };
 
 // 설정 불러오기 로직 수정
+// loadSystemConfig 함수 내부에 추가 (전체 수정 버전)
 function loadSystemConfig() {
+
     db.ref('settings/config').once('value', snap => {
+
         const data = snap.val() || {};
-        
-        // 1. 출근 시간 로드 (Standard Attendance)
+
+        /* -------------------------------------------------
+           1️⃣ Attendance / Leave Time
+        ------------------------------------------------- */
+
         let attTime = data.stdAttendance || "09:00";
         const [ah, am] = attTime.split(':');
-        hSelect.value = ah || "09";
-        mSelect.value = am || "00";
 
-        // 2. 퇴근 시간 로드 (Auto Leave)
+        if (hSelect) hSelect.value = ah || "09";
+        if (mSelect) mSelect.value = am || "00";
+
         let leaveTime = data.autoLeave || "18:00";
         const [lh, lm] = leaveTime.split(':');
-        lhSelect.value = lh || "18";
-        lmSelect.value = lm || "00";
 
-        // 3. 자동 백업 스케줄러 설정 로드 (추가됨)
-        // backupSchedule 하위 경로에 저장된 데이터를 가져옵니다.
-        const bData = data.backupSchedule || { interval: 'Monday', hour: '09' };
-        
-        const bIntervalSelect = document.getElementById('backup_interval');
-        const bHourSelect = document.getElementById('backup_hour');
+        if (lhSelect) lhSelect.value = lh || "18";
+        if (lmSelect) lmSelect.value = lm || "00";
 
-        if (bIntervalSelect) bIntervalSelect.value = bData.interval || "Monday";
-        if (bHourSelect) bHourSelect.value = bData.hour || "09";
+        /* -------------------------------------------------
+           2️⃣ Backup Schedule
+        ------------------------------------------------- */
 
-        // 하단 텍스트 디스플레이 업데이트
-        document.getElementById('current_time_display').innerText = 
-            `Current Setting: IN ${attTime} / OUT ${leaveTime} (24H Format)`;
-            
-        console.log("System & Backup Config Loaded:", { attTime, leaveTime, bData });
+        const bData = data.backupSchedule || {
+            interval: 'Monday',
+            hour: '09'
+        };
+
+        const bInterval = document.getElementById('backup_interval');
+        const bHour = document.getElementById('backup_hour');
+
+        if (bInterval) bInterval.value = bData.interval;
+        if (bHour) bHour.value = bData.hour;
+
+        /* -------------------------------------------------
+           3️⃣ Popup Management
+        ------------------------------------------------- */
+
+        const popupData = data.Popup || {};
+
+        const elFlag = document.getElementById('popup_flag');
+        const elMsg = document.getElementById('popup_msg');
+        const elStart = document.getElementById('popup_start');
+        const elEnd = document.getElementById('popup_end');
+        const elImage = document.getElementById('popup_image');
+        const elPreview = document.getElementById('popup_image_preview');
+
+        // Flag / Message
+        if (elFlag) elFlag.value = popupData.Flag || 'OFF';
+        if (elMsg) elMsg.value = popupData.Msg || '';
+
+        // 날짜 변환 (YYYYMMDD → YYYY-MM-DD)
+        const toDashDate = (str) => {
+
+            if (!str || str.length !== 8) return '';
+
+            return `${str.slice(0,4)}-${str.slice(4,6)}-${str.slice(6,8)}`;
+
+        };
+
+        if (elStart)
+            elStart.value = toDashDate(popupData.Start);
+
+        if (elEnd)
+            elEnd.value = toDashDate(popupData.End);
+
+        // Image Path
+        const imgPath = popupData.Image || '';
+
+        if (elImage)
+            elImage.value = imgPath;
+
+        if (elPreview && imgPath) {
+
+            if (
+                imgPath.startsWith('http') ||
+                imgPath.startsWith('./') ||
+                imgPath.startsWith('/')
+            ) {
+
+                elPreview.src = imgPath;
+
+            } else {
+
+                elPreview.src = `./${imgPath}`;
+
+            }
+
+        }
+
+        const popupDisplay =
+            document.getElementById('current_popup_display');
+
+        if (popupDisplay) {
+
+            const statusIcon =
+                popupData.Flag === 'ON' ? '🟢' : '🔴';
+
+            popupDisplay.innerText =
+                `${statusIcon} Popup: ${popupData.Flag || 'OFF'} | Period: ${
+                    popupData.Start || '-'
+                } ~ ${
+                    popupData.End || '-'
+                }`;
+
+        }
+
+        /* -------------------------------------------------
+           4️⃣ Current Time Display
+        ------------------------------------------------- */
+
+        const display = document.getElementById('current_time_display');
+
+        if (display) {
+
+            display.innerText =
+                `Current Setting: IN ${attTime} / OUT ${leaveTime} (24H Format)`;
+
+        }
+
+        console.log(
+            "System Config Loaded:",
+            {
+                Attendance: attTime,
+                Leave: leaveTime,
+                Backup: bData,
+                Popup: popupData
+            }
+        );
+
     });
+
 }
 
  // 설정 저장 로직 수정
@@ -897,6 +1186,37 @@ window.saveBackupConfig = async function() {
     console.log("Firebase-Linked Backup Scheduler Initialized.");
     autoBackupRoutine(); 
     setInterval(autoBackupRoutine, 5000); // 5초마다 체크
+})();
+
+/* 스크립트 최하단 혹은 Firebase 초기화 이후에 배치하세요 */
+(function() {
+    // DOM이 완전히 로드된 후 실행되도록 보장
+    document.addEventListener('DOMContentLoaded', function() {
+        const previewBtn = document.querySelector('button[onclick*="previewPopupImage"]');
+        
+        // HTML의 onclick 속성을 제거하고 직접 이벤트 연결 (충돌 방지)
+        if (previewBtn) {
+            previewBtn.removeAttribute('onclick');
+            previewBtn.addEventListener('click', function() {
+                const imgInput = document.getElementById('popup_image');
+                const previewImg = document.getElementById('popup_image_preview');
+                
+                if (!imgInput || !previewImg) return;
+
+                const imgPath = imgInput.value.trim();
+                if (imgPath) {
+                    const finalSrc = imgPath.startsWith('http') ? imgPath : `./${imgPath}`;
+                    previewImg.src = finalSrc + "?t=" + new Date().getTime();
+                    
+                    previewImg.onerror = function() {
+                        this.src = 'data:image/svg+xml,...(중략)...';
+                    };
+                } else {
+                    alert("이미지 경로를 입력해주세요.");
+                }
+            });
+        }
+    });
 })();
 
     window.initAdminSettings();
