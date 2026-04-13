@@ -426,6 +426,153 @@ body::before {
         font-size: 1.6rem;
     }
 }
+/* ══════════════════════════════════════════════════════════════
+   POPUP MODAL STYLES
+   ══════════════════════════════════════════════════════════════ */
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 6, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.popup-container {
+    position: relative;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
+    border: 2px solid var(--border-2);
+    border-radius: 24px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(59, 130, 246, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1);
+    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.popup-close-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(244, 63, 94, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+}
+
+.popup-close-top:hover {
+    background: rgba(244, 63, 94, 1);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.popup-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+.popup-image {
+    max-width: 100%;
+    max-height: 60vh;
+    width: auto;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    object-fit: contain;
+}
+
+.popup-message {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: white;
+    text-align: center;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 10px 20px;
+}
+
+.popup-close-bottom {
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    padding: 16px;
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.popup-close-bottom:hover {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+.popup-close-bottom:active {
+    transform: translateY(0);
+}
+
+/* Mobile Optimization */
+@media (max-width: 600px) {
+    .popup-container {
+        max-width: 95vw;
+        max-height: 95vh;
+        border-radius: 20px;
+    }
+    
+    .popup-image {
+        max-height: 50vh;
+    }
+    
+    .popup-close-top {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        top: 10px;
+        right: 10px;
+    }
+}
 </style>
 
 </head>
@@ -504,6 +651,17 @@ body::before {
         </div>
     </div>
 
+<!-- Popup Modal -->
+<div id="popup_overlay" class="popup-overlay" style="display: none;">
+    <div class="popup-container">
+        <button class="popup-close-top" onclick="closePopup()">✕</button>
+        <div class="popup-content" onclick="closePopup()">
+            <img id="popup_img" src="" alt="Popup" class="popup-image">
+            <p id="popup_text" class="popup-message"></p>
+        </div>
+        <button class="popup-close-bottom" onclick="closePopup()">Close</button>
+    </div>
+</div>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -612,6 +770,97 @@ const initDateDisplay = () => {
     if (dayNameEl) dayNameEl.textContent = daysArr[now.getDay()];
     if (dayNumberEl) dayNumberEl.textContent = String(now.getDate()).padStart(2, '0');
 };
+
+/* ══════════════════════════════════════════════════════════════
+   POPUP MANAGEMENT
+   ══════════════════════════════════════════════════════════════ */
+let popupAutoCloseTimer = null;
+
+const closePopup = () => {
+    const overlay = document.getElementById('popup_overlay');
+    if (overlay) {
+        overlay.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            overlay.style.animation = '';
+        }, 300);
+    }
+    
+    if (popupAutoCloseTimer) {
+        clearTimeout(popupAutoCloseTimer);
+        popupAutoCloseTimer = null;
+    }
+};
+
+// Popup 체크 및 표시 함수 (수정됨)
+const checkAndShowPopup = () => {
+    if (!database) return;
+
+    database.ref('settings/config/Popup').once('value', (snapshot) => {
+        const popupData = snapshot.val();
+        
+        if (!popupData || popupData.Flag !== 'ON') {
+            return;
+        }
+
+        // 날짜 범위 체크
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+        
+        const startDate = popupData.Start || '00000000';
+        const endDate = popupData.End || '99999999';
+
+        if (todayStr < startDate || todayStr > endDate) {
+            console.log('Popup not in date range');
+            return;
+        }
+
+        // 팝업 표시
+        const overlay = document.getElementById('popup_overlay');
+        const img = document.getElementById('popup_img');
+        const text = document.getElementById('popup_text');
+
+        if (popupData.Image) {
+            img.src = popupData.Image;
+            img.style.display = 'block';
+            img.onerror = () => {
+                img.style.display = 'none';
+            };
+        } else {
+            img.style.display = 'none';
+        }
+
+        if (popupData.Msg) {
+            text.textContent = popupData.Msg;
+            text.style.display = 'block';
+        } else {
+            text.style.display = 'none';
+        }
+
+        overlay.style.display = 'flex';
+
+        // 5초 후 자동 닫기
+        popupAutoCloseTimer = setTimeout(() => {
+            closePopup();
+        }, 5000);
+    });
+};
+
+// Expose closePopup to global scope
+window.closePopup = closePopup;
+
+/* ══════════════════════════════════════════════════════════════
+   INITIALIZATION에 팝업 체크 추가
+   ══════════════════════════════════════════════════════════════ */
+// 기존 DOMContentLoaded 이벤트 리스너 내부 마지막에 추가:
+document.addEventListener('DOMContentLoaded', () => {
+    // ... 기존 코드 ...
+    
+    // Check and show popup (마지막에 추가)
+    setTimeout(() => {
+        checkAndShowPopup();
+    }, 1000); // 페이지 로드 1초 후 팝업 체크
+});
 
 
 /* ══════════════════════════════════════════════════════════════
