@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<meta name="theme-color" content="#03060f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#03060f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Menu Select - Daily System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -14,7 +14,7 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════════
-   1. VARIABLES & RESET (최적화)
+   1. VARIABLES & RESET
    ══════════════════════════════════════════════════════════════ */
 :root {
     --bg: #03060f;
@@ -53,40 +53,85 @@ body {
     justify-content: center;
     -webkit-font-smoothing: antialiased;
     position: relative;
-    /* 과도한 3D 원근법 제거 (부하 방지) */
     perspective: 1500px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   2. ATMOSPHERE (부하 감소 처리)
+   2. ADVANCED 3D BACKGROUND CANVAS (GPU Accelerated)
    ══════════════════════════════════════════════════════════════ */
-/* 노이즈 효과를 고정 이미지 대신 가벼운 패턴으로 유지 */
+#bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Subtle noise overlay */
 body::before {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 1;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.02;
+    opacity: 0.03;
     pointer-events: none;
 }
 
-/* 배경 오브(Orb) 최적화: 블러 반경 감소 및 애니메이션 단순화 */
+/* Ambient glow orbs */
 .orb {
     position: fixed;
     border-radius: 50%;
-    filter: blur(80px); /* 140px -> 80px로 감소 (GPU 부하 절감) */
+    filter: blur(80px);
     pointer-events: none;
     z-index: 1;
-    animation: orb-float 20s ease-in-out infinite alternate;
+    will-change: transform, opacity;
 }
 
-.orb-a { width: 600px; height: 600px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); top: -20%; right: -10%; }
-.orb-b { width: 400px; height: 400px; background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); bottom: -10%; left: -10%; animation-delay: -5s; }
+.orb-a { 
+    width: 600px; 
+    height: 600px; 
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%); 
+    top: -20%; 
+    right: -10%;
+    animation: orb-float-a 25s ease-in-out infinite;
+}
 
-@keyframes orb-float {
-    from { transform: translate(0, 0) scale(1); opacity: 0.5; }
-    to { transform: translate(30px, 30px) scale(1.1); opacity: 0.7; }
+.orb-b { 
+    width: 400px; 
+    height: 400px; 
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.12), transparent 70%); 
+    bottom: -10%; 
+    left: -10%;
+    animation: orb-float-b 20s ease-in-out infinite;
+}
+
+.orb-c {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.1), transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: orb-float-c 30s ease-in-out infinite;
+}
+
+@keyframes orb-float-a {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    33% { transform: translate(-50px, 40px) scale(1.1); opacity: 0.7; }
+    66% { transform: translate(30px, -30px) scale(0.95); opacity: 0.6; }
+}
+
+@keyframes orb-float-b {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+    50% { transform: translate(60px, -50px) scale(1.15); opacity: 0.65; }
+}
+
+@keyframes orb-float-c {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+    25% { transform: translate(-40%, -60%) scale(1.05); opacity: 0.5; }
+    50% { transform: translate(-60%, -50%) scale(0.95); opacity: 0.4; }
+    75% { transform: translate(-50%, -40%) scale(1.1); opacity: 0.55; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -126,10 +171,11 @@ body::before {
 }
 
 .live-dot {
-    width: 6px; height: 6px;
+    width: 6px; 
+    height: 6px;
     border-radius: 50%;
     background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
+    box-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan);
     animation: pulse 2s infinite;
 }
 
@@ -143,24 +189,39 @@ body::before {
     font-weight: 900;
     color: #fff;
     margin-bottom: 10px;
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
 }
 
 .greeting span {
-    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    background: linear-gradient(135deg, var(--blue), var(--cyan), var(--violet));
+    background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.sub-label {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   4. MENU GRID & CARDS (최적화)
+   4. ENHANCED 3D MENU CARDS
    ══════════════════════════════════════════════════════════════ */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 4 -> 2로 변경 (모바일 우선) */
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     width: 100%;
-    max-width: 500px; /* 800 -> 500 */
+    max-width: 500px;
     margin-bottom: 2rem;
+    perspective: 1500px;
 }
 
 @media (min-width: 768px) {
@@ -173,7 +234,7 @@ body::before {
 
 .menu-card {
     position: relative;
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.8), rgba(8, 18, 36, 0.95));
     border: 1px solid var(--border-2);
     border-radius: 24px;
     padding: 30px 15px;
@@ -182,22 +243,34 @@ body::before {
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 
         0 8px 20px rgba(0,0,0,0.4),
         inset 0 1px 0 rgba(255,255,255,0.1),
         inset 0 -1px 0 rgba(0,0,0,0.3);
     transform-style: preserve-3d;
+    will-change: transform;
+    overflow: hidden;
 }
 
+/* Animated gradient border effect */
 .menu-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 20%;
-    right: 20%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+    inset: -2px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--blue), var(--cyan), var(--violet), var(--rose));
+    background-size: 300% 300%;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s;
+    animation: gradient-rotate 6s linear infinite;
+}
+
+@keyframes gradient-rotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .menu-card::after {
@@ -205,21 +278,47 @@ body::before {
     position: absolute;
     inset: 0;
     border-radius: 24px;
-    background: linear-gradient(145deg, rgba(59,130,246,0.05), transparent);
+    background: linear-gradient(145deg, rgba(59,130,246,0.1), transparent);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.4s;
 }
 
+/* Shimmer effect on top edge */
+.card-shimmer {
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.8), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.menu-card:hover .card-shimmer {
+    opacity: 1;
+    animation: shimmer-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Desktop hover effects */
 @media (hover: hover) {
     .menu-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(16, 32, 60, 0.8));
+        transform: translateY(-15px) scale(1.05);
+        background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(16, 32, 60, 0.9));
         border-color: var(--blue);
         box-shadow: 
-            0 20px 40px rgba(59, 130, 246, 0.3),
-            0 0 30px rgba(59, 130, 246, 0.2),
-            inset 0 2px 0 rgba(255,255,255,0.15),
-            inset 0 -2px 0 rgba(0,0,0,0.4);
+            0 25px 50px rgba(59, 130, 246, 0.4),
+            0 0 40px rgba(59, 130, 246, 0.3),
+            inset 0 2px 0 rgba(255,255,255,0.2);
+    }
+    
+    .menu-card:hover::before {
+        opacity: 0.5;
     }
     
     .menu-card:hover::after {
@@ -232,10 +331,29 @@ body::before {
 }
 
 .card-icon-wrap {
-    width: 60px; height: 60px;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.4));
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
 }
-.card-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
+
+.menu-card:hover .card-icon-wrap {
+    transform: translateZ(30px) scale(1.15) rotateY(10deg);
+    animation: icon-float 2s ease-in-out infinite;
+}
+
+@keyframes icon-float {
+    0%, 100% { transform: translateZ(30px) scale(1.15) rotateY(10deg) translateY(0); }
+    50% { transform: translateZ(30px) scale(1.15) rotateY(10deg) translateY(-8px); }
+}
+
+.card-icon-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 
 .card-label {
     font-size: 11px;
@@ -244,20 +362,16 @@ body::before {
     text-transform: uppercase;
     color: var(--text);
     text-align: center;
+    transition: color 0.3s;
 }
 
-/* 데스크톱 호버 효과 단순화 */
-@media (hover: hover) {
-    .menu-card:hover {
-        transform: translateY(-8px);
-        background: rgba(59, 130, 246, 0.15);
-        border-color: var(--blue);
-        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
-    }
+.menu-card:hover .card-label {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   5. BOTTOM ACTIONS & OTHERS
+   5. BOTTOM ACTIONS
    ══════════════════════════════════════════════════════════════ */
 .bottom-actions {
     display: grid;
@@ -274,7 +388,9 @@ body::before {
         gap: 20px;
     }
 }
+
 .action-btn {
+    position: relative;
     background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
     border: 1px solid var(--border-2);
     border-radius: 20px;
@@ -284,32 +400,37 @@ body::before {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 
         0 8px 20px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.3);
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    overflow: hidden;
 }
 
 .action-btn::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 20%;
-    right: 20%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.4), transparent);
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
 }
 
 @media (hover: hover) {
     .action-btn:hover {
-        transform: translateY(-8px) scale(1.02);
-        background: linear-gradient(145deg, rgba(129, 140, 248, 0.15), rgba(16, 32, 60, 0.8));
+        transform: translateY(-10px) scale(1.03);
+        background: linear-gradient(145deg, rgba(129, 140, 248, 0.2), rgba(16, 32, 60, 0.9));
         border-color: var(--violet);
         box-shadow: 
-            0 15px 35px rgba(129, 140, 248, 0.25),
-            0 0 25px rgba(129, 140, 248, 0.15),
-            inset 0 2px 0 rgba(255,255,255,0.15);
+            0 20px 40px rgba(129, 140, 248, 0.3),
+            0 0 30px rgba(129, 140, 248, 0.2);
+    }
+    
+    .action-btn:hover::before {
+        opacity: 1;
     }
 }
 
@@ -321,8 +442,8 @@ body::before {
     width: 55px;
     height: 55px;
     border-radius: 16px;
-    background: linear-gradient(145deg, rgba(59,130,246,0.15), rgba(16,32,60,0.5));
-    border: 1px solid rgba(255,255,255,0.1);
+    background: linear-gradient(145deg, rgba(59,130,246,0.2), rgba(16,32,60,0.6));
+    border: 1px solid rgba(255,255,255,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -330,7 +451,7 @@ body::before {
     transition: all 0.3s;
     box-shadow: 
         0 4px 12px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.1);
+        inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
 @media (min-width: 768px) {
@@ -340,44 +461,10 @@ body::before {
     }
 }
 
-
-.action-btn:active .action-icon { transform: scale(0.9); }
-
-.day-indicator {
-    position: fixed; top: 20px; right: 20px;
-    text-align: right; z-index: 10;
-}
-.day-name { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; }
-.day-number { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.1); }
-
-/* 프로필 (이미지만 표시) */
-.profile-container { margin-left: 10px; pointer-events: none; }
-.profile-img {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    border: 2px solid var(--cyan);
-    object-fit: cover;
-    box-shadow: 0 0 15px var(--blue-glow);
+.action-btn:hover .action-icon {
+    transform: scale(1.1) rotateZ(10deg);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   6. RESPONSIVE (미디어 쿼리 통합)
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 600px) {
-    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .greeting { font-size: 2.2rem; }
-    .menu-card { padding: 25px 10px; border-radius: 18px; }
-    .card-icon-wrap { width: 50px; height: 50px; }
-    .orb { display: none; } /* 모바일에서 배경 애니메이션 삭제 (성능 최우선) */
-}
-
-@keyframes reveal {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* 불필요한 모달 CSS 삭제 */
-.profile-modal-overlay, .profile-edit-icon { display: none !important; }
 .action-label {
     font-size: 11px;
     font-weight: 700;
@@ -385,23 +472,309 @@ body::before {
     text-transform: uppercase;
     color: var(--text);
 }
-.card-icon-wrap {
-    width: 70px;
-    height: 70px;
-    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
-    transform-style: preserve-3d;
+
+/* ══════════════════════════════════════════════════════════════
+   6. DAY INDICATOR
+   ══════════════════════════════════════════════════════════════ */
+.day-indicator {
+    position: fixed; 
+    top: 20px; 
+    right: 20px;
+    text-align: right; 
+    z-index: 10;
+    opacity: 0;
+    animation: fade-in 1s ease-out 0.5s forwards;
+}
+
+@keyframes fade-in {
+    to { opacity: 1; }
+}
+
+.day-name { 
+    font-size: 10px; 
+    color: var(--muted); 
+    letter-spacing: 0.2em; 
+    text-transform: uppercase; 
+}
+
+.day-number { 
+    font-size: 2rem; 
+    font-weight: 900; 
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. PROFILE
+   ══════════════════════════════════════════════════════════════ */
+.profile-container { 
+    margin-left: 10px; 
+    pointer-events: none;
+    animation: profile-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+}
+
+@keyframes profile-pop {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.profile-img {
+    width: 50px; 
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    object-fit: cover;
+    box-shadow: 
+        0 0 20px var(--blue-glow),
+        0 4px 15px rgba(0,0,0,0.4);
     transition: transform 0.3s;
 }
 
-.menu-card:hover .card-icon-wrap {
-    transform: translateZ(20px) scale(1.1);
+.profile-img:hover {
+    transform: scale(1.1);
 }
 
-.card-icon-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+/* ══════════════════════════════════════════════════════════════
+   8. EXPLOSIVE POPUP ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 6, 15, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
 }
+
+/* Explosive entrance from point */
+.popup-overlay.explode-in {
+    animation: overlay-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes overlay-fade-in {
+    to { opacity: 1; }
+}
+
+.popup-container {
+    position: relative;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.98), rgba(8, 18, 36, 1));
+    border: 2px solid var(--blue);
+    border-radius: 28px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        0 0 100px rgba(59, 130, 246, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15);
+    transform: scale(0);
+    opacity: 0;
+}
+
+.popup-overlay.explode-in .popup-container {
+    animation: explosive-entry 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes explosive-entry {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.15) rotate(5deg);
+        opacity: 1;
+    }
+    80% {
+        transform: scale(0.95) rotate(-2deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Particle burst effect */
+.popup-overlay.explode-in::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, var(--blue), transparent);
+    border-radius: 50%;
+    animation: particle-burst 0.8s ease-out forwards;
+}
+
+@keyframes particle-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(100);
+        opacity: 0;
+    }
+}
+
+/* Mist/fog disappearance */
+.popup-overlay.mist-out {
+    animation: mist-fade 1.2s ease-out forwards;
+}
+
+@keyframes mist-fade {
+    0% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 0;
+        filter: blur(20px);
+    }
+}
+
+.popup-overlay.mist-out .popup-container {
+    animation: dissolve 1.2s ease-out forwards;
+}
+
+@keyframes dissolve {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 0;
+        filter: blur(15px);
+    }
+}
+
+.popup-close-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.9), rgba(220, 38, 38, 1));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 4px 15px rgba(244, 63, 94, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.popup-close-top:hover {
+    background: linear-gradient(135deg, rgba(244, 63, 94, 1), rgba(220, 38, 38, 1));
+    transform: rotate(90deg) scale(1.15);
+    box-shadow: 
+        0 6px 25px rgba(244, 63, 94, 0.7),
+        0 0 30px rgba(244, 63, 94, 0.5);
+}
+
+.popup-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+.popup-image {
+    max-width: 100%;
+    max-height: 60vh;
+    width: auto;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.4),
+        0 0 50px rgba(59, 130, 246, 0.3);
+    object-fit: contain;
+    animation: image-glow 2s ease-in-out infinite;
+}
+
+@keyframes image-glow {
+    0%, 100% { 
+        box-shadow: 
+            0 15px 40px rgba(0, 0, 0, 0.4),
+            0 0 50px rgba(59, 130, 246, 0.3);
+    }
+    50% { 
+        box-shadow: 
+            0 15px 40px rgba(0, 0, 0, 0.4),
+            0 0 60px rgba(59, 130, 246, 0.5);
+    }
+}
+
+.popup-message {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: white;
+    text-align: center;
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--violet));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 10px 20px;
+    animation: text-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes text-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.popup-close-bottom {
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    padding: 18px;
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 1));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 18px;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 6px 20px rgba(59, 130, 246, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.popup-close-bottom:hover {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+    transform: translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(59, 130, 246, 0.7),
+        0 0 40px rgba(59, 130, 246, 0.5);
+}
+
+.popup-close-bottom:active {
+    transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   9. RESPONSIVE OPTIMIZATIONS
+   ══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
     .menu-card {
         padding: 28px 12px;
@@ -425,140 +798,11 @@ body::before {
         height: 50px;
         font-size: 1.6rem;
     }
-}
-/* ══════════════════════════════════════════════════════════════
-   POPUP MODAL STYLES
-   ══════════════════════════════════════════════════════════════ */
-.popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(3, 6, 15, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.popup-container {
-    position: relative;
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
-    border: 2px solid var(--border-2);
-    border-radius: 24px;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(59, 130, 246, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1);
-    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popupSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.popup-close-top {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 40px;
-    height: 40px;
-    background: rgba(244, 63, 94, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
-}
-
-.popup-close-top:hover {
-    background: rgba(244, 63, 94, 1);
-    transform: rotate(90deg) scale(1.1);
-}
-
-.popup-content {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    cursor: pointer;
-    max-height: calc(90vh - 100px);
-    overflow-y: auto;
-}
-
-.popup-image {
-    max-width: 100%;
-    max-height: 60vh;
-    width: auto;
-    height: auto;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    object-fit: contain;
-}
-
-.popup-message {
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    font-weight: 700;
-    color: white;
-    text-align: center;
-    background: linear-gradient(135deg, var(--cyan), var(--blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding: 10px 20px;
-}
-
-.popup-close-bottom {
-    width: calc(100% - 40px);
-    margin: 0 20px 20px;
-    padding: 16px;
-    background: linear-gradient(145deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    color: white;
-    font-size: 14px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-}
-
-.popup-close-bottom:hover {
-    background: linear-gradient(145deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
-}
-
-.popup-close-bottom:active {
-    transform: translateY(0);
-}
-
-/* Mobile Optimization */
-@media (max-width: 600px) {
+    
     .popup-container {
         max-width: 95vw;
         max-height: 95vh;
-        border-radius: 20px;
+        border-radius: 24px;
     }
     
     .popup-image {
@@ -566,12 +810,31 @@ body::before {
     }
     
     .popup-close-top {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
+        width: 38px;
+        height: 38px;
+        font-size: 20px;
         top: 10px;
         right: 10px;
     }
+    
+    /* Disable heavy animations on mobile */
+    .orb {
+        animation: none !important;
+    }
+}
+
+/* Disable 3D effects on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@keyframes reveal {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 
@@ -579,15 +842,21 @@ body::before {
 
 <body>
 
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Ambient Orbs -->
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
     <div class="orb orb-c"></div>
 
+    <!-- Day Indicator -->
     <div class="day-indicator">
         <span class="day-name" id="dayName"></span>
         <span class="day-number" id="dayNumber"></span>
     </div>
 
+    <!-- Main Content -->
     <div class="content-wrapper">
         <div class="main-section">
 
@@ -605,7 +874,7 @@ body::before {
 
             <div class="menu-grid">
                 <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
-                    <div class="card-glow"></div>
+                    <div class="card-shimmer"></div>
                     <div class="card-icon-wrap">
                         <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
                     </div>
@@ -613,7 +882,7 @@ body::before {
                 </div>
 
                 <div class="menu-card" onclick="navigateTo('staff_report.html')">
-                    <div class="card-glow"></div>
+                    <div class="card-shimmer"></div>
                     <div class="card-icon-wrap">
                         <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
                     </div>
@@ -621,7 +890,7 @@ body::before {
                 </div>
 
                 <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
-                    <div class="card-glow"></div>
+                    <div class="card-shimmer"></div>
                     <div class="card-icon-wrap">
                         <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
                     </div>
@@ -629,7 +898,7 @@ body::before {
                 </div>
 
                 <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
-                    <div class="card-glow"></div>
+                    <div class="card-shimmer"></div>
                     <div class="card-icon-wrap">
                         <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
                     </div>
@@ -651,23 +920,149 @@ body::before {
         </div>
     </div>
 
-<!-- Popup Modal -->
-<div id="popup_overlay" class="popup-overlay" style="display: none;">
-    <div class="popup-container">
-        <button class="popup-close-top" onclick="closePopup()">✕</button>
-        <div class="popup-content" onclick="closePopup()">
-            <img id="popup_img" src="" alt="Popup" class="popup-image">
-            <p id="popup_text" class="popup-message"></p>
+    <!-- Explosive Popup Modal -->
+    <div id="popup_overlay" class="popup-overlay" style="display: none;">
+        <div class="popup-container">
+            <button class="popup-close-top" onclick="closePopup()">✕</button>
+            <div class="popup-content" onclick="closePopup()">
+                <img id="popup_img" src="" alt="Popup" class="popup-image">
+                <p id="popup_text" class="popup-message"></p>
+            </div>
+            <button class="popup-close-bottom" onclick="closePopup()">Close</button>
         </div>
-        <button class="popup-close-bottom" onclick="closePopup()">Close</button>
     </div>
-</div>
 
 <script>
+/* ══════════════════════════════════════════════════════════════
+   OPTIMIZED 3D BACKGROUND PARTICLES (GPU Accelerated)
+   ══════════════════════════════════════════════════════════════ */
+class ParticleBackground {
+    constructor() {
+        this.canvas = document.getElementById('bg-canvas');
+        if (!this.canvas) return;
+        
+        this.ctx = this.canvas.getContext('2d', { alpha: true });
+        this.particles = [];
+        this.particleCount = window.innerWidth < 768 ? 30 : 50; // Reduced for mobile
+        this.mouse = { x: 0, y: 0 };
+        this.init();
+    }
+
+    init() {
+        this.resize();
+        this.createParticles();
+        this.animate();
+        
+        window.addEventListener('resize', () => this.resize());
+        
+        // Mouse tracking (desktop only)
+        if (window.matchMedia('(hover: hover)').matches) {
+            document.addEventListener('mousemove', (e) => {
+                this.mouse.x = e.clientX;
+                this.mouse.y = e.clientY;
+            });
+        }
+    }
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    createParticles() {
+        this.particles = [];
+        for (let i = 0; i < this.particleCount; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                z: Math.random() * 1000,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                vz: Math.random() * 2 + 1,
+                size: Math.random() * 2 + 1,
+                color: `rgba(${59 + Math.random() * 70}, ${130 + Math.random() * 70}, ${246}, ${Math.random() * 0.5 + 0.3})`
+            });
+        }
+    }
+
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.particles.forEach((p, i) => {
+            // 3D depth effect
+            const scale = 1000 / (1000 + p.z);
+            const x2d = (p.x - this.canvas.width / 2) * scale + this.canvas.width / 2;
+            const y2d = (p.y - this.canvas.height / 2) * scale + this.canvas.height / 2;
+            const size = p.size * scale;
+
+            // Mouse interaction (subtle)
+            if (window.matchMedia('(hover: hover)').matches) {
+                const dx = this.mouse.x - x2d;
+                const dy = this.mouse.y - y2d;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 150) {
+                    const force = (150 - dist) / 150;
+                    p.vx -= (dx / dist) * force * 0.05;
+                    p.vy -= (dy / dist) * force * 0.05;
+                }
+            }
+
+            // Update position
+            p.x += p.vx;
+            p.y += p.vy;
+            p.z -= p.vz;
+
+            // Reset if out of bounds
+            if (p.z < 1) {
+                p.z = 1000;
+                p.x = Math.random() * this.canvas.width;
+                p.y = Math.random() * this.canvas.height;
+            }
+
+            if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+
+            // Apply friction
+            p.vx *= 0.99;
+            p.vy *= 0.99;
+
+            // Draw particle
+            this.ctx.beginPath();
+            this.ctx.arc(x2d, y2d, size, 0, Math.PI * 2);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fill();
+
+            // Draw connections
+            this.particles.slice(i + 1).forEach(p2 => {
+                const scale2 = 1000 / (1000 + p2.z);
+                const x2d2 = (p2.x - this.canvas.width / 2) * scale2 + this.canvas.width / 2;
+                const y2d2 = (p2.y - this.canvas.height / 2) * scale2 + this.canvas.height / 2;
+                
+                const dx = x2d - x2d2;
+                const dy = y2d - y2d2;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 120) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x2d, y2d);
+                    this.ctx.lineTo(x2d2, y2d2);
+                    this.ctx.strokeStyle = `rgba(59, 130, 246, ${(1 - dist / 120) * 0.2})`;
+                    this.ctx.lineWidth = 0.5;
+                    this.ctx.stroke();
+                }
+            });
+        });
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
 /* ══════════════════════════════════════════════════════════════
    GLOBAL CONFIGURATION
    ══════════════════════════════════════════════════════════════ */
 let database;
+let particleBg;
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCBYlhoIPDtXnPrKugo_AQ7dYVCEyMyO-w",
@@ -700,7 +1095,6 @@ const handleLogout = () => {
     }
 };
 
-
 const loadProfileImg = (userId) => {
     if (!userId || !database) return;
 
@@ -717,14 +1111,11 @@ const loadProfileImg = (userId) => {
         if (!container) {
             container = document.createElement('div');
             container.className = 'profile-container';
-            // [삭제함] container.onclick = openProfileImagePicker; <-- 이 줄을 삭제해서 클릭을 막습니다.
             
             const imgEl = document.createElement('img');
             imgEl.className = 'profile-img';
             imgEl.alt = 'Profile';
             
-            // [삭제함] editIcon 생성 및 추가 로직 삭제 (연필 모양 아이콘 제거)
-
             container.appendChild(imgEl);
             
             if (greetingEl && greetingEl.parentNode) {
@@ -772,18 +1163,22 @@ const initDateDisplay = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   POPUP MANAGEMENT
+   EXPLOSIVE POPUP MANAGEMENT
    ══════════════════════════════════════════════════════════════ */
 let popupAutoCloseTimer = null;
 
 const closePopup = () => {
     const overlay = document.getElementById('popup_overlay');
     if (overlay) {
-        overlay.style.animation = 'fadeOut 0.3s ease-out';
+        // Remove explode-in class and add mist-out class
+        overlay.classList.remove('explode-in');
+        overlay.classList.add('mist-out');
+        
+        // Hide after animation completes
         setTimeout(() => {
             overlay.style.display = 'none';
-            overlay.style.animation = '';
-        }, 300);
+            overlay.classList.remove('mist-out');
+        }, 1200);
     }
     
     if (popupAutoCloseTimer) {
@@ -792,7 +1187,6 @@ const closePopup = () => {
     }
 };
 
-// Popup 체크 및 표시 함수 (수정됨)
 const checkAndShowPopup = () => {
     if (!database) return;
 
@@ -803,9 +1197,9 @@ const checkAndShowPopup = () => {
             return;
         }
 
-        // 날짜 범위 체크
+        // Date range check
         const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, '');
         
         const startDate = popupData.Start || '00000000';
         const endDate = popupData.End || '99999999';
@@ -815,7 +1209,7 @@ const checkAndShowPopup = () => {
             return;
         }
 
-        // 팝업 표시
+        // Display popup with explosive animation
         const overlay = document.getElementById('popup_overlay');
         const img = document.getElementById('popup_img');
         const text = document.getElementById('popup_text');
@@ -838,33 +1232,23 @@ const checkAndShowPopup = () => {
         }
 
         overlay.style.display = 'flex';
+        
+        // Trigger explosive entrance animation
+        requestAnimationFrame(() => {
+            overlay.classList.add('explode-in');
+        });
 
-        // 5초 후 자동 닫기
+        // Auto-close after 5 seconds with mist effect
         popupAutoCloseTimer = setTimeout(() => {
             closePopup();
         }, 5000);
     });
 };
 
-// Expose closePopup to global scope
 window.closePopup = closePopup;
 
 /* ══════════════════════════════════════════════════════════════
-   INITIALIZATION에 팝업 체크 추가
-   ══════════════════════════════════════════════════════════════ */
-// 기존 DOMContentLoaded 이벤트 리스너 내부 마지막에 추가:
-document.addEventListener('DOMContentLoaded', () => {
-    // ... 기존 코드 ...
-    
-    // Check and show popup (마지막에 추가)
-    setTimeout(() => {
-        checkAndShowPopup();
-    }, 1000); // 페이지 로드 1초 후 팝업 체크
-});
-
-
-/* ══════════════════════════════════════════════════════════════
-   3D TILT EFFECT (Desktop only)
+   3D TILT EFFECT (Desktop only, optimized)
    ══════════════════════════════════════════════════════════════ */
 const init3DTiltEffect = () => {
     if (!window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
@@ -884,13 +1268,14 @@ const init3DTiltEffect = () => {
         const animate = () => {
             if (!isAnimating) return;
 
-            currentX = lerp(currentX, targetX, 0.12);
-            currentY = lerp(currentY, targetY, 0.12);
+            currentX = lerp(currentX, targetX, 0.15);
+            currentY = lerp(currentY, targetY, 0.15);
 
             card.style.transform = `
-                perspective(1200px) 
+                perspective(1500px) 
                 rotateX(${currentX}deg) 
                 rotateY(${currentY}deg) 
+                translateY(-15px)
                 scale(1.05)
             `;
 
@@ -907,8 +1292,8 @@ const init3DTiltEffect = () => {
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            targetX = -((e.clientY - centerY) / (rect.height / 2)) * 12;
-            targetY = ((e.clientX - centerX) / (rect.width / 2)) * 12;
+            targetX = -((e.clientY - centerY) / (rect.height / 2)) * 15;
+            targetY = ((e.clientX - centerX) / (rect.width / 2)) * 15;
         });
 
         card.addEventListener('mouseleave', () => {
@@ -928,28 +1313,23 @@ const init3DTiltEffect = () => {
    MOBILE TOUCH OPTIMIZATION
    ══════════════════════════════════════════════════════════════ */
 const initMobileTouchEffects = () => {
-    // 모바일에서만 실행
     if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
         const cards = document.querySelectorAll('.menu-card');
         
         cards.forEach(card => {
-            // 터치 시작
             card.addEventListener('touchstart', () => {
                 card.style.transform = 'scale(0.96)';
             }, { passive: true });
             
-            // 터치 종료
             card.addEventListener('touchend', () => {
                 card.style.transform = '';
             }, { passive: true });
             
-            // 터치 취소
             card.addEventListener('touchcancel', () => {
                 card.style.transform = '';
             }, { passive: true });
         });
         
-        // 액션 버튼 터치 피드백
         const actionBtns = document.querySelectorAll('.action-btn');
         actionBtns.forEach(btn => {
             const icon = btn.querySelector('.action-icon');
@@ -988,7 +1368,6 @@ const setMobileVH = () => {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 };
 
-// 리사이즈 시 재계산
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -997,7 +1376,6 @@ window.addEventListener('resize', () => {
     }, 100);
 });
 
-// 오리엔테이션 변경 감지
 window.addEventListener('orientationchange', () => {
     setTimeout(setMobileVH, 100);
 });
@@ -1031,14 +1409,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize date display
     initDateDisplay();
 
+    // Initialize 3D background particles (only if not reduced motion)
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        particleBg = new ParticleBackground();
+    }
+
     // Initialize 3D tilt effect (Desktop)
     init3DTiltEffect();
     
-    // ===== 아래 3줄 추가 =====
     // Mobile optimizations
     initMobileTouchEffects();
     preventDoubleTapZoom();
     setMobileVH();
+
+    // Check and show popup
+    setTimeout(() => {
+        checkAndShowPopup();
+    }, 1000);
 });
 
 // Expose functions to global scope
