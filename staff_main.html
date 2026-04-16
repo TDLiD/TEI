@@ -615,6 +615,21 @@ body::before {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
+/* 소용돌이치며 사라지는 애니메이션 */
+.popup-exit-active {
+    animation: swirl-out 0.8s ease-in forwards !important;
+}
+
+@keyframes swirl-out {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(720deg);
+        opacity: 0;
+    }
+}
 
 </style>
 
@@ -822,18 +837,25 @@ let popupAutoCloseTimer = null;
 
 const closePopup = () => {
     const overlay = document.getElementById('popup_overlay');
-    if (overlay) {
-        overlay.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            overlay.style.animation = '';
-        }, 300);
-    }
+    const content = document.querySelector('.popup-content');
     
-    if (popupAutoCloseTimer) {
-        clearTimeout(popupAutoCloseTimer);
-        popupAutoCloseTimer = null;
-    }
+    if (!overlay || !content) return;
+
+    // 소용돌이 애니메이션 클래스 추가
+    content.classList.add('popup-exit-active');
+
+    // 애니메이션 시간(0.8초)이 지난 후 실제로 숨김 처리
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        
+        // 다음 팝업을 위해 상태 초기화
+        content.classList.remove('popup-exit-active');
+        
+        if (popupAutoCloseTimer) {
+            clearTimeout(popupAutoCloseTimer);
+            popupAutoCloseTimer = null;
+        }
+    }, 800);
 };
 
 // Popup 체크 및 표시 함수 (수정됨)
