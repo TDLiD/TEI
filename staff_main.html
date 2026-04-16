@@ -573,6 +573,49 @@ body::before {
         right: 10px;
     }
 }
+/* 폭죽 효과 스타일 */
+.confetti-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* 폭죽 효과 삭제 (기존 .confetti-piece 등 삭제) */
+.confetti-container { display: none !important; }
+
+/* 파도치는 무지개 텍스트 효과 */
+.popup-message {
+    display: inline-block;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 800;
+    text-align: center;
+    /* 무지개 그라데이션 설정 */
+    background: linear-gradient(
+        to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* 애니메이션: 무지개 흐르기 + 파도치기 */
+    animation: 
+        rainbow-flow 3s linear infinite,
+        text-wave 2s ease-in-out infinite;
+}
+
+/* 무지개 색상 흐름 애니메이션 */
+@keyframes rainbow-flow {
+    to { background-position: 200% center; }
+}
+
+/* 파도치는(출렁거리는) 애니메이션 */
+@keyframes text-wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
 </style>
 
 </head>
@@ -655,10 +698,11 @@ body::before {
 <div id="popup_overlay" class="popup-overlay" style="display: none;">
     <div class="popup-container">
         <button class="popup-close-top" onclick="closePopup()">✕</button>
-        <div class="popup-content" onclick="closePopup()">
-            <img id="popup_img" src="" alt="Popup" class="popup-image">
-            <p id="popup_text" class="popup-message"></p>
-        </div>
+<div class="popup-content" onclick="closePopup()">
+    <div id="confetti_wrap" class="confetti-container"></div> <img id="popup_img" src="" alt="Popup" class="popup-image">
+    <p id="popup_text" class="popup-message"></p>
+</div>
+
         <button class="popup-close-bottom" onclick="closePopup()">Close</button>
     </div>
 </div>
