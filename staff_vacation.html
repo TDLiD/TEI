@@ -360,6 +360,527 @@ button[onclick="goToToday()"]:hover {
         padding: 2px 4px;
     }
 }
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OPTIMIZATION (추가)
+═══════════════════════════════════════════════════════════════ */
+
+/* 태블릿/대형 모바일 (768px 이상) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .leave-calendar-table td {
+        height: 80px;
+    }
+    .leave-badge {
+        font-size: 7.5px;
+    }
+    #leaveModal > div {
+        max-width: 90% !important;
+    }
+    #staffLeaveModal > div {
+        max-width: 85% !important;
+    }
+}
+
+/* 모바일 (max-width: 768px) */
+@media (max-width: 768px) {
+    /* ── 전체 레이아웃 ── */
+    .animate-fadeIn.space-y-6 {
+        padding: 0 !important;
+    }
+
+    /* ── Header 섹션 ── */
+    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+        border-radius: 1.5rem !important;
+    }
+
+    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type > div {
+        width: 100%;
+    }
+
+    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type > button {
+        width: 100% !important;
+        padding: 1rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    h2 {
+        font-size: 1.5rem !important;
+        flex-wrap: wrap;
+    }
+
+    h2 .w-1\.5 {
+        display: none;
+    }
+
+    /* ── 캘린더 섹션 ── */
+    .bg-slate-900\/50:nth-of-type(2) {
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+    }
+
+    .flex.justify-between.items-center.mb-6.px-2 {
+        flex-direction: column;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }
+
+    #calendarMonthTitle {
+        font-size: 1rem !important;
+        text-align: center;
+        width: 100%;
+    }
+
+    .flex.gap-2.items-center {
+        width: 100%;
+        justify-content: center !important;
+    }
+
+    .flex.gap-2.items-center button {
+        flex: 1;
+        max-width: 100px;
+        padding: 0.5rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    button[onclick="goToToday()"] {
+        max-width: 70px !important;
+        font-size: 0.65rem !important;
+        padding: 0.4rem !important;
+    }
+
+    /* ── 캘린더 테이블 ── */
+    .leave-calendar-table {
+        font-size: 0.65rem !important;
+    }
+
+    .leave-calendar-table th {
+        padding: 0.4rem 0 !important;
+        font-size: 0.6rem !important;
+    }
+
+    .leave-calendar-table td {
+        height: 60px !important;
+        padding: 2px !important;
+        border-radius: 4px;
+    }
+
+    .leave-day-num {
+        font-size: 0.7rem !important;
+        margin-bottom: 1px;
+    }
+
+    .leave-badge {
+        font-size: 0.6rem !important;
+        padding: 1px 3px !important;
+        margin-top: 1px;
+    }
+
+    .today-mark {
+        font-size: 0.5rem !important;
+        padding: 0px 3px !important;
+        margin-left: 2px;
+    }
+
+    /* ── 히스토리 섹션 ── */
+    .bg-slate-900\/50:nth-of-type(3) {
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+    }
+
+    .overflow-x-auto {
+        border-radius: 0.5rem;
+    }
+
+    table {
+        font-size: 0.7rem !important;
+    }
+
+    table thead tr {
+        font-size: 0.65rem !important;
+    }
+
+    table th {
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.65rem !important;
+    }
+
+    table td {
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    table .text-[11px] {
+        font-size: 0.65rem !important;
+    }
+
+    table .text-[10px] {
+        font-size: 0.6rem !important;
+    }
+
+    table .max-w-\[120px\] {
+        max-width: 80px !important;
+    }
+
+    table .max-w-\[80px\] {
+        max-width: 50px !important;
+    }
+
+    /* ── 스태프 리스트 섹션 ── */
+    #staffListContainer {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    #staffListContainer button {
+        width: 100% !important;
+        padding: 0.6rem 0.8rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* ── 모달 창 ── */
+    #leaveModal > div,
+    #staffLeaveModal > div {
+        width: calc(100% - 1rem) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
+        padding: 1.25rem !important;
+        border-radius: 1.5rem !important;
+    }
+
+    /* 모달 타이틀 */
+    #leaveModal h3,
+    #staffLeaveModal h3 {
+        font-size: 1rem !important;
+    }
+
+    .w-10.h-10 {
+        width: 2rem !important;
+        height: 2rem !important;
+        font-size: 1.5rem !important;
+    }
+
+    /* ── 모달 입력 필드 ── */
+    #leaveModal select,
+    #leaveModal input,
+    #leaveModal textarea,
+    #staffLeaveModal select,
+    #staffLeaveModal input,
+    #staffLeaveModal textarea {
+        font-size: 0.9rem !important;
+        padding: 0.8rem !important;
+        border-radius: 0.75rem !important;
+    }
+
+    #leaveModal textarea,
+    #staffLeaveModal textarea {
+        min-height: 80px !important;
+    }
+
+    /* ── 모달 버튼 ── */
+    .grid.grid-cols-2 {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .grid.grid-cols-2 button {
+        padding: 0.8rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    #deleteLeaveBtn,
+    #staffLeaveModal button {
+        padding: 0.75rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* ── 레이블 ── */
+    label {
+        font-size: 0.7rem !important;
+    }
+
+    /* ── 스태프 모달 콘텐츠 ── */
+    #staffLeaveContent {
+        max-height: 60vh !important;
+        padding-right: 0.5rem;
+    }
+
+    #staffLeaveContent > div {
+        padding: 0.75rem 0 !important;
+        border-left-width: 3px !important;
+    }
+
+    #staffLeaveContent h4 {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    #staffLeaveContent .bg-slate-800\/50 {
+        padding: 0.75rem !important;
+        border-radius: 0.5rem !important;
+    }
+
+    #staffLeaveContent .flex.items-center.justify-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.25rem !important;
+    }
+
+    #staffLeaveContent .flex.items-center.gap-3 {
+        flex-wrap: wrap;
+        gap: 0.25rem !important;
+    }
+
+    /* ── Admin Memo Container ── */
+    #adminMemoContainer {
+        padding: 0.75rem !important;
+    }
+
+    #adminMemoText {
+        font-size: 0.7rem !important;
+        min-height: 50px !important;
+    }
+
+    /* ── 섹션 제목 ── */
+    h3, h4 {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    h4.text-xs {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* ── 스크롤바 ── */
+    .no-scrollbar {
+        scrollbar-width: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* ── 페이딩과 애니메이션 ── */
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .animate-zoomIn {
+        animation: modalZoom 0.2s ease-out forwards;
+    }
+
+    /* ── 여백 조정 ── */
+    .pb-20 {
+        padding-bottom: 2rem !important;
+    }
+
+    .space-y-6 > * + * {
+        margin-top: 1rem !important;
+    }
+
+    .space-y-4 > * + * {
+        margin-top: 0.75rem !important;
+    }
+
+    .space-y-2 > * + * {
+        margin-top: 0.5rem !important;
+    }
+
+    /* ── 테두리 반경 조정 ── */
+    .rounded-2xl {
+        border-radius: 1rem !important;
+    }
+
+    .rounded-xl {
+        border-radius: 0.75rem !important;
+    }
+
+    .rounded-lg {
+        border-radius: 0.5rem !important;
+    }
+
+    /* ── 호버 효과 비활성화 (터치 기기) ── */
+    @media (hover: none) {
+        .leave-calendar-table td:hover {
+            transform: none !important;
+        }
+
+        button:hover {
+            transform: none !important;
+        }
+    }
+
+    /* ── Safe Area 고려 (iPhone 노치) ── */
+    @supports (padding: max(0px)) {
+        .animate-fadeIn.space-y-6 {
+            padding-left: max(0.5rem, env(safe-area-inset-left)) !important;
+            padding-right: max(0.5rem, env(safe-area-inset-right)) !important;
+            padding-top: max(0.5rem, env(safe-area-inset-top)) !important;
+        }
+    }
+}
+
+/* 매우 작은 모바일 (max-width: 480px) */
+@media (max-width: 480px) {
+    h2 {
+        font-size: 1.25rem !important;
+    }
+
+    #calendarMonthTitle {
+        font-size: 0.9rem !important;
+    }
+
+    .leave-calendar-table {
+        font-size: 0.55rem !important;
+    }
+
+    .leave-calendar-table td {
+        height: 50px !important;
+        padding: 1px !important;
+    }
+
+    .leave-day-num {
+        font-size: 0.6rem !important;
+    }
+
+    .leave-badge {
+        font-size: 0.5rem !important;
+        padding: 1px 2px !important;
+    }
+
+    table {
+        font-size: 0.65rem !important;
+    }
+
+    table th {
+        padding: 0.4rem 0.15rem !important;
+        font-size: 0.55rem !important;
+    }
+
+    table td {
+        padding: 0.4rem 0.15rem !important;
+    }
+
+    #staffListContainer {
+        flex-direction: column !important;
+    }
+
+    #staffListContainer button {
+        padding: 0.5rem 0.6rem !important;
+        font-size: 0.65rem !important;
+    }
+
+    #leaveModal > div,
+    #staffLeaveModal > div {
+        padding: 1rem !important;
+    }
+
+    .grid.grid-cols-2 button {
+        padding: 0.7rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* 테이블 컬럼 숨기기 (매우 좁은 화면) */
+    table .max-w-\[120px\] {
+        display: none;
+    }
+
+    table tbody tr > td:nth-child(3) {
+        display: none;
+    }
+
+    table thead tr > th:nth-child(3) {
+        display: none;
+    }
+}
+
+/* 초소형 모바일 (max-width: 360px) */
+@media (max-width: 360px) {
+    .leave-calendar-table {
+        font-size: 0.5rem !important;
+    }
+
+    .leave-calendar-table td {
+        height: 45px !important;
+    }
+
+    .leave-day-num {
+        font-size: 0.55rem !important;
+    }
+
+    .leave-badge {
+        font-size: 0.45rem !important;
+        padding: 0.5px 1px !important;
+    }
+
+    #calendarMonthTitle {
+        font-size: 0.8rem !important;
+    }
+
+    table {
+        font-size: 0.6rem !important;
+    }
+
+    h2 {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   직사각형 모바일 (가로 모드)
+═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) and (orientation: landscape) {
+    .leave-calendar-table td {
+        height: 70px !important;
+    }
+
+    .flex.justify-between.items-center.mb-6.px-2 {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+
+    #calendarMonthTitle {
+        text-align: left;
+        flex: 1;
+    }
+
+    .flex.gap-2.items-center {
+        justify-content: flex-end !important;
+        max-width: 300px;
+    }
+}
+/* Staff Leave Modal specific styles */
+#staffLeaveModal input[type="text"],
+#staffLeaveModal select {
+    background: linear-gradient(145deg, #050a14, #070d1a) !important;
+    border: 1px solid var(--dim) !important;
+    color: var(--text) !important;
+}
+
+#staffLeaveModal .space-y-4 {
+    padding-right: 8px;
+}
+
+#staffLeaveModal .space-y-4::-webkit-scrollbar {
+    width: 6px;
+}
+
+#staffLeaveModal .space-y-4::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#staffLeaveModal .space-y-4::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 3px;
+}
+
+#staffLeaveModal .space-y-4::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
 </style>
 
 <div class="animate-fadeIn space-y-6 pb-20">
@@ -383,18 +904,33 @@ button[onclick="goToToday()"]:hover {
         <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar"></div>
     </div>
 
-    <div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
-        <h3 class="text-sm font-black text-white mb-6 flex items-center gap-2 uppercase tracking-tighter"><span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>My Annual Leave History</h3>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead>
-                    <tr class="text-slate-500 uppercase tracking-widest border-b border-slate-800">
-                        <th class="pb-4 font-black">Type</th><th class="pb-4 font-black">Dates</th><th class="pb-4 font-black">Reason</th><th class="pb-4 font-black">Status</th><th class="pb-4 font-black text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="leaveHistoryBody" class="divide-y divide-slate-800/50"></tbody>
-            </table>
-        </div>
+<!-- 기존 "My Annual Leave History" 섹션을 아래로 교체하세요 -->
+<div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
+    <h3 class="text-sm font-black text-white mb-6 flex items-center gap-2 uppercase tracking-tighter">
+        <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Leave Application Status
+    </h3>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead>
+                <tr class="text-slate-500 uppercase tracking-widest border-b border-slate-800">
+                    <th class="pb-4 font-black">Type</th>
+                    <th class="pb-4 font-black">Dates</th>
+                    <th class="pb-4 font-black">Reason</th>
+                    <th class="pb-4 font-black">Status</th>
+                    <th class="pb-4 font-black text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody id="leaveHistoryBody" class="divide-y divide-slate-800/50"></tbody>
+        </table>
+    </div>
+    
+    <!-- Staff List Section -->
+    <div class="mt-8 pt-8 border-t border-slate-800">
+        <h4 class="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Team Leave Overview</h4>
+        <div id="staffListContainer" class="flex flex-wrap gap-2"></div>
+    </div>
+</div>
+
     </div>
 </div>
 
@@ -436,6 +972,18 @@ button[onclick="goToToday()"]:hover {
             <button id="saveLeaveBtn" onclick="submitLeaveRequest()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition uppercase text-xs tracking-widest">Submit</button>
         </div>
         <button id="deleteLeaveBtn" onclick="deleteLeave()" class="w-full mt-4 text-rose-500 text-[10px] font-black uppercase tracking-widest hidden hover:underline">Delete this request</button>
+    </div>
+</div>
+
+<!-- Staff Leave Overview Modal -->
+<div id="staffLeaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] hidden overflow-y-auto pt-4 pb-20 px-4">
+    <div class="relative bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8">
+        <div class="flex justify-between items-center mb-6">
+            <h3 id="staffModalTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">Staff Leave Overview</h3>
+            <button onclick="window.closeStaffLeaveModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl bg-slate-800 rounded-full transition-all">&times;</button>
+        </div>
+        
+        <div id="staffLeaveContent" class="space-y-4 max-h-[70vh] overflow-y-auto"></div>
     </div>
 </div>
 
@@ -545,16 +1093,18 @@ for(let i=0; i<firstDay; i++) html += `<td></td>`;
     window.changeLeaveMonth = function(val) { currentViewDate.setMonth(currentViewDate.getMonth() + val); renderCalendar(); };
     window.goToToday = function() { currentViewDate = new Date(); renderCalendar(); };
 
+// ═══════════════════════════════════════════════════════════════
+// 1. loadLeaveHistory() 함수를 완전히 교체하세요
+// ═══════════════════════════════════════════════════════════════
+
 function loadLeaveHistory() {
     const now = new Date();
     const thisYear = now.getFullYear();
     const thisMonth = String(now.getMonth() + 1).padStart(2, '0');
     const LEAVE_TYPES = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
 
-    // 이전 리스너 참조 저장용
     let leaveListenerRef = null;
 
-    // 페이지 언로드 시 리스너 해제
     function detachLeaveListener() {
         if (leaveListenerRef) {
             leaveListenerRef.off('value');
@@ -562,10 +1112,9 @@ function loadLeaveHistory() {
         }
     }
 
-    // staff.html 탭 전환 시 정리될 수 있도록 window에 등록
     window._leavePageCleanup = detachLeaveListener;
 
-    // ── Step 1: attendance 스캔 후 누락된 휴가 leaves에 추가 ──
+    // Step 1: attendance 스캔
     db.ref('attendance').once('value', attSnap => {
         const attData = attSnap.val() || {};
         const writes = [];
@@ -605,15 +1154,15 @@ function loadLeaveHistory() {
 
         Promise.all(writes).then(() => {
             startLeaveListener();
+            loadStaffList(); // 스태프 리스트 로드 추가
         });
     });
 
-    // ── Step 2: leaves 리스너 ──
+    // Step 2: leaves 리스너 (모든 상태 포함)
     function startLeaveListener() {
         leaveListenerRef = db.ref(`leaves/${user}`);
 
         leaveListenerRef.on('value', snap => {
-            // DOM 존재 여부 먼저 확인 — 없으면 리스너 즉시 해제
             const tbody = document.getElementById('leaveHistoryBody');
             if (!tbody) {
                 detachLeaveListener();
@@ -621,21 +1170,21 @@ function loadLeaveHistory() {
             }
 
             const allYearsData = snap.val() || {};
-            let allApproved = [];
+            let allLeaves = []; // Approved만 아니라 모든 상태 포함
 
             Object.entries(allYearsData).forEach(([yr, yearData]) => {
                 if (!yearData || typeof yearData !== 'object') return;
                 Object.entries(yearData).forEach(([id, item]) => {
-                    if (item && item.status === 'Approved') {
-                        allApproved.push({ id, year: parseInt(yr), ...item });
+                    if (item) {
+                        allLeaves.push({ id, year: parseInt(yr), ...item });
                     }
                 });
             });
 
             const monthPrefix = `${thisYear}-${thisMonth}`;
-            const thisMonthItems = allApproved.filter(i => i.startDate && i.startDate.startsWith(monthPrefix));
-            const thisYearItems  = allApproved.filter(i => i.startDate && i.startDate.startsWith(`${thisYear}`));
-            const overallItems   = allApproved;
+            const thisMonthItems = allLeaves.filter(i => i.startDate && i.startDate.startsWith(monthPrefix));
+            const thisYearItems  = allLeaves.filter(i => i.startDate && i.startDate.startsWith(`${thisYear}`));
+            const overallItems   = allLeaves;
             const sumDays = arr => arr.reduce((acc, i) => acc + (i.totalWeekdays || 0), 0);
 
             const renderSection = (label, color, items, totalDays) => {
@@ -654,7 +1203,10 @@ function loadLeaveHistory() {
                     html += `<tr><td colspan="6" class="py-3 text-center text-[10px] text-slate-600 italic">No records</td></tr>`;
                 } else {
                     items.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0)).forEach(item => {
-                        const statusColor = item.status === 'Approved' ? 'text-emerald-500' : 'text-amber-500';
+                        let statusColor = 'text-emerald-500';
+                        if (item.status === 'Pending') statusColor = 'text-amber-500';
+                        else if (item.status === 'Rejected') statusColor = 'text-rose-500';
+
                         const sourceTag = item.source === 'attendance'
                             ? `<span class="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded ml-1">ATT</span>`
                             : '';
@@ -664,7 +1216,6 @@ function loadLeaveHistory() {
                         const dateRange = item.endDate !== item.startDate
                             ? `${item.startDate} → ${item.endDate}`
                             : item.startDate;
-                        const safeItem = JSON.stringify(item).replace(/'/g, "&#39;").replace(/"/g, '&quot;');
 
                         html += `
                             <tr class="hover:bg-white/5 transition-colors cursor-pointer"
@@ -689,10 +1240,217 @@ function loadLeaveHistory() {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 2. 스태프 리스트 로드 함수 추가
+// ═══════════════════════════════════════════════════════════════
+
+window.loadStaffList = function() {
+    db.ref('leaves').once('value', snap => {
+        const allUsers = Object.keys(snap.val() || {});
+        const container = document.getElementById('staffListContainer');
+        if (!container) return;
+
+        container.innerHTML = allUsers
+            .filter(u => u !== user) // 자신 제외
+            .sort()
+            .map(staffName => `
+                <button onclick="window.showStaffLeaveOverview('${staffName}')"
+                    class="px-4 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95">
+                    ${staffName}
+                </button>
+            `).join('');
+    });
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 3. 스태프 휴가 개요 팝업 함수 추가
+// ═══════════════════════════════════════════════════════════════
+
+window.showStaffLeaveOverview = function(staffName) {
+    db.ref(`leaves/${staffName}`).once('value', snap => {
+        const yearData = snap.val() || {};
+        const modal = document.getElementById('staffLeaveModal');
+        const title = document.getElementById('staffModalTitle');
+        const content = document.getElementById('staffLeaveContent');
+        
+        if (!modal || !content) return;
+
+        // 타이틀 설정
+        title.innerText = `${staffName.toUpperCase()} - Leave Records`;
+
+        // 모든 휴가 데이터를 평탄화하여 정렬
+        let allLeaves = [];
+        Object.keys(yearData).forEach(year => {
+            const yearLeaves = yearData[year] || {};
+            Object.entries(yearLeaves).forEach(([id, item]) => {
+                if (item) {
+                    allLeaves.push({
+                        id,
+                        year: parseInt(year),
+                        ...item
+                    });
+                }
+            });
+        });
+
+        // 날짜 역순 정렬 (최신순)
+        allLeaves.sort((a, b) => {
+            const dateA = new Date(a.startDate);
+            const dateB = new Date(b.startDate);
+            return dateB - dateA;
+        });
+
+        // 연도별로 그룹화
+        const groupedByYear = {};
+        allLeaves.forEach(leave => {
+            if (!groupedByYear[leave.year]) {
+                groupedByYear[leave.year] = [];
+            }
+            groupedByYear[leave.year].push(leave);
+        });
+
+        // HTML 생성
+        let html = '';
+        
+        if (allLeaves.length === 0) {
+            html = '<div class="text-center py-8"><p class="text-slate-400 text-sm">No leave records found</p></div>';
+        } else {
+            Object.keys(groupedByYear)
+                .sort()
+                .reverse()
+                .forEach(year => {
+                    const leaves = groupedByYear[year];
+                    
+                    html += `
+                        <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                            <h4 class="text-sm font-black text-indigo-400 uppercase mb-3">━━ ${year} ━━</h4>
+                            <div class="space-y-2">
+                    `;
+
+                    leaves.forEach(item => {
+                        // 상태별 색상
+                        let statusColor = 'text-emerald-400';
+                        let statusBg = 'bg-emerald-500/10';
+                        if (item.status === 'Pending') {
+                            statusColor = 'text-amber-400';
+                            statusBg = 'bg-amber-500/10';
+                        } else if (item.status === 'Rejected') {
+                            statusColor = 'text-rose-400';
+                            statusBg = 'bg-rose-500/10';
+                        }
+
+                        // 날짜 포맷
+                        const dateDisplay = item.startDate === item.endDate 
+                            ? item.startDate 
+                            : `${item.startDate} ~ ${item.endDate}`;
+
+                        html += `
+                            <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:bg-slate-800 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-indigo-300 font-black text-sm">${item.type}</span>
+                                        <span class="text-slate-500 text-xs font-bold">${dateDisplay}</span>
+                                    </div>
+                                    <span class="font-black text-xs px-3 py-1 rounded-full ${statusColor} ${statusBg} uppercase">${item.status}</span>
+                                </div>
+                                <div class="text-slate-400 text-xs">${item.reason || 'No reason provided'}</div>
+                                ${item.totalWeekdays ? `<div class="text-slate-500 text-xs mt-2">Days: <span class="text-slate-300 font-bold">${item.totalWeekdays}d</span></div>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        content.innerHTML = html;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    });
+};
+
+window.closeStaffLeaveModal = function() {
+    const modal = document.getElementById('staffLeaveModal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 4. renderCalendar() 함수 수정 (이미 모든 staff 표시하도록 되어있음)
+// 기존 코드 유지 - 변경 필요 없음
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// 5. submitLeaveRequest() 함수 수정 (Rejected도 수정 가능하도록)
+// ═══════════════════════════════════════════════════════════════
+
+window.submitLeaveRequest = function() {
+    // Approved만 수정 불가 (Rejected/Pending은 수정 가능)
+    if (editingData && editingData.status === 'Approved') {
+        return alert("Approved requests cannot be modified.");
+    }
+
+    const type = document.getElementById('leaveType').value;
+    const range = datePicker.selectedDates;
+    
+    const escapeHTML = (str) => {
+        return str.replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m]);
+    };
+    const reasonRaw = document.getElementById('leaveReason').value.trim();
+    const reason = escapeHTML(reasonRaw);
+
+    const wordCount = reasonRaw.match(/\b\w+\b/g)?.length || 0;
+    if (wordCount < 5) {
+        alert("Please describe your reason in more detail (at least 5 words).");
+        document.getElementById('leaveReason').focus();
+        return;
+    }
+
+    if (range.length === 0) return alert("Please select dates.");
+    
+    const start = new Date(range[0]);
+    const end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
+    
+    let validDates = [], tempDate = new Date(start);
+    while (tempDate <= end) {
+        if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) validDates.push(new Date(tempDate));
+        tempDate.setDate(tempDate.getDate() + 1);
+    }
+    
+    if (validDates.length === 0) return alert("Weekends are excluded. Please select weekdays.");
+    
+    const startDate = validDates[0].toLocaleDateString('en-CA');
+    const endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA');
+    const year = new Date(startDate).getFullYear();
+    
+    const leaveData = {
+        type, startDate, endDate, reason,
+        status: editingData && editingData.status === 'Rejected' ? "Pending" : "Pending",
+        requestedAt: editingData?.requestedAt || firebase.database.ServerValue.TIMESTAMP,
+        totalWeekdays: validDates.length
+    };
+
+    const ref = editingId ? db.ref(`leaves/${user}/${year}/${editingId}`) : db.ref(`leaves/${user}/${year}`).push();
+    ref.set(leaveData).then(() => {
+        alert("Request submitted successfully.");
+        closeLeaveModal();
+    });
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 6. openLeaveModal() 함수 수정 (Rejected/Pending 수정 가능)
+// ═══════════════════════════════════════════════════════════════
+
 window.openLeaveModal = function(id = null, data = null) {
-    editingId = id; editingData = data;
+    editingId = id; 
+    editingData = data;
     const modal = document.getElementById('leaveModal');
-    if (!modal) return; // 모달 자체가 없으면 실행 중단
+    if (!modal) return;
 
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -707,25 +1465,25 @@ window.openLeaveModal = function(id = null, data = null) {
     const modalTitle = document.getElementById('modalTitle');
 
     if (id && data) {
-        if (modalTitle) modalTitle.innerText = "Edit Leave Request";
-        if (leaveTypeInput) leaveTypeInput.value = data.type;
-        if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
-        if (leaveReasonInput) leaveReasonInput.value = data.reason || "";
-        
         if (data.status === 'Approved') {
-            if (deleteBtn) deleteBtn.classList.add('hidden');
-            if (saveBtn) saveBtn.classList.add('hidden');
+            if (modalTitle) modalTitle.innerText = "View Approved Leave";
             if (leaveTypeInput) leaveTypeInput.disabled = true;
             if (leaveReasonInput) leaveReasonInput.disabled = true;
             if (dateInput) dateInput.disabled = true;
-            if (modalTitle) modalTitle.innerText = "View Approved Leave";
+            if (deleteBtn) deleteBtn.classList.add('hidden');
+            if (saveBtn) saveBtn.classList.add('hidden');
         } else {
-            if (deleteBtn) deleteBtn.classList.remove('hidden');
-            if (saveBtn) saveBtn.classList.remove('hidden');
+            if (modalTitle) modalTitle.innerText = `Edit Leave Request (${data.status})`;
             if (leaveTypeInput) leaveTypeInput.disabled = false;
             if (leaveReasonInput) leaveReasonInput.disabled = false;
             if (dateInput) dateInput.disabled = false;
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+            if (saveBtn) saveBtn.classList.remove('hidden');
         }
+
+        if (leaveTypeInput) leaveTypeInput.value = data.type;
+        if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
+        if (leaveReasonInput) leaveReasonInput.value = data.reason || "";
         
         if (data.adminMemo) {
             if (memoContainer) memoContainer.classList.remove('hidden');
@@ -751,66 +1509,13 @@ window.openLeaveModal = function(id = null, data = null) {
     }
 };
 
+
     window.closeLeaveModal = function() { 
         const modal = document.getElementById('leaveModal');
         if(modal) modal.classList.add('hidden'); 
         document.body.style.overflow = '';
     };
 
-window.submitLeaveRequest = function() {
-    if (editingData && editingData.status === 'Approved') return alert("Approved requests cannot be modified.");
-    const type = document.getElementById('leaveType').value;
-    const range = datePicker.selectedDates;
-    
-    // 이 부분을 수정하세요 -------------------------------------------
-    const escapeHTML = (str) => {
-        return str.replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[m]);
-    };
-    const reasonRaw = document.getElementById('leaveReason').value.trim();
-    const reason = escapeHTML(reasonRaw);
-    // -----------------------------------------------------------
-
-    // 단어 수 체크 (기존 로직 유지)
-    const wordCount = reasonRaw.match(/\b\w+\b/g)?.length || 0;
-    if (wordCount < 5) {
-        alert("Please describe your reason in more detail (at least 5 words).");
-        document.getElementById('leaveReason').focus();
-        return;
-    }
-        // -----------------------------
-
-        if (range.length === 0) return alert("Please select dates.");
-        
-        const start = new Date(range[0]);
-        const end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
-        
-        let validDates = [], tempDate = new Date(start);
-        while (tempDate <= end) {
-            if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) validDates.push(new Date(tempDate));
-            tempDate.setDate(tempDate.getDate() + 1);
-        }
-        
-        if (validDates.length === 0) return alert("Weekends are excluded. Please select weekdays.");
-        
-        const startDate = validDates[0].toLocaleDateString('en-CA');
-        const endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA');
-        const year = new Date(startDate).getFullYear();
-        
-        const leaveData = {
-            type, startDate, endDate, reason,
-            status: "Pending",
-            requestedAt: firebase.database.ServerValue.TIMESTAMP,
-            totalWeekdays: validDates.length
-        };
-
-        const ref = editingId ? db.ref(`leaves/${user}/${year}/${editingId}`) : db.ref(`leaves/${user}/${year}`).push();
-        ref.set(leaveData).then(() => {
-            alert("Request submitted successfully.");
-            closeLeaveModal();
-        });
-    };
 
     window.deleteLeave = function() {
         if (!editingId || !editingData || editingData.status === 'Approved') return;
