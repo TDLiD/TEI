@@ -528,17 +528,40 @@ button[onclick="goToToday()"]:hover {
         max-width: 50px !important;
     }
 
-    /* ── 스태프 리스트 섹션 ── */
-    #staffListContainer {
-        flex-direction: column !important;
-        gap: 0.5rem !important;
-    }
+/* ── 스태프 리스트 섹션 ── */
+#staffListContainer {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
-    #staffListContainer button {
-        width: 100% !important;
-        padding: 0.6rem 0.8rem !important;
-        font-size: 0.7rem !important;
-    }
+#staffListContainer button {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.7rem !important;
+    white-space: nowrap !important;
+    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--muted) !important;
+    border-radius: 0.75rem !important;
+    transition: all 0.2s !important;
+    cursor: pointer !important;
+}
+
+#staffListContainer button:hover {
+    background: rgba(99, 102, 241, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    color: #a5b4fc !important;
+}
+
+#staffListContainer button:active {
+    transform: scale(0.95) !important;
+}
 
     /* ── 모달 창 ── */
     #leaveModal > div,
@@ -924,11 +947,11 @@ button[onclick="goToToday()"]:hover {
         </table>
     </div>
     
-    <!-- Staff List Section -->
-    <div class="mt-8 pt-8 border-t border-slate-800">
-        <h4 class="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Team Leave Overview</h4>
-        <div id="staffListContainer" class="flex flex-wrap gap-2"></div>
-    </div>
+<!-- Staff List Section -->
+<div class="mt-8 pt-8 border-t border-slate-800">
+    <h4 class="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Team Leave Overview</h4>
+    <div id="staffListContainer" class="flex flex-wrap gap-2 w-full"></div>
+</div>
 </div>
 
     </div>
@@ -1250,15 +1273,18 @@ window.loadStaffList = function() {
         const container = document.getElementById('staffListContainer');
         if (!container) return;
 
-        container.innerHTML = allUsers
+        const staffButtons = allUsers
             .filter(u => u !== user) // 자신 제외
             .sort()
-            .map(staffName => `
-                <button onclick="window.showStaffLeaveOverview('${staffName}')"
-                    class="px-4 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95">
-                    ${staffName}
-                </button>
-            `).join('');
+            .map(staffName => {
+                const displayName = staffName.includes('@') 
+                    ? staffName.split('@')[0].toUpperCase() 
+                    : staffName.toUpperCase();
+                return `<button type="button" onclick="window.showStaffLeaveOverview('${staffName}')" class="px-3 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95">${displayName}</button>`;
+            })
+            .join('');
+
+        container.innerHTML = staffButtons || '<p class="text-slate-500 text-xs">No team members</p>';
     });
 };
 
