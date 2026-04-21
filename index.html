@@ -337,6 +337,25 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
     40% { content: '..'; }
     60%, 100% { content: '...'; }
 }
+/* 등장 애니메이션: 소용돌이치며 확대 */
+@keyframes spiralIn {
+    0% { transform: scale(0) rotate(-720deg); opacity: 0; filter: blur(20px); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
+}
+
+/* 퇴장 애니메이션: 안개처럼 흐릿하게 소멸 */
+@keyframes mistyOut {
+    0% { transform: scale(1); opacity: 1; filter: blur(0px); }
+    100% { transform: scale(1.1); opacity: 0; filter: blur(20px); }
+}
+
+.animate-spiral-in {
+    animation: spiralIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-misty-out {
+    animation: mistyOut 0.8s ease-in forwards;
+}
 </style>
 
 </head>
@@ -439,6 +458,26 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
     </div>
 </div>
 
+<div id="birthday-popup" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-[#081224]/90 border border-blue-500/30 rounded-3xl shadow-2xl overflow-hidden">
+        <div class="relative z-10">
+            <div class="text-5xl mb-4 animate-bounce">🎂</div>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
+            
+            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold"></div>
+            
+            <div id="countdown-timer" class="text-[11px] text-blue-400/60 font-mono mb-2 tracking-widest">
+                CLOSING IN <span id="timer-seconds" class="font-bold text-blue-400">5</span>s...
+            </div>
+            
+            <button onclick="closePopup()" 
+                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-blue-500/20">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -528,6 +567,78 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
     const staffDropdown = document.getElementById('staff-dropdown');
     const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
     const passwordInput = document.getElementById('password');
+
+// 생일 체크 및 팝업 로직
+(function() {
+    const popup = document.getElementById('birthday-popup');
+    const content = document.getElementById('popup-content');
+    const timerDisplay = document.getElementById('timer-seconds');
+    let autoCloseTimer;
+    let countdownInterval;
+
+    // [함수] 팝업 닫기: 애니메이션 실행 후 hidden 처리
+    window.closePopup = () => {
+        clearTimeout(autoCloseTimer);
+        clearInterval(countdownInterval);
+        
+        content.classList.remove('animate-spiral-in');
+        content.classList.add('animate-misty-out');
+        
+        setTimeout(() => {
+            popup.classList.add('hidden');
+            content.classList.remove('animate-misty-out');
+        }, 800); // 0.8초 애니메이션 완료 후 제거
+    };
+
+    const checkTodayBirthdays = () => {
+        const now = new Date();
+        const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        
+        firebase.database().ref('users').once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            const winners = [];
+            Object.keys(data).forEach(name => {
+                if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
+                    winners.push({ name: name, date: data[name].birthday });
+                }
+            });
+
+            if (winners.length > 0) {
+                // 상세 정보(메시지 + 이름 + 날짜) 렌더링
+                document.getElementById('birthday-list').innerHTML = winners.map(s => `
+                    <div class="p-4 bg-white/5 border border-blue-500/10 rounded-2xl">
+                        <div class="text-sm text-blue-300 mb-2">I sincerely congratulate you on your special day!
+Have a happier day than anyone else.!</div>
+                        <div class="text-2xl text-white font-black">${s.name}</div>
+                        <div class="text-[10px] text-slate-500 mt-2 italic">Born on ${s.date}</div>
+                    </div>
+                `).join('');
+                
+                // 팝업 노출 및 등장 애니메이션
+                popup.classList.remove('hidden');
+                content.classList.add('animate-spiral-in');
+
+                // 카운트다운 및 자동 닫기 타이머 시작
+                let timeLeft = 10;
+                timerDisplay.innerText = timeLeft;
+                
+                countdownInterval = setInterval(() => {
+                    timeLeft -= 1;
+                    timerDisplay.innerText = timeLeft;
+                    if (timeLeft <= 0) clearInterval(countdownInterval);
+                }, 1000);
+
+                autoCloseTimer = setTimeout(closePopup, 10000);
+            }
+        });
+    };
+
+    // 초기 로드 1초 후 실행
+    setTimeout(checkTodayBirthdays, 1000);
+})();
+
 
     // ── Enhanced Staff Member Selector ──
     function initStaffSelector() {
