@@ -640,6 +640,299 @@
 .border-slate-700 { border-color: var(--border) !important; }
 .rounded-xl { border-radius: 14px !important; }
 .rounded-2xl { border-radius: 18px !important; }
+
+/* ── 템플릿 리스트 숨기기 ── */
+.template-list {
+    display: none !important;
+}
+
+/* ── 모바일 반응형 ── */
+@media (max-width: 1024px) {
+    .animate-fadeIn.flex {
+        flex-direction: column !important;
+    }
+    
+    .report-card-fixed {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .flex-1.w-full {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* 기본 레이아웃 */
+    .animate-fadeIn {
+        padding: 12px !important;
+    }
+    
+    /* 상단 네비게이션 */
+    .flex.flex-wrap.justify-between {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    /* 에디터 섹션 */
+    #workCardContainer .bg-slate-900 {
+        padding: 12px !important;
+    }
+    
+    /* 에디팅 툴바 - 모바일 최적화 */
+    .editor-toolbar {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .toolbar-btn {
+        padding: 8px 6px !important;
+        font-size: 10px !important;
+        white-space: nowrap !important;
+        min-height: 40px !important;
+    }
+    
+    .toolbar-separator {
+        display: none !important;
+    }
+    
+    /* 모바일에서 버튼 크기 증가 */
+    .toolbar-btn, .import-btn {
+        padding: 10px 8px !important;
+        min-height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* 컬러피커 래퍼 */
+    .color-picker-wrapper {
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+    
+    .color-picker-wrapper span {
+        font-size: 8px !important;
+    }
+    
+    /* 미니캘린더 */
+    .mini-cal td {
+        height: 50px !important;
+        padding: 4px !important;
+        font-size: 9px !important;
+    }
+    
+    .mini-cal th {
+        padding: 6px 0 !important;
+        font-size: 8px !important;
+    }
+    
+    /* 스태프 그리드 */
+    .staff-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+    }
+    
+    /* 모달 */
+    .modal-content {
+        padding: 16px !important;
+        max-width: 90vw !important;
+    }
+    
+    /* 버튼들 */
+    button {
+        font-size: 12px !important;
+    }
+    
+    #actionButtons button {
+        padding: 6px 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* 매우 작은 화면 (모바일 폰) */
+    .editor-toolbar {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 4px !important;
+    }
+    
+    .mini-cal td {
+        height: 40px !important;
+        padding: 2px !important;
+    }
+    
+    .mini-cal .date-num {
+        font-size: 8px !important;
+    }
+    
+    .status-tag {
+        font-size: 6px !important;
+        padding: 1px 3px !important;
+    }
+    
+    #workCardContainer .bg-slate-900,
+    #workCardContainer .bg-slate-900.border-blue-500\/50 {
+        padding: 10px !important;
+        border-radius: 12px !important;
+    }
+    
+    .flex.justify-between.items-center {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+}
+/* ── Text Editor Toolbar ── */
+.editor-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: linear-gradient(145deg, var(--surface3), var(--surface2));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.toolbar-btn {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: var(--blue);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'SF Mono', monospace;
+}
+
+.toolbar-btn:hover {
+    background: rgba(59,130,246,0.2);
+    box-shadow: 0 0 8px rgba(59,130,246,0.3);
+}
+
+.toolbar-btn.active {
+    background: rgba(59,130,246,0.4);
+    color: #93c5fd;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    margin: 0 4px;
+}
+
+.color-picker-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.color-picker-btn {
+    width: 24px;
+    height: 24px;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid rgba(59,130,246,0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.emoji-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    position: fixed;
+    background: linear-gradient(145deg, #0d1628, #080f1e);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 8px;
+    z-index: 10000;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+}
+
+.emoji-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.emoji-btn:hover {
+    background: rgba(59,130,246,0.15);
+    border-color: rgba(59,130,246,0.3);
+    transform: scale(1.1);
+}
+
+/* ── Template Picker ── */
+.template-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.template-btn {
+    background: linear-gradient(145deg, var(--surface3), var(--surface2));
+    border: 1px solid rgba(99,102,241,0.2);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'SF Mono', monospace;
+}
+
+.template-btn:hover {
+    border-color: rgba(99,102,241,0.5);
+    background: rgba(99,102,241,0.1);
+    transform: translateY(-2px);
+}
+
+/* ── Admin Memo 깜빡임 애니메이션 ── */
+@keyframes admin-memo-pulse {
+    0%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(239,68,68,0.3);
+    }
+    50% {
+        opacity: 0.7;
+        text-shadow: 0 0 12px rgba(239,68,68,0.5);
+    }
+}
+
+.admin-memo-blinking {
+    animation: admin-memo-pulse 1.5s ease-in-out infinite;
+    border-color: rgba(239,68,68,0.5) !important;
+}
 </style>
 
 
@@ -980,7 +1273,7 @@ window.showReportAI = async function(date, summary) {
             else {
                 ab.innerHTML = `<button onclick="window.copyReportText()" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold mr-3 uppercase tracking-tighter">Copy</button>
 <button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button><button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600">Edit</button>`;
-                const amH = r.adminMemo ? `<div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl"><p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p><p class="text-xs text-blue-200 italic leading-relaxed whitespace-pre-wrap">${escapeHtml(r.adminMemo)}</p></div>` : "";
+const amH = r.adminMemo ? `<div class="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl admin-memo-blinking"><p class="text-[10px] font-black text-red-400 uppercase mb-1">⚠️ Admin Memo</p><p class="text-xs text-red-200 italic leading-relaxed whitespace-pre-wrap">${escapeHtml(r.adminMemo)}</p></div>` : "";
                 c.innerHTML = `<div class="bg-slate-900 p-6 rounded-2xl border ${r.status==='Completed'?'border-green-900/50':'border-slate-800'} shadow-lg animate-fadeIn"><div class="flex justify-between items-center mb-6"><div class="flex items-center gap-3"><span class="text-blue-400 text-xs font-black uppercase tracking-widest">Work Report</span><span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${r.status==='Completed'?'bg-emerald-500/20 text-emerald-500':r.status==='Pending'?'bg-amber-500/20 text-amber-500':'bg-blue-500/20 text-blue-400'}">${r.status||'In Progress'}</span></div><span class="text-slate-500 text-[10px] font-mono">${ds}</span></div><div class="space-y-6"><div><h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.todo)}</p></div><div><h4 class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-2">Work Summary</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.summary||r.content)}</p></div></div>${amH}<div class="mt-6 pt-4 border-t border-slate-800 text-right"><span class="text-[10px] text-slate-500 italic">Last Update: ${r.time||'N/A'}</span></div></div>`;
             }
         });
@@ -1481,6 +1774,30 @@ window.showEditor = function() {
     const isNew = !currentReportData;
     const s = report.status, t = report.todo || '', c = report.summary || report.content || '';
 
+    // ─ 템플릿 기본값 정의 ─
+    const templates = {
+        default: {
+            name: "Basic 10-Item",
+            content: "- Item 1\n- Item 2\n- Item 3\n- Item 4\n- Item 5\n- Item 6\n- Item 7\n- Item 8\n- Item 9\n- Item 10"
+        },
+        dempro: {
+            name: "DEMPRO",
+            content: "DEMPRO:\n1. 72EA Battery SN recording\n2. 20EA GT20 IOT registration\n3. Follow up battery complaint form"
+        },
+        oyika: {
+            name: "Oyika",
+            content: "Oyika:\n1. MC. AS\n2. Battery AS\n3."
+        },
+        pundi: {
+            name: "PT. Pundi",
+            content: "PT. Pundi:\n1. Prepare a report on the registrants at Warung Kop Sanur and the next steps -On progress\n2.\n3."
+        },
+        internal: {
+            name: "Internal",
+            content: "Internal:\n1. Arrange taking battery repaired in BTI\n2. Update mc.s master\n3."
+        }
+    };
+
     container.innerHTML = `
         <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
             <div class="flex justify-between items-center mb-5">
@@ -1488,19 +1805,19 @@ window.showEditor = function() {
                     <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New' : 'Edit'} Report</span>
                     ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
                 </div>
-<div class="flex flex-col items-start gap-2">
-    <button onclick="window.openCopyFromPicker()" class="w-full bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
-        📋 Copy from date
-    </button>
-    
-    <button onclick="window.copyFromRecent()" class="w-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-indigo-600 hover:text-white transition uppercase tracking-widest">
-        📋 Copy from yesterday
-    </button>
-    
-    <span class="text-slate-500 text-[10px] font-mono mt-1">
-        Target Date: ${selectedDateStr}
-    </span>
-</div>
+                <div class="flex flex-col items-start gap-2">
+                    <button onclick="window.openCopyFromPicker()" class="w-full bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
+                        📋 Copy from date
+                    </button>
+                    
+                    <button onclick="window.copyFromRecent()" class="w-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-indigo-600 hover:text-white transition uppercase tracking-widest">
+                        📋 Copy from yesterday
+                    </button>
+                    
+                    <span class="text-slate-500 text-[10px] font-mono mt-1">
+                        Target Date: ${selectedDateStr}
+                    </span>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -1510,18 +1827,72 @@ window.showEditor = function() {
                 </select>
             </div>
 
-            ${[['Todo', 'blue', t], ['Summary', 'emerald', c]].map(([id, col, val]) => `
-                <div class="mb-4">
-                    <div class="flex justify-between items-end mb-2">
-                        <label class="text-[10px] font-bold text-${col}-500 uppercase">Today's ${id}</label>
-                        <span id="${id.toLowerCase()}Count" class="text-[9px] text-slate-500 font-mono">${val.length}/${max}</span>
+            <!-- ★ Today's To-Do 섹션 ★ -->
+            <div class="mb-4">
+                <div class="flex justify-between items-end mb-3">
+                    <label class="text-[10px] font-bold text-blue-500 uppercase">Today's To-Do</label>
+                    <span id="todoCount" class="text-[9px] text-slate-500 font-mono">${t.length}/${max}</span>
+                </div>
+
+                <!-- 에디팅 툴바 -->
+                <div class="editor-toolbar" id="todoToolbar">
+                    <button type="button" class="toolbar-btn" onclick="window.toggleBold('editTodo')" title="Bold">
+                        <strong>B</strong>
+                    </button>
+                    <button type="button" class="toolbar-btn" onclick="window.toggleItalic('editTodo')" title="Italic">
+                        <em>I</em>
+                    </button>
+                    <button type="button" class="toolbar-btn" onclick="window.toggleUnderline('editTodo')" title="Underline">
+                        <u>U</u>
+                    </button>
+
+                    <div class="toolbar-separator"></div>
+
+                    <select class="toolbar-btn" onchange="window.changeFontSize('editTodo', this.value); this.value='';" title="Font Size">
+                        <option value="">Size</option>
+                        <option value="12px">12px</option>
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                    </select>
+
+                    <div class="toolbar-separator"></div>
+
+                    <div class="color-picker-wrapper">
+                        <span style="font-size:10px; color:var(--muted);">Color:</span>
+                        <input type="color" id="colorPicker" value="#cbd5e1" class="color-input" onchange="window.changeTextColor('editTodo', this.value)">
+                        <button type="button" class="toolbar-btn" onclick="document.getElementById('colorPicker').click()" title="Color">
+                            🎨
+                        </button>
                     </div>
-                    <textarea id="edit${id}" 
-                        oninput="window.autoResize(this); window.updateCharCount('edit${id}', '${id.toLowerCase()}Count');" 
-                        class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm min-h-[${id==='Todo'?'100':'150'}px] resize-none focus:border-${col}-500 transition outline-none overflow-hidden" 
-                        style="height: auto;"
-                        placeholder="Enter ${id}...">${val}</textarea>
-                </div>`).join('')}
+
+                    <div class="toolbar-separator"></div>
+
+                    <button type="button" class="toolbar-btn" onclick="window.openEmojiPicker(event, 'editTodo')" title="Add Emoji">
+                        😊 Emoji
+                    </button>
+                </div>
+
+                <!-- 텍스트 에어리어 -->
+                <textarea id="editTodo" 
+                    oninput="window.autoResize(this); window.updateCharCount('editTodo', 'todoCount'); window.autoNumberingTodo(this);" 
+                    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm min-h-[100px] resize-none focus:border-blue-500 transition outline-none overflow-hidden" 
+                    style="height: auto;"
+                    placeholder="Enter To-Do items...">${t}</textarea>
+            </div>
+
+            <!-- ★ Today's Summary 섹션 (자동 numbering) ★ -->
+            <div class="mb-4">
+                <div class="flex justify-between items-end mb-2">
+                    <label class="text-[10px] font-bold text-emerald-500 uppercase">Today's Summary</label>
+                    <span id="summaryCount" class="text-[9px] text-slate-500 font-mono">${c.length}/${max}</span>
+                </div>
+                <textarea id="editSummary" 
+                    oninput="window.autoResize(this); window.updateCharCount('editSummary', 'summaryCount'); window.autoNumberingSummary(this);" 
+                    class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm min-h-[150px] resize-none focus:border-emerald-500 transition outline-none overflow-hidden" 
+                    style="height: auto;"
+                    placeholder="Enter Summary... (Auto-numbered)&#10;1. &#10;2. &#10;3. ...">${c}</textarea>
+            </div>
 
             <div class="flex flex-col gap-2">
                 <button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition uppercase tracking-widest shadow-lg shadow-blue-900/20">Save Report</button>
@@ -1529,14 +1900,232 @@ window.showEditor = function() {
             </div>
         </div>`;
 
-    // 초기화 및 데이터 로드 시 실행
+    // 초기화
     ['editTodo', 'editSummary'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             window.updateCharCount(id, id.replace('edit', '').toLowerCase() + 'Count');
-            window.autoResize(el); // 텍스트 내용에 맞춰 높이 즉시 조정
+            window.autoResize(el);
         }
     });
+};
+
+// ─ 템플릿 적용 함수 ─
+window.applyTemplate = function(textareaId, templateKey) {
+    const templates = {
+        default: "- Item 1\n- Item 2\n- Item 3\n- Item 4\n- Item 5\n- Item 6\n- Item 7\n- Item 8\n- Item 9\n- Item 10",
+        dempro: "DEMPRO:\n1. 72EA Battery SN recording\n2. 20EA GT20 IOT registration\n3. Follow up battery complaint form",
+        oyika: "Oyika:\n1. MC. AS\n2. Battery AS\n3.",
+        pundi: "PT. Pundi:\n1. Prepare a report on the registrants at Warung Kop Sanur and the next steps -On progress\n2.\n3.",
+        internal: "Internal:\n1. Arrange taking battery repaired in BTI\n2. Update mc.s master\n3."
+    };
+
+    const el = document.getElementById(textareaId);
+    if (el) {
+        el.value = templates[templateKey] || templates.default;
+        window.autoResize(el);
+        window.updateCharCount(textareaId, textareaId.replace('edit', '').toLowerCase() + 'Count');
+        window.saveToTemp();
+    }
+};
+
+// ─ 자동 Numbering (Summary용) ─
+window.autoNumberingSummary = function(textarea) {
+    let text = textarea.value;
+    
+    // 자동으로 번호를 붙이기: 새 줄 시작할 때 번호 없으면 추가
+    const lines = text.split('\n');
+    let numbered = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        // 숫자로 시작하지 않는 줄이면
+        if (trimmed && !/^\d+\.\s/.test(trimmed) && trimmed !== "") {
+            // 이미 다른 번호가 있는지 확인
+            if (!/^\d+/.test(trimmed)) {
+                // 현재 섹션의 번호 찾기
+                let sectionNum = 1;
+                for (let j = i - 1; j >= 0; j--) {
+                    const match = lines[j].match(/^(\d+)\.\s/);
+                    if (match) {
+                        sectionNum = parseInt(match[1]) + 1;
+                        break;
+                    }
+                }
+                lines[i] = `${sectionNum}. ${trimmed}`;
+                numbered = true;
+            }
+        }
+    }
+    
+    if (numbered) {
+        textarea.value = lines.join('\n');
+        window.autoResize(textarea);
+    }
+};
+
+// ─ To-Do 자동 공백 및 Numbering ─
+window.autoNumberingTodo = function(textarea) {
+    let text = textarea.value;
+    
+    // 빈 줄 감지 및 자동 공백 추가 (최대 10개 항목)
+    const lines = text.split('\n');
+    const maxItems = 10;
+    
+    // 기존 항목 수 세기
+    let itemCount = lines.filter(line => /^[\d\-\*]\s/.test(line.trim())).length;
+    
+    // 마지막 줄에서 Enter를 누르면 다음 항목 자동 추가
+    if (lines.length > 0) {
+        const lastLine = lines[lines.length - 1].trim();
+        
+        // 마지막 줄이 비어있고, 항목이 10개 미만이면 다음 번호 제안
+        if (lastLine === '' && itemCount < maxItems) {
+            // 자동으로 다음 번호 추가 (선택 사항)
+            // 이 부분은 주석 처리함 - 사용자가 자유롭게 입력할 수 있도록
+        }
+    }
+};
+
+// ─ Bold 토글 (Drag 버그 수정) ─
+window.toggleBold = function(textareaId) {
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+    
+    el.focus();
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = el.value.substring(start, end);
+    
+    if (selected) {
+        const replacement = `**${selected}**`;
+        el.value = el.value.substring(0, start) + replacement + el.value.substring(end);
+        setTimeout(() => {
+            el.selectionStart = start + 2;
+            el.selectionEnd = start + 2 + selected.length;
+        }, 0);
+    } else {
+        el.value = el.value.substring(0, start) + '**bold**' + el.value.substring(start);
+    }
+    window.autoResize(el);
+    window.saveToTemp();
+};
+
+// ─ Italic 토글 (Drag 버그 수정) ─
+window.toggleItalic = function(textareaId) {
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+    
+    el.focus();
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = el.value.substring(start, end);
+    
+    if (selected) {
+        const replacement = `*${selected}*`;
+        el.value = el.value.substring(0, start) + replacement + el.value.substring(end);
+        setTimeout(() => {
+            el.selectionStart = start + 1;
+            el.selectionEnd = start + 1 + selected.length;
+        }, 0);
+    } else {
+        el.value = el.value.substring(0, start) + '*italic*' + el.value.substring(start);
+    }
+    window.autoResize(el);
+    window.saveToTemp();
+};
+
+// ─ Underline 토글 (Drag 버그 수정) ─
+window.toggleUnderline = function(textareaId) {
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+    
+    el.focus();
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = el.value.substring(start, end);
+    
+    if (selected) {
+        const replacement = `__${selected}__`;
+        el.value = el.value.substring(0, start) + replacement + el.value.substring(end);
+        setTimeout(() => {
+            el.selectionStart = start + 2;
+            el.selectionEnd = start + 2 + selected.length;
+        }, 0);
+    } else {
+        el.value = el.value.substring(0, start) + '__underline__' + el.value.substring(start);
+    }
+    window.autoResize(el);
+    window.saveToTemp();
+};
+
+// ─ Font Size 변경 (Drag 버그 수정) ─
+window.changeFontSize = function(textareaId, size) {
+    const el = document.getElementById(textareaId);
+    if (el && size) {
+        el.style.fontSize = size;
+        el.focus();
+    }
+};
+
+// ─ Text Color 변경 (Drag 버그 수정) ─
+window.changeTextColor = function(textareaId, color) {
+    const el = document.getElementById(textareaId);
+    if (el) {
+        el.style.color = color;
+        el.focus();
+    }
+};
+
+// ─ Emoji Picker 열기 (Drag 버그 수정) ─
+window.openEmojiPicker = function(event, textareaId) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+    
+    el.focus();
+    const emojis = ['😊', '👍', '✅', '📝', '🚀', '💯', '⭐', '🎯', 
+                     '📌', '💡', '🔥', '⚡', '🎨', '🛠️', '✨', '🎁'];
+    
+    let picker = document.getElementById('emojiPicker');
+    if (picker) picker.remove();
+    
+    picker = document.createElement('div');
+    picker.id = 'emojiPicker';
+    picker.className = 'emoji-picker-grid';
+    picker.style.top = (event.clientY + 10) + 'px';
+    picker.style.left = (event.clientX) + 'px';
+    
+    emojis.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'emoji-btn';
+        btn.innerText = emoji;
+        btn.onmousedown = (e) => {
+            e.preventDefault();
+            const start = el.selectionStart;
+            el.value = el.value.substring(0, start) + emoji + el.value.substring(start);
+            el.selectionStart = start + emoji.length;
+            el.focus();
+            window.autoResize(el);
+            window.saveToTemp();
+            picker.remove();
+        };
+        picker.appendChild(btn);
+    });
+    
+    document.body.appendChild(picker);
+    
+    setTimeout(() => {
+        document.addEventListener('click', function closeEmojiPicker(e) {
+            if (picker && !picker.contains(e.target)) {
+                picker.remove();
+                document.removeEventListener('click', closeEmojiPicker);
+            }
+        });
+    }, 0);
 };
 
 window.cancelEdit = function() {
