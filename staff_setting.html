@@ -712,6 +712,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         const jpgNums = [2, 5, 8, 10, 12, 14, 16, 18, 20, 22];
         jpgNums.forEach(num => emojis.push(`image-${String(num).padStart(2, '0')}.jpg`));
 
+        // 5. 개별 파일 추가 (Yuda 입사 2026.04)
+        emojis.push('Yuda.png');
+       
         // 생성된 리스트로 그리드 렌더링
         emojis.forEach(name => {
             const wrap = document.createElement('div');
