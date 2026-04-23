@@ -53,14 +53,12 @@ body {
     justify-content: center;
     -webkit-font-smoothing: antialiased;
     position: relative;
-    /* 과도한 3D 원근법 제거 (부하 방지) */
     perspective: 1500px;
 }
 
 /* ══════════════════════════════════════════════════════════════
    2. ATMOSPHERE (부하 감소 처리)
    ══════════════════════════════════════════════════════════════ */
-/* 노이즈 효과를 고정 이미지 대신 가벼운 패턴으로 유지 */
 body::before {
     content: '';
     position: fixed;
@@ -71,18 +69,31 @@ body::before {
     pointer-events: none;
 }
 
-/* 배경 오브(Orb) 최적화: 블러 반경 감소 및 애니메이션 단순화 */
 .orb {
     position: fixed;
     border-radius: 50%;
-    filter: blur(80px); /* 140px -> 80px로 감소 (GPU 부하 절감) */
+    filter: blur(80px);
     pointer-events: none;
     z-index: 1;
     animation: orb-float 20s ease-in-out infinite alternate;
 }
 
-.orb-a { width: 600px; height: 600px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); top: -20%; right: -10%; }
-.orb-b { width: 400px; height: 400px; background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); bottom: -10%; left: -10%; animation-delay: -5s; }
+.orb-a { 
+    width: 600px; 
+    height: 600px; 
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); 
+    top: -20%; 
+    right: -10%; 
+}
+
+.orb-b { 
+    width: 400px; 
+    height: 400px; 
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); 
+    bottom: -10%; 
+    left: -10%; 
+    animation-delay: -5s; 
+}
 
 @keyframes orb-float {
     from { transform: translate(0, 0) scale(1); opacity: 0.5; }
@@ -105,7 +116,10 @@ body::before {
     padding: 2rem 1rem;
     scrollbar-width: none;
 }
-.content-wrapper::-webkit-scrollbar { display: none; }
+
+.content-wrapper::-webkit-scrollbar { 
+    display: none; 
+}
 
 .header-section {
     text-align: center;
@@ -126,7 +140,8 @@ body::before {
 }
 
 .live-dot {
-    width: 6px; height: 6px;
+    width: 6px; 
+    height: 6px;
     border-radius: 50%;
     background: var(--cyan);
     box-shadow: 0 0 10px var(--cyan);
@@ -152,14 +167,14 @@ body::before {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   4. MENU GRID & CARDS (최적화)
+   4. MENU GRID & CARDS
    ══════════════════════════════════════════════════════════════ */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 4 -> 2로 변경 (모바일 우선) */
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     width: 100%;
-    max-width: 500px; /* 800 -> 500 */
+    max-width: 500px;
     margin-bottom: 2rem;
 }
 
@@ -212,14 +227,10 @@ body::before {
 
 @media (hover: hover) {
     .menu-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(16, 32, 60, 0.8));
+        transform: translateY(-8px);
+        background: rgba(59, 130, 246, 0.15);
         border-color: var(--blue);
-        box-shadow: 
-            0 20px 40px rgba(59, 130, 246, 0.3),
-            0 0 30px rgba(59, 130, 246, 0.2),
-            inset 0 2px 0 rgba(255,255,255,0.15),
-            inset 0 -2px 0 rgba(0,0,0,0.4);
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
     }
     
     .menu-card:hover::after {
@@ -232,10 +243,22 @@ body::before {
 }
 
 .card-icon-wrap {
-    width: 60px; height: 60px;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
+    transform-style: preserve-3d;
+    transition: transform 0.3s;
 }
-.card-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
+
+.card-icon-wrap img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+}
+
+.menu-card:hover .card-icon-wrap {
+    transform: translateZ(20px) scale(1.1);
+}
 
 .card-label {
     font-size: 11px;
@@ -246,18 +269,8 @@ body::before {
     text-align: center;
 }
 
-/* 데스크톱 호버 효과 단순화 */
-@media (hover: hover) {
-    .menu-card:hover {
-        transform: translateY(-8px);
-        background: rgba(59, 130, 246, 0.15);
-        border-color: var(--blue);
-        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
-    }
-}
-
 /* ══════════════════════════════════════════════════════════════
-   5. BOTTOM ACTIONS & OTHERS
+   5. BOTTOM ACTIONS
    ══════════════════════════════════════════════════════════════ */
 .bottom-actions {
     display: grid;
@@ -274,7 +287,9 @@ body::before {
         gap: 20px;
     }
 }
+
 .action-btn {
+    position: relative;
     background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
     border: 1px solid var(--border-2);
     border-radius: 20px;
@@ -340,44 +355,10 @@ body::before {
     }
 }
 
-
-.action-btn:active .action-icon { transform: scale(0.9); }
-
-.day-indicator {
-    position: fixed; top: 20px; right: 20px;
-    text-align: right; z-index: 10;
-}
-.day-name { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; }
-.day-number { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.1); }
-
-/* 프로필 (이미지만 표시) */
-.profile-container { margin-left: 10px; pointer-events: none; }
-.profile-img {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    border: 2px solid var(--cyan);
-    object-fit: cover;
-    box-shadow: 0 0 15px var(--blue-glow);
+.action-btn:active .action-icon { 
+    transform: scale(0.9); 
 }
 
-/* ══════════════════════════════════════════════════════════════
-   6. RESPONSIVE (미디어 쿼리 통합)
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 600px) {
-    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .greeting { font-size: 2.2rem; }
-    .menu-card { padding: 25px 10px; border-radius: 18px; }
-    .card-icon-wrap { width: 50px; height: 50px; }
-    .orb { display: none; } /* 모바일에서 배경 애니메이션 삭제 (성능 최우선) */
-}
-
-@keyframes reveal {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* 불필요한 모달 CSS 삭제 */
-.profile-modal-overlay, .profile-edit-icon { display: none !important; }
 .action-label {
     font-size: 11px;
     font-weight: 700;
@@ -385,76 +366,69 @@ body::before {
     text-transform: uppercase;
     color: var(--text);
 }
-.card-icon-wrap {
-    width: 70px;
-    height: 70px;
-    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
-    transform-style: preserve-3d;
-    transition: transform 0.3s;
-}
 
-.menu-card:hover .card-icon-wrap {
-    transform: translateZ(20px) scale(1.1);
-}
-
-.card-icon-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-@media (max-width: 767px) {
-    .menu-card {
-        padding: 28px 12px;
-    }
-    
-    .card-icon-wrap {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .card-label {
-        font-size: 10px;
-    }
-    
-    .action-btn {
-        padding: 20px 15px;
-    }
-    
-    .action-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.6rem;
-    }
-}
 /* ══════════════════════════════════════════════════════════════
-   POPUP MODAL STYLES
+   6. DAY INDICATOR & PROFILE
    ══════════════════════════════════════════════════════════════ */
-.popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(3, 6, 15, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    animation: fadeIn 0.3s ease-out;
+.day-indicator {
+    position: fixed; 
+    top: 20px; 
+    right: 20px;
+    text-align: right; 
+    z-index: 10;
 }
 
-.popup-container {
-    position: relative;
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
-    border: 2px solid var(--border-2);
-    border-radius: 24px;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(59, 130, 246, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1);
-    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+.day-name { 
+    font-size: 10px; 
+    color: var(--muted); 
+    letter-spacing: 0.2em; 
+    text-transform: uppercase; 
+}
+
+.day-number { 
+    font-size: 2rem; 
+    font-weight: 900; 
+    color: rgba(255,255,255,0.1); 
+}
+
+.profile-container { 
+    margin-left: 10px; 
+    pointer-events: none; 
+}
+
+.profile-img {
+    width: 50px; 
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    object-fit: cover;
+    box-shadow: 0 0 15px var(--blue-glow);
+}
+
+.profile-modal-overlay, .profile-edit-icon { 
+    display: none !important; 
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+@keyframes reveal {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes rainbow-flow {
+    to { background-position: 200% center; }
+}
+
+@keyframes text-wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
 @keyframes popupSlideIn {
@@ -466,6 +440,102 @@ body::before {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
+}
+
+@keyframes swirl-out {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+@keyframes balloon-pop-in {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes balloon-burst {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) rotate(2deg);
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. POPUP WRAPPER (두 팝업 컨테이너)
+   ══════════════════════════════════════════════════════════════ */
+.popup-wrapper {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 6, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+    gap: 30px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADMIN POPUP STYLES (독립적) - 상단 배치 (수정됨)
+   ══════════════════════════════════════════════════════════════ */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(3, 6, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+    overflow-y: auto;
+}
+
+.popup-container {
+    position: relative;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
+    border: 2px solid var(--border-2);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(59, 130, 246, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1);
+    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
 }
 
 .popup-close-top {
@@ -501,13 +571,13 @@ body::before {
     align-items: center;
     gap: 20px;
     cursor: pointer;
-    max-height: calc(90vh - 100px);
+    max-height: calc(80vh - 100px);
     overflow-y: auto;
 }
 
 .popup-image {
     max-width: 100%;
-    max-height: 60vh;
+    max-height: 50vh;
     width: auto;
     height: auto;
     border-radius: 16px;
@@ -516,14 +586,22 @@ body::before {
 }
 
 .popup-message {
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
     font-weight: 700;
     color: white;
     text-align: center;
-    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    background: linear-gradient(
+        to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000
+    );
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     padding: 10px 20px;
+    display: inline-block;
+    animation: 
+        rainbow-flow 3s linear infinite,
+        text-wave 2s ease-in-out infinite;
 }
 
 .popup-close-bottom {
@@ -553,18 +631,34 @@ body::before {
     transform: translateY(0);
 }
 
-/* Mobile Optimization */
+.popup-exit-active {
+    animation: swirl-out 0.8s ease-in forwards !important;
+}
+
+.confetti-container { 
+    display: none !important; 
+}
+
 @media (max-width: 600px) {
+    .popup-overlay {
+        padding: 15px;
+    }
+
     .popup-container {
         max-width: 95vw;
-        max-height: 95vh;
+        max-height: 85vh;
         border-radius: 20px;
     }
-    
-    .popup-image {
-        max-height: 50vh;
+
+    .popup-content {
+        padding: 15px;
+        max-height: calc(85vh - 80px);
     }
-    
+
+    .popup-image {
+        max-height: 40vh;
+    }
+
     .popup-close-top {
         width: 36px;
         height: 36px;
@@ -572,65 +666,122 @@ body::before {
         top: 10px;
         right: 10px;
     }
+
+    .popup-close-bottom {
+        width: calc(100% - 30px);
+        margin: 0 15px 15px;
+        padding: 12px;
+        font-size: 12px;
+    }
 }
-/* 폭죽 효과 스타일 */
-.confetti-container {
-    position: absolute;
-    inset: 0;
+
+@media (min-width: 768px) {
+    .popup-container {
+        max-width: 600px;
+        max-height: 80vh;
+    }
+
+    .popup-message {
+        font-size: 1.4rem;
+    }
+}
+/* ══════════════════════════════════════════════════════════════
+   BALLOON ALERT WRAPPER (독립적) - 하단 배치
+   ══════════════════════════════════════════════════════════════ */
+.balloon-alert-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    z-index: 9997;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 20px;
+    padding-bottom: 40px;
     pointer-events: none;
-    z-index: 5;
-    overflow: hidden;
+    background: transparent;
 }
 
-/* 폭죽 효과 삭제 (기존 .confetti-piece 등 삭제) */
-.confetti-container { display: none !important; }
-
-/* 파도치는 무지개 텍스트 효과 */
-.popup-message {
-    display: inline-block;
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    font-weight: 800;
-    text-align: center;
-    /* 무지개 그라데이션 설정 */
-    background: linear-gradient(
-        to right, 
-        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    /* 애니메이션: 무지개 흐르기 + 파도치기 */
-    animation: 
-        rainbow-flow 3s linear infinite,
-        text-wave 2s ease-in-out infinite;
+.balloon-alert-wrapper > * {
+    pointer-events: auto;
 }
 
-/* 무지개 색상 흐름 애니메이션 */
-@keyframes rainbow-flow {
-    to { background-position: 200% center; }
+.balloon-alert-modal {
+    position: relative;
+    width: 100%;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: balloon-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    margin: 0;
+    flex-shrink: 0;
 }
 
-/* 파도치는(출렁거리는) 애니메이션 */
-@keyframes text-wave {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-/* 소용돌이치며 사라지는 애니메이션 */
-.popup-exit-active {
-    animation: swirl-out 0.8s ease-in forwards !important;
+.balloon-alert-modal.pop-out {
+    animation: balloon-burst 0.8s ease-out forwards;
 }
 
-@keyframes swirl-out {
-    0% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
+.balloon-content {
+    position: relative;
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.95), rgba(244, 100, 120, 0.95));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: 24px 28px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 
+        0 15px 50px rgba(244, 63, 94, 0.4),
+        0 0 30px rgba(244, 63, 94, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+@media (max-width: 600px) {
+    .balloon-alert-wrapper {
+        padding: 15px;
+        padding-bottom: 30px;
     }
-    100% {
-        transform: scale(0) rotate(720deg);
-        opacity: 0;
+
+    .balloon-content {
+        max-width: 95vw;
+        padding: 20px 24px;
+        border-radius: 20px;
+    }
+
+    .balloon-message p {
+        font-size: 0.95rem;
+    }
+
+    .missing-item {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .balloon-tail {
+        bottom: -15px;
+        border-left-width: 12px;
+        border-right-width: 12px;
+        border-top-width: 16px;
     }
 }
 
+@media (min-width: 768px) {
+    .balloon-alert-wrapper {
+        padding-bottom: 50px;
+    }
+
+    .balloon-content {
+        max-width: 550px;
+    }
+
+    .balloon-message p {
+        font-size: 1.1rem;
+    }
+}
 </style>
 
 </head>
@@ -709,18 +860,35 @@ body::before {
         </div>
     </div>
 
-<!-- Popup Modal -->
+<!-- Admin Popup Modal (독립적) -->
 <div id="popup_overlay" class="popup-overlay" style="display: none;">
     <div class="popup-container">
         <button class="popup-close-top" onclick="closePopup()">✕</button>
-<div class="popup-content" onclick="closePopup()">
-    <div id="confetti_wrap" class="confetti-container"></div> <img id="popup_img" src="" alt="Popup" class="popup-image">
-    <p id="popup_text" class="popup-message"></p>
-</div>
-
+        <div class="popup-content" onclick="closePopup()">
+            <div id="confetti_wrap" class="confetti-container"></div>
+            <img id="popup_img" src="" alt="Popup" class="popup-image">
+            <p id="popup_text" class="popup-message"></p>
+        </div>
         <button class="popup-close-bottom" onclick="closePopup()">Close</button>
     </div>
 </div>
+
+<!-- Balloon Alert Popup (독립적) -->
+<div id="balloon_alert_wrapper" class="balloon-alert-wrapper" style="display: none;">
+    <div id="balloon_alert" class="balloon-alert-modal">
+        <div class="balloon-content">
+            <div class="balloon-message">
+                <p id="balloon_warning_text"></p>
+                <div id="balloon_missing_data"></div>
+            </div>
+            <div class="balloon-countdown">
+                <span id="balloon_timer">10</span>s
+            </div>
+        </div>
+        <div class="balloon-tail"></div>
+    </div>
+</div>
+
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -831,7 +999,7 @@ const initDateDisplay = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   POPUP MANAGEMENT
+   POPUP MANAGEMENT (Admin Popup - 독립적)
    ══════════════════════════════════════════════════════════════ */
 let popupAutoCloseTimer = null;
 
@@ -841,14 +1009,10 @@ const closePopup = () => {
     
     if (!overlay || !content) return;
 
-    // 소용돌이 애니메이션 클래스 추가
     content.classList.add('popup-exit-active');
 
-    // 애니메이션 시간(0.8초)이 지난 후 실제로 숨김 처리
     setTimeout(() => {
         overlay.style.display = 'none';
-        
-        // 다음 팝업을 위해 상태 초기화
         content.classList.remove('popup-exit-active');
         
         if (popupAutoCloseTimer) {
@@ -858,30 +1022,27 @@ const closePopup = () => {
     }, 800);
 };
 
-// Popup 체크 및 표시 함수 (수정됨)
 const checkAndShowPopup = () => {
     if (!database) return;
 
     database.ref('settings/config/Popup').once('value', (snapshot) => {
         const popupData = snapshot.val();
         
+        // Flag가 OFF이거나 없으면 팝업 표시 안함
         if (!popupData || popupData.Flag !== 'ON') {
             return;
         }
 
-        // 날짜 범위 체크
         const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, '');
         
         const startDate = popupData.Start || '00000000';
         const endDate = popupData.End || '99999999';
 
         if (todayStr < startDate || todayStr > endDate) {
-            console.log('Popup not in date range');
             return;
         }
 
-        // 팝업 표시
         const overlay = document.getElementById('popup_overlay');
         const img = document.getElementById('popup_img');
         const text = document.getElementById('popup_text');
@@ -903,6 +1064,7 @@ const checkAndShowPopup = () => {
             text.style.display = 'none';
         }
 
+        // Admin popup만 표시
         overlay.style.display = 'flex';
 
         // 5초 후 자동 닫기
@@ -912,21 +1074,180 @@ const checkAndShowPopup = () => {
     });
 };
 
-// Expose closePopup to global scope
-window.closePopup = closePopup;
 
 /* ══════════════════════════════════════════════════════════════
-   INITIALIZATION에 팝업 체크 추가
+   BALLOON ALERT MANAGEMENT (Balloon Popup - 독립적)
    ══════════════════════════════════════════════════════════════ */
-// 기존 DOMContentLoaded 이벤트 리스너 내부 마지막에 추가:
-document.addEventListener('DOMContentLoaded', () => {
-    // ... 기존 코드 ...
+let balloonAutoCloseTimer = null;
+let balloonCountdownInterval = null;
+
+const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getYesterdayDate = () => {
+    const today = new Date();
+    today.setDate(today.getDate() - 1);
+    return today;
+};
+
+const getTodayDate = () => {
+    return new Date();
+};
+
+const checkAttendanceData = (userId, date, callback) => {
+    const dateStr = formatDate(date);
+    database.ref(`attendance/${dateStr}/${userId}`).once('value', (snapshot) => {
+        callback(snapshot.val());
+    });
+};
+
+const checkReportData = (userId, date, callback) => {
+    const dateStr = formatDate(date);
+    database.ref(`reports/${dateStr}/${userId}`).once('value', (snapshot) => {
+        callback(snapshot.val());
+    });
+};
+
+const showBalloonAlert = (missingItems) => {
+    const wrapper = document.getElementById('balloon_alert_wrapper');
+    const balloon = document.getElementById('balloon_alert');
+    const warningText = document.getElementById('balloon_warning_text');
+    const missingDataDiv = document.getElementById('balloon_missing_data');
     
-    // Check and show popup (마지막에 추가)
+    if (!balloon) return;
+
+    const today = getTodayDate();
+    const yesterday = getYesterdayDate();
+    const todayStr = `${today.getMonth() + 1}/${today.getDate()}`;
+    const yesterdayStr = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
+
+    warningText.textContent = `⚠ Missing Report (${yesterdayStr} - ${todayStr})`;
+
+    missingDataDiv.innerHTML = '';
+    missingItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'missing-item';
+        div.textContent = item;
+        missingDataDiv.appendChild(div);
+    });
+
+    // Balloon popup만 표시
+    wrapper.style.display = 'flex';
+    balloon.classList.remove('pop-out');
+
+    let countdown = 10;
+    const timerSpan = document.getElementById('balloon_timer');
+    
+    if (balloonCountdownInterval) clearInterval(balloonCountdownInterval);
+    
+    balloonCountdownInterval = setInterval(() => {
+        countdown--;
+        if (timerSpan) timerSpan.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(balloonCountdownInterval);
+            closeBalloonAlert();
+        }
+    }, 1000);
+
+    if (balloonAutoCloseTimer) clearTimeout(balloonAutoCloseTimer);
+    
+    balloonAutoCloseTimer = setTimeout(() => {
+        closeBalloonAlert();
+    }, 10000);
+};
+
+const closeBalloonAlert = () => {
+    const wrapper = document.getElementById('balloon_alert_wrapper');
+    const balloon = document.getElementById('balloon_alert');
+    
+    if (!balloon) return;
+
+    balloon.classList.add('pop-out');
+    
     setTimeout(() => {
-        checkAndShowPopup();
-    }, 1000); // 페이지 로드 1초 후 팝업 체크
-});
+        wrapper.style.display = 'none';
+        balloon.classList.remove('pop-out');
+        
+        if (balloonCountdownInterval) {
+            clearInterval(balloonCountdownInterval);
+        }
+        if (balloonAutoCloseTimer) {
+            clearTimeout(balloonAutoCloseTimer);
+        }
+    }, 800);
+};
+
+const checkMissingData = (userId) => {
+    if (!userId || !database) return;
+
+    const today = getTodayDate();
+    const yesterday = getYesterdayDate();
+    
+    let attendanceYesterday = false;
+    let attendanceToday = false;
+    let reportYesterday = false;
+    let reportToday = false;
+    let checkCount = 0;
+    const totalChecks = 4;
+
+    checkAttendanceData(userId, yesterday, (data) => {
+        attendanceYesterday = !!data;
+        checkCount++;
+        if (checkCount === totalChecks) processResults();
+    });
+
+    checkAttendanceData(userId, today, (data) => {
+        attendanceToday = !!data;
+        checkCount++;
+        if (checkCount === totalChecks) processResults();
+    });
+
+    checkReportData(userId, yesterday, (data) => {
+        reportYesterday = !!data;
+        checkCount++;
+        if (checkCount === totalChecks) processResults();
+    });
+
+    checkReportData(userId, today, (data) => {
+        reportToday = !!data;
+        checkCount++;
+        if (checkCount === totalChecks) processResults();
+    });
+
+    const processResults = () => {
+        const missingItems = [];
+
+        const yesterday = getYesterdayDate();
+        const yesterdayStr = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
+        const todayStr = `${today.getMonth() + 1}/${today.getDate()}`;
+
+        if (!attendanceYesterday) {
+            missingItems.push(`Attendance (${yesterdayStr})`);
+        }
+        if (!attendanceToday) {
+            missingItems.push(`Attendance (${todayStr})`);
+        }
+        if (!reportYesterday) {
+            missingItems.push(`Work Report (${yesterdayStr})`);
+        }
+        if (!reportToday) {
+            missingItems.push(`Work Report (${todayStr})`);
+        }
+
+        if (missingItems.length > 0) {
+            showBalloonAlert(missingItems);
+        }
+    };
+};
+
+// Expose to global scope
+window.closePopup = closePopup;
+window.closeBalloonAlert = closeBalloonAlert;
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -1100,12 +1421,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize 3D tilt effect (Desktop)
     init3DTiltEffect();
     
-    // ===== 아래 3줄 추가 =====
     // Mobile optimizations
     initMobileTouchEffects();
     preventDoubleTapZoom();
     setMobileVH();
+
+    // ===== 팝업 및 데이터 확인 =====
+    // Check and show admin popup
+    setTimeout(() => {
+        checkAndShowPopup();
+    }, 1000); // 페이지 로드 1초 후 팝업 체크
+
+    // Check missing attendance and report data
+    setTimeout(() => {
+        checkMissingData(userId);
+    }, 2000); // 페이지 로드 2초 후 데이터 확인
 });
+
 
 // Expose functions to global scope
 window.navigateTo = navigateTo;
