@@ -209,188 +209,181 @@
         }
     </style>
 
-    <script>
-    var allPhotos = [];
-    var filteredPhotos = [];
-    var currentFilter = 'all';
-    var currentPhotoIndex = 0;
+<script>
+    // 1. 전역 변수 안전 초기화 (재선언 에러 방지)
+    window.allPhotos = window.allPhotos || [];
+    window.filteredPhotos = window.filteredPhotos || [];
+    window.currentFilter = window.currentFilter || 'all';
+    window.currentPhotoIndex = window.currentPhotoIndex || 0;
+    window.touchStartX = 0;
+    window.touchEndX = 0;
 
-        // 사진 데이터 로드
-        async function loadPhotos() {
-            try {
-                const response = await fetch('images/TEI/photos.json');
-                const data = await response.json();
-                allPhotos = data.map((item, idx) => ({
-                    id: idx + 1,
-                    filename: item[0],      // 배열의 첫 번째 요소
-                    title: item[1],         // 배열의 두 번째 요소
-                    date: item[2],          // 배열의 세 번째 요소
-                    category: item[3]       // 배열의 네 번째 요소
-                }));
-                filterPhotos('all');
-            } catch (error) {
-                console.error('Error loading photos:', error);
-                document.getElementById('photoGallery').innerHTML = `
-                    <div class="col-span-full text-center py-20">
-                        <p class="text-rose-500 font-black text-sm sm:text-lg uppercase">Error loading photos</p>
-                        <p class="text-slate-500 text-xs sm:text-sm mt-2">Please check if photos.json exists</p>
-                    </div>
-                `;
+    // 2. 사진 데이터 로드
+    async function loadPhotos() {
+        try {
+            const response = await fetch('images/TEI/photos.json');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            window.allPhotos = data.map((item, idx) => ({
+                id: idx + 1,
+                filename: item[0],
+                title: item[1],
+                date: item[2],
+                category: item[3]
+            }));
+            window.filterPhotos(window.currentFilter || 'all');
+        } catch (error) {
+            console.error('Error loading photos:', error);
+            var gallery = document.getElementById('photoGallery');
+            if (gallery) {
+                gallery.innerHTML = `<div class="col-span-full text-center py-20"><p class="text-rose-500 uppercase font-bold">Error loading photos</p></div>`;
             }
         }
+    }
 
-        // 필터링 함수
-        window.filterPhotos = function(category) {
-            currentFilter = category;
-            
-            // UI 업데이트
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('filter-btn-active');
-            });
-            document.querySelector(`[data-filter="${category}"]`).classList.add('filter-btn-active');
+    // 3. 필터링 함수
+    window.filterPhotos = function(category) {
+        window.currentFilter = category;
+        var buttons = document.querySelectorAll('.filter-btn');
+        if (buttons.length > 0) {
+            buttons.forEach(function(btn) { btn.classList.remove('filter-btn-active'); });
+            var activeBtn = document.querySelector('.filter-btn[data-filter="' + category + '"]');
+            if (activeBtn) activeBtn.classList.add('filter-btn-active');
+        }
 
-            // 데이터 필터링
-            filteredPhotos = category === 'all' 
-                ? allPhotos 
-                : allPhotos.filter(photo => photo.category === category);
+        window.filteredPhotos = category === 'all' 
+            ? window.allPhotos 
+            : window.allPhotos.filter(function(p) { return p.category === category; });
+        
+        renderGallery();
+    };
 
-            // 갤러리 렌더링
-            renderGallery();
-        };
+    // 4. 갤러리 렌더링
+    function renderGallery() {
+        var gallery = document.getElementById('photoGallery');
+        if (!gallery) return; 
+        
+        if (window.filteredPhotos.length === 0) {
+            gallery.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 font-bold uppercase">No photos found</div>`;
+            return;
+        }
 
-        // 갤러리 렌더링
-        function renderGallery() {
-            const gallery = document.getElementById('photoGallery');
-            
-            if (filteredPhotos.length === 0) {
-                gallery.innerHTML = `
-                    <div class="col-span-full text-center py-20">
-                        <p class="text-slate-500 font-black text-sm sm:text-lg uppercase">No photos found</p>
-                    </div>
-                `;
-                return;
-            }
-
-            gallery.innerHTML = filteredPhotos.map((photo, index) => `
-                <div class="photo-card group" onclick="openPhotoModal(${index})">
-                    <div class="photo-card-image relative h-full">
-                        <img 
-                            src="images/TEI/${photo.filename}" 
-                            alt="${photo.title}"
-                            loading="lazy"
-                            onerror="this.src='https://via.placeholder.com/300x300?text=Photo+Not+Found'"
-                        >
-                        <div class="photo-overlay">
-                            <div class="photo-overlay-icon">🔍</div>
-                        </div>
-                    </div>
+        gallery.innerHTML = window.filteredPhotos.map(function(photo, index) {
+            return `
+            <div class="photo-card group" onclick="window.openPhotoModal(${index})">
+                <div class="photo-card-image relative h-full">
+                    <img src="images/TEI/${photo.filename}" alt="${photo.title}" loading="lazy" 
+                         onerror="this.src='https://via.placeholder.com/300x300?text=Photo+Not+Found'">
+                    <div class="photo-overlay"><div class="photo-overlay-icon">🔍</div></div>
                 </div>
-            `).join('');
+            </div>`;
+        }).join('');
+    }
+
+    // 5. 모달 제어
+    window.openPhotoModal = function(index) {
+        window.currentPhotoIndex = index;
+        var photo = window.filteredPhotos[index];
+        var modal = document.getElementById('photoModal');
+        if (!modal || !photo) return;
+
+        var modalImg = document.getElementById('modalImage');
+        if (modalImg) {
+            modalImg.src = 'images/TEI/' + photo.filename;
+            modalImg.onerror = function() { this.src = 'https://via.placeholder.com/800x600?text=Photo+Not+Found'; };
         }
-
-        // 모달 열기
-        window.openPhotoModal = function(index) {
-            currentPhotoIndex = index;
-            const photo = filteredPhotos[index];
-            
-            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
-            document.getElementById('modalImage').onerror = function() {
-                this.src = 'https://via.placeholder.com/800x600?text=Photo+Not+Found';
-            };
-            document.getElementById('modalTitle').innerText = photo.title;
-            document.getElementById('modalDate').innerText = photo.date;
-            document.getElementById('modalCategory').innerText = photo.category.toUpperCase();
-            document.getElementById('modalCounter').innerText = `${index + 1} / ${filteredPhotos.length}`;
-            
-            document.getElementById('photoModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            
-            // 화살표 표시/숨김
-            updateNavigationButtons();
+        
+        var safeSetText = function(id, text) {
+            var el = document.getElementById(id);
+            if (el) el.innerText = text;
         };
 
-        // 모달 닫기
-        window.closePhotoModal = function() {
-            document.getElementById('photoModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        };
+        safeSetText('modalTitle', photo.title);
+        safeSetText('modalDate', photo.date);
+        safeSetText('modalCategory', photo.category.toUpperCase());
+        safeSetText('modalCounter', (index + 1) + ' / ' + window.filteredPhotos.length);
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        updateNavigationButtons();
+    };
 
-        // 이전 사진
-        window.previousPhoto = function() {
-            if (currentPhotoIndex > 0) {
-                currentPhotoIndex--;
-                updateModalContent();
-            }
-        };
+    window.closePhotoModal = function() {
+        var modal = document.getElementById('photoModal');
+        if (modal) modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    };
 
-        // 다음 사진
-        window.nextPhoto = function() {
-            if (currentPhotoIndex < filteredPhotos.length - 1) {
-                currentPhotoIndex++;
-                updateModalContent();
-            }
-        };
-
-        // 모달 콘텐츠 업데이트
-        function updateModalContent() {
-            const photo = filteredPhotos[currentPhotoIndex];
-            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
-            document.getElementById('modalTitle').innerText = photo.title;
-            document.getElementById('modalDate').innerText = photo.date;
-            document.getElementById('modalCategory').innerText = photo.category.toUpperCase();
-            document.getElementById('modalCounter').innerText = `${currentPhotoIndex + 1} / ${filteredPhotos.length}`;
-            updateNavigationButtons();
+    window.previousPhoto = function() {
+        if (window.currentPhotoIndex > 0) {
+            window.currentPhotoIndex--;
+            updateModalContent();
         }
+    };
 
-        // 네비게이션 버튼 업데이트
-        function updateNavigationButtons() {
-            document.getElementById('prevBtn').style.opacity = currentPhotoIndex > 0 ? '1' : '0.3';
-            document.getElementById('nextBtn').style.opacity = currentPhotoIndex < filteredPhotos.length - 1 ? '1' : '0.3';
+    window.nextPhoto = function() {
+        if (window.currentPhotoIndex < window.filteredPhotos.length - 1) {
+            window.currentPhotoIndex++;
+            updateModalContent();
         }
+    };
 
-        // 키보드 네비게이션
-        document.addEventListener('keydown', (e) => {
-            if (document.getElementById('photoModal').classList.contains('hidden')) return;
-            if (e.key === 'ArrowLeft') previousPhoto();
-            if (e.key === 'ArrowRight') nextPhoto();
-            if (e.key === 'Escape') closePhotoModal();
+    function updateModalContent() {
+        var photo = window.filteredPhotos[window.currentPhotoIndex];
+        if (!photo) return;
+        document.getElementById('modalImage').src = 'images/TEI/' + photo.filename;
+        document.getElementById('modalTitle').innerText = photo.title;
+        document.getElementById('modalDate').innerText = photo.date;
+        document.getElementById('modalCategory').innerText = photo.category.toUpperCase();
+        document.getElementById('modalCounter').innerText = (window.currentPhotoIndex + 1) + ' / ' + window.filteredPhotos.length;
+        updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+        var prev = document.getElementById('prevBtn');
+        var next = document.getElementById('nextBtn');
+        if (prev) prev.style.opacity = window.currentPhotoIndex > 0 ? '1' : '0.3';
+        if (next) next.style.opacity = window.currentPhotoIndex < window.filteredPhotos.length - 1 ? '1' : '0.3';
+    }
+
+    // 6. 전역 리스너 등록 (중복 방지)
+    if (!window.staffPhotoEventsAttached) {
+        document.addEventListener('keydown', function(e) {
+            var modal = document.getElementById('photoModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            if (e.key === 'ArrowLeft') window.previousPhoto();
+            if (e.key === 'ArrowRight') window.nextPhoto();
+            if (e.key === 'Escape') window.closePhotoModal();
         });
 
-        // 모달 외부 클릭으로 닫기
-        document.getElementById('photoModal').addEventListener('click', (e) => {
-            if (e.target.id === 'photoModal') closePhotoModal();
+        window.addEventListener('click', function(e) {
+            if (e.target.id === 'photoModal') window.closePhotoModal();
         });
+        window.staffPhotoEventsAttached = true;
+    }
 
-        // 터치 스와이프 제스처 (모바일)
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        document.getElementById('photoModal').addEventListener('touchstart', (e) => {
+    // 7. 터치 핸들링 (에러 발생 지점: const 제거 및 var 사용)
+    var photoModalEl = document.getElementById('photoModal');
+    if (photoModalEl) {
+        photoModalEl.addEventListener('touchstart', function(e) {
             if (e.target.id === 'photoModal') return;
-            touchStartX = e.changedTouches[0].screenX;
-        }, false);
+            window.touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
 
-        document.getElementById('photoModal').addEventListener('touchend', (e) => {
+        photoModalEl.addEventListener('touchend', function(e) {
             if (e.target.id === 'photoModal') return;
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, false);
-
-        function handleSwipe() {
-            if (touchStartX - touchEndX > 50) {
-                nextPhoto();
+            window.touchEndX = e.changedTouches[0].screenX;
+            var diff = window.touchStartX - window.touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) window.nextPhoto();
+                else window.previousPhoto();
             }
-            if (touchEndX - touchStartX > 50) {
-                previousPhoto();
-            }
-        }
+        }, { passive: true });
+    }
 
-        // 페이지 로드 시 사진 로드
-        loadPhotos();
+    // 로드 시 실행
+    loadPhotos();
+</script>
 
-        // 페이지 떠날 때 cleanup
-        window._leavePageCleanup = function() {
-            document.body.style.overflow = 'auto';
-        };
-    </script>
+
 </div>
