@@ -106,6 +106,37 @@
 .report-table td.saturday-cell { width: 5%; padding: 4px 2px; }
 .report-table td.sunday-cell .text-sunday-bright,
 .report-table td.saturday-cell .text-saturday-bright { font-size: 8px; }
+/* Admin Memo 퀵 리플라이 스타일 */
+.memo-quick-reply-container { position: relative; }
+.memo-quick-reply-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 50;
+    display: none;
+    margin-top: 4px;
+}
+/* 퀵 리플라이 스크롤바 디자인 */
+.memo-quick-reply-list::-webkit-scrollbar { width: 6px; }
+.memo-quick-reply-list::-webkit-scrollbar-track { background: transparent; }
+.memo-quick-reply-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+.memo-quick-reply-item {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: #f1f5f9;
+    cursor: pointer;
+    border-bottom: 1px solid #0f172a;
+    transition: background 0.2s;
+}
+.memo-quick-reply-item:last-child { border-bottom: none; }
+.memo-quick-reply-item:hover { background-color: #3b82f6; color: white; }
 </style>
 
 <div class="flex flex-col lg:flex-row gap-8 animate-fadeIn">
@@ -195,6 +226,35 @@
 
 <script>
 (function() {
+
+// Admin Memo 자동 완성 멘트 리스트
+    window.memoQuickReplies = [
+        "Great job today, thank you!",
+        "Thanks for your hard work on this.",
+        "Excellent progress, keep it up!",
+        "I appreciate your dedication.",
+        "Well done completing these tasks.",
+        "Thank you for the detailed report.",
+        "Good work handling this efficiently.",
+        "Thanks for staying on top of things.",
+        "Awesome effort today, thanks!",
+        "Your hard work is much appreciated!"
+    ];
+
+    // 선택한 멘트를 텍스트 영역에 추가하는 함수
+    window.insertQuickReply = function(text) {
+        const memoEl = document.getElementById('rp_memo');
+        if(memoEl) {
+            // 기존 내용이 있으면 줄바꿈 후 추가
+            if(memoEl.value && !memoEl.value.endsWith('\n')) {
+                memoEl.value += '\n';
+            }
+            memoEl.value += text;
+            window.autoResize(memoEl); // 높이 자동 조절 트리거
+            document.getElementById('memoQuickReplyList').style.display = 'none'; // 리스트 숨기기
+        }
+    };
+
     window._reportPopupData = {};  // ← 이 줄 추가
 
     const reportDb = window.db || firebase.database();
@@ -468,12 +528,19 @@ window.openReportDetail = function(date, staff) {
                             placeholder="Describe work done...">${cleanSummary}</textarea>
                     </div>
                     
-                    <div>
+<div class="memo-quick-reply-container">
                         <label class="text-[11px] text-amber-400 mb-2 block uppercase font-black tracking-widest">Admin Memo</label>
                         <textarea id="rp_memo" 
                             oninput="window.autoResize(this)" 
-                            class="custom-input h-auto resize-none border-amber-500/10 text-sm bg-amber-500/5 overflow-hidden" 
+                            onfocus="document.getElementById('memoQuickReplyList').style.display='block'"
+                            onblur="setTimeout(() => document.getElementById('memoQuickReplyList').style.display='none', 200)"
+                            class="custom-input h-auto resize-none border-amber-500/10 text-sm bg-amber-500/5 overflow-hidden relative z-10" 
                             placeholder="Admin notes here...">${r.adminMemo||''}</textarea>
+                        
+<div id="memoQuickReplyList" class="memo-quick-reply-list">
+    ${window.memoQuickReplies.map(reply => `<div class="memo-quick-reply-item" onmousedown="insertQuickReply('${reply}'); event.preventDefault();">${reply}</div>`).join('')}
+</div>
+
                     </div>
                 </div>
 
