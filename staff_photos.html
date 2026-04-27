@@ -1,0 +1,396 @@
+<div class="w-full">
+    <!-- 헤더 섹션 -->
+    <div class="mb-8 lg:mb-12 animate-fadeIn px-2 sm:px-4">
+        <h1 class="text-2xl sm:text-3xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-2 sm:mb-3 italic leading-tight">
+            📸 Staff <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Photos</span>
+        </h1>
+        <p class="text-xs sm:text-sm lg:text-base text-slate-400 font-bold tracking-widest uppercase mb-6 sm:mb-8">Memories & Moments from Our Team</p>
+        
+        <!-- 필터 버튼 -->
+        <div class="flex flex-wrap gap-2 mb-6 sm:mb-8">
+            <button onclick="filterPhotos('all')" class="filter-btn filter-btn-active px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-all" data-filter="all">All</button>
+            <button onclick="filterPhotos('work')" class="filter-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 transition-all" data-filter="work">💼 Work</button>
+            <button onclick="filterPhotos('event')" class="filter-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 transition-all" data-filter="event">🎉 Event</button>
+            <button onclick="filterPhotos('team')" class="filter-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 transition-all" data-filter="team">👥 Team</button>
+            <button onclick="filterPhotos('staff')" class="filter-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 transition-all" data-filter="staff">🎭 Staff</button>
+        </div>
+    </div>
+
+    <!-- 갤러리 그리드 -->
+    <div id="photoGallery" class="grid gap-3 sm:gap-4 lg:gap-5 px-2 sm:px-4" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); grid-auto-rows: 150px;">
+        <div class="col-span-full flex items-center justify-center py-20">
+            <div class="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+    </div>
+
+    <!-- 모달 라이트박스 -->
+    <div id="photoModal" class="hidden fixed inset-0 z-[4000] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-md">
+        <button onclick="closePhotoModal()" class="absolute top-3 right-3 sm:top-5 sm:right-5 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white text-2xl sm:text-3xl hover:bg-white/10 rounded-full transition-all duration-200 z-50">
+            ✕
+        </button>
+        
+        <div class="w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl animate-fadeIn">
+            <div class="relative group">
+                <img id="modalImage" src="" alt="" class="w-full rounded-xl sm:rounded-2xl shadow-2xl object-cover max-h-[60vh] sm:max-h-[75vh] lg:max-h-[85vh]">
+                
+                <!-- 네비게이션 버튼 -->
+                <button id="prevBtn" onclick="previousPhoto()" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 sm:-translate-x-16 lg:-translate-x-20 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white text-lg sm:text-2xl hover:scale-110 transition-transform duration-200 opacity-0 group-hover:opacity-100">
+                    ◀
+                </button>
+                <button id="nextBtn" onclick="nextPhoto()" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 sm:translate-x-16 lg:translate-x-20 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white text-lg sm:text-2xl hover:scale-110 transition-transform duration-200 opacity-0 group-hover:opacity-100">
+                    ▶
+                </button>
+            </div>
+            
+            <!-- 사진 정보 -->
+            <div class="mt-3 sm:mt-6 flex flex-col gap-2 sm:gap-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <h2 id="modalTitle" class="text-base sm:text-xl font-black text-white uppercase tracking-wider italic"></h2>
+                    <span id="modalCounter" class="text-xs sm:text-sm font-bold text-slate-400 tracking-widest uppercase"></span>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-4 flex-wrap">
+                    <span id="modalDate" class="text-[10px] sm:text-xs font-bold text-blue-400 uppercase tracking-widest"></span>
+                    <span id="modalCategory" class="px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 갤러리 이미지 애니메이션 */
+        .photo-card {
+            animation: photoEntry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes photoEntry {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .photo-card:nth-child(1) { animation-delay: 0.05s; }
+        .photo-card:nth-child(2) { animation-delay: 0.1s; }
+        .photo-card:nth-child(3) { animation-delay: 0.15s; }
+        .photo-card:nth-child(4) { animation-delay: 0.2s; }
+        .photo-card:nth-child(5) { animation-delay: 0.25s; }
+        .photo-card:nth-child(6) { animation-delay: 0.3s; }
+        .photo-card:nth-child(7) { animation-delay: 0.35s; }
+        .photo-card:nth-child(8) { animation-delay: 0.4s; }
+        .photo-card:nth-child(9) { animation-delay: 0.45s; }
+        .photo-card:nth-child(n+10) { animation-delay: 0.5s; }
+
+        /* 이미지 호버 효과 */
+        .photo-card-image {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            width: 100%;
+            height: 100%;
+        }
+
+        .photo-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .photo-card:hover .photo-card-image img {
+            transform: scale(1.08) rotate(1deg);
+        }
+
+        /* 오버레이 효과 */
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(34, 211, 238, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-card:hover .photo-overlay {
+            opacity: 1;
+        }
+
+        .photo-overlay-icon {
+            font-size: 1.5rem;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover .photo-overlay-icon {
+            transform: scale(1);
+        }
+
+        /* 필터 버튼 액티브 상태 */
+        .filter-btn-active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(34, 211, 238, 0.3)) !important;
+            border-color: rgb(96, 165, 250) !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+
+        /* 페이드 아웃 애니메이션 */
+        .fade-out {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        /* 빛나는 보더 효과 */
+        .photo-card {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            box-shadow: 
+                0 0 1px rgba(59, 130, 246, 0.5),
+                0 0 2px rgba(34, 211, 238, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 0 1px rgba(59, 130, 246, 0.8),
+                0 0 10px rgba(59, 130, 246, 0.4),
+                0 0 20px rgba(34, 211, 238, 0.2);
+        }
+
+        /* 반응형 그리드 조정 */
+        @media (max-width: 640px) {
+            #photoGallery {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+                grid-auto-rows: 130px !important;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #photoGallery {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+                grid-auto-rows: 180px !important;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            #photoGallery {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+                grid-auto-rows: 220px !important;
+            }
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .photo-card:active {
+                transform: scale(0.96);
+            }
+
+            .photo-card:active .photo-overlay {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        let allPhotos = [];
+        let filteredPhotos = [];
+        let currentFilter = 'all';
+        let currentPhotoIndex = 0;
+
+        // 사진 데이터 로드
+        async function loadPhotos() {
+            try {
+                const response = await fetch('images/TEI/photos.json');
+                const data = await response.json();
+                allPhotos = data.map((item, idx) => ({
+                    id: idx + 1,
+                    filename: item[0],      // 배열의 첫 번째 요소
+                    title: item[1],         // 배열의 두 번째 요소
+                    date: item[2],          // 배열의 세 번째 요소
+                    category: item[3]       // 배열의 네 번째 요소
+                }));
+                filterPhotos('all');
+            } catch (error) {
+                console.error('Error loading photos:', error);
+                document.getElementById('photoGallery').innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <p class="text-rose-500 font-black text-sm sm:text-lg uppercase">Error loading photos</p>
+                        <p class="text-slate-500 text-xs sm:text-sm mt-2">Please check if photos.json exists</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 필터링 함수
+        window.filterPhotos = function(category) {
+            currentFilter = category;
+            
+            // UI 업데이트
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('filter-btn-active');
+            });
+            document.querySelector(`[data-filter="${category}"]`).classList.add('filter-btn-active');
+
+            // 데이터 필터링
+            filteredPhotos = category === 'all' 
+                ? allPhotos 
+                : allPhotos.filter(photo => photo.category === category);
+
+            // 갤러리 렌더링
+            renderGallery();
+        };
+
+        // 갤러리 렌더링
+        function renderGallery() {
+            const gallery = document.getElementById('photoGallery');
+            
+            if (filteredPhotos.length === 0) {
+                gallery.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <p class="text-slate-500 font-black text-sm sm:text-lg uppercase">No photos found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gallery.innerHTML = filteredPhotos.map((photo, index) => `
+                <div class="photo-card group" onclick="openPhotoModal(${index})">
+                    <div class="photo-card-image relative h-full">
+                        <img 
+                            src="images/TEI/${photo.filename}" 
+                            alt="${photo.title}"
+                            loading="lazy"
+                            onerror="this.src='https://via.placeholder.com/300x300?text=Photo+Not+Found'"
+                        >
+                        <div class="photo-overlay">
+                            <div class="photo-overlay-icon">🔍</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 모달 열기
+        window.openPhotoModal = function(index) {
+            currentPhotoIndex = index;
+            const photo = filteredPhotos[index];
+            
+            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
+            document.getElementById('modalImage').onerror = function() {
+                this.src = 'https://via.placeholder.com/800x600?text=Photo+Not+Found';
+            };
+            document.getElementById('modalTitle').innerText = photo.title;
+            document.getElementById('modalDate').innerText = photo.date;
+            document.getElementById('modalCategory').innerText = photo.category.toUpperCase();
+            document.getElementById('modalCounter').innerText = `${index + 1} / ${filteredPhotos.length}`;
+            
+            document.getElementById('photoModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // 화살표 표시/숨김
+            updateNavigationButtons();
+        };
+
+        // 모달 닫기
+        window.closePhotoModal = function() {
+            document.getElementById('photoModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+
+        // 이전 사진
+        window.previousPhoto = function() {
+            if (currentPhotoIndex > 0) {
+                currentPhotoIndex--;
+                updateModalContent();
+            }
+        };
+
+        // 다음 사진
+        window.nextPhoto = function() {
+            if (currentPhotoIndex < filteredPhotos.length - 1) {
+                currentPhotoIndex++;
+                updateModalContent();
+            }
+        };
+
+        // 모달 콘텐츠 업데이트
+        function updateModalContent() {
+            const photo = filteredPhotos[currentPhotoIndex];
+            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
+            document.getElementById('modalTitle').innerText = photo.title;
+            document.getElementById('modalDate').innerText = photo.date;
+            document.getElementById('modalCategory').innerText = photo.category.toUpperCase();
+            document.getElementById('modalCounter').innerText = `${currentPhotoIndex + 1} / ${filteredPhotos.length}`;
+            updateNavigationButtons();
+        }
+
+        // 네비게이션 버튼 업데이트
+        function updateNavigationButtons() {
+            document.getElementById('prevBtn').style.opacity = currentPhotoIndex > 0 ? '1' : '0.3';
+            document.getElementById('nextBtn').style.opacity = currentPhotoIndex < filteredPhotos.length - 1 ? '1' : '0.3';
+        }
+
+        // 키보드 네비게이션
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('photoModal').classList.contains('hidden')) return;
+            if (e.key === 'ArrowLeft') previousPhoto();
+            if (e.key === 'ArrowRight') nextPhoto();
+            if (e.key === 'Escape') closePhotoModal();
+        });
+
+        // 모달 외부 클릭으로 닫기
+        document.getElementById('photoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'photoModal') closePhotoModal();
+        });
+
+        // 터치 스와이프 제스처 (모바일)
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.getElementById('photoModal').addEventListener('touchstart', (e) => {
+            if (e.target.id === 'photoModal') return;
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        document.getElementById('photoModal').addEventListener('touchend', (e) => {
+            if (e.target.id === 'photoModal') return;
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            if (touchStartX - touchEndX > 50) {
+                nextPhoto();
+            }
+            if (touchEndX - touchStartX > 50) {
+                previousPhoto();
+            }
+        }
+
+        // 페이지 로드 시 사진 로드
+        loadPhotos();
+
+        // 페이지 떠날 때 cleanup
+        window._leavePageCleanup = function() {
+            document.body.style.overflow = 'auto';
+        };
+    </script>
+</div>
