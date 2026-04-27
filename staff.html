@@ -522,30 +522,43 @@ async function fetchJakartaWeather() {
 window.showAllStaffBirthdays = function() {
     // 1. 실제 렌더링을 담당하는 내부 함수 정의
     const renderList = (users) => {
-        if (!users) return;
+        // 데이터가 아예 없는 경우 처리
+        if (!users) {
+            openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-slate-500">No staff data available.</div>');
+            return;
+        }
         
         let html = `<div class="space-y-3">`;
+        let hasBirthdayData = false;
+
         // ID 순으로 정렬
         const userList = Object.keys(users)
             .map(key => ({ id: key, ...users[key] }))
             .sort((a, b) => a.id.localeCompare(b.id));
 
         userList.forEach(u => {
-            if (u.birthday) {
+            // 유저 객체가 유효하고 생일 정보가 있는 경우에만 렌더링
+            if (u && u.birthday) {
+                hasBirthdayData = true;
                 const bType = u.birthType || "Solar";
                 const bDate = u.birthday.replace(/-/g, '.');
-                const pImg = u.profileImg || 'image-001.webp';
                 
-                // Admin 여부에 따른 이미지 경로 처리
-                const imgSrc = u.id === 'Admin' 
-                    ? (pImg.startsWith('images/') ? pImg : `images/profile/admin/${pImg}`) 
-                    : (pImg.startsWith('images/') ? pImg : `images/profile/${pImg}`);
+                // profileImg가 없을 경우를 대비한 기본값 설정 및 타입 체크
+                const pImg = (typeof u.profileImg === 'string') ? u.profileImg : 'image-001.webp';
+                
+                // Admin 여부에 따른 이미지 경로 처리 (안전한 string 체크 포함)
+                let imgSrc = "";
+                if (u.id === 'Admin') {
+                    imgSrc = pImg.includes('images/') ? pImg : `images/profile/admin/${pImg}`;
+                } else {
+                    imgSrc = pImg.includes('images/') ? pImg : `images/profile/${pImg}`;
+                }
 
                 html += `
                 <div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
                     <div class="flex items-center gap-3">
                         <img src="${imgSrc}" class="w-10 h-10 rounded-full border border-white/10 object-cover shadow-sm" 
-                             onerror="this.src='https://ui-avatars.com/api/?name=${u.id}&background=0D8ABC&color=fff'">
+                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.id)}&background=0D8ABC&color=fff'">
                         <div class="flex flex-col">
                             <span class="text-xs font-black text-white uppercase leading-tight">${u.displayName || u.id}</span>
                             <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">${u.role || 'Staff'}</span>
@@ -559,22 +572,30 @@ window.showAllStaffBirthdays = function() {
             }
         });
         
+        // 생일 정보가 있는 사람이 아무도 없을 때 메시지 출력
+        if (!hasBirthdayData) {
+            html += `<div class="p-5 text-center text-slate-500">No birthday records found.</div>`;
+        }
+
         html += `</div>`;
         openProfileModal('Staff Birthdays', html);
     };
 
     // 2. 실행 로직: 캐시 확인 후 처리
-    if (cachedUsers) {
+    if (window.cachedUsers) { // 전역 변수 참조 명확화
         console.log("Using cached user data for birthdays.");
-        renderList(cachedUsers);
+        renderList(window.cachedUsers);
     } else {
         console.log("Fetching fresh user data for birthdays...");
+        // 로딩 표시를 먼저 띄워 사용자 경험 개선
+        openProfileModal('Staff Birthdays', '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>');
+        
         db.ref('users').once('value', snap => {
-            cachedUsers = snap.val();
-            renderList(cachedUsers);
+            window.cachedUsers = snap.val();
+            renderList(window.cachedUsers);
         }).catch(e => {
             console.error("Birthday list load failed:", e);
-            alert("Failed to load staff list.");
+            openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-rose-500">Failed to load data.</div>');
         });
     }
 };
