@@ -356,6 +356,178 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
 .animate-misty-out {
     animation: mistyOut 0.8s ease-in forwards;
 }
+/* ── Horrifying Ghost Profile Image Effect ── */
+#ghost-overlay {
+    animation: fadeInOverlay 0.3s ease-out forwards;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+}
+
+#ghost-overlay.hidden {
+    display: none !important;
+}
+
+#ghost-image {
+    animation: horrorGhostAppear 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 
+        0 0 80px rgba(139, 0, 139, 0.9),
+        0 0 120px rgba(75, 0, 130, 0.7),
+        0 0 160px rgba(30, 144, 255, 0.5),
+        inset 0 0 50px rgba(255, 255, 255, 0.2),
+        0 0 200px rgba(255, 0, 0, 0.3);
+    border: 4px solid rgba(139, 0, 139, 0.8);
+    filter: grayscale(80%) contrast(1.2);
+    position: relative;
+}
+
+/* 귀신 아우라 효과 */
+#ghost-image::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, 
+        rgba(139, 0, 139, 0.4) 0%, 
+        rgba(75, 0, 130, 0.2) 40%,
+        transparent 70%);
+    border-radius: 50%;
+    filter: blur(15px);
+    animation: auraPulse 2s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px) brightness(0.7);
+    }
+}
+
+@keyframes horrorGhostAppear {
+    /* 첫 번째 단계: 먼 곳에서 무섭게 나타남 */
+    0% {
+        opacity: 0;
+        transform: scale(0.1) translateY(80px) rotateX(-90deg) rotateZ(-30deg);
+        filter: blur(40px) brightness(0.3);
+        text-shadow: 0 0 20px rgba(139, 0, 139, 0.5);
+    }
+    
+    /* 두 번째 단계: 빠르게 떠오름 */
+    15% {
+        opacity: 0.4;
+        transform: scale(0.4) translateY(40px) rotateX(-45deg) rotateZ(-15deg);
+        filter: blur(30px) brightness(0.5);
+        text-shadow: 0 0 40px rgba(139, 0, 139, 0.7);
+    }
+    
+    /* 세 번째 단계: 가까워지면서 무서워짐 */
+    35% {
+        opacity: 0.7;
+        transform: scale(0.8) translateY(10px) rotateX(-20deg) rotateZ(-5deg);
+        filter: blur(15px) brightness(0.7);
+        text-shadow: 0 0 60px rgba(255, 0, 0, 0.6);
+    }
+    
+    /* 네 번째 단계: 완전히 나타남 - 가장 무서운 순간 */
+    50% {
+        opacity: 1;
+        transform: scale(1.1) translateY(-10px) rotateX(-5deg) rotateZ(0deg);
+        filter: brightness(1.2) contrast(1.5) grayscale(80%);
+        text-shadow: 0 0 80px rgba(139, 0, 139, 0.9);
+    }
+    
+    /* 다섯 번째 단계: 떨림 효과 */
+    55% {
+        transform: scale(1.05) translateY(-15px) rotateX(2deg) rotateZ(2deg);
+    }
+    
+    60% {
+        transform: scale(1.08) translateY(-12px) rotateX(-2deg) rotateZ(-2deg);
+        filter: brightness(1.3) contrast(1.6) grayscale(70%);
+    }
+    
+    /* 여섯 번째 단계: 유지 */
+    65% {
+        opacity: 1;
+        transform: scale(1.1) translateY(-10px) rotateX(0deg) rotateZ(0deg);
+        filter: brightness(1.2) contrast(1.5) grayscale(80%);
+        box-shadow: 
+            0 0 80px rgba(139, 0, 139, 0.9),
+            0 0 120px rgba(75, 0, 130, 0.7),
+            0 0 160px rgba(30, 144, 255, 0.5),
+            inset 0 0 50px rgba(255, 255, 255, 0.2),
+            0 0 200px rgba(255, 0, 0, 0.4);
+    }
+    
+    /* 일곱 번째 단계: 깜박임 효과 */
+    72% {
+        opacity: 0.3;
+        filter: brightness(0.5) contrast(1.2) grayscale(100%);
+        text-shadow: 0 0 40px rgba(139, 0, 139, 0.5);
+    }
+    
+    75% {
+        opacity: 1;
+        filter: brightness(1.3) contrast(1.7) grayscale(75%);
+    }
+    
+    /* 여덟 번째 단계: 사라짐 */
+    85% {
+        opacity: 0.5;
+        transform: scale(1.2) translateY(-30px) rotateX(30deg) rotateZ(10deg);
+        filter: blur(20px) brightness(0.4);
+        text-shadow: 0 0 40px rgba(139, 0, 139, 0.3);
+    }
+    
+    100% {
+        opacity: 0;
+        transform: scale(1.5) translateY(-80px) rotateX(90deg) rotateZ(45deg);
+        filter: blur(50px) brightness(0.1);
+        text-shadow: 0 0 0px rgba(139, 0, 139, 0);
+    }
+}
+
+@keyframes auraPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.7;
+    }
+}
+
+/* 배경 번쩍이는 효과 */
+@keyframes screenFlicker {
+    0%, 100% { opacity: 1; }
+    10% { opacity: 0.8; }
+    20% { opacity: 1; }
+    30% { opacity: 0.85; }
+    40% { opacity: 1; }
+    50% { opacity: 0.9; }
+}
+
+#ghost-overlay.active {
+    animation: screenFlicker 3s ease-in-out;
+}
+
+/* 공포 효과음 시각화 (선택) */
+@keyframes screamWave {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(3);
+    }
+}
 </style>
 
 </head>
@@ -475,6 +647,13 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
                 Close
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Horrifying Ghost Profile Image Effect -->
+<div id="ghost-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none">
+    <div style="position: relative;">
+        <img id="ghost-image" src="" alt="Profile Ghost" class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-full">
     </div>
 </div>
 
@@ -764,38 +943,92 @@ Have a happier day than anyone else.!</div>
     });
 
     // ── 로그인 처리 ──
-    window.handleLogin = function() {
-        const name = selectedStaff;
-        const pw = passwordInput.value;
-        
-        if(!name || !pw) {
-            return alert("Please enter your credentials.");
+window.handleLogin = function() {
+    const name = selectedStaff;
+    const pw = passwordInput.value;
+    
+    if(!name || !pw) {
+        return alert("Please enter your credentials.");
+    }
+    
+    database.ref('users/' + name).once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (!userData) {
+            return alert("User not found.");
         }
         
-        database.ref('users/' + name).once('value', (snapshot) => {
-            const userData = snapshot.val();
-            if (!userData) {
-                return alert("User not found.");
-            }
+        if (userData.password === pw) {
+            sessionStorage.setItem('loggedInUser', name);
+            sessionStorage.setItem('userRole', userData.role);
+            firebase.database().ref('users/' + name).update({
+                lastLogin: new Date().toISOString()
+            });
             
-            if (userData.password === pw) {
-                sessionStorage.setItem('loggedInUser', name);
-                sessionStorage.setItem('userRole', userData.role);
-                firebase.database().ref('users/' + name).update({
-                    lastLogin: new Date().toISOString()
-                });
-                
-                const role = (userData.role || '').toLowerCase();
-                if (role === 'admin' || role === 'manager') {
-                    location.href = "admin.html";
-                } else {
-                    location.href = "staff_main.html";
-                }
-            } else { 
-                alert("Incorrect password."); 
-            }
-        });
-    };
+            // Ghost 프로필 이미지 효과
+            showGhostEffect(userData.profileImg, name, userData.role);
+            
+        } else { 
+            alert("Incorrect password."); 
+        }
+    });
+};
+
+// Ghost 효과 표시 함수 (호러 버전)
+function showGhostEffect(profileImg, name, role) {
+    const ghostOverlay = document.getElementById('ghost-overlay');
+    const ghostImage = document.getElementById('ghost-image');
+    
+    // 프로필 이미지 설정
+    const imagePath = profileImg ? `images/profile/${profileImg}` : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
+    ghostImage.src = imagePath;
+    
+    // 호러 음향 효과 (선택사항)
+    playHorrorSound();
+    
+    // Ghost 효과 시작
+    ghostOverlay.classList.remove('hidden');
+    ghostOverlay.classList.add('active');
+    
+    // 배경 화면 깜빡임 효과
+    document.body.style.animation = 'screenFlicker 3s ease-in-out';
+    
+    // 3초 후 페이지 이동
+    setTimeout(() => {
+        ghostOverlay.classList.add('hidden');
+        ghostOverlay.classList.remove('active');
+        document.body.style.animation = 'none';
+        
+        // 역할에 따라 페이지 이동
+        const userRole = (role || '').toLowerCase();
+        if (userRole === 'admin' || userRole === 'manager') {
+            location.href = "admin.html";
+        } else {
+            location.href = "staff_main.html";
+        }
+    }, 3000);
+}
+
+// 호러 음향 효과 (선택사항)
+function playHorrorSound() {
+    // Web Audio API를 사용한 으스스한 음향 생성
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // 으스스한 저주파 사운드
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(20, audioContext.currentTime + 0.5);
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+}
 
     // ── 비밀번호 보이기/숨기기 토글 ──
     window.togglePassword = function() {
