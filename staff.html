@@ -156,7 +156,7 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
                         <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
                     </div>
 <button onclick="showAllStaffBirthdays()" class="mt-2 ml-1 text-[9px] font-bold text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-1">
-    <img src="images/gif/birth.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
+    <img src="images/gif/staff.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
 </button>
 
                     <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
@@ -248,6 +248,17 @@ const db = firebase.database();
 // 3. 전역 변수로 API KEY 선언 (어디서든 쓸 수 있게)
 let dynamicApiKey = "";
 let cachedUsers = null;
+
+// ✅ 추가: 앱 시작시 user 데이터 미리 로드
+function preloadUsersData() {
+    db.ref('users').once('value', snap => {
+        cachedUsers = snap.val();
+        console.log("✅ Users data pre-loaded and cached");
+    }).catch(e => console.error("Pre-load error:", e));
+}
+
+// Firebase 초기화 후 즉시 실행
+preloadUsersData();
 
 // 4. DB에서 GoogleCAPI 값을 동적으로 로드
 db.ref('settings/config/GoogleCAPI').once('value').then((snap) => {
@@ -401,30 +412,33 @@ async function checkTodayBirthdays() {
     const lunar = Lunar.fromDate(today);
     const lMonthDay = `${String(lunar.getMonth()).padStart(2, '0')}-${String(lunar.getDay()).padStart(2, '0')}`;
     
-    db.ref('users').once('value', snap => {
-        const users = snap.val();
-        if (!users) return;
-cachedUsers = users; // [추가] 데이터를 캐시에 저장
+    // ✅ 이미 캐시된 데이터 사용
+    const checkCache = () => {
+        if (!cachedUsers) return;
+        
         let birthdayMessages = [];
-        Object.keys(users).forEach(id => {
-            const u = users[id];
+        Object.keys(cachedUsers).forEach(id => {
+            const u = cachedUsers[id];
             if (!u || !u.birthday) return;
+            
             const bMonthDay = u.birthday.substring(5); 
             const type = u.birthType || "Solar";
             const bDateFull = u.birthday.replace(/-/g, '.'); 
             const isSolarMatch = (type === "Solar" || type === "양력") && bMonthDay === tMonthDay;
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
-            if (isSolarMatch || isLunarMatch) { birthdayMessages.push(`${id}: ${bDateFull}`); }
+            
+            if (isSolarMatch || isLunarMatch) { 
+                birthdayMessages.push(`${id}: ${bDateFull}`); 
+            }
         });
 
-        // 요소 정의 (콜백 시점에 재조회)
-        const alertBox       = document.getElementById('birthdayAlert');
-        const nameText       = document.getElementById('birthdayNames');
+        // UI 업데이트
+        const alertBox = document.getElementById('birthdayAlert');
+        const nameText = document.getElementById('birthdayNames');
         const mobileAlertBox = document.getElementById('mobileBirthdayAlert');
         const mobileNameText = document.getElementById('mobileBirthdayNames');
-        const mobileDot      = document.getElementById('mobile-birthday-dot');
+        const mobileDot = document.getElementById('mobile-birthday-dot');
 
-        // 핵심 요소가 없으면 즉시 종료 (탭 전환 후 DOM 소멸 대비)
         if (!alertBox && !mobileAlertBox) return;
 
         if (birthdayMessages.length > 0) {
@@ -443,16 +457,23 @@ cachedUsers = users; // [추가] 데이터를 캐시에 저장
                 const mub = document.getElementById('mobileUserName');
                 if(mub) mub.classList.replace('text-blue-400', 'text-yellow-400');
             }
-        } else {
-            if (alertBox) alertBox.classList.add('hidden');
-            if (mobileAlertBox) mobileAlertBox.classList.add('hidden');
-            if (mobileDot) mobileDot.classList.add('hidden');
         }
-    });
+    };
+
+    // ✅ 캐시가 있으면 즉시 실행
+    if (cachedUsers) {
+        checkCache();
+    } else {
+        // 캐시 없으면 로드 후 실행
+        db.ref('users').once('value', snap => {
+            cachedUsers = snap.val();
+            checkCache();
+        });
+    }
 }
 
-fetchJakartaWeather();
 checkTodayBirthdays();
+fetchJakartaWeather();
 
 window.switchTab = function(t) {
     // ▼ 탭 전환 시 이전 페이지 리스너 정리
@@ -520,33 +541,27 @@ async function fetchJakartaWeather() {
 }
 
 window.showAllStaffBirthdays = function() {
-    // 1. 실제 렌더링을 담당하는 내부 함수 정의
     const renderList = (users) => {
-        // 데이터가 아예 없는 경우 처리
         if (!users) {
-            openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-slate-500">No staff data available.</div>');
+            openProfileModal('Staff Birthdays', 
+                '<div class="p-5 text-center text-slate-500">No staff data available.</div>');
             return;
         }
         
         let html = `<div class="space-y-3">`;
         let hasBirthdayData = false;
 
-        // ID 순으로 정렬
         const userList = Object.keys(users)
             .map(key => ({ id: key, ...users[key] }))
             .sort((a, b) => a.id.localeCompare(b.id));
 
         userList.forEach(u => {
-            // 유저 객체가 유효하고 생일 정보가 있는 경우에만 렌더링
             if (u && u.birthday) {
                 hasBirthdayData = true;
                 const bType = u.birthType || "Solar";
                 const bDate = u.birthday.replace(/-/g, '.');
-                
-                // profileImg가 없을 경우를 대비한 기본값 설정 및 타입 체크
                 const pImg = (typeof u.profileImg === 'string') ? u.profileImg : 'image-001.webp';
                 
-                // Admin 여부에 따른 이미지 경로 처리 (안전한 string 체크 포함)
                 let imgSrc = "";
                 if (u.id === 'Admin') {
                     imgSrc = pImg.includes('images/') ? pImg : `images/profile/admin/${pImg}`;
@@ -557,7 +572,9 @@ window.showAllStaffBirthdays = function() {
                 html += `
                 <div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
                     <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-10 h-10 rounded-full border border-white/10 object-cover shadow-sm" 
+                        <img src="${imgSrc}" 
+                             class="w-10 h-10 rounded-full border border-white/10 object-cover shadow-sm" 
+                             loading="lazy"
                              onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.id)}&background=0D8ABC&color=fff'">
                         <div class="flex flex-col">
                             <span class="text-xs font-black text-white uppercase leading-tight">${u.displayName || u.id}</span>
@@ -572,7 +589,6 @@ window.showAllStaffBirthdays = function() {
             }
         });
         
-        // 생일 정보가 있는 사람이 아무도 없을 때 메시지 출력
         if (!hasBirthdayData) {
             html += `<div class="p-5 text-center text-slate-500">No birthday records found.</div>`;
         }
@@ -581,24 +597,26 @@ window.showAllStaffBirthdays = function() {
         openProfileModal('Staff Birthdays', html);
     };
 
-    // 2. 실행 로직: 캐시 확인 후 처리
-    if (window.cachedUsers) { // 전역 변수 참조 명확화
-        console.log("Using cached user data for birthdays.");
-        renderList(window.cachedUsers);
+    // ✅ 캐시가 있으면 즉시 렌더링
+    if (cachedUsers) {
+        console.log("✅ Using cached data");
+        renderList(cachedUsers);
     } else {
-        console.log("Fetching fresh user data for birthdays...");
-        // 로딩 표시를 먼저 띄워 사용자 경험 개선
-        openProfileModal('Staff Birthdays', '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>');
+        // ✅ 캐시 없을 때만 로딩 표시
+        openProfileModal('Staff Birthdays', 
+            '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>');
         
         db.ref('users').once('value', snap => {
-            window.cachedUsers = snap.val();
-            renderList(window.cachedUsers);
+            cachedUsers = snap.val();
+            renderList(cachedUsers);
         }).catch(e => {
             console.error("Birthday list load failed:", e);
-            openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-rose-500">Failed to load data.</div>');
+            openProfileModal('Staff Birthdays', 
+                '<div class="p-5 text-center text-rose-500">Failed to load data.</div>');
         });
     }
 };
+
 
 // 렌더링 로직을 별도 함수로 분리 (성능 및 재사용성)
 function renderBirthdayModal() {
