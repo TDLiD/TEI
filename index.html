@@ -1005,20 +1005,28 @@ function showGhostEffect(profileImg, name, role) {
     // 배경 화면 깜빡임 효과
     document.body.style.animation = 'screenFlicker 3s ease-in-out';
     
-    // 3초 후 페이지 이동
-    setTimeout(() => {
-        ghostOverlay.classList.add('hidden');
-        ghostOverlay.classList.remove('active');
-        document.body.style.animation = 'none';
-        
-        // 역할에 따라 페이지 이동
-        const userRole = (role || '').toLowerCase();
-        if (userRole === 'admin' || userRole === 'manager') {
-            location.href = "admin.html";
+// 3초 후 페이지 이동
+setTimeout(() => {
+    ghostOverlay.classList.add('hidden');
+    ghostOverlay.classList.remove('active');
+    document.body.style.animation = 'none';
+    
+    // 역할에 따라 페이지 이동
+    const userRole = (role || '').toLowerCase();
+    if (userRole === 'admin' || userRole === 'manager') {
+        location.href = "admin.html";
+    } else {
+        // [수정된 부분] 날짜 판별 로직 추가
+        const today = new Date().getDate(); // 오늘 일자 (1~31)
+        if (today % 2 !== 0) {
+            // 홀수 날짜
+            location.href = "staff_main_1.html";
         } else {
-            location.href = "staff_main.html";
+            // 짝수 날짜
+            location.href = "staff_main_2.html";
         }
-    }, 3000);
+    }
+}, 3000);
 }
 
 // 호러 음향 효과 (선택사항)

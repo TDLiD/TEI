@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Daily System - Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           1. VARIABLES & RESET
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-darker: #050812;
+            --bg-card: #1a1f3a;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f1535 50%, #0a0e27 100%);
+            font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+            color: var(--text-light);
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           2. ANIMATED BACKGROUND
+           ═══════════════════════════════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: bgShift 15s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% {
+                background: 
+                    radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 60%);
+            }
+            50% {
+                background: 
+                    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 60% 100%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           3. MAIN CONTAINER
+           ═══════════════════════════════════════════════════════════════ */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .content-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           4. HEADER SECTION
+           ═══════════════════════════════════════════════════════════════ */
+        .header-section {
+            text-align: center;
+            margin-bottom: clamp(2rem, 6vh, 3.5rem);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .live-time {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--accent-green);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .greeting {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .greeting span {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sub-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+ /* ═══════════════════════════════════════════════════════════════
+   5 & 6. 통합 메뉴 그리드 (상하단 버튼 크기 및 정렬 통일)
+   ═══════════════════════════════════════════════════════════════ */
+.menu-grid, .bottom-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 무조건 2열 정렬 */
+    gap: 12px;
+    width: 100%;
+    max-width: 500px; /* 가로폭을 적절히 제한하여 깔끔하게 유지 */
+    margin: 0 auto 12px auto; /* 중앙 정렬 및 하단 간격 */
+    animation: slideUp 0.6s ease-out both;
+}
+
+/* 모든 버튼(카드)의 높이와 스타일 통일 */
+.menu-card, .action-btn {
+    position: relative;
+    background: linear-gradient(135deg, var(--bg-card) 0%, #232d4d 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    min-height: 130px; /* 모든 버튼의 최소 높이 통일 */
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+}
+
+/* 아이콘 크기 통일 (이미지와 이모지 모두 해당) */
+.card-icon-wrap, .action-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 40px; /* 이모지 크기 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 라벨 스타일 통일 */
+.card-label, .action-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-light);
+}
+
+/* 호버 효과 통일 */
+.menu-card:hover, .action-btn:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+        /* ═══════════════════════════════════════════════════════════════
+           7. DAY INDICATOR & PROFILE
+           ═══════════════════════════════════════════════════════════════ */
+        .day-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            z-index: 20;
+            background: rgba(26, 31, 58, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .day-name {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .day-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .profile-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(26, 31, 58, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .profile-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           8. ANIMATIONS
+           ═══════════════════════════════════════════════════════════════ */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           9. POPUP MODAL
+           ═══════════════════════════════════════════════════════════════ */
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .popup-container {
+            position: relative;
+            background: linear-gradient(135deg, var(--bg-card) 0%, #232d4d 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .popup-close-top {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: var(--accent-pink);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+
+        .popup-close-top:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: #e91e63;
+        }
+
+        .popup-content {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-height: calc(85vh - 100px);
+            overflow-y: auto;
+        }
+
+        .popup-image {
+            max-width: 100%;
+            max-height: 50vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            object-fit: contain;
+        }
+
+        .popup-message {
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .popup-close-bottom {
+            width: calc(100% - 40px);
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .popup-close-bottom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .popup-container {
+                max-width: 95vw;
+                max-height: 90vh;
+            }
+
+            .popup-image {
+                max-height: 40vh;
+            }
+
+            .popup-close-top {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           10. RESPONSIVE
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 600px) {
+            .content-wrapper {
+                padding: 1.5rem 1rem;
+            }
+
+            .greeting {
+                font-size: 2rem;
+            }
+
+            .menu-card {
+                padding: 16px 12px;
+                min-height: 120px;
+            }
+
+            .card-icon-wrap {
+                width: 50px;
+                height: 50px;
+            }
+
+            .action-btn {
+                padding: 12px 10px;
+                min-height: 100px;
+            }
+
+            .action-icon {
+                font-size: 28px;
+            }
+
+            .day-indicator {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+
+            .profile-container {
+                top: 10px;
+                left: 10px;
+                gap: 6px;
+            }
+
+            .profile-img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .profile-name {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Profile Container (Top Left) -->
+    <div class="profile-container" id="profileContainer"></div>
+
+    <!-- Day Indicator (Top Right) -->
+    <div class="day-indicator">
+        <div class="day-name" id="dayName"></div>
+        <div class="day-number" id="dayNumber"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="live-time">
+                <span class="live-dot"></span>
+                <span id="liveTime">--:--:--</span>
+            </div>
+            <h1 class="greeting">
+                Hello, <span id="userGreeting">User</span>
+            </h1>
+            <p class="sub-label">Select Task To Continue</p>
+        </div>
+
+        <!-- Menu Grid (4 Main Cards) -->
+        <div class="menu-grid">
+            <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+                </div>
+                <span class="card-label">Attendance</span>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('staff_report.html')">
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+                </div>
+                <span class="card-label">Work Report</span>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+                </div>
+                <span class="card-label">Calendar</span>
+            </div>
+
+            <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
+                <div class="card-icon-wrap">
+                    <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+                </div>
+                <span class="card-label">Vacation</span>
+            </div>
+        </div>
+
+        <!-- Bottom Actions (4 Buttons) -->
+        <div class="bottom-actions">
+            <button class="action-btn" onclick="navigateTo('staff_photos.html')">
+                <div class="action-icon">📸</div>
+                <span class="action-label">Photos</span>
+            </button>
+
+            <button class="action-btn" onclick="navigateTo('staff_setting.html')">
+                <div class="action-icon">⚙️</div>
+                <span class="action-label">Settings</span>
+            </button>
+
+            <button class="action-btn" onclick="handleLogout()">
+                <div class="action-icon">🚪</div>
+                <span class="action-label">Logout</span>
+            </button>
+
+            <a href="https://tdlid.github.io" target="_blank" class="action-btn">
+                <div class="action-icon">🌐</div>
+                <span class="action-label">Homepage</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div id="popup_overlay" class="popup-overlay" style="display: none;">
+        <div class="popup-container">
+            <button class="popup-close-top" onclick="closePopup()">✕</button>
+            <div class="popup-content" onclick="closePopup()">
+                <img id="popup_img" src="" alt="Popup" class="popup-image" style="display: none;">
+                <p id="popup_text" class="popup-message" style="display: none;"></p>
+            </div>
+            <button class="popup-close-bottom" onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════════════
+           FIREBASE CONFIGURATION
+           ═══════════════════════════════════════════════════════════════ */
+        let database;
+
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCBYlhoIPDtXnPrKugo_AQ7dYVCEyMyO-w",
+            authDomain: "tdlid-dailyreport.firebaseapp.com",
+            databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+            projectId: "tdlid-dailyreport",
+            storageBucket: "tdlid-dailyreport.appspot.com"
+        };
+
+        /* ═══════════════════════════════════════════════════════════════
+           NAVIGATION & AUTHENTICATION
+           ═══════════════════════════════════════════════════════════════ */
+        const navigateTo = (page) => {
+            sessionStorage.setItem('targetPage', page);
+            location.href = 'staff.html';
+        };
+
+        const handleLogout = () => {
+            if (confirm("Do you want to logout?")) {
+                sessionStorage.clear();
+                localStorage.removeItem('loggedInUser');
+                
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    firebase.auth().signOut().finally(() => {
+                        location.replace('index.html');
+                    });
+                } else {
+                    location.replace('index.html');
+                }
+            }
+        };
+
+        /* ═══════════════════════════════════════════════════════════════
+           LOAD USER PROFILE
+           ═══════════════════════════════════════════════════════════════ */
+        const loadProfileImg = (userId) => {
+            if (!userId || !database) return;
+
+            database.ref(`users/${userId}`).on('value', (snapshot) => {
+                const userData = snapshot.val() || {};
+                const imgFileName = userData.profileImg;
+                const displayName = userData.displayName || userId;
+
+                // Update greeting
+                const greetingEl = document.getElementById('userGreeting');
+                if (greetingEl) greetingEl.innerText = displayName;
+
+                // Create or update profile container
+                let container = document.getElementById('profileContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'profileContainer';
+                    container.className = 'profile-container';
+                    document.body.insertBefore(container, document.body.firstChild);
+                }
+
+                // Set profile image
+                let profileImg = container.querySelector('.profile-img');
+                if (!profileImg) {
+                    profileImg = document.createElement('img');
+                    profileImg.className = 'profile-img';
+                    profileImg.alt = 'Profile';
+                    container.appendChild(profileImg);
+                }
+
+                const newSrc = imgFileName ? 
+                    `images/profile/${imgFileName}` : 
+                    'images/default-profile.png';
+                
+                profileImg.src = newSrc;
+                profileImg.onerror = () => {
+                    profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6366f1&color=fff`;
+                };
+
+                // Set profile name
+                let profileName = container.querySelector('.profile-name');
+                if (!profileName) {
+                    profileName = document.createElement('div');
+                    profileName.className = 'profile-name';
+                    container.appendChild(profileName);
+                }
+                profileName.textContent = displayName;
+            });
+        };
+
+        /* ═══════════════════════════════════════════════════════════════
+           CLOCK & DATE
+           ═══════════════════════════════════════════════════════════════ */
+        const updateClock = () => {
+            const clockEl = document.getElementById('liveTime');
+            if (clockEl) {
+                clockEl.textContent = new Date().toLocaleTimeString('en-US', { 
+                    hour12: false 
+                });
+            }
+        };
+
+        const initDateDisplay = () => {
+            const daysArr = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const now = new Date();
+            
+            const dayNameEl = document.getElementById('dayName');
+            const dayNumberEl = document.getElementById('dayNumber');
+            
+            if (dayNameEl) dayNameEl.textContent = daysArr[now.getDay()];
+            if (dayNumberEl) dayNumberEl.textContent = String(now.getDate()).padStart(2, '0');
+        };
+
+        /* ═══════════════════════════════════════════════════════════════
+           POPUP MANAGEMENT
+           ═══════════════════════════════════════════════════════════════ */
+        let popupAutoCloseTimer = null;
+
+        const closePopup = () => {
+            const overlay = document.getElementById('popup_overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+                if (popupAutoCloseTimer) {
+                    clearTimeout(popupAutoCloseTimer);
+                    popupAutoCloseTimer = null;
+                }
+            }
+        };
+
+        const checkAndShowPopup = () => {
+            if (!database) return;
+
+            database.ref('settings/config/Popup').once('value', (snapshot) => {
+                const popupData = snapshot.val();
+                
+                if (!popupData || popupData.Flag !== 'ON') {
+                    return;
+                }
+
+                // Date range check
+                const today = new Date();
+                const todayStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+                
+                const startDate = popupData.Start || '00000000';
+                const endDate = popupData.End || '99999999';
+
+                if (todayStr < startDate || todayStr > endDate) {
+                    return;
+                }
+
+                // Show popup
+                const overlay = document.getElementById('popup_overlay');
+                const img = document.getElementById('popup_img');
+                const text = document.getElementById('popup_text');
+
+                if (popupData.Image) {
+                    img.src = popupData.Image;
+                    img.style.display = 'block';
+                    img.onerror = () => {
+                        img.style.display = 'none';
+                    };
+                } else {
+                    img.style.display = 'none';
+                }
+
+                if (popupData.Msg) {
+                    text.textContent = popupData.Msg;
+                    text.style.display = 'block';
+                } else {
+                    text.style.display = 'none';
+                }
+
+                overlay.style.display = 'flex';
+
+                // Auto-close after 5 seconds
+                popupAutoCloseTimer = setTimeout(() => {
+                    closePopup();
+                }, 5000);
+            });
+        };
+
+        window.closePopup = closePopup;
+
+        /* ═══════════════════════════════════════════════════════════════
+           3D TILT EFFECT (Desktop only)
+           ═══════════════════════════════════════════════════════════════ */
+        const init3DTiltEffect = () => {
+            if (!window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+                return;
+            }
+
+            const cards = document.querySelectorAll('.menu-card');
+            
+            cards.forEach(card => {
+                let targetX = 0, targetY = 0;
+                let currentX = 0, currentY = 0;
+                let rafId = null;
+                let isAnimating = false;
+
+                const lerp = (start, end, factor) => start + (end - start) * factor;
+
+                const animate = () => {
+                    if (!isAnimating) return;
+
+                    currentX = lerp(currentX, targetX, 0.12);
+                    currentY = lerp(currentY, targetY, 0.12);
+
+                    card.style.transform = `
+                        perspective(1200px) 
+                        rotateX(${currentX}deg) 
+                        rotateY(${currentY}deg) 
+                        scale(1.05)
+                    `;
+
+                    rafId = requestAnimationFrame(animate);
+                };
+
+                card.addEventListener('mouseenter', () => {
+                    isAnimating = true;
+                    rafId = requestAnimationFrame(animate);
+                });
+
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    targetX = -((e.clientY - centerY) / (rect.height / 2)) * 12;
+                    targetY = ((e.clientX - centerX) / (rect.width / 2)) * 12;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    isAnimating = false;
+                    if (rafId) cancelAnimationFrame(rafId);
+                    
+                    card.style.transform = '';
+                    currentX = 0;
+                    currentY = 0;
+                    targetX = 0;
+                    targetY = 0;
+                });
+            });
+        };
+
+        /* ═══════════════════════════════════════════════════════════════
+           INITIALIZATION
+           ═══════════════════════════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = sessionStorage.getItem('loggedInUser');
+            
+            if (!userId) {
+                location.href = 'index.html';
+                return;
+            }
+
+            // Firebase initialization
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            database = firebase.database();
+
+            // Load user profile
+            firebase.auth().onAuthStateChanged(() => {
+                loadProfileImg(userId);
+            });
+
+            // Update clock
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Initialize date display
+            initDateDisplay();
+
+            // Initialize 3D tilt effect (Desktop)
+            init3DTiltEffect();
+
+            // Check and show popup
+            setTimeout(() => {
+                checkAndShowPopup();
+            }, 1000);
+        });
+
+        // Expose functions to global scope
+        window.navigateTo = navigateTo;
+        window.handleLogout = handleLogout;
+    </script>
+</body>
+</html>

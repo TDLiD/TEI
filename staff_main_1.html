@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="theme-color" content="#03060f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Menu Select - Daily System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<style>
+/* ══════════════════════════════════════════════════════════════
+   1. VARIABLES & RESET (최적화)
+   ══════════════════════════════════════════════════════════════ */
+:root {
+    --bg: #03060f;
+    --surface: rgba(8, 18, 36, 0.85);
+    --surface-2: rgba(16, 32, 60, 0.6);
+    --blue: #3b82f6;
+    --blue-glow: rgba(59, 130, 246, 0.25);
+    --cyan: #06b6d4;
+    --violet: #818cf8;
+    --rose: #f43f5e;
+    --text: #cbd5e1;
+    --muted: #475569;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-2: rgba(255, 255, 255, 0.15);
+    --vh: 1vh;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+body {
+    font-family: "Pretendard", system-ui, sans-serif;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    perspective: 1500px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. ATMOSPHERE (부하 감소 처리)
+   ══════════════════════════════════════════════════════════════ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+}
+
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+    animation: orb-float 20s ease-in-out infinite alternate;
+}
+
+.orb-a { 
+    width: 600px; 
+    height: 600px; 
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); 
+    top: -20%; 
+    right: -10%; 
+}
+
+.orb-b { 
+    width: 400px; 
+    height: 400px; 
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); 
+    bottom: -10%; 
+    left: -10%; 
+    animation-delay: -5s; 
+}
+
+@keyframes orb-float {
+    from { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    to { transform: translate(30px, 30px) scale(1.1); opacity: 0.7; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. LAYOUT & HEADER
+   ══════════════════════════════════════════════════════════════ */
+.content-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    scrollbar-width: none;
+}
+
+.content-wrapper::-webkit-scrollbar { 
+    display: none; 
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+    animation: reveal 0.8s ease-out;
+}
+
+.live-time {
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--cyan);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.live-dot {
+    width: 6px; 
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.greeting {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.greeting span {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sub-label {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. MENU GRID & CARDS (4개 카드)
+   ══════════════════════════════════════════════════════════════ */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 500px;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+.menu-card {
+    position: relative;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
+    border: 1px solid var(--border-2);
+    border-radius: 24px;
+    padding: 30px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+    transform-style: preserve-3d;
+}
+
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+}
+
+.menu-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(59,130,246,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+@media (hover: hover) {
+    .menu-card:hover {
+        transform: translateY(-8px);
+        background: rgba(59, 130, 246, 0.15);
+        border-color: var(--blue);
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+    }
+    
+    .menu-card:hover::after {
+        opacity: 1;
+    }
+}
+
+.menu-card:active {
+    transform: translateY(-4px) scale(0.98);
+}
+
+.card-icon-wrap {
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
+    transform-style: preserve-3d;
+    transition: transform 0.3s;
+}
+
+.menu-card:hover .card-icon-wrap {
+    transform: translateZ(20px) scale(1.1);
+}
+
+.card-icon-wrap img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+}
+
+.card-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5. BOTTOM ACTIONS (4개 버튼)
+   ══════════════════════════════════════════════════════════════ */
+.bottom-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .bottom-actions {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 500px;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .bottom-actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+.action-btn {
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
+    border: 1px solid var(--border-2);
+    border-radius: 20px;
+    padding: 24px 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.4), transparent);
+}
+
+@media (hover: hover) {
+    .action-btn:hover {
+        transform: translateY(-8px) scale(1.02);
+        background: linear-gradient(145deg, rgba(129, 140, 248, 0.15), rgba(16, 32, 60, 0.8));
+        border-color: var(--violet);
+        box-shadow: 
+            0 15px 35px rgba(129, 140, 248, 0.25),
+            0 0 25px rgba(129, 140, 248, 0.15),
+            inset 0 2px 0 rgba(255,255,255,0.15);
+    }
+}
+
+.action-btn:active {
+    transform: translateY(-4px) scale(0.98);
+}
+
+.action-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(59,130,246,0.15), rgba(16,32,60,0.5));
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s;
+    box-shadow: 
+        0 4px 12px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+@media (min-width: 768px) {
+    .action-icon {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+.action-btn:active .action-icon { 
+    transform: scale(0.9); 
+}
+
+.action-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   6. DAY INDICATOR & PROFILE
+   ══════════════════════════════════════════════════════════════ */
+.day-indicator {
+    position: fixed; 
+    top: 20px; 
+    right: 20px;
+    text-align: right; 
+    z-index: 10;
+}
+
+.day-name { 
+    font-size: 10px; 
+    color: var(--muted); 
+    letter-spacing: 0.2em; 
+    text-transform: uppercase; 
+}
+
+.day-number { 
+    font-size: 2rem; 
+    font-weight: 900; 
+    color: rgba(255,255,255,0.1); 
+}
+
+.profile-container { 
+    margin-left: 10px; 
+    pointer-events: none; 
+}
+
+.profile-img {
+    width: 50px; 
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    object-fit: cover;
+    box-shadow: 0 0 15px var(--blue-glow);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   7. RESPONSIVE TABLET (768px)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+    .menu-card {
+        padding: 25px 12px;
+        border-radius: 20px;
+    }
+    
+    .card-icon-wrap {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .card-label {
+        font-size: 10px;
+    }
+    
+    .action-btn {
+        padding: 20px 15px;
+        border-radius: 18px;
+    }
+    
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.6rem;
+    }
+    
+    .action-label {
+        font-size: 9px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. RESPONSIVE MOBILE (600px)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+    .menu-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px; 
+    }
+    
+    .greeting { 
+        font-size: 2.2rem; 
+    }
+    
+    .menu-card { 
+        padding: 20px 10px; 
+        border-radius: 16px; 
+    }
+    
+    .card-icon-wrap { 
+        width: 50px; 
+        height: 50px; 
+    }
+    
+    .card-label {
+        font-size: 8px;
+    }
+    
+    .bottom-actions {
+        gap: 10px;
+    }
+    
+    .action-btn {
+        padding: 16px 10px;
+    }
+    
+    .action-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.4rem;
+    }
+    
+    .action-label {
+        font-size: 8px;
+    }
+    
+    .orb { 
+        display: none; 
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   9. ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+@keyframes reveal {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POPUP MODAL STYLES
+   ══════════════════════════════════════════════════════════════ */
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 6, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.popup-container {
+    position: relative;
+    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
+    border: 2px solid var(--border-2);
+    border-radius: 24px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(59, 130, 246, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1);
+    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.popup-close-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(244, 63, 94, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+}
+
+.popup-close-top:hover {
+    background: rgba(244, 63, 94, 1);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.popup-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+.popup-image {
+    max-width: 100%;
+    max-height: 60vh;
+    width: auto;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    object-fit: contain;
+}
+
+.popup-message {
+    display: inline-block;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(
+        to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: 
+        rainbow-flow 3s linear infinite,
+        text-wave 2s ease-in-out infinite;
+    padding: 10px 20px;
+}
+
+@keyframes rainbow-flow {
+    to { background-position: 200% center; }
+}
+
+@keyframes text-wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.popup-close-bottom {
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    padding: 16px;
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.popup-close-bottom:hover {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+.popup-close-bottom:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+    .popup-container {
+        max-width: 95vw;
+        max-height: 95vh;
+        border-radius: 20px;
+    }
+    
+    .popup-image {
+        max-height: 50vh;
+    }
+    
+    .popup-close-top {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+.confetti-container { 
+    display: none !important; 
+}
+
+.profile-modal-overlay, .profile-edit-icon { 
+    display: none !important; 
+}
+
+@keyframes swirl-out {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.popup-exit-active {
+    animation: swirl-out 0.8s ease-in forwards !important;
+}
+</style>
+
+</head>
+
+<body>
+
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+
+    <div class="day-indicator">
+        <span class="day-name" id="dayName"></span>
+        <span class="day-number" id="dayNumber"></span>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="main-section">
+
+            <div class="header-section">
+                <div class="live-time">
+                    <span class="live-dot"></span>
+                    <span id="liveTime">--:--:--</span>
+                    <span class="live-dot"></span>
+                </div>
+                <h1 class="greeting">
+                    Hello, <span id="userGreeting">—</span>
+                </h1>
+                <p class="sub-label">Select Task To Continue</p>
+            </div>
+
+ <div class="menu-grid">
+    <!-- 상단 4개 메뉴 카드 -->
+    <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+        </div>
+        <span class="card-label">Attendance</span>
+    </div>
+
+    <div class="menu-card" onclick="navigateTo('staff_report.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+        </div>
+        <span class="card-label">Work<br>Report</span>
+    </div>
+
+    <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+        </div>
+        <span class="card-label">Calendar</span>
+    </div>
+
+    <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
+        <div class="card-glow"></div>
+        <div class="card-icon-wrap">
+            <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+        </div>
+        <span class="card-label">Vacation</span>
+    </div>
+</div>
+
+<!-- 하단 4개 액션 버튼 -->
+<div class="bottom-actions">
+    <button class="action-btn photos" onclick="navigateTo('staff_photos.html')">
+        <div class="action-icon">📸</div>
+        <span class="action-label">Staff Photos</span>
+    </button>
+    <button class="action-btn settings" onclick="navigateTo('staff_setting.html')">
+        <div class="action-icon">⚙️</div>
+        <span class="action-label">Settings</span>
+    </button>
+    <button class="action-btn logout" onclick="handleLogout()">
+        <div class="action-icon">🚪</div>
+        <span class="action-label">Logout</span>
+    </button>
+    <a href="https://tdlid.github.io" target="_blank" class="action-btn" style="text-decoration: none;">
+        <div class="action-icon">🌐</div>
+        <span class="action-label">Homepage</span>
+    </a>
+</div>
+
+
+        </div>
+    </div>
+
+<!-- Popup Modal -->
+<div id="popup_overlay" class="popup-overlay" style="display: none;">
+    <div class="popup-container">
+        <button class="popup-close-top" onclick="closePopup()">✕</button>
+<div class="popup-content" onclick="closePopup()">
+    <div id="confetti_wrap" class="confetti-container"></div> <img id="popup_img" src="" alt="Popup" class="popup-image">
+    <p id="popup_text" class="popup-message"></p>
+</div>
+
+        <button class="popup-close-bottom" onclick="closePopup()">Close</button>
+    </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL CONFIGURATION
+   ══════════════════════════════════════════════════════════════ */
+let database;
+
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCBYlhoIPDtXnPrKugo_AQ7dYVCEyMyO-w",
+    authDomain: "tdlid-dailyreport.firebaseapp.com",
+    databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com",
+    projectId: "tdlid-dailyreport",
+    storageBucket: "tdlid-dailyreport.appspot.com"
+};
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION & AUTHENTICATION
+   ══════════════════════════════════════════════════════════════ */
+const navigateTo = (page) => {
+    sessionStorage.setItem('targetPage', page);
+    location.href = 'staff.html';
+};
+
+const handleLogout = () => {
+    if (confirm("Do you want to logout?")) {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().signOut().finally(() => {
+                location.replace('index.html');
+            });
+        } else {
+            location.replace('index.html');
+        }
+    }
+};
+
+
+const loadProfileImg = (userId) => {
+    if (!userId || !database) return;
+
+    database.ref(`users/${userId}`).on('value', (snapshot) => {
+        const userData = snapshot.val() || {};
+        const imgFileName = userData.profileImg;
+        const displayName = userData.displayName || userId;
+        const greetingEl = document.getElementById('userGreeting');
+
+        if (greetingEl) greetingEl.innerText = displayName;
+
+        let container = document.querySelector('.profile-container');
+        
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'profile-container';
+            // [삭제함] container.onclick = openProfileImagePicker; <-- 이 줄을 삭제해서 클릭을 막습니다.
+            
+            const imgEl = document.createElement('img');
+            imgEl.className = 'profile-img';
+            imgEl.alt = 'Profile';
+            
+            // [삭제함] editIcon 생성 및 추가 로직 삭제 (연필 모양 아이콘 제거)
+
+            container.appendChild(imgEl);
+            
+            if (greetingEl && greetingEl.parentNode) {
+                greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
+            }
+        }
+
+        const img = container.querySelector('.profile-img');
+        if (img) {
+            const newSrc = imgFileName ? 
+                `images/profile/${imgFileName}` : 
+                'images/default-profile.png';
+            
+            if (img.getAttribute('src') !== newSrc) {
+                img.src = newSrc;
+                img.onerror = () => {
+                    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff`;
+                };
+            }
+        }
+    });
+};
+
+/* ══════════════════════════════════════════════════════════════
+   CLOCK & DATE
+   ══════════════════════════════════════════════════════════════ */
+const updateClock = () => {
+    const clockEl = document.getElementById('liveTime');
+    if (clockEl) {
+        clockEl.textContent = new Date().toLocaleTimeString('en-US', { 
+            hour12: false 
+        });
+    }
+};
+
+const initDateDisplay = () => {
+    const daysArr = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const now = new Date();
+    
+    const dayNameEl = document.getElementById('dayName');
+    const dayNumberEl = document.getElementById('dayNumber');
+    
+    if (dayNameEl) dayNameEl.textContent = daysArr[now.getDay()];
+    if (dayNumberEl) dayNumberEl.textContent = String(now.getDate()).padStart(2, '0');
+};
+
+/* ══════════════════════════════════════════════════════════════
+   POPUP MANAGEMENT
+   ══════════════════════════════════════════════════════════════ */
+let popupAutoCloseTimer = null;
+
+const closePopup = () => {
+    const overlay = document.getElementById('popup_overlay');
+    const content = document.querySelector('.popup-content');
+    
+    if (!overlay || !content) return;
+
+    // 소용돌이 애니메이션 클래스 추가
+    content.classList.add('popup-exit-active');
+
+    // 애니메이션 시간(0.8초)이 지난 후 실제로 숨김 처리
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        
+        // 다음 팝업을 위해 상태 초기화
+        content.classList.remove('popup-exit-active');
+        
+        if (popupAutoCloseTimer) {
+            clearTimeout(popupAutoCloseTimer);
+            popupAutoCloseTimer = null;
+        }
+    }, 800);
+};
+
+// Popup 체크 및 표시 함수 (수정됨)
+const checkAndShowPopup = () => {
+    if (!database) return;
+
+    database.ref('settings/config/Popup').once('value', (snapshot) => {
+        const popupData = snapshot.val();
+        
+        if (!popupData || popupData.Flag !== 'ON') {
+            return;
+        }
+
+        // 날짜 범위 체크
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+        
+        const startDate = popupData.Start || '00000000';
+        const endDate = popupData.End || '99999999';
+
+        if (todayStr < startDate || todayStr > endDate) {
+            console.log('Popup not in date range');
+            return;
+        }
+
+        // 팝업 표시
+        const overlay = document.getElementById('popup_overlay');
+        const img = document.getElementById('popup_img');
+        const text = document.getElementById('popup_text');
+
+        if (popupData.Image) {
+            img.src = popupData.Image;
+            img.style.display = 'block';
+            img.onerror = () => {
+                img.style.display = 'none';
+            };
+        } else {
+            img.style.display = 'none';
+        }
+
+        if (popupData.Msg) {
+            text.textContent = popupData.Msg;
+            text.style.display = 'block';
+        } else {
+            text.style.display = 'none';
+        }
+
+        overlay.style.display = 'flex';
+
+        // 5초 후 자동 닫기
+        popupAutoCloseTimer = setTimeout(() => {
+            closePopup();
+        }, 5000);
+    });
+};
+
+// Expose closePopup to global scope
+window.closePopup = closePopup;
+
+/* ══════════════════════════════════════════════════════════════
+   INITIALIZATION에 팝업 체크 추가
+   ══════════════════════════════════════════════════════════════ */
+// 기존 DOMContentLoaded 이벤트 리스너 내부 마지막에 추가:
+document.addEventListener('DOMContentLoaded', () => {
+    // ... 기존 코드 ...
+    
+    // Check and show popup (마지막에 추가)
+    setTimeout(() => {
+        checkAndShowPopup();
+    }, 1000); // 페이지 로드 1초 후 팝업 체크
+});
+
+
+/* ══════════════════════════════════════════════════════════════
+   3D TILT EFFECT (Desktop only)
+   ══════════════════════════════════════════════════════════════ */
+const init3DTiltEffect = () => {
+    if (!window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
+        return;
+    }
+
+    const cards = document.querySelectorAll('.menu-card');
+    
+    cards.forEach(card => {
+        let targetX = 0, targetY = 0;
+        let currentX = 0, currentY = 0;
+        let rafId = null;
+        let isAnimating = false;
+
+        const lerp = (start, end, factor) => start + (end - start) * factor;
+
+        const animate = () => {
+            if (!isAnimating) return;
+
+            currentX = lerp(currentX, targetX, 0.12);
+            currentY = lerp(currentY, targetY, 0.12);
+
+            card.style.transform = `
+                perspective(1200px) 
+                rotateX(${currentX}deg) 
+                rotateY(${currentY}deg) 
+                scale(1.05)
+            `;
+
+            rafId = requestAnimationFrame(animate);
+        };
+
+        card.addEventListener('mouseenter', () => {
+            isAnimating = true;
+            rafId = requestAnimationFrame(animate);
+        });
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            targetX = -((e.clientY - centerY) / (rect.height / 2)) * 12;
+            targetY = ((e.clientX - centerX) / (rect.width / 2)) * 12;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            isAnimating = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            
+            card.style.transform = '';
+            currentX = 0;
+            currentY = 0;
+            targetX = 0;
+            targetY = 0;
+        });
+    });
+};
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE TOUCH OPTIMIZATION
+   ══════════════════════════════════════════════════════════════ */
+const initMobileTouchEffects = () => {
+    // 모바일에서만 실행
+    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+        const cards = document.querySelectorAll('.menu-card');
+        
+        cards.forEach(card => {
+            // 터치 시작
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.96)';
+            }, { passive: true });
+            
+            // 터치 종료
+            card.addEventListener('touchend', () => {
+                card.style.transform = '';
+            }, { passive: true });
+            
+            // 터치 취소
+            card.addEventListener('touchcancel', () => {
+                card.style.transform = '';
+            }, { passive: true });
+        });
+        
+        // 액션 버튼 터치 피드백
+        const actionBtns = document.querySelectorAll('.action-btn');
+        actionBtns.forEach(btn => {
+            const icon = btn.querySelector('.action-icon');
+            
+            btn.addEventListener('touchstart', () => {
+                if (icon) icon.style.transform = 'scale(0.92)';
+            }, { passive: true });
+            
+            btn.addEventListener('touchend', () => {
+                if (icon) icon.style.transform = '';
+            }, { passive: true });
+        });
+    }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   PREVENT ZOOM ON DOUBLE TAP (iOS)
+   ══════════════════════════════════════════════════════════════ */
+const preventDoubleTapZoom = () => {
+    let lastTouchEnd = 0;
+    
+    document.addEventListener('touchend', (event) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+};
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE VIEWPORT HEIGHT FIX
+   ══════════════════════════════════════════════════════════════ */
+const setMobileVH = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+};
+
+// 리사이즈 시 재계산
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        setMobileVH();
+    }, 100);
+});
+
+// 오리엔테이션 변경 감지
+window.addEventListener('orientationchange', () => {
+    setTimeout(setMobileVH, 100);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   INITIALIZATION
+   ══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    const userId = sessionStorage.getItem('loggedInUser');
+    
+    if (!userId) {
+        location.href = 'index.html';
+        return;
+    }
+
+    // Firebase initialization
+    if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    database = firebase.database();
+
+    // Load user profile
+    firebase.auth().onAuthStateChanged(() => {
+        loadProfileImg(userId);
+    });
+
+    // Initialize clock
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Initialize date display
+    initDateDisplay();
+
+    // Initialize 3D tilt effect (Desktop)
+    init3DTiltEffect();
+    
+    // ===== 아래 3줄 추가 =====
+    // Mobile optimizations
+    initMobileTouchEffects();
+    preventDoubleTapZoom();
+    setMobileVH();
+});
+
+// Expose functions to global scope
+window.navigateTo = navigateTo;
+window.handleLogout = handleLogout;
+
+</script>
+
+</body>
+</html>
