@@ -13,12 +13,19 @@
 
 <script>
     (function(){
-        // 모바일 기기가 아닌 경우 (즉, PC 브라우저인 경우)
+        // 모바일 기기 체크
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (!isMobileDevice) {
-            // PC 접속자라면 index.html로 리다이렉트
-            window.location.href = "index.html";
+        // URL 파라미터 체크 (억지로 PC모드로 보려는 경우 방지)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPCMode = urlParams.get('view_mode') === 'pc';
+
+        if (isMobileDevice && !isPCMode) {
+            let path = window.location.pathname;
+            let page = path.split("/").pop();
+            // index.html이거나 경로만 있는 경우 index_m.html로 리다이렉트
+            if (page === "" || page === "index.html") {
+                window.location.href = "index_m.html";
+            }
         }
     })();
 </script>
