@@ -6,360 +6,505 @@
     <title>Login - Daily Report System</title>
 
     <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <link rel="icon" href="data:,">
 
-    
 <style>
-:root{--bg:#03060f;--surface:rgba(8,18,36,0.7);--blue:#3b82f6;--cyan:#06b6d4}
-* {-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;box-sizing:border-box}
-body{font-family:"Pretendard",sans-serif;color:#f1f5f9;-webkit-tap-highlight-color:transparent;margin:0;overflow-x:hidden;background-color:var(--bg);
-opacity:0;perspective:1500px;min-height:100vh;min-height:-webkit-fill-available}
-body.loaded{opacity:1;transition:opacity .8s cubic-bezier(.16,1,.3,1)}
+:root {
+    --primary: #00d4ff;
+    --secondary: #ff006e;
+    --accent: #ffbe0b;
+    --dark-bg: #0a0e27;
+    --darker-bg: #050812;
+    --surface: rgba(20, 30, 60, 0.8);
+}
 
-/* ── 3D TDLiD Background ── */
-#tdlid-3d {
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Pretendard", sans-serif;
+    color: #f1f5f9;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.loaded {
+    opacity: 1;
+}
+
+/* ── 전기 오토바이 배경 애니메이션 ── */
+.ebike-background {
     position: fixed;
-    top: 50%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.ebike-container {
+    position: absolute;
+    width: 300px;
+    height: 150px;
+    opacity: 0.15;
+    filter: blur(0.5px);
+}
+
+.ebike {
+    width: 100%;
+    height: 100%;
+    animation: driftAcross 20s linear infinite;
+}
+
+.ebike-path-1 { top: 15%; left: -300px; animation-delay: 0s; }
+.ebike-path-2 { top: 35%; left: -300px; animation-delay: -5s; }
+.ebike-path-3 { top: 55%; left: -300px; animation-delay: -10s; }
+.ebike-path-4 { top: 75%; left: -300px; animation-delay: -15s; }
+
+@keyframes driftAcross {
+    0% { transform: translateX(0) rotate(0deg); opacity: 0.1; }
+    10% { opacity: 0.18; }
+    50% { opacity: 0.15; }
+    90% { opacity: 0.08; }
+    100% { transform: translateX(calc(100vw + 300px)) rotate(2deg); opacity: 0; }
+}
+
+/* ── 전기 에너지 맥박 효과 ── */
+.energy-pulse {
+    position: fixed;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    pointer-events: none;
+    z-index: -1;
+    animation: energyPulse 3s ease-in-out infinite;
+}
+
+.pulse-1 { width: 400px; height: 400px; top: 10%; left: 5%; animation-delay: 0s; }
+.pulse-2 { width: 500px; height: 500px; top: 50%; right: 5%; animation-delay: 1s; }
+.pulse-3 { width: 350px; height: 350px; bottom: 10%; left: 50%; animation-delay: 2s; }
+
+@keyframes energyPulse {
+    0%, 100% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.2); opacity: 0.25; }
+}
+
+/* ── 글리치 배경 효과 ── */
+.glitch-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
+    background: linear-gradient(45deg, 
+        rgba(0, 212, 255, 0.03) 0%,
+        rgba(255, 0, 110, 0.02) 25%,
+        rgba(255, 190, 11, 0.02) 50%,
+        rgba(0, 212, 255, 0.03) 75%,
+        rgba(255, 0, 110, 0.02) 100%);
+    background-size: 400% 400%;
+    animation: glitchFlow 15s ease infinite;
+}
+
+@keyframes glitchFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ── TDLiD 위치를 중앙에서 상단으로 변경 ── */
+.tdlid-container {
+    position: fixed;
+    top: 50px; /* 중앙(50%)에서 상단(50px)으로 변경 */
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: clamp(8rem, 25vw, 20rem);
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    color: transparent;
+    transform: translateX(-50%); /* 중앙 정렬 유지 */
     z-index: -1;
     pointer-events: none;
-    text-transform: uppercase;
-    user-select: none;
-    will-change: transform;
+    font-size: clamp(2rem, 8vw, 5rem); /* 크기를 조금 줄여서 상단에 적합하게 조절 */
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    width: 100%;
+    text-align: center;
 }
 
-#tdlid-3d span {
-    display: inline-block;
-    background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.08) 0%, 
-        rgba(6, 182, 212, 0.12) 50%, 
-        rgba(59, 130, 246, 0.08) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 
-        0 0 40px rgba(59, 130, 246, 0.15),
-        0 0 80px rgba(6, 182, 212, 0.1);
-    animation: float3d 8s ease-in-out infinite;
-    transform-style: preserve-3d;
-}
-
-#tdlid-3d span:nth-child(1) { animation-delay: 0s; }
-#tdlid-3d span:nth-child(2) { animation-delay: 0.2s; }
-#tdlid-3d span:nth-child(3) { animation-delay: 0.4s; }
-#tdlid-3d span:nth-child(4) { animation-delay: 0.6s; }
-#tdlid-3d span:nth-child(5) { animation-delay: 0.8s; }
-
-@keyframes float3d {
+/* ── 흔들림(애니메이션) 범위 축소 ── */
+@keyframes floatLetters {
     0%, 100% {
-        transform: translateZ(0px) rotateY(0deg) translateY(0px);
+        transform: translateY(0px) scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        /* 위아래 흔들림 범위를 -40px에서 -10px로 줄여 가독성 확보 */
+        transform: translateY(-10px) scale(1.02);
+        opacity: 0.7;
+    }
+}
+
+.tdlid-letter {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: floatLetters 4s ease-in-out infinite;
+    text-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+}
+
+.tdlid-letter:nth-child(1) { animation-delay: 0s; }
+.tdlid-letter:nth-child(2) { animation-delay: 0.15s; }
+.tdlid-letter:nth-child(3) { animation-delay: 0.3s; }
+.tdlid-letter:nth-child(4) { animation-delay: 0.45s; }
+.tdlid-letter:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes floatLetters {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
         opacity: 0.5;
     }
     25% {
-        transform: translateZ(30px) rotateY(5deg) translateY(-10px);
-        opacity: 0.7;
+        transform: translateY(-20px) scale(1.05);
+        opacity: 0.8;
     }
     50% {
-        transform: translateZ(0px) rotateY(0deg) translateY(-20px);
-        opacity: 0.9;
+        transform: translateY(-40px) scale(1.1);
+        opacity: 1;
     }
     75% {
-        transform: translateZ(-30px) rotateY(-5deg) translateY(-10px);
-        opacity: 0.7;
+        transform: translateY(-20px) scale(1.05);
+        opacity: 0.8;
     }
 }
 
-.video-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 0%,rgba(3,6,15,.5) 40%,rgba(3,6,15,.85) 100%);z-index:-1;animation:overlayPulse 10s ease-in-out infinite}
-@keyframes overlayPulse{0%,100%{opacity:1}50%{opacity:.85}}
-
-.particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;opacity:.3}
-
-.logo-container{animation:float 6s ease-in-out infinite;transform-style:preserve-3d}
-@keyframes float{0%,100%{transform:translateY(0px) translateZ(0px) rotateX(0deg)}50%{transform:translateY(-15px) translateZ(20px) rotateX(5deg)}}
-
-.logo-glow{position:absolute;inset:-2px;background:linear-gradient(135deg,rgba(59,130,246,.4),rgba(6,182,212,.4));border-radius:50%;filter:blur(20px);opacity:0;transition:opacity .6s ease;animation:pulse 3s ease-in-out infinite}
-.logo-container:hover .logo-glow{opacity:1}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:.9}}
-
-.login-card{background:linear-gradient(135deg,rgba(8,18,36,.9) 0%,rgba(8,18,36,.7) 100%);backdrop-filter:blur(30px) saturate(200%);border:1.5px solid rgba(255,255,255,.15);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 15px 35px -10px rgba(0,0,0,.5),inset 0 2px 1px rgba(255,255,255,.15),inset 0 -2px 1px rgba(0,0,0,.3),0 0 80px rgba(59,130,246,.2);transition:all .3s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative;will-change:transform}
-
-.login-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(135deg,rgba(59,130,246,.3) 0%,rgba(6,182,212,.3) 50%,rgba(59,130,246,.3) 100%);border-radius:inherit;z-index:-1;opacity:0;transition:opacity .5s ease;filter:blur(15px)}
-.login-card:hover::before{opacity:1;animation:borderGlow 3s ease-in-out infinite}
-@keyframes borderGlow{0%,100%{opacity:.5}50%{opacity:1}}
-
-.card-layer-1{transform:translateZ(30px);transition:transform .3s ease}
-.card-layer-2{transform:translateZ(20px);transition:transform .3s ease}
-.card-layer-3{transform:translateZ(50px);transition:transform .3s ease}
-
-/* ── Enhanced Staff Member Selector ── */
-#staff-selector-container {
+/* ── 로그인 카드 3D 효과 ── */
+.login-card {
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 20, 50, 0.9) 100%);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 2rem;
+    box-shadow: 
+        0 0 60px rgba(0, 212, 255, 0.15),
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     position: relative;
+    overflow: hidden;
+    animation: cardSlideUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+    animation: cardGlow 4s ease-in-out infinite;
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cardGlow {
+    0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+    50% { transform: translate(20px, -20px); opacity: 0.8; }
+}
+
+/* ── 입력 필드 3D 스타일 ── */
+input, select {
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.8) 0%, rgba(10, 14, 39, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
+    border-radius: 1.25rem !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 16px !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
+}
+
+input::placeholder {
+    color: #64748b !important;
+}
+
+input:focus, select:focus {
+    border-color: var(--primary) !important;
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.15),
+        0 12px 40px rgba(0, 212, 255, 0.25),
+        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
+    transform: scale(1.02) translateY(-2px) !important;
+}
+
+/* ── Staff Selector 고급 스타일 ── */
 #selected-staff {
-    background: linear-gradient(135deg, rgba(15,23,42,.8) 0%, rgba(15,23,42,.6) 100%);
-    backdrop-filter: blur(15px);
-    color: #fff;
-    border: 1.5px solid rgba(255,255,255,.1);
-    transition: all .4s cubic-bezier(.4,0,.2,1);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,.3), 0 4px 8px rgba(0,0,0,.2);
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.85) 0%, rgba(10, 14, 39, 0.8) 100%) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
-    font-size: 1rem;
-    min-height: 3.5rem;
+    padding: 1rem 1.25rem !important;
+    border-radius: 1.25rem !important;
+    font-size: 1rem !important;
+    min-height: 3.5rem !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
 }
 
 #selected-staff:hover {
-    border-color: rgba(6,182,212,0.5);
-    box-shadow: 0 0 0 3px rgba(6,182,212,.1), 0 8px 20px rgba(6,182,212,.2);
+    border-color: var(--primary) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.1),
+        0 12px 40px rgba(0, 212, 255, 0.25),
+        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
+    transform: scale(1.01) translateY(-2px);
 }
 
 #selected-staff.active {
-    border-color: var(--cyan);
-    box-shadow: 0 0 0 3px rgba(6,182,212,.2), 0 8px 20px rgba(6,182,212,.3);
-    background: linear-gradient(135deg, rgba(15,23,42,.95) 0%, rgba(15,23,42,.85) 100%);
+    border-color: var(--primary) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.2),
+        0 12px 40px rgba(0, 212, 255, 0.3),
+        inset 0 1px 3px rgba(0, 212, 255, 0.3) !important;
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
 }
 
+/* 1. 드롭다운 메뉴: 스크롤바를 강제로 표시하고 영역 확보 */
 #staff-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    right: 0;
-    max-height: 0;
-    overflow: hidden;
-    background: linear-gradient(135deg, rgba(15,23,42,.95) 0%, rgba(15,23,42,.9) 100%);
-    backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,.1);
-    border-radius: 1rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,.5);
-    transition: all .4s cubic-bezier(.4,0,.2,1);
+    position: absolute !important;
+    top: calc(100% + 0.5rem) !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-height: 0; /* 기본값 */
+    overflow-y: auto !important; /* 내용이 많을 때만 스크롤바 생성 */
+    overflow-x: hidden !important;
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.98) 0%, rgba(10, 14, 39, 0.95) 100%);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(0, 212, 255, 0.3);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     opacity: 0;
-    transform: translateY(-10px);
-    z-index: 100;
+    pointer-events: none; /* 닫혀있을 때 클릭 방지 */
+    z-index: 10000;
 }
 
+/* 2. 활성화 시 높이 지정 (중요: 맨 아래 직원까지 보이도록 높이 확보) */
 #staff-dropdown.active {
-    max-height: 320px;
+    max-height: 250px !important; /* 고정 높이를 주어 스크롤이 발생하게 함 */
     opacity: 1;
+    pointer-events: auto;
     transform: translateY(0);
-    overflow-y: auto;
+    padding: 0.5rem; /* 내부 여백 추가 */
+}
+
+/* 3. 스크롤바 스타일: 배경과 대비되도록 색상 조정 */
+#staff-dropdown::-webkit-scrollbar {
+    width: 6px !important; /* 스크롤바 너비 */
+    display: block !important;
+}
+
+#staff-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px;
+}
+
+#staff-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--secondary)) !important;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* 4. 마지막 요소 하단 여백 추가 (스크롤 끝 도달 확인용) */
+.staff-option:last-child {
+    border-bottom: none;
+    margin-bottom: 10px;
 }
 
 .staff-option {
-    padding: 0.875rem 1.25rem;
+    padding: 1rem 1.25rem;
     cursor: pointer;
-    transition: all .2s ease;
-    border-bottom: 1px solid rgba(255,255,255,.05);
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.staff-option:last-child {
-    border-bottom: none;
-}
-
 .staff-option:hover {
-    background: linear-gradient(90deg, rgba(6,182,212,.15) 0%, rgba(59,130,246,.1) 100%);
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 190, 11, 0.05) 100%);
     padding-left: 1.5rem;
 }
 
 .staff-option.selected {
-    background: linear-gradient(90deg, rgba(6,182,212,.25) 0%, rgba(59,130,246,.2) 100%);
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.2) 0%, rgba(255, 190, 11, 0.1) 100%);
+    border-left: 3px solid var(--primary);
+    padding-left: 1.22rem;
 }
 
 .staff-avatar {
-    width: 2rem;
-    height: 2rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    background: linear-gradient(135deg, var(--primary), var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 1rem;
     flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
 }
 
 .staff-name {
     flex: 1;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.95rem;
 }
 
 .staff-role {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    background: rgba(255,255,255,.05);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
+    font-size: 0.7rem;
+    color: var(--primary);
+    background: rgba(0, 212, 255, 0.1);
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
 .dropdown-arrow {
-    transition: transform .3s ease;
+    transition: transform 0.3s ease;
+    color: var(--primary);
 }
 
 .dropdown-arrow.rotated {
     transform: rotate(180deg);
 }
 
-/* Scrollbar for dropdown */
 #staff-dropdown::-webkit-scrollbar {
     width: 6px;
 }
 
 #staff-dropdown::-webkit-scrollbar-track {
-    background: rgba(15,23,42,.3);
+    background: rgba(0, 212, 255, 0.05);
     border-radius: 1rem;
 }
 
 #staff-dropdown::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--blue), var(--cyan));
+    background: linear-gradient(180deg, var(--primary), var(--accent));
     border-radius: 1rem;
 }
 
-input{background:linear-gradient(135deg,rgba(15,23,42,.8) 0%,rgba(15,23,42,.6) 100%)!important;backdrop-filter:blur(15px)!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.1)!important;font-size:16px!important;transition:all .4s cubic-bezier(.4,0,.2,1)!important;box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 4px 8px rgba(0,0,0,.2)!important;transform-style:preserve-3d!important}
-
-input:focus{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(6,182,212,.2),0 8px 20px rgba(6,182,212,.3),inset 0 2px 4px rgba(0,0,0,.2)!important;background:linear-gradient(135deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.85) 100%)!important;transform:translateZ(15px) scale(1.01)!important}
-
-label{transform-style:preserve-3d;transition:all .3s ease}
-.group:focus-within label{transform:translateZ(10px) translateY(-2px);text-shadow:0 2px 8px rgba(6,182,212,.5)}
-
-.gradient-text{background:linear-gradient(135deg,#fff 0%,#94a3b8 50%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 30px rgba(255,255,255,.3);animation:textShine 4s ease-in-out infinite}
-@keyframes textShine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-
-@keyframes fadeIn{from{opacity:0;transform:translateY(40px) translateZ(-80px) rotateX(10deg)}to{opacity:1;transform:translateY(0) translateZ(0) rotateX(0deg)}}
-.animate-fadeIn{animation:fadeIn 1s cubic-bezier(.16,1,.3,1) forwards;opacity:0}
-
-#loginBtn{background:linear-gradient(135deg,#3b82f6 0%,#06b6d4 50%,#3b82f6 100%);background-size:200% 200%;position:relative;overflow:hidden;transform-style:preserve-3d;box-shadow:0 10px 30px rgba(59,130,246,.4),0 5px 15px rgba(6,182,212,.3),inset 0 1px 0 rgba(255,255,255,.2);transition:all .4s cubic-bezier(.4,0,.2,1)}
-
-#loginBtn:hover{background-position:100% 50%;box-shadow:0 15px 40px rgba(59,130,246,.6),0 8px 20px rgba(6,182,212,.5),inset 0 1px 0 rgba(255,255,255,.3);transform:translateZ(10px) translateY(-2px)}
-
-#loginBtn:active{transform:translateZ(5px) translateY(0px) scale(.98)}
-
-#loginBtn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.3) 50%,transparent 70%);transform:rotate(45deg);transition:.6s}
-#loginBtn:hover::before{left:100%}
-
-#loginBtn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .3s ease}
-#loginBtn:active::after{opacity:1}
-
-.forgot-btn{position:relative;overflow:hidden}
-.forgot-btn::before{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transition:width .4s ease}
-.forgot-btn:hover::before{width:100%}
-
-/* ── Responsive ── */
-@media (max-width:640px){
-    body{perspective:1000px}
-    .login-card{max-width:100%;margin:0 16px}
-    .gradient-text{font-size:2rem;line-height:1.2}
-    #tdlid-3d {font-size:8rem}
-    .staff-option {padding: 0.75rem 1rem;}
-    .staff-avatar {width: 1.75rem; height: 1.75rem; font-size: 0.75rem;}
-}
-
-@media (min-width:641px) and (max-width:1024px){
-    body{perspective:1200px}
-    #tdlid-3d {font-size:12rem}
-}
-
-@media (min-width:1025px){
-    body{perspective:1500px}
-    .login-card:hover{box-shadow:0 50px 100px -25px rgba(0,0,0,.8),0 20px 45px -15px rgba(0,0,0,.6),inset 0 2px 1px rgba(255,255,255,.2),inset 0 -2px 1px rgba(0,0,0,.4),0 0 100px rgba(59,130,246,.3)}
-    #tdlid-3d {font-size:20rem}
-}
-
-@media (hover:none){
-    #loginBtn:active{transform:scale(.97)}
-    .login-card{box-shadow:0 30px 60px -15px rgba(0,0,0,.6),0 10px 25px -8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1),0 0 60px rgba(59,130,246,.15)}
-}
-
-*:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-track{background:rgba(15,23,42,.3)}
-::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--blue),var(--cyan));border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--cyan),var(--blue))}
-
-/* ── Noise grain ── */
-body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none}
-
-/* ── Optimized Star field ── */
-#bg-stars{position:fixed;width:100%;height:100%;top:0;left:0;z-index:0;transform-style:preserve-3d;pointer-events:none;will-change:transform}
-.star-dot{position:absolute;width:1.5px;height:1.5px;background:white;border-radius:50%;opacity:0.2;will-change:transform}
-
-/* ── Energy rings ── */
-.energy-ring{position:fixed;border-radius:50%;border:1px solid transparent;pointer-events:none;z-index:0;animation:ring-pulse 4s ease-in-out infinite;will-change:transform, opacity}
-.energy-ring:nth-child(1){width:520px;height:520px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(59,130,246,0.12);animation-delay:0s}
-.energy-ring:nth-child(2){width:780px;height:780px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(6,182,212,0.07);animation-delay:-1.5s}
-.energy-ring:nth-child(3){width:1060px;height:1060px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(59,130,246,0.04);animation-delay:-3s}
-@keyframes ring-pulse{0%,100%{opacity:0.4;transform:translate(-50%,-50%) rotateX(72deg) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) rotateX(72deg) scale(1.03)}}
-
-/* ── Scan beam ── */
-.scan-beam{position:fixed;left:0;right:0;height:1px;z-index:0;background:linear-gradient(90deg,transparent 0%,#06b6d4 50%,transparent 100%);opacity:0.2;animation:scan-v 10s ease-in-out infinite;pointer-events:none;will-change:top}
-@keyframes scan-v{0%{top:100%;opacity:0}5%{opacity:0.2}95%{opacity:0.1}100%{top:-2%;opacity:0}}
-
-#bg-image-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: -3;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: opacity 1s ease-in-out;
-}
-
-/* ── Loading animation ── */
-.loading-text {
+/* ── 로그인 버튼 ── */
+#loginBtn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--secondary) 100%);
+    background-size: 200% 200%;
     position: relative;
-    color: #64748b;
+    overflow: hidden;
+    box-shadow: 
+        0 0 30px rgba(0, 212, 255, 0.4),
+        0 8px 30px rgba(255, 0, 110, 0.3);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+    cursor: pointer;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    padding: 1rem 2rem;
+    border-radius: 1.25rem;
+    font-size: 0.95rem;
+    color: #000;
+    width: 100%;
 }
 
-.loading-text::after {
-    content: '...';
+#loginBtn:hover {
+    background-position: 100% 50%;
+    box-shadow: 
+        0 0 50px rgba(0, 212, 255, 0.6),
+        0 12px 40px rgba(255, 0, 110, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px) scale(1.02);
+}
+
+#loginBtn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+#loginBtn::after {
+    content: '';
     position: absolute;
-    animation: dots 1.5s steps(4, end) infinite;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-@keyframes dots {
-    0%, 20% { content: '.'; }
-    40% { content: '..'; }
-    60%, 100% { content: '...'; }
-}
-/* 등장 애니메이션: 소용돌이치며 확대 */
-@keyframes spiralIn {
-    0% { transform: scale(0) rotate(-720deg); opacity: 0; filter: blur(20px); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
+#loginBtn:active::after {
+    opacity: 1;
 }
 
-/* 퇴장 애니메이션: 안개처럼 흐릿하게 소멸 */
-@keyframes mistyOut {
-    0% { transform: scale(1); opacity: 1; filter: blur(0px); }
-    100% { transform: scale(1.1); opacity: 0; filter: blur(20px); }
+/* ── Forgot Password 버튼 ── */
+.forgot-btn {
+    position: relative;
+    overflow: hidden;
+    color: var(--primary);
+    font-weight: 600;
 }
 
-.animate-spiral-in {
-    animation: spiralIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.forgot-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.animate-misty-out {
-    animation: mistyOut 0.8s ease-in forwards;
+.forgot-btn:hover::before {
+    width: 100%;
 }
-/* ── Horrifying Ghost Profile Image Effect ── */
+
+/* ── 생일 팝업 ── */
+#birthday-popup {
+    background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(5, 8, 18, 0.9) 100%);
+    border: 2px solid var(--primary);
+    border-radius: 2rem;
+    box-shadow: 
+        0 0 60px rgba(0, 212, 255, 0.3),
+        0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Ghost Overlay ── */
 #ghost-overlay {
-    animation: fadeInOverlay 0.3s ease-out forwards;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+    animation: ghostFadeIn 0.3s ease-out forwards;
 }
 
 #ghost-overlay.hidden {
@@ -367,290 +512,312 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
 }
 
 #ghost-image {
-    animation: horrorGhostAppear 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: ghostPulse 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     box-shadow: 
-        0 0 80px rgba(139, 0, 139, 0.9),
-        0 0 120px rgba(75, 0, 130, 0.7),
-        0 0 160px rgba(30, 144, 255, 0.5),
-        inset 0 0 50px rgba(255, 255, 255, 0.2),
-        0 0 200px rgba(255, 0, 0, 0.3);
-    border: 4px solid rgba(139, 0, 139, 0.8);
-    filter: grayscale(80%) contrast(1.2);
-    position: relative;
+        0 0 80px rgba(0, 212, 255, 0.6),
+        0 0 120px rgba(255, 0, 110, 0.4),
+        0 0 160px rgba(255, 190, 11, 0.2),
+        inset 0 0 50px rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(0, 212, 255, 0.5);
+    filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.4));
 }
 
-/* 귀신 아우라 효과 */
-#ghost-image::before {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    background: radial-gradient(circle, 
-        rgba(139, 0, 139, 0.4) 0%, 
-        rgba(75, 0, 130, 0.2) 40%,
-        transparent 70%);
-    border-radius: 50%;
-    filter: blur(15px);
-    animation: auraPulse 2s ease-in-out infinite;
-    z-index: -1;
-}
-
-@keyframes fadeInOverlay {
+@keyframes ghostFadeIn {
     from {
         opacity: 0;
         backdrop-filter: blur(0px);
     }
     to {
         opacity: 1;
-        backdrop-filter: blur(8px) brightness(0.7);
+        backdrop-filter: blur(10px) brightness(0.6);
     }
 }
 
-@keyframes horrorGhostAppear {
-    /* 첫 번째 단계: 먼 곳에서 무섭게 나타남 */
-    0% {
-        opacity: 0;
-        transform: scale(0.1) translateY(80px) rotateX(-90deg) rotateZ(-30deg);
-        filter: blur(40px) brightness(0.3);
-        text-shadow: 0 0 20px rgba(139, 0, 139, 0.5);
-    }
-    
-    /* 두 번째 단계: 빠르게 떠오름 */
-    15% {
-        opacity: 0.4;
-        transform: scale(0.4) translateY(40px) rotateX(-45deg) rotateZ(-15deg);
-        filter: blur(30px) brightness(0.5);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.7);
-    }
-    
-    /* 세 번째 단계: 가까워지면서 무서워짐 */
-    35% {
-        opacity: 0.7;
-        transform: scale(0.8) translateY(10px) rotateX(-20deg) rotateZ(-5deg);
-        filter: blur(15px) brightness(0.7);
-        text-shadow: 0 0 60px rgba(255, 0, 0, 0.6);
-    }
-    
-    /* 네 번째 단계: 완전히 나타남 - 가장 무서운 순간 */
-    50% {
-        opacity: 1;
-        transform: scale(1.1) translateY(-10px) rotateX(-5deg) rotateZ(0deg);
-        filter: brightness(1.2) contrast(1.5) grayscale(80%);
-        text-shadow: 0 0 80px rgba(139, 0, 139, 0.9);
-    }
-    
-    /* 다섯 번째 단계: 떨림 효과 */
-    55% {
-        transform: scale(1.05) translateY(-15px) rotateX(2deg) rotateZ(2deg);
-    }
-    
-    60% {
-        transform: scale(1.08) translateY(-12px) rotateX(-2deg) rotateZ(-2deg);
-        filter: brightness(1.3) contrast(1.6) grayscale(70%);
-    }
-    
-    /* 여섯 번째 단계: 유지 */
-    65% {
-        opacity: 1;
-        transform: scale(1.1) translateY(-10px) rotateX(0deg) rotateZ(0deg);
-        filter: brightness(1.2) contrast(1.5) grayscale(80%);
-        box-shadow: 
-            0 0 80px rgba(139, 0, 139, 0.9),
-            0 0 120px rgba(75, 0, 130, 0.7),
-            0 0 160px rgba(30, 144, 255, 0.5),
-            inset 0 0 50px rgba(255, 255, 255, 0.2),
-            0 0 200px rgba(255, 0, 0, 0.4);
-    }
-    
-    /* 일곱 번째 단계: 깜박임 효과 */
-    72% {
-        opacity: 0.3;
-        filter: brightness(0.5) contrast(1.2) grayscale(100%);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.5);
-    }
-    
-    75% {
-        opacity: 1;
-        filter: brightness(1.3) contrast(1.7) grayscale(75%);
-    }
-    
-    /* 여덟 번째 단계: 사라짐 */
-    85% {
-        opacity: 0.5;
-        transform: scale(1.2) translateY(-30px) rotateX(30deg) rotateZ(10deg);
-        filter: blur(20px) brightness(0.4);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.3);
-    }
-    
-    100% {
-        opacity: 0;
-        transform: scale(1.5) translateY(-80px) rotateX(90deg) rotateZ(45deg);
-        filter: blur(50px) brightness(0.1);
-        text-shadow: 0 0 0px rgba(139, 0, 139, 0);
-    }
-}
-
-@keyframes auraPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.4;
-    }
-    50% {
-        transform: scale(1.3);
-        opacity: 0.7;
-    }
-}
-
-/* 배경 번쩍이는 효과 */
-@keyframes screenFlicker {
-    0%, 100% { opacity: 1; }
-    10% { opacity: 0.8; }
-    20% { opacity: 1; }
-    30% { opacity: 0.85; }
-    40% { opacity: 1; }
-    50% { opacity: 0.9; }
-}
-
-#ghost-overlay.active {
-    animation: screenFlicker 3s ease-in-out;
-}
-
-/* 공포 효과음 시각화 (선택) */
-@keyframes screamWave {
+@keyframes ghostPulse {
     0% {
         opacity: 0;
         transform: scale(0.5);
     }
+    25% {
+        opacity: 0.7;
+        transform: scale(0.8);
+    }
     50% {
-        opacity: 0.8;
+        opacity: 1;
+        transform: scale(1);
+    }
+    75% {
+        opacity: 1;
+        transform: scale(1.05);
     }
     100% {
-        opacity: 0;
-        transform: scale(3);
+        opacity: 1;
+        transform: scale(1);
     }
+}
+
+/* ── 애니메이션 진입 ── */
+.animate-fadeIn {
+    animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
+
+.animate-fadeIn:nth-child(1) { animation-delay: 0.2s; }
+.animate-fadeIn:nth-child(2) { animation-delay: 0.4s; }
+.animate-fadeIn:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── 반응형 디자인 ── */
+@media (max-width: 640px) {
+    .login-card {
+        padding: 1.5rem;
+        border-radius: 1.5rem;
+    }
+
+    .tdlid-container {
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+
+    body {
+        perspective: 800px;
+    }
+
+    #ghost-image {
+        width: 10rem;
+        height: 10rem;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .login-card {
+        padding: 2rem;
+        border-radius: 2rem;
+    }
+
+    .tdlid-container {
+        font-size: 6rem;
+    }
+}
+
+@media (min-width: 1025px) {
+    .login-card {
+        padding: 3rem;
+        border-radius: 2.5rem;
+    }
+
+    .tdlid-container {
+        font-size: 12rem;
+    }
+
+    .login-card:hover {
+        border-color: var(--primary);
+        box-shadow: 
+            0 0 80px rgba(0, 212, 255, 0.25),
+            0 30px 80px rgba(0, 0, 0, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    border-radius: 4px;
 }
 </style>
 
 </head>
 <body id="loginBody" class="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
 
-<!-- 3D TDLiD Background -->
-<div id="tdlid-3d">
-    <span>T</span><span>D</span><span>L</span><span>i</span><span>D</span>
-</div>
+<!-- 글리치 배경 ── -->
+<div class="glitch-bg"></div>
 
-<!-- Background Effects -->
-<div id="bg-stars"></div>
-<div class="energy-ring"></div>
-<div class="energy-ring"></div>
-<div class="energy-ring"></div>
-<div class="scan-beam"></div>
+<!-- 에너지 펄스 ── -->
+<div class="energy-pulse pulse-1"></div>
+<div class="energy-pulse pulse-2"></div>
+<div class="energy-pulse pulse-3"></div>
 
-<div class="video-overlay"></div>
-
-<!-- 로고 및 타이틀 섹션 -->
-<div class="text-center mb-6 sm:mb-8 md:mb-12 animate-fadeIn w-full max-w-lg px-4">
-    <div class="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8">
-        <div class="relative logo-container group">
-            <div class="logo-glow"></div>
-            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full blur-sm opacity-30 group-hover:opacity-60 transition duration-1000"></div>
-            <img src="images/login/login.gif" alt="Logo" class="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-contain rounded-full ring-2 ring-white/10">
-        </div>
-        <div class="text-center md:text-left">
-            <h2 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter leading-tight drop-shadow-2xl gradient-text">
-                Staff Login
-            </h2>
-            <p class="text-cyan-400/80 text-[9px] sm:text-[10px] md:text-xs font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase mt-1 sm:mt-2">
-                Daily Report System
-            </p>
-        </div>
+<!-- 전기 오토바이 배경 ── -->
+<div class="ebike-background">
+    <div class="ebike-container ebike-path-1">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- 앞바퀴 -->
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <!-- 휠 스포크 -->
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <!-- 뒷바퀴 -->
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <!-- 프레임 -->
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <!-- 배터리 표시 -->
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <!-- 전기 에너지 선 -->
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-2">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-3">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-4">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
     </div>
 </div>
 
-<!-- 로그인 카드 -->
-<div id="tilt-card" class="login-card p-6 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[2.5rem] md:rounded-[3rem] w-full max-w-[400px] sm:max-w-[440px] md:max-w-[460px] animate-fadeIn" style="animation-delay: 0.2s;">
+<!-- TDLiD 애니메이션 텍스트 ── -->
+<div class="tdlid-container">
+    <span class="tdlid-letter">T</span><span class="tdlid-letter">D</span><span class="tdlid-letter">L</span><span class="tdlid-letter">i</span><span class="tdlid-letter">D</span>
+</div>
+
+<!-- 컨텐츠 섹션 ── -->
+<div class="w-full max-w-lg flex flex-col items-center gap-8 sm:gap-10 md:gap-12">
     
-    <div class="mb-8 sm:mb-10 text-center md:text-left card-layer-1">
-        <p class="text-white text-xl sm:text-2xl md:text-3xl font-black tracking-tight">Welcome back</p>
-        <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2 font-medium">Select your profile to continue</p>
+    <!-- 로고 & 타이틀 ── -->
+    <div class="text-center animate-fadeIn w-full px-4">
+        <div class="mb-4 sm:mb-6">
+            <img src="images/login/login.gif" alt="Logo" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain mx-auto rounded-2xl ring-2 ring-cyan-400/30 shadow-2xl shadow-cyan-500/20">
+        </div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-2">
+            <span class="bg-gradient-to-r from-cyan-400 via-accent to-pink-400 bg-clip-text text-transparent">Staff Login</span>
+        </h2>
+        <p class="text-cyan-400/70 text-[10px] sm:text-xs font-black tracking-[0.3em] uppercase">
+            Daily Report System
+        </p>
     </div>
-    
-    <div class="space-y-6 sm:space-y-8 card-layer-2">
-        
-        <!-- Enhanced Staff Member Selector -->
-        <div class="group">
-            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
-                Staff Member
-            </label>
-            <div id="staff-selector-container">
-                <div id="selected-staff" tabindex="0">
-                    <span id="selected-text" class="loading-text">Loading staff list</span>
-                    <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                    </svg>
+
+    <!-- 로그인 카드 ── -->
+    <div class="login-card w-full animate-fadeIn">
+        <div class="relative z-10">
+            <div class="mb-6 sm:mb-8">
+                <p class="text-xl sm:text-2xl font-black text-white">Welcome back</p>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select your profile to continue</p>
+            </div>
+
+            <div class="space-y-5 sm:space-y-6">
+                <!-- Staff Selector ── -->
+                <div class="group">
+                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                        Staff Member
+                    </label>
+                    <div id="staff-selector-container" class="relative">
+                        <div id="selected-staff" tabindex="0" class="cursor-pointer">
+                            <span id="selected-text" class="text-slate-400">Loading staff list</span>
+                            <svg class="dropdown-arrow w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                            </svg>
+                        </div>
+                        <div id="staff-dropdown"></div>
+                    </div>
                 </div>
-                <div id="staff-dropdown"></div>
-            </div>
-        </div>
 
-        <div class="group">
-            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
-                Secure Password
-            </label>
-            <div class="relative">
-                <input 
-                    type="password" 
-                    id="password" 
-                    class="w-full border p-4 sm:p-5 pr-12 sm:pr-14 rounded-xl sm:rounded-2xl outline-none shadow-2xl text-sm sm:text-base" 
-                    placeholder="••••••••"
-                >
-                <button 
-                    type="button"
-                    onclick="togglePassword()"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition-colors focus:outline-none"
-                    style="z-index: 10;"
-                >
-                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                </button>
-            </div>
-            <div class="flex justify-end px-1 mt-2 sm:mt-3">
-                <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] text-slate-500 hover:text-cyan-400 transition-all font-black uppercase tracking-wider sm:tracking-widest">
-                    Forgot Password?
-                </button>
-            </div>
-        </div>
+                <!-- Password Field ── -->
+                <div class="group">
+                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                        Secure Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="w-full rounded-xl sm:rounded-2xl text-sm sm:text-base"
+                            placeholder="••••••••"
+                        >
+                        <button 
+                            type="button"
+                            onclick="togglePassword()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
+                            style="z-index: 10;"
+                        >
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-end px-1 mt-2 sm:mt-3">
+                        <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] uppercase tracking-widest">
+                            Forgot Password?
+                        </button>
+                    </div>
+                </div>
 
-        <div class="pt-3 sm:pt-4 card-layer-3">
-            <button id="loginBtn" onclick="handleLogin()" class="w-full text-white py-5 sm:py-6 rounded-[1.25rem] sm:rounded-[1.5rem] font-black shadow-2xl shadow-blue-900/40 transition-all active:scale-95 text-sm sm:text-base uppercase tracking-[0.25em] sm:tracking-[0.3em]">
-                AUTHENTICATE
-            </button>
+                <!-- Login Button ── -->
+                <div class="pt-2 sm:pt-4">
+                    <button id="loginBtn" onclick="handleLogin()">
+                        AUTHENTICATE
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- 생일 팝업 ── -->
 <div id="birthday-popup" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-[#081224]/90 border border-blue-500/30 rounded-3xl shadow-2xl overflow-hidden">
+    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-cyan-400 rounded-2xl shadow-2xl overflow-hidden">
         <div class="relative z-10">
             <div class="text-5xl mb-4 animate-bounce">🎂</div>
-            <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
             
-            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold"></div>
+            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold text-sm"></div>
             
-            <div id="countdown-timer" class="text-[11px] text-blue-400/60 font-mono mb-2 tracking-widest">
-                CLOSING IN <span id="timer-seconds" class="font-bold text-blue-400">5</span>s...
+            <div id="countdown-timer" class="text-[11px] text-cyan-400/60 font-mono mb-4 tracking-widest">
+                CLOSING IN <span id="timer-seconds" class="font-bold text-cyan-400">10</span>s...
             </div>
             
             <button onclick="closePopup()" 
-                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-blue-500/20">
+                    class="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-cyan-500/20">
                 Close
             </button>
         </div>
     </div>
 </div>
 
-<!-- Horrifying Ghost Profile Image Effect -->
+<!-- Ghost Profile Image Overlay ── -->
 <div id="ghost-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none">
     <div style="position: relative;">
         <img id="ghost-image" src="" alt="Profile Ghost" class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-full">
@@ -661,84 +828,17 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
 (function() {
     'use strict';
 
-    // ── Performance optimization: Reduce animation on low-end devices ──
-    const isLowEndDevice = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                           window.devicePixelRatio < 2;
-    
-    if (isLowEndDevice) {
-        document.body.style.perspective = '800px';
-    }
-
-    // ── 날짜 기반 배경 이미지 설정 ──
-    (function setBgImage() {
-        const totalImages = 10;
-        const day = new Date().getDate();
-        const imgIndex = ((day - 1) % totalImages) + 1;
-        const fileName = `image-${String(imgIndex).padStart(3, '0')}.gif`;
-        const imgPath = `images/gif/cats/${fileName}`;
-
-        const bgEl = document.createElement('div');
-        bgEl.id = 'bg-image-overlay';
-        bgEl.style.backgroundImage = `url('${imgPath}')`;
-        bgEl.style.opacity = '0.18';
-        document.body.prepend(bgEl);
-    })();
-
-    // ── 3D Tilt Effect (데스크톱에서만 활성화) ──
-    const card = document.getElementById('tilt-card');
-    if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
-        let rafId = null;
-        let currentRotateX = 0;
-        let currentRotateY = 0;
-        let targetRotateX = 0;
-        let targetRotateY = 0;
-
-        const lerp = (start, end, factor) => start + (end - start) * factor;
-
-        const animate = () => {
-            currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
-            currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
-            
-            card.style.transform = `
-                perspective(1500px) 
-                rotateX(${currentRotateX}deg) 
-                rotateY(${currentRotateY}deg)
-                translateZ(0)
-            `;
-            
-            rafId = requestAnimationFrame(animate);
-        };
-
-        document.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            targetRotateX = ((y - centerY) / centerY) * 8;
-            targetRotateY = ((centerX - x) / centerX) * 8;
-        });
-
-        document.addEventListener('mouseleave', () => {
-            targetRotateX = 0;
-            targetRotateY = 0;
-        });
-
-        animate();
-    }
-
-    // ── 페이지 로드 완료 ──
+    // 페이지 로드 완료 표시
     window.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('loaded');
     });
 
-    // ── Firebase 설정 ──
+    // Firebase 설정
     const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ── Staff Selector Variables ──
+    // Staff Selector Variables
     let staffData = {};
     let selectedStaff = '';
     const selectedStaffEl = document.getElementById('selected-staff');
@@ -747,79 +847,63 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
     const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
     const passwordInput = document.getElementById('password');
 
-// 생일 체크 및 팝업 로직
-(function() {
-    const popup = document.getElementById('birthday-popup');
-    const content = document.getElementById('popup-content');
-    const timerDisplay = document.getElementById('timer-seconds');
-    let autoCloseTimer;
-    let countdownInterval;
+    // 생일 체크 및 팝업 로직
+    (function() {
+        const popup = document.getElementById('birthday-popup');
+        const content = document.getElementById('popup-content');
+        const timerDisplay = document.getElementById('timer-seconds');
+        let autoCloseTimer;
+        let countdownInterval;
 
-    // [함수] 팝업 닫기: 애니메이션 실행 후 hidden 처리
-    window.closePopup = () => {
-        clearTimeout(autoCloseTimer);
-        clearInterval(countdownInterval);
-        
-        content.classList.remove('animate-spiral-in');
-        content.classList.add('animate-misty-out');
-        
-        setTimeout(() => {
+        window.closePopup = () => {
+            clearTimeout(autoCloseTimer);
+            clearInterval(countdownInterval);
             popup.classList.add('hidden');
-            content.classList.remove('animate-misty-out');
-        }, 800); // 0.8초 애니메이션 완료 후 제거
-    };
+        };
 
-    const checkTodayBirthdays = () => {
-        const now = new Date();
-        const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        firebase.database().ref('users').once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
+        const checkTodayBirthdays = () => {
+            const now = new Date();
+            const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            
+            firebase.database().ref('users').once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
 
-            const winners = [];
-            Object.keys(data).forEach(name => {
-                if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
-                    winners.push({ name: name, date: data[name].birthday });
+                const winners = [];
+                Object.keys(data).forEach(name => {
+                    if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
+                        winners.push({ name: name, date: data[name].birthday });
+                    }
+                });
+
+                if (winners.length > 0) {
+                    document.getElementById('birthday-list').innerHTML = winners.map(s => `
+                        <div class="p-3 bg-cyan-500/10 border border-cyan-400/20 rounded-lg">
+                            <div class="text-xs text-cyan-300 mb-1">Happy Birthday to ${s.name}!</div>
+                            <div class="text-sm font-bold text-white">${s.date}</div>
+                        </div>
+                    `).join('');
+                    
+                    popup.classList.remove('hidden');
+
+                    let timeLeft = 10;
+                    timerDisplay.innerText = timeLeft;
+                    
+                    countdownInterval = setInterval(() => {
+                        timeLeft -= 1;
+                        timerDisplay.innerText = timeLeft;
+                        if (timeLeft <= 0) clearInterval(countdownInterval);
+                    }, 1000);
+
+                    autoCloseTimer = setTimeout(closePopup, 10000);
                 }
             });
+        };
 
-            if (winners.length > 0) {
-                // 상세 정보(메시지 + 이름 + 날짜) 렌더링
-                document.getElementById('birthday-list').innerHTML = winners.map(s => `
-                    <div class="p-4 bg-white/5 border border-blue-500/10 rounded-2xl">
-                        <div class="text-sm text-blue-300 mb-2">I sincerely congratulate you on your special day!<br>
-Have a happier day than anyone else.!</div>
-                        <div class="text-2xl text-white font-black">${s.name}</div>
-                        <div class="text-[10px] text-slate-500 mt-2 italic">Born on ${s.date}</div>
-                    </div>
-                `).join('');
-                
-                // 팝업 노출 및 등장 애니메이션
-                popup.classList.remove('hidden');
-                content.classList.add('animate-spiral-in');
+        setTimeout(checkTodayBirthdays, 1000);
+    })();
 
-                // 카운트다운 및 자동 닫기 타이머 시작
-                let timeLeft = 10;
-                timerDisplay.innerText = timeLeft;
-                
-                countdownInterval = setInterval(() => {
-                    timeLeft -= 1;
-                    timerDisplay.innerText = timeLeft;
-                    if (timeLeft <= 0) clearInterval(countdownInterval);
-                }, 1000);
-
-                autoCloseTimer = setTimeout(closePopup, 10000);
-            }
-        });
-    };
-
-    // 초기 로드 1초 후 실행
-    setTimeout(checkTodayBirthdays, 1000);
-})();
-
-
-    // ── Enhanced Staff Member Selector ──
+    // Staff Selector 초기화
     function initStaffSelector() {
         database.ref('users').limitToFirst(50).once('value', (snapshot) => {
             const users = snapshot.val();
@@ -827,17 +911,14 @@ Have a happier day than anyone else.!</div>
             
             if (Object.keys(staffData).length === 0) {
                 selectedTextEl.textContent = 'No staff available';
-                selectedTextEl.classList.remove('loading-text');
                 return;
             }
 
             selectedTextEl.textContent = 'Select Identity';
-            selectedTextEl.classList.remove('loading-text');
             renderStaffDropdown();
         }).catch(err => {
             console.error('Error loading staff:', err);
             selectedTextEl.textContent = 'Error loading staff';
-            selectedTextEl.classList.remove('loading-text');
         });
     }
 
@@ -869,7 +950,6 @@ Have a happier day than anyone else.!</div>
             }
             
             option.addEventListener('click', () => selectStaff(name, option));
-            
             fragment.appendChild(option);
         });
         
@@ -880,7 +960,6 @@ Have a happier day than anyone else.!</div>
         selectedStaff = name;
         selectedTextEl.textContent = name;
         
-        // Update selected state
         staffDropdown.querySelectorAll('.staff-option').forEach(opt => {
             opt.classList.remove('selected');
         });
@@ -894,7 +973,6 @@ Have a happier day than anyone else.!</div>
 
     function toggleDropdown() {
         const isActive = staffDropdown.classList.contains('active');
-        
         if (isActive) {
             closeDropdown();
         } else {
@@ -914,7 +992,7 @@ Have a happier day than anyone else.!</div>
         dropdownArrow.classList.remove('rotated');
     }
 
-    // Event listeners for staff selector
+    // Event Listeners
     selectedStaffEl.addEventListener('click', toggleDropdown);
     
     selectedStaffEl.addEventListener('keydown', (e) => {
@@ -924,17 +1002,12 @@ Have a happier day than anyone else.!</div>
         }
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!document.getElementById('staff-selector-container').contains(e.target)) {
             closeDropdown();
         }
     });
 
-    // Initialize staff selector
-    initStaffSelector();
-
-    // ── Enter 키 이벤트 ──
     passwordInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { 
             e.preventDefault(); 
@@ -942,139 +1015,88 @@ Have a happier day than anyone else.!</div>
         }
     });
 
-    // ── 로그인 처리 ──
-window.handleLogin = function() {
-    const name = selectedStaff;
-    const pw = passwordInput.value;
-    
-    if(!name || !pw) {
-        return alert("Please enter your credentials.");
-    }
-    
-    database.ref('users/' + name).once('value', (snapshot) => {
-        const userData = snapshot.val();
-        if (!userData) {
-            return alert("User not found.");
+    // 로그인 처리
+    window.handleLogin = function() {
+        const name = selectedStaff;
+        const pw = passwordInput.value;
+        
+        if(!name || !pw) {
+            return alert("Please enter your credentials.");
         }
         
-        if (userData.password === pw) {
-            sessionStorage.setItem('loggedInUser', name);
-            sessionStorage.setItem('userRole', userData.role);
-            firebase.database().ref('users/' + name).update({
-                lastLogin: new Date().toISOString()
-            });
+        database.ref('users/' + name).once('value', (snapshot) => {
+            const userData = snapshot.val();
+            if (!userData) {
+                return alert("User not found.");
+            }
             
-            // Ghost 프로필 이미지 효과
-            showGhostEffect(userData.profileImg, name, userData.role);
+            if (userData.password === pw) {
+                sessionStorage.setItem('loggedInUser', name);
+                sessionStorage.setItem('userRole', userData.role);
+                firebase.database().ref('users/' + name).update({
+                    lastLogin: new Date().toISOString()
+                });
+                
+                showGhostEffect(userData.profileImg, name, userData.role);
+                
+            } else { 
+                alert("Incorrect password."); 
+            }
+        });
+    };
+
+    // Ghost 효과 표시
+    function showGhostEffect(profileImg, name, role) {
+        const ghostOverlay = document.getElementById('ghost-overlay');
+        const ghostImage = document.getElementById('ghost-image');
+        
+        let imagePath;
+        
+        if (profileImg) {
+            if (profileImg.startsWith('images/') || profileImg.startsWith('http')) {
+                imagePath = profileImg;
+            } else {
+                imagePath = `images/profile/${profileImg}`;
+            }
+        } else {
+            imagePath = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
+        }
+        
+        ghostImage.src = imagePath;
+        ghostOverlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            ghostOverlay.classList.add('hidden');
             
-        } else { 
-            alert("Incorrect password."); 
-        }
-    });
-};
-
-// Ghost 효과 표시 함수 (호러 버전)
-function showGhostEffect(profileImg, name, role) {
-    const ghostOverlay = document.getElementById('ghost-overlay');
-    const ghostImage = document.getElementById('ghost-image');
-    
-    // 프로필 이미지 경로 설정 (중복 제거)
-    let imagePath;
-    
-    if (profileImg) {
-        // 이미 경로가 포함되어 있으면 그대로 사용, 아니면 경로 추가
-        if (profileImg.startsWith('images/') || profileImg.startsWith('http')) {
-            imagePath = profileImg;
-        } else {
-            imagePath = `images/profile/${profileImg}`;
-        }
-    } else {
-        // 프로필 이미지가 없으면 기본 아바타 사용
-        imagePath = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
+            const userRole = (role || '').toLowerCase();
+            if (userRole === 'admin' || userRole === 'manager') {
+                location.href = "admin.html";
+            } else {
+                const today = new Date().getDate();
+                if (today % 2 !== 0) {
+                    location.href = "staff_main_1.html";
+                } else {
+                    location.href = "staff_main_2.html";
+                }
+            }
+        }, 2500);
     }
-    
-    ghostImage.src = imagePath;
-    
-    // 호러 음향 효과 (선택사항)
-    playHorrorSound();
-    
-    // Ghost 효과 시작
-    ghostOverlay.classList.remove('hidden');
-    ghostOverlay.classList.add('active');
-    
-    // 배경 화면 깜빡임 효과
-    document.body.style.animation = 'screenFlicker 3s ease-in-out';
-    
-// 3초 후 페이지 이동
-setTimeout(() => {
-    ghostOverlay.classList.add('hidden');
-    ghostOverlay.classList.remove('active');
-    document.body.style.animation = 'none';
-    
-    // 역할에 따라 페이지 이동
-    const userRole = (role || '').toLowerCase();
-    if (userRole === 'admin' || userRole === 'manager') {
-        location.href = "admin.html";
-    } else {
-        // [수정된 부분] 날짜 판별 로직 추가
-        const today = new Date().getDate(); // 오늘 일자 (1~31)
-        if (today % 2 !== 0) {
-            // 홀수 날짜
-            location.href = "staff_main_1.html";
-        } else {
-            // 짝수 날짜
-            location.href = "staff_main_2.html";
-        }
-    }
-}, 3000);
-}
 
-// 호러 음향 효과 (선택사항)
-function playHorrorSound() {
-    try {
-        // Web Audio API를 사용한 으스스한 음향 생성
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // 으스스한 저주파 사운드
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(20, audioContext.currentTime + 0.5);
-        
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (err) {
-        console.log('Sound effect skipped:', err);
-    }
-}
-
-    // ── 비밀번호 보이기/숨기기 토글 ──
+    // 비밀번호 토글
     window.togglePassword = function() {
         const passwordInput = document.getElementById('password');
         const eyeIcon = document.getElementById('eyeIcon');
         
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            eyeIcon.innerHTML = `
-                <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-            `;
+            eyeIcon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
         } else {
             passwordInput.type = 'password';
-            eyeIcon.innerHTML = `
-                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            `;
+            eyeIcon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
         }
     };
 
-    // ── 비밀번호 찾기 ──
+    // 비밀번호 찾기
     window.findPassword = function() {
         const name = selectedStaff;
         
@@ -1096,49 +1118,8 @@ function playHorrorSound() {
         }
     };
 
-    // ── Optimized Star field (reduced count for performance) ──
-    (function initStars() {
-        const container = document.getElementById('bg-stars');
-        if (!container) return;
-        
-        const starCount = isLowEndDevice ? 60 : 100;
-        const fragment = document.createDocumentFragment();
-        
-        for (let i = 0; i < starCount; i++) {
-            const d = document.createElement('div');
-            d.className = 'star-dot';
-            d.style.left = `${Math.random() * 100}%`;
-            d.style.top = `${Math.random() * 100}%`;
-            d.style.opacity = (Math.random() * 0.3 + 0.1).toFixed(2);
-            d.style.transform = `translateZ(${Math.random() * 400 - 200}px)`;
-            fragment.appendChild(d);
-        }
-        
-        container.appendChild(fragment);
-    })();
-
-    // ── 3D TDLiD Text Parallax Effect ──
-    if (!isLowEndDevice) {
-        const tdlidEl = document.getElementById('tdlid-3d');
-        let mouseMoveRaf = null;
-        
-        document.addEventListener('mousemove', (e) => {
-            if (mouseMoveRaf) return;
-            
-            mouseMoveRaf = requestAnimationFrame(() => {
-                const xPercent = (e.clientX / window.innerWidth - 0.5) * 20;
-                const yPercent = (e.clientY / window.innerHeight - 0.5) * 20;
-                
-                tdlidEl.style.transform = `
-                    translate(-50%, -50%) 
-                    rotateY(${xPercent}deg) 
-                    rotateX(${-yPercent}deg)
-                `;
-                
-                mouseMoveRaf = null;
-            });
-        });
-    }
+    // Staff Selector 초기화
+    initStaffSelector();
 
 })();
 </script>
