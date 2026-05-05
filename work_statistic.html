@@ -59,6 +59,43 @@
     /* ── Tab Pills ── */
     .tab-pill { padding:6px 14px; border-radius:99px; font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:0.1em; cursor:pointer; transition:all 0.2s; color:#475569; }
     .tab-pill.active { background:#1e40af; color:#fff; }
+/* ── Task Breakdown Styles ── */
+.tab-pill { 
+    padding: 6px 14px; 
+    border-radius: 99px; 
+    font-size: 9px; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    color: #475569; 
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.tab-pill.active { 
+    background: #1e40af; 
+    color: #fff;
+    border-color: #3b82f6;
+}
+.tab-pill:hover {
+    border-color: #3b82f6;
+}
+
+/* ── Task Item Styles ── */
+.task-item {
+    transition: all 0.2s;
+}
+.task-item:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* ── Staff Distribution Grid ── */
+.staff-metric {
+    flex-direction: column;
+    align-items: center;
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════════ -->
@@ -95,9 +132,10 @@
             <p class="text-slate-500 text-xs font-bold tracking-[0.3em] uppercase">Intelligence Engine & Predictive Analytics</p>
         </div>
         <div class="glass p-2 flex items-center gap-1 shadow-2xl border-slate-800 flex-wrap">
-            <select id="staffFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400 transition-colors">
-                <option value="all">EVERYONE</option>
-            </select>
+<select id="staffFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400 transition-colors">
+    <option value="all">EVERYONE</option>
+</select>
+
             <div class="w-px h-4 bg-slate-800 mx-1"></div>
             <select id="yearFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-2 py-2 outline-none cursor-pointer hover:text-blue-400"></select>
             <select id="monthFilter" onchange="refreshDashboard()" class="bg-transparent text-xs font-bold px-4 py-2 outline-none cursor-pointer hover:text-blue-400">
@@ -137,6 +175,21 @@
     <!-- ── Main Grid ── -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 space-y-8">
+
+<!-- Task Breakdown Analysis (NEW) -->
+<div class="glass p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
+            <span class="w-1 h-4 bg-cyan-500"></span> Task Breakdown Analysis
+        </h3>
+        <div class="flex gap-2">
+            <button class="tab-pill active" onclick="switchTaskView('all')">All Tasks</button>
+            <button class="tab-pill" onclick="switchTaskView('innovation')">Innovation</button>
+            <button class="tab-pill" onclick="switchTaskView('maintenance')">Maintenance</button>
+        </div>
+    </div>
+    <div id="taskBreakdownPanel" class="space-y-3"></div>
+</div>
 
             <!-- Trend Chart -->
             <div class="glass p-8">
@@ -183,6 +236,16 @@
                         <span class="w-1 h-4 bg-purple-500"></span> Staff Compare
                     </h3>
                 </div>
+<!-- Staff Task Distribution (NEW) -->
+<div class="glass p-8">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="font-black text-xs uppercase tracking-widest italic flex items-center gap-2">
+            <span class="w-1 h-4 bg-lime-500"></span> Staff Task Distribution
+        </h3>
+    </div>
+    <div id="staffTaskDistribution" class="space-y-4"></div>
+</div>
+
                 <div class="flex gap-3 mb-5 flex-wrap">
                     <select id="compareA" class="bg-slate-800 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 outline-none text-slate-200"></select>
                     <span class="text-slate-600 self-center font-black">VS</span>
@@ -225,628 +288,916 @@
 </div>
 
 <script>
-(function() {
-    let dashboardData = null;
-    let usersData = {};       // { userId: { displayName, ... } }
-    let mainChart = null;
-    let radarChartInst = null;
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+// ══════════════════════════════════════════════════════════════════════════
+//  ▼▼▼ Firebase 초기화 대기 함수 추가 (Staff 페이지 호환성)
+// ══════════════════════════════════════════════════════════════════════════
+function waitForDB(callback, maxAttempts = 50) {
+    let attempts = 0;
+    const checkInterval = setInterval(() => {
+        attempts++;
+        if (window.db && window.firebase) {
+            clearInterval(checkInterval);
+            console.log('Firebase DB ready after', attempts, 'attempts');
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            console.error('Firebase initialization timeout - DB not available');
+            // 타임아웃 후에도 실행 (Admin에서는 이미 준비됨)
+            callback();
+        }
+    }, 100);
+}
 
-    // ── Init Year Filter ──
-    const yearSelect = document.getElementById('yearFilter');
-    for (let i = 0; i < 3; i++) {
-        const y = currentYear - i;
-        const opt = document.createElement('option');
-        opt.value = y; opt.innerText = y;
-        yearSelect.appendChild(opt);
-    }
-    document.getElementById('monthFilter').value = currentMonth;
+// Firebase 준비 완료 후 대시보드 초기화
+waitForDB(() => {
+    (function() {
+        let dashboardData = null;
+        let usersData = {};       // { userId: { displayName, ... } }
+        let mainChart = null;
+        let radarChartInst = null;
 
-    // ── displayName helper ──
-    function dName(id) {
-        return (usersData[id] && usersData[id].displayName) ? usersData[id].displayName : id;
-    }
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
 
-    // ── Load users for displayName ──
-    if (window.db) {
-        db.ref('users').once('value', snap => {
-            usersData = snap.val() || {};
-        });
-    }
+        // ── Init Year Filter ──
+        const yearSelect = document.getElementById('yearFilter');
+        for (let i = 0; i < 3; i++) {
+            const y = currentYear - i;
+            const opt = document.createElement('option');
+            opt.value = y; opt.innerText = y;
+            yearSelect.appendChild(opt);
+        }
+        document.getElementById('monthFilter').value = currentMonth;
 
-    // ══════════════════════════════════════
-    //  processData
-    // ══════════════════════════════════════
-    function processData(data, filterStaff, selYear, selMonth) {
-        const stats = {
-            total: 0, innovation: 0, days: {}, staff: {}, tasks: {},
-            radar: { innovation: 0, consistency: 0, volume: 0, maintenance: 0, speed: 0 },
-            rawByStaff: {}   // { staffId: { date: [lines] } }
-        };
-        const prefix = selMonth === 'all' ? `${selYear}` : `${selYear}-${selMonth}`;
+        // ── displayName helper ──
+        function dName(id) {
+            return (usersData[id] && usersData[id].displayName) ? usersData[id].displayName : id;
+        }
 
-        Object.keys(data).sort().forEach(date => {
-            if (!date.startsWith(prefix)) return;
-            Object.keys(data[date]).forEach(person => {
-                if (filterStaff !== 'all' && person !== filterStaff) return;
+        // ── Load users for displayName ──
+        if (window.db) {
+            db.ref('users').once('value', snap => {
+                usersData = snap.val() || {};
+            });
+        }
 
-                const lines = (data[date][person].todo || "").split('\n').filter(l => l.trim().length > 2);
-                if (!stats.staff[person]) stats.staff[person] = { t: 0, n: 0, activeDays: new Set() };
-                if (!stats.days[date]) stats.days[date] = 0;
-                if (!stats.rawByStaff[person]) stats.rawByStaff[person] = {};
-                stats.rawByStaff[person][date] = lines;
+        // ══════════════════════════════════════
+        //  processData
+        // ══════════════════════════════════════
+        function processData(data, filterStaff, selYear, selMonth) {
+            const stats = {
+                total: 0, innovation: 0, days: {}, staff: {}, tasks: {},
+                radar: { innovation: 0, consistency: 0, volume: 0, maintenance: 0, speed: 0 },
+                rawByStaff: {}   // { staffId: { date: [lines] } }
+            };
+            const prefix = selMonth === 'all' ? `${selYear}` : `${selYear}-${selMonth}`;
 
-                stats.staff[person].activeDays.add(date);
-                lines.forEach(line => {
-                    stats.total++;
-                    stats.days[date]++;
-                    stats.staff[person].t++;
-                    const isNew = !line.includes('유지') && !line.includes('반복');
-                    if (isNew) { stats.innovation++; stats.staff[person].n++; }
-                    const taskName = line.replace(/[0-9\-\.\>]/g, '').trim().substring(0, 20);
-                    if (taskName.length > 2) stats.tasks[taskName] = (stats.tasks[taskName] || 0) + 1;
+            Object.keys(data).sort().forEach(date => {
+                if (!date.startsWith(prefix)) return;
+                Object.keys(data[date]).forEach(person => {
+                    if (filterStaff !== 'all' && person !== filterStaff) return;
+
+                    const lines = (data[date][person].todo || "").split('\n').filter(l => l.trim().length > 2);
+                    if (!stats.staff[person]) stats.staff[person] = { t: 0, n: 0, activeDays: new Set() };
+                    if (!stats.days[date]) stats.days[date] = 0;
+                    if (!stats.rawByStaff[person]) stats.rawByStaff[person] = {};
+                    stats.rawByStaff[person][date] = lines;
+
+                    stats.staff[person].activeDays.add(date);
+                    lines.forEach(line => {
+                        stats.total++;
+                        stats.days[date]++;
+                        stats.staff[person].t++;
+                        const isNew = !line.includes('유지') && !line.includes('반복');
+                        if (isNew) { stats.innovation++; stats.staff[person].n++; }
+                        const taskName = line.replace(/[0-9\-\.\>]/g, '').trim().substring(0, 20);
+                        if (taskName.length > 2) stats.tasks[taskName] = (stats.tasks[taskName] || 0) + 1;
+                    });
                 });
             });
-        });
 
-        const dayCount = Object.keys(stats.days).length || 1;
-        stats.radar.innovation   = (stats.innovation / (stats.total || 1)) * 100;
-        stats.radar.volume       = Math.min(100, (stats.total / (dayCount * 5)) * 100);
-        stats.radar.consistency  = (dayCount / 30) * 100;
-        stats.radar.speed        = Math.min(100, (stats.total / dayCount) * 10);
-        stats.radar.maintenance  = 100 - stats.radar.innovation;
-        return stats;
-    }
+            const dayCount = Object.keys(stats.days).length || 1;
+            stats.radar.innovation   = (stats.innovation / (stats.total || 1)) * 100;
+            stats.radar.volume       = Math.min(100, (stats.total / (dayCount * 5)) * 100);
+            stats.radar.consistency  = (dayCount / 30) * 100;
+            stats.radar.speed        = Math.min(100, (stats.total / dayCount) * 10);
+            stats.radar.maintenance  = 100 - stats.radar.innovation;
+            return stats;
+        }
 
-    // ══════════════════════════════════════
-    //  refreshDashboard
-    // ══════════════════════════════════════
-window.refreshDashboard = function() {
-    if (!dashboardData) return;
+        // ══════════════════════════════════════
+        //  refreshDashboard
+        // ══════════════════════════════════════
+        window.refreshDashboard = function() {
+            if (!dashboardData) return;
 
-    const staffEl  = document.getElementById('staffFilter');
-    const yearEl   = document.getElementById('yearFilter');
-    const monthEl  = document.getElementById('monthFilter');
+            const staffEl  = document.getElementById('staffFilter');
+            const yearEl   = document.getElementById('yearFilter');
+            const monthEl  = document.getElementById('monthFilter');
 
-    // DOM이 없으면 즉시 종료 (탭 전환 후 소멸 대비)
-    if (!staffEl || !yearEl || !monthEl) return;
+            if (!staffEl || !yearEl || !monthEl) return;
 
-    const s = staffEl.value;
-    const y = yearEl.value;
-    const m = monthEl.value;
-    const stats = processData(dashboardData, s, y, m);
+            const s = staffEl.value;
+            const y = yearEl.value;
+            const m = monthEl.value;
+            const stats = processData(dashboardData, s, y, m);
 
-        updateKPIs(stats);
-        updateCharts(stats, m === 'all');
-        updateStaffRanking(stats);
-        renderHeatmap(stats);
-        renderTasks(stats);
-        renderSnapshotCards(stats, s, y, m);
-        renderCalendarHeatmap(s, y, m);
-        renderMissingPanel(s, y, m);
-        renderAnomalyDetection(stats, s, y, m);
-        populateCompareSelects(stats);
-    };
+            updateKPIs(stats);
+            updateCharts(stats, m === 'all');
+            updateStaffRanking(stats);
+            renderHeatmap(stats);
+            renderTasks(stats);
+            renderSnapshotCards(stats, s, y, m);
+            renderCalendarHeatmap(s, y, m);
+            renderMissingPanel(s, y, m);
+            renderAnomalyDetection(stats, s, y, m);
+            populateCompareSelects(stats);
+            
+            // ↓ Task Breakdown & Staff Distribution
+            renderTaskBreakdown();
+            renderStaffTaskDistribution();
+        };
 
-    // ══════════════════════════════════════
-    //  KPIs
-    // ══════════════════════════════════════
-    function updateKPIs(stats) {
-        animateValue("kpi-total", stats.total);
-        animateValue("kpi-innovation", Math.round((stats.innovation / (stats.total || 1)) * 100), "%");
-        animateValue("kpi-velocity", (stats.total / (Object.keys(stats.days).length || 1)).toFixed(1));
-        animateValue("kpi-active", Object.keys(stats.staff).length);
-    }
+        // ══════════════════════════════════════
+        //  Task Breakdown Analysis (NEW)
+        // ══════════════════════════════════════
+        let currentTaskView = 'all';
 
-    // ══════════════════════════════════════
-    //  Snapshot Summary Cards (NEW)
-    // ══════════════════════════════════════
-    function renderSnapshotCards(stats, filterStaff, selYear, selMonth) {
-        const el = document.getElementById('snapshotRow');
-        if (!el) return;
+        window.switchTaskView = function(view) {
+            currentTaskView = view;
+            document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTaskBreakdown();
+        };
 
-        // Most active staff
-        const topStaff = Object.entries(stats.staff).sort((a,b) => b[1].t - a[1].t)[0];
-        const topName = topStaff ? dName(topStaff[0]) : '—';
-        const topCount = topStaff ? topStaff[1].t : 0;
+        function renderTaskBreakdown() {
+            const staffEl = document.getElementById('staffFilter');
+            const yearEl = document.getElementById('yearFilter');
+            const monthEl = document.getElementById('monthFilter');
+            const panelEl = document.getElementById('taskBreakdownPanel');
+            
+            if (!panelEl || !staffEl || !yearEl || !monthEl || !dashboardData) return;
 
-        // Longest streak
-        let longestStreak = 0, longestWho = '—';
-        Object.entries(stats.staff).forEach(([p, d]) => {
-            const sorted = Array.from(d.activeDays).sort();
-            let streak = 1, max = 1;
-            for (let i = 1; i < sorted.length; i++) {
-                const diff = (new Date(sorted[i]) - new Date(sorted[i-1])) / 86400000;
-                if (diff === 1) { streak++; max = Math.max(max, streak); }
-                else streak = 1;
-            }
-            if (max > longestStreak) { longestStreak = max; longestWho = dName(p); }
-        });
+            const filterStaff = staffEl.value;
+            const selYear = yearEl.value;
+            const selMonth = monthEl.value;
+            const prefix = selMonth === 'all' ? selYear : `${selYear}-${selMonth}`;
 
-        // Today's submitters
-        const todayStr = now.toISOString().split('T')[0];
-        const todaySubmitters = dashboardData[todayStr] ? Object.keys(dashboardData[todayStr]).length : 0;
+            // 작업 집계
+            const taskMap = {}; // { taskName: { count, staff: {staffId: count}, type: 'innovation'|'maintenance' } }
+            const staffTaskMap = {}; // { staffId: { total: num, innovation: num, maintenance: num, taskList: [] } }
 
-        // This week avg
-        const weekDays = []; for (let i=0;i<7;i++){ const d=new Date(now); d.setDate(now.getDate()-i); weekDays.push(d.toISOString().split('T')[0]); }
-        let weekTotal = 0;
-        weekDays.forEach(d => { if(dashboardData[d]) weekTotal += Object.keys(dashboardData[d]).length; });
-        const weekAvg = (weekTotal / 7).toFixed(1);
+            Object.keys(dashboardData).sort().forEach(date => {
+                if (!date.startsWith(prefix)) return;
+                const dayData = dashboardData[date];
+                
+                Object.entries(dayData).forEach(([person, data]) => {
+                    if (filterStaff !== 'all' && person !== filterStaff) return;
 
-        el.innerHTML = `
-        <div class="snap-card flex flex-col gap-1">
-            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🏆 Top Performer</p>
-            <p class="text-lg font-black text-white truncate">${topName}</p>
-            <p class="text-[10px] text-blue-400 font-bold">${topCount} tasks</p>
-        </div>
-        <div class="snap-card flex flex-col gap-1">
-            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🔥 Longest Streak</p>
-            <p class="text-lg font-black text-white truncate">${longestWho}</p>
-            <p class="text-[10px] text-amber-400 font-bold">${longestStreak} consecutive days</p>
-        </div>
-        <div class="snap-card flex flex-col gap-1">
-            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📋 Today's Reports</p>
-            <p class="text-lg font-black text-emerald-400">${todaySubmitters}</p>
-            <p class="text-[10px] text-slate-500 font-bold">staff submitted</p>
-        </div>
-        <div class="snap-card flex flex-col gap-1">
-            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📈 7-Day Avg</p>
-            <p class="text-lg font-black text-purple-400">${weekAvg}</p>
-            <p class="text-[10px] text-slate-500 font-bold">submissions/day</p>
-        </div>`;
-    }
+                    if (!staffTaskMap[person]) {
+                        staffTaskMap[person] = { total: 0, innovation: 0, maintenance: 0, taskList: [] };
+                    }
 
-    // ══════════════════════════════════════
-    //  Charts
-    // ══════════════════════════════════════
-    function updateCharts(stats, isYearly) {
-        const labels = Object.keys(stats.days).sort();
-        const chartLabels = labels.map(l => isYearly ? l.split('-')[1]+'월' : l.split('-')[2]+'일');
-        const chartData = labels.map(l => stats.days[l]);
+                    const lines = (data.todo || '').split('\n').filter(l => l.trim().length > 2);
+                    lines.forEach(line => {
+                        const cleanLine = line.replace(/[0-9\-\.\>]/g, '').trim();
+                        const taskName = cleanLine.substring(0, 50);
+                        const isMaint = cleanLine.includes('유지') || cleanLine.includes('반복');
+                        const type = isMaint ? 'maintenance' : 'innovation';
 
-        if (mainChart) mainChart.destroy();
-        const mc = document.getElementById('mainTrendChart');
-        if (!mc) return;
-        mainChart = new Chart(mc.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Tasks',
-                    data: chartData,
-                    borderColor: '#3b82f6',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#3b82f6',
-                    pointRadius: 3,
-                    pointHoverRadius: 6,
-                    fill: true,
-                    backgroundColor: 'rgba(59,130,246,0.06)',
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569' } }
+                        staffTaskMap[person].total++;
+                        staffTaskMap[person][type]++;
+                        staffTaskMap[person].taskList.push({ name: taskName, type, date });
+
+                        if (!taskMap[taskName]) {
+                            taskMap[taskName] = { count: 0, staff: {}, type };
+                        }
+                        taskMap[taskName].count++;
+                        taskMap[taskName].staff[person] = (taskMap[taskName].staff[person] || 0) + 1;
+                    });
+                });
+            });
+
+            // 정렬
+            const sortedTasks = Object.entries(taskMap)
+                .sort((a, b) => b[1].count - a[1].count)
+                .filter(([name, data]) => {
+                    if (currentTaskView === 'all') return true;
+                    return data.type === currentTaskView;
+                });
+
+            const totalTasks = sortedTasks.reduce((sum, [, data]) => sum + data.count, 0) || 1;
+
+            // HTML 렌더링
+            let html = '';
+            if (filterStaff === 'all') {
+                // 모든 직원 - 작업 중심 보기
+                html = sortedTasks.slice(0, 20).map(([taskName, data]) => {
+                    const perc = Math.round((data.count / totalTasks) * 100);
+                    const staffList = Object.entries(data.staff)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([s, c]) => `${dName(s)}(${c})`)
+                        .join(', ');
+                    
+                    return `
+                    <div class="border-b border-slate-800 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
+                        <div class="flex justify-between items-start gap-4 mb-2">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-white truncate">${taskName}</p>
+                                <p class="text-[9px] text-slate-500 mt-1">${data.type === 'innovation' ? '✨ Innovation' : '🔧 Maintenance'}</p>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <p class="text-lg font-black text-blue-400">${data.count}</p>
+                                <p class="text-[9px] text-slate-500 font-bold">${perc}% of all</p>
+                            </div>
+                        </div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mb-2">
+                            <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" style="width:${perc}%"></div>
+                        </div>
+                        <p class="text-[9px] text-slate-400">Assigned to: ${staffList}</p>
+                    </div>`;
+                }).join('');
+            } else {
+                // 특정 직원 선택 - 개인별 작업 목록
+                const staffData = staffTaskMap[filterStaff];
+                if (!staffData || staffData.total === 0) {
+                    html = `<p class="text-slate-500 text-sm italic text-center py-8">No tasks recorded for this period.</p>`;
+                } else {
+                    const tasksByType = {};
+                    staffData.taskList.forEach(t => {
+                        if (!tasksByType[t.type]) tasksByType[t.type] = [];
+                        tasksByType[t.type].push(t);
+                    });
+
+                    ['innovation', 'maintenance'].forEach(type => {
+                        if (!tasksByType[type] || tasksByType[type].length === 0) return;
+                        const tasks = tasksByType[type];
+                        const uniqueTasks = [...new Set(tasks.map(t => t.name))];
+                        const typeLabel = type === 'innovation' ? '✨ Innovation' : '🔧 Maintenance';
+                        const typeColor = type === 'innovation' ? 'emerald' : 'amber';
+
+                        html += `
+                        <div class="mb-6 pb-6 border-b border-slate-800 last:border-0 last:pb-0 last:mb-0">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="px-2 py-1 text-[9px] font-black rounded bg-${typeColor}-500/20 text-${typeColor}-400 uppercase">${typeLabel}</span>
+                                <span class="text-sm font-black text-slate-300">${tasks.length} tasks (${uniqueTasks.length} unique)</span>
+                            </div>
+                            <div class="space-y-2">
+                                ${uniqueTasks.slice(0, 15).map((task, idx) => {
+                                    const count = tasks.filter(t => t.name === task).length;
+                                    return `
+                                    <div class="flex items-center justify-between p-2 rounded-lg bg-white/3 border border-white/5 hover:border-white/10 transition">
+                                        <span class="text-[10px] text-slate-300 flex-1 truncate">${idx + 1}. ${task}</span>
+                                        <span class="text-[9px] font-bold text-${typeColor}-400 flex-shrink-0 ml-2">${count}×</span>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                    });
                 }
             }
-        });
 
-        if (radarChartInst) radarChartInst.destroy();
-        const rc = document.getElementById('radarChart');
-        if (!rc) return;
-        radarChartInst = new Chart(rc.getContext('2d'), {
-            type: 'radar',
-            data: {
-                labels: ['Innovation', 'Consistency', 'Volume', 'Speed', 'Stability'],
-                datasets: [{
-                    data: [stats.radar.innovation, stats.radar.consistency, stats.radar.volume, stats.radar.speed, stats.radar.maintenance],
-                    backgroundColor: 'rgba(59,130,246,0.15)',
-                    borderColor: '#3b82f6',
-                    pointRadius: 3,
-                    pointBackgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#94a3b8', font: { size: 9 } }, ticks: { display: false, max: 100 } } },
-                plugins: { legend: { display: false } }
+            panelEl.innerHTML = html || `<p class="text-slate-500 text-sm italic">No data available</p>`;
+        }
+
+        // ══════════════════════════════════════
+        //  Staff Task Distribution (NEW)
+        // ══════════════════════════════════════
+        function renderStaffTaskDistribution() {
+            const yearEl = document.getElementById('yearFilter');
+            const monthEl = document.getElementById('monthFilter');
+            const panelEl = document.getElementById('staffTaskDistribution');
+            
+            if (!panelEl || !yearEl || !monthEl || !dashboardData) return;
+
+            const selYear = yearEl.value;
+            const selMonth = monthEl.value;
+            const prefix = selMonth === 'all' ? selYear : `${selYear}-${selMonth}`;
+
+            // 직원별 작업 집계
+            const staffStats = {}; // { staffId: { total, innovation, maintenance, days, tasksPerDay } }
+
+            Object.keys(dashboardData).sort().forEach(date => {
+                if (!date.startsWith(prefix)) return;
+                const dayData = dashboardData[date];
+                
+                Object.entries(dayData).forEach(([person, data]) => {
+                    if (!staffStats[person]) {
+                        staffStats[person] = { total: 0, innovation: 0, maintenance: 0, days: new Set(), tasks: [] };
+                    }
+
+                    const lines = (data.todo || '').split('\n').filter(l => l.trim().length > 2);
+                    staffStats[person].days.add(date);
+                    
+                    lines.forEach(line => {
+                        const isMaint = line.includes('유지') || line.includes('반복');
+                        staffStats[person].total++;
+                        if (isMaint) staffStats[person].maintenance++;
+                        else staffStats[person].innovation++;
+                        staffStats[person].tasks.push(line.trim());
+                    });
+                });
+            });
+
+            // 직원별 정렬 (총 작업 수)
+            const sortedStaff = Object.entries(staffStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([staffId, stats]) => ({
+                    staffId,
+                    displayName: dName(staffId),
+                    total: stats.total,
+                    innovation: stats.innovation,
+                    maintenance: stats.maintenance,
+                    days: stats.days.size,
+                    tasksPerDay: (stats.total / (stats.days.size || 1)).toFixed(1),
+                    innovationRate: Math.round((stats.innovation / (stats.total || 1)) * 100)
+                }));
+
+            if (sortedStaff.length === 0) {
+                panelEl.innerHTML = `<p class="text-slate-500 text-sm italic">No staff data</p>`;
+                return;
             }
-        });
-    }
 
-    // ══════════════════════════════════════
-    //  Heatmap Dots
-    // ══════════════════════════════════════
-    function renderHeatmap(stats) {
-        const container = document.getElementById('heatmap');
-        if (!container) return;
-        container.innerHTML = '';
-        Object.entries(stats.days).slice(-28).forEach(([date, count]) => {
-            const level = count > 10 ? 'hp-4' : count > 6 ? 'hp-3' : count > 3 ? 'hp-2' : count > 0 ? 'hp-1' : '';
-            const cell = document.createElement('div');
-            cell.className = `hp-cell ${level}`;
-            cell.title = `${date}: ${count} tasks`;
-            container.appendChild(cell);
-        });
-    }
+            const maxTotal = Math.max(...sortedStaff.map(s => s.total), 1);
 
-    // ══════════════════════════════════════
-    //  Calendar Heatmap (NEW)
-    // ══════════════════════════════════════
-    function renderCalendarHeatmap(filterStaff, selYear, selMonth) {
-        const el = document.getElementById('calHeatmap');
-        if (!el) return;
+            // HTML 렌더링
+            const html = sortedStaff.map((staff, idx) => `
+            <div class="border-b border-slate-800 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-blue-600/30 border border-blue-500/30 flex items-center justify-center text-[9px] font-black text-blue-400">#${idx+1}</span>
+                        <span class="font-bold text-white text-sm">${staff.displayName}</span>
+                    </div>
+                    <span class="text-lg font-black text-blue-400">${staff.total}</span>
+                </div>
 
-        const month = selMonth === 'all' ? currentMonth : selMonth;
-        const year = parseInt(selYear);
-        const mo = parseInt(month) - 1;
-        const firstDay = new Date(year, mo, 1).getDay();
-        const lastDate = new Date(year, mo + 1, 0).getDate();
-        const todayStr = now.toISOString().split('T')[0];
+                <!-- Metrics Row -->
+                <div class="grid grid-cols-4 gap-2 mb-3 text-[9px] text-center">
+                    <div class="bg-emerald-500/10 rounded p-2 border border-emerald-500/20">
+                        <p class="text-emerald-400 font-black">${staff.innovation}</p>
+                        <p class="text-slate-500 text-[8px] mt-1">Innovation</p>
+                    </div>
+                    <div class="bg-amber-500/10 rounded p-2 border border-amber-500/20">
+                        <p class="text-amber-400 font-black">${staff.maintenance}</p>
+                        <p class="text-slate-500 text-[8px] mt-1">Maintenance</p>
+                    </div>
+                    <div class="bg-cyan-500/10 rounded p-2 border border-cyan-500/20">
+                        <p class="text-cyan-400 font-black">${staff.days}</p>
+                        <p class="text-slate-500 text-[8px] mt-1">Days</p>
+                    </div>
+                    <div class="bg-purple-500/10 rounded p-2 border border-purple-500/20">
+                        <p class="text-purple-400 font-black">${staff.tasksPerDay}</p>
+                        <p class="text-slate-500 text-[8px] mt-1">Per Day</p>
+                    </div>
+                </div>
 
-        const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        let html = `<div style="min-width:280px">`;
-        html += `<div class="cal-heatmap-grid mb-1">${dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>`;
-        html += `<div class="cal-heatmap-grid">`;
+                <!-- Overall Bar -->
+                <div class="mb-3">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase">Total Distribution</span>
+                        <span class="text-[9px] font-bold text-slate-400">${Math.round((staff.total/maxTotal)*100)}%</span>
+                    </div>
+                    <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" style="width:${Math.round((staff.total/maxTotal)*100)}%"></div>
+                    </div>
+                </div>
 
-        // Empty cells before month start
-        for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+                <!-- Innovation Rate Bar -->
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase">Innovation Rate</span>
+                        <span class="text-[9px] font-bold text-emerald-400">${staff.innovationRate}%</span>
+                    </div>
+                    <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full" style="width:${staff.innovationRate}%"></div>
+                    </div>
+                </div>
+            </div>`).join('');
 
-        for (let d = 1; d <= lastDate; d++) {
-            const mm = String(mo + 1).padStart(2,'0');
-            const dd = String(d).padStart(2,'0');
-            const dateStr = `${year}-${mm}-${dd}`;
-            const dow = new Date(year, mo, d).getDay();
-            const isWeekend = dow === 0 || dow === 6;
-            const isFuture = dateStr > todayStr;
+            panelEl.innerHTML = html;
+        }
 
-            let cls = 'cal-cell';
-            let title = dateStr;
-            let count = 0;
+        // ══════════════════════════════════════
+        //  KPIs
+        // ══════════════════════════════════════
+        function updateKPIs(stats) {
+            animateValue("kpi-total", stats.total);
+            animateValue("kpi-innovation", Math.round((stats.innovation / (stats.total || 1)) * 100), "%");
+            animateValue("kpi-velocity", (stats.total / (Object.keys(stats.days).length || 1)).toFixed(1));
+            animateValue("kpi-active", Object.keys(stats.staff).length);
+        }
 
-            if (isWeekend) { cls += ' weekend'; }
-            else if (isFuture) { cls += ' future'; }
-            else if (dashboardData && dashboardData[dateStr]) {
-                const dayData = dashboardData[dateStr];
-                if (filterStaff === 'all') {
-                    count = Object.keys(dayData).length;
-                    cls += count > 3 ? ' submitted high' : ' submitted';
-                    title = `${dateStr}: ${count} reports`;
-                } else {
-                    if (dayData[filterStaff]) {
-                        count = (dayData[filterStaff].todo || '').split('\n').filter(l=>l.trim().length>2).length;
-                        cls += ' submitted' + (count > 5 ? ' high' : '');
-                        title = `${dateStr}: ${count} tasks`;
-                    } else {
-                        cls += ' no-submit';
-                        title = `${dateStr}: No submission`;
+        // ══════════════════════════════════════
+        //  Snapshot Summary Cards (NEW)
+        // ══════════════════════════════════════
+        function renderSnapshotCards(stats, filterStaff, selYear, selMonth) {
+            const el = document.getElementById('snapshotRow');
+            if (!el) return;
+
+            // Most active staff
+            const topStaff = Object.entries(stats.staff).sort((a,b) => b[1].t - a[1].t)[0];
+            const topName = topStaff ? dName(topStaff[0]) : '—';
+            const topCount = topStaff ? topStaff[1].t : 0;
+
+            // Longest streak
+            let longestStreak = 0, longestWho = '—';
+            Object.entries(stats.staff).forEach(([p, d]) => {
+                const sorted = Array.from(d.activeDays).sort();
+                let streak = 1, max = 1;
+                for (let i = 1; i < sorted.length; i++) {
+                    const diff = (new Date(sorted[i]) - new Date(sorted[i-1])) / 86400000;
+                    if (diff === 1) { streak++; max = Math.max(max, streak); }
+                    else streak = 1;
+                }
+                if (max > longestStreak) { longestStreak = max; longestWho = dName(p); }
+            });
+
+            // Today's submitters
+            const todayStr = now.toISOString().split('T')[0];
+            const todaySubmitters = dashboardData[todayStr] ? Object.keys(dashboardData[todayStr]).length : 0;
+
+            // This week avg
+            const weekDays = []; for (let i=0;i<7;i++){ const d=new Date(now); d.setDate(now.getDate()-i); weekDays.push(d.toISOString().split('T')[0]); }
+            let weekTotal = 0;
+            weekDays.forEach(d => { if(dashboardData[d]) weekTotal += Object.keys(dashboardData[d]).length; });
+            const weekAvg = (weekTotal / 7).toFixed(1);
+
+            el.innerHTML = `
+            <div class="snap-card flex flex-col gap-1">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🏆 Top Performer</p>
+                <p class="text-lg font-black text-white truncate">${topName}</p>
+                <p class="text-[10px] text-blue-400 font-bold">${topCount} tasks</p>
+            </div>
+            <div class="snap-card flex flex-col gap-1">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">🔥 Longest Streak</p>
+                <p class="text-lg font-black text-white truncate">${longestWho}</p>
+                <p class="text-[10px] text-amber-400 font-bold">${longestStreak} consecutive days</p>
+            </div>
+            <div class="snap-card flex flex-col gap-1">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📋 Today's Reports</p>
+                <p class="text-lg font-black text-emerald-400">${todaySubmitters}</p>
+                <p class="text-[10px] text-slate-500 font-bold">staff submitted</p>
+            </div>
+            <div class="snap-card flex flex-col gap-1">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">📈 7-Day Avg</p>
+                <p class="text-lg font-black text-purple-400">${weekAvg}</p>
+                <p class="text-[10px] text-slate-500 font-bold">submissions/day</p>
+            </div>`;
+        }
+
+        // ══════════════════════════════════════
+        //  Charts
+        // ══════════════════════════════════════
+        function updateCharts(stats, isYearly) {
+            const labels = Object.keys(stats.days).sort();
+            const chartLabels = labels.map(l => isYearly ? l.split('-')[1]+'월' : l.split('-')[2]+'일');
+            const chartData = labels.map(l => stats.days[l]);
+
+            if (mainChart) mainChart.destroy();
+            const mc = document.getElementById('mainTrendChart');
+            if (!mc) return;
+            mainChart = new Chart(mc.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Tasks',
+                        data: chartData,
+                        borderColor: '#3b82f6',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        backgroundColor: 'rgba(59,130,246,0.06)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569' } }
                     }
                 }
-            } else {
-                if (!isWeekend && !isFuture) cls += ' no-submit';
-            }
+            });
 
-            html += `<div class="${cls}" title="${title}" style="position:relative;">
-                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:900;color:rgba(255,255,255,0.5);">${d}</span>
-            </div>`;
-        }
-        html += `</div></div>`;
-        el.innerHTML = html;
-    }
-
-    // ══════════════════════════════════════
-    //  Missing Submissions Panel (NEW)
-    // ══════════════════════════════════════
-    function renderMissingPanel(filterStaff, selYear, selMonth) {
-        const el = document.getElementById('missingPanel');
-        if (!el || !dashboardData) return;
-
-        const month = selMonth === 'all' ? currentMonth : selMonth;
-        const year = parseInt(selYear);
-        const mo = parseInt(month) - 1;
-        const lastDate = new Date(year, mo + 1, 0).getDate();
-        const todayStr = now.toISOString().split('T')[0];
-        const mm = String(mo + 1).padStart(2,'0');
-
-        // Get all staff in dataset
-        const allStaff = new Set();
-        Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => allStaff.add(s)); });
-
-        const missingMap = {}; // { staffId: [dates] }
-
-        for (let d = 1; d <= lastDate; d++) {
-            const dd = String(d).padStart(2,'0');
-            const dateStr = `${year}-${mm}-${dd}`;
-            if (dateStr > todayStr) continue;
-            const dow = new Date(year, mo, d).getDay();
-            if (dow === 0 || dow === 6) continue;
-
-            const submitted = dashboardData[dateStr] ? Object.keys(dashboardData[dateStr]) : [];
-            const targetStaffs = filterStaff === 'all' ? Array.from(allStaff) : [filterStaff];
-
-            targetStaffs.forEach(s => {
-                if (!submitted.includes(s)) {
-                    if (!missingMap[s]) missingMap[s] = [];
-                    missingMap[s].push(dateStr);
+            if (radarChartInst) radarChartInst.destroy();
+            const rc = document.getElementById('radarChart');
+            if (!rc) return;
+            radarChartInst = new Chart(rc.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Innovation', 'Consistency', 'Volume', 'Speed', 'Stability'],
+                    datasets: [{
+                        data: [stats.radar.innovation, stats.radar.consistency, stats.radar.volume, stats.radar.speed, stats.radar.maintenance],
+                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        borderColor: '#3b82f6',
+                        pointRadius: 3,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.05)' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#94a3b8', font: { size: 9 } }, ticks: { display: false, max: 100 } } },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        const entries = Object.entries(missingMap).sort((a,b) => b[1].length - a[1].length);
-        if (entries.length === 0) {
-            el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No missing submissions this period!</div>`;
-            return;
+        // ══════════════════════════════════════
+        //  Heatmap Dots
+        // ══════════════════════════════════════
+        function renderHeatmap(stats) {
+            const container = document.getElementById('heatmap');
+            if (!container) return;
+            container.innerHTML = '';
+            Object.entries(stats.days).slice(-28).forEach(([date, count]) => {
+                const level = count > 10 ? 'hp-4' : count > 6 ? 'hp-3' : count > 3 ? 'hp-2' : count > 0 ? 'hp-1' : '';
+                const cell = document.createElement('div');
+                cell.className = `hp-cell ${level}`;
+                cell.title = `${date}: ${count} tasks`;
+                container.appendChild(cell);
+            });
         }
 
-        el.innerHTML = entries.slice(0,8).map(([s, dates]) => {
-            const severity = dates.length >= 5 ? 'missing-badge' : 'missing-badge warn';
-            return `<div class="flex items-center justify-between p-2 rounded-lg bg-white/2 border border-white/5">
-                <span class="text-[10px] font-bold text-slate-300 truncate">${dName(s)}</span>
-                <span class="${severity}">${dates.length} days</span>
-            </div>`;
-        }).join('');
+        // ══════════════════════════════════════
+        //  Calendar Heatmap (NEW)
+        // ══════════════════════════════════════
+        function renderCalendarHeatmap(filterStaff, selYear, selMonth) {
+            const el = document.getElementById('calHeatmap');
+            if (!el) return;
 
-        if (entries.length > 8) {
-            el.innerHTML += `<p class="text-[9px] text-slate-600 text-right mt-1">+${entries.length-8} more</p>`;
+            const month = selMonth === 'all' ? currentMonth : selMonth;
+            const year = parseInt(selYear);
+            const mo = parseInt(month) - 1;
+            const firstDay = new Date(year, mo, 1).getDay();
+            const lastDate = new Date(year, mo + 1, 0).getDate();
+            const todayStr = now.toISOString().split('T')[0];
+
+            const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            let html = `<div style="min-width:280px">`;
+            html += `<div class="cal-heatmap-grid mb-1">${dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div>`;
+            html += `<div class="cal-heatmap-grid">`;
+
+            // Empty cells before month start
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            for (let d = 1; d <= lastDate; d++) {
+                const mm = String(mo + 1).padStart(2,'0');
+                const dd = String(d).padStart(2,'0');
+                const dateStr = `${year}-${mm}-${dd}`;
+                const dow = new Date(year, mo, d).getDay();
+                const isWeekend = dow === 0 || dow === 6;
+                const isFuture = dateStr > todayStr;
+
+                let cls = 'cal-cell';
+                let title = dateStr;
+                let count = 0;
+
+                if (isWeekend) { cls += ' weekend'; }
+                else if (isFuture) { cls += ' future'; }
+                else if (dashboardData && dashboardData[dateStr]) {
+                    const dayData = dashboardData[dateStr];
+                    if (filterStaff === 'all') {
+                        count = Object.keys(dayData).length;
+                        cls += count > 3 ? ' submitted high' : ' submitted';
+                        title = `${dateStr}: ${count} reports`;
+                    } else {
+                        if (dayData[filterStaff]) {
+                            count = (dayData[filterStaff].todo || '').split('\n').filter(l=>l.trim().length>2).length;
+                            cls += ' submitted' + (count > 5 ? ' high' : '');
+                            title = `${dateStr}: ${count} tasks`;
+                        } else {
+                            cls += ' no-submit';
+                            title = `${dateStr}: No submission`;
+                        }
+                    }
+                } else {
+                    if (!isWeekend && !isFuture) cls += ' no-submit';
+                }
+
+                html += `<div class="${cls}" title="${title}" style="position:relative;">
+                    <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:900;color:rgba(255,255,255,0.5);">${d}</span>
+                </div>`;
+            }
+            html += `</div></div>`;
+            el.innerHTML = html;
         }
-    }
 
-    // ══════════════════════════════════════
-    //  Anomaly Detection (Enhanced)
-    // ══════════════════════════════════════
-    function renderAnomalyDetection(stats, filterStaff, selYear, selMonth) {
-        const el = document.getElementById('riskScan');
-        if (!el) return;
-        const anomalies = [];
+        // ══════════════════════════════════════
+        //  Missing Submissions Panel (NEW)
+        // ══════════════════════════════════════
+        function renderMissingPanel(filterStaff, selYear, selMonth) {
+            const el = document.getElementById('missingPanel');
+            if (!el || !dashboardData) return;
 
-        // Sudden drop detection
-        const dayKeys = Object.keys(stats.days).sort();
-        if (dayKeys.length >= 4) {
-            const recent = dayKeys.slice(-3).map(k => stats.days[k]);
-            const prev = dayKeys.slice(-6,-3).map(k => stats.days[k]);
-            const recentAvg = recent.reduce((a,b)=>a+b,0)/recent.length;
-            const prevAvg = prev.reduce((a,b)=>a+b,0)/prev.length;
-            if (prevAvg > 0 && recentAvg < prevAvg * 0.5) {
-                anomalies.push({ type:'warn', msg:`Output dropped ${Math.round((1-recentAvg/prevAvg)*100)}% in last 3 days` });
+            const month = selMonth === 'all' ? currentMonth : selMonth;
+            const year = parseInt(selYear);
+            const mo = parseInt(month) - 1;
+            const lastDate = new Date(year, mo + 1, 0).getDate();
+            const todayStr = now.toISOString().split('T')[0];
+            const mm = String(mo + 1).padStart(2,'0');
+
+            // Get all staff in dataset
+            const allStaff = new Set();
+            Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => allStaff.add(s)); });
+
+            const missingMap = {}; // { staffId: [dates] }
+
+            for (let d = 1; d <= lastDate; d++) {
+                const dd = String(d).padStart(2,'0');
+                const dateStr = `${year}-${mm}-${dd}`;
+                if (dateStr > todayStr) continue;
+                const dow = new Date(year, mo, d).getDay();
+                if (dow === 0 || dow === 6) continue;
+
+                const submitted = dashboardData[dateStr] ? Object.keys(dashboardData[dateStr]) : [];
+                const targetStaffs = filterStaff === 'all' ? Array.from(allStaff) : [filterStaff];
+
+                targetStaffs.forEach(s => {
+                    if (!submitted.includes(s)) {
+                        if (!missingMap[s]) missingMap[s] = [];
+                        missingMap[s].push(dateStr);
+                    }
+                });
+            }
+
+            const entries = Object.entries(missingMap).sort((a,b) => b[1].length - a[1].length);
+            if (entries.length === 0) {
+                el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No missing submissions this period!</div>`;
+                return;
+            }
+
+            el.innerHTML = entries.slice(0,8).map(([s, dates]) => {
+                const severity = dates.length >= 5 ? 'missing-badge' : 'missing-badge warn';
+                return `<div class="flex items-center justify-between p-2 rounded-lg bg-white/2 border border-white/5">
+                    <span class="text-[10px] font-bold text-slate-300 truncate">${dName(s)}</span>
+                    <span class="${severity}">${dates.length} days</span>
+                </div>`;
+            }).join('');
+
+            if (entries.length > 8) {
+                el.innerHTML += `<p class="text-[9px] text-slate-600 text-right mt-1">+${entries.length-8} more</p>`;
             }
         }
 
-        // Low innovation detection
-        Object.entries(stats.staff).forEach(([p, d]) => {
-            if (d.t >= 5 && d.n === 0) anomalies.push({ type:'risk', msg:`${dName(p)}: 0% innovation (all repetitive)` });
-        });
+        // ══════════════════════════════════════
+        //  Anomaly Detection (Enhanced)
+        // ══════════════════════════════════════
+        function renderAnomalyDetection(stats, filterStaff, selYear, selMonth) {
+            const el = document.getElementById('riskScan');
+            if (!el) return;
+            const anomalies = [];
 
-        // Overload detection
-        Object.entries(stats.staff).forEach(([p, d]) => {
-            const avg = d.t / (d.activeDays.size || 1);
-            if (avg > 15) anomalies.push({ type:'warn', msg:`${dName(p)}: ${avg.toFixed(1)} tasks/day avg — high load` });
-        });
+            // Sudden drop detection
+            const dayKeys = Object.keys(stats.days).sort();
+            if (dayKeys.length >= 4) {
+                const recent = dayKeys.slice(-3).map(k => stats.days[k]);
+                const prev = dayKeys.slice(-6,-3).map(k => stats.days[k]);
+                const recentAvg = recent.reduce((a,b)=>a+b,0)/recent.length;
+                const prevAvg = prev.reduce((a,b)=>a+b,0)/prev.length;
+                if (prevAvg > 0 && recentAvg < prevAvg * 0.5) {
+                    anomalies.push({ type:'warn', msg:`Output dropped ${Math.round((1-recentAvg/prevAvg)*100)}% in last 3 days` });
+                }
+            }
 
-        if (anomalies.length === 0) {
-            el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No anomalies detected</div>`;
-            return;
-        }
-        el.innerHTML = anomalies.slice(0,5).map(a => `
-            <div class="p-3 rounded-xl ${a.type==='risk'?'bg-rose-500/5 border border-rose-500/10 text-rose-200':'bg-amber-500/5 border border-amber-500/10 text-amber-200'}">
-                ${a.type==='risk'?'⚠️':'🔍'} ${a.msg}
-            </div>`).join('');
-    }
-
-    // ══════════════════════════════════════
-    //  Staff Rankings (clickable)
-    // ══════════════════════════════════════
-    function updateStaffRanking(stats) {
-        const el = document.getElementById('staffRanking');
-        if (!el) return;
-        const medals = ['🥇','🥈','🥉'];
-        el.innerHTML = Object.entries(stats.staff)
-            .sort((a,b) => b[1].t - a[1].t)
-            .slice(0, 7)
-            .map(([name, d], i) => {
-                const perc = Math.round((d.n / (d.t||1)) * 100);
-                const selY = document.getElementById('yearFilter').value;
-                const selM = document.getElementById('monthFilter').value;
-                return `
-                <div class="rank-item" onclick="openDrill('${name}','${selY}','${selM}')">
-                    <div class="flex justify-between text-[11px] mb-2 font-bold">
-                        <span class="text-slate-200 flex items-center gap-2">${medals[i]||'#'+(i+1)} <span class="uppercase">${dName(name)}</span></span>
-                        <span class="text-blue-400">${d.t} tasks</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full compare-bar" style="width:${perc}%"></div>
-                        </div>
-                        <span class="text-[9px] text-slate-500 font-bold">${perc}% new</span>
-                    </div>
-                </div>`;
-            }).join('') || '<p class="text-slate-600 text-xs italic">No data</p>';
-    }
-
-    // ══════════════════════════════════════
-    //  Tasks / Keywords
-    // ══════════════════════════════════════
-    function renderTasks(stats) {
-        const el = document.getElementById('taskList');
-        if (!el) return;
-        const sorted = Object.entries(stats.tasks).sort((a,b) => b[1] - a[1]).slice(0, 12);
-        const max = sorted[0] ? sorted[0][1] : 1;
-        el.innerHTML = sorted.map(([name, count]) => `
-            <div class="group">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-slate-400 group-hover:text-slate-200 truncate pr-2 text-[10px]">${name}</span>
-                    <span class="text-[9px] text-blue-400 font-bold flex-shrink-0">${count}</span>
-                </div>
-                <div class="w-full h-0.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-600/50 rounded-full transition-all" style="width:${Math.round(count/max*100)}%"></div>
-                </div>
-            </div>`).join('');
-    }
-
-    // ══════════════════════════════════════
-    //  Compare Mode (NEW)
-    // ══════════════════════════════════════
-    function populateCompareSelects(stats) {
-        const staffList = Object.keys(stats.staff).sort();
-        ['compareA','compareB'].forEach((id,idx) => {
-            const sel = document.getElementById(id);
-            if (!sel) return;
-            const cur = sel.value;
-            sel.innerHTML = staffList.map(s=>`<option value="${s}">${dName(s)}</option>`).join('');
-            if (staffList.includes(cur)) sel.value = cur;
-            else if (staffList[idx]) sel.value = staffList[idx];
-        });
-    }
-
-    window.runCompare = function() {
-        const a = document.getElementById('compareA').value;
-        const b = document.getElementById('compareB').value;
-        const el = document.getElementById('compareResult');
-        if (!el || !dashboardData || a === b) {
-            if (el) el.innerHTML = `<p class="text-[10px] text-slate-500 italic">Please select two different staff members.</p>`;
-            return;
-        }
-        const selY = document.getElementById('yearFilter').value;
-        const selM = document.getElementById('monthFilter').value;
-        const stats = processData(dashboardData, 'all', selY, selM);
-        const sa = stats.staff[a] || { t:0, n:0, activeDays: new Set() };
-        const sb = stats.staff[b] || { t:0, n:0, activeDays: new Set() };
-        const maxT = Math.max(sa.t, sb.t, 1);
-
-        const metrics = [
-            { label:'Total Tasks', va: sa.t, vb: sb.t, max: maxT, suffix:'' },
-            { label:'Innovation Rate', va: Math.round(sa.n/(sa.t||1)*100), vb: Math.round(sb.n/(sb.t||1)*100), max: 100, suffix:'%' },
-            { label:'Active Days', va: sa.activeDays.size, vb: sb.activeDays.size, max: 31, suffix: 'days' },
-            { label:'Avg Tasks/Day', va: +(sa.t/(sa.activeDays.size||1)).toFixed(1), vb: +(sb.t/(sb.activeDays.size||1)).toFixed(1), max: 20, suffix:'' },
-        ];
-
-        el.innerHTML = `
-        <div class="grid grid-cols-2 gap-2 mb-4 text-center">
-            <div class="bg-blue-600/10 border border-blue-500/20 rounded-xl py-2 px-3">
-                <p class="text-[9px] text-slate-500 uppercase font-black">Staff A</p>
-                <p class="text-sm font-black text-white">${dName(a)}</p>
-            </div>
-            <div class="bg-purple-600/10 border border-purple-500/20 rounded-xl py-2 px-3">
-                <p class="text-[9px] text-slate-500 uppercase font-black">Staff B</p>
-                <p class="text-sm font-black text-white">${dName(b)}</p>
-            </div>
-        </div>
-        ${metrics.map(m => `
-        <div class="mb-4">
-            <div class="flex justify-between text-[9px] text-slate-500 font-bold uppercase mb-1">
-                <span>${m.label}</span>
-            </div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] font-black text-blue-400 w-12 text-right">${m.va}${m.suffix}</span>
-                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden flex">
-                    <div class="h-full bg-blue-500 rounded-full compare-bar" style="width:${Math.round(m.va/m.max*50)}%;margin-left:auto;"></div>
-                    <div class="h-full bg-purple-500 rounded-full compare-bar" style="width:${Math.round(m.vb/m.max*50)}%;"></div>
-                </div>
-                <span class="text-[10px] font-black text-purple-400 w-12">${m.vb}${m.suffix}</span>
-            </div>
-        </div>`).join('')}`;
-    };
-
-    // ══════════════════════════════════════
-    //  Drill-down Modal (NEW)
-    // ══════════════════════════════════════
-    window.openDrill = function(staffId, selYear, selMonth) {
-        if (!dashboardData) return;
-        const modal = document.getElementById('drillModal');
-        const bodyEl = document.getElementById('drillBody');
-        const nameEl = document.getElementById('drillName');
-        const metaEl = document.getElementById('drillMeta');
-        if (!modal || !bodyEl) return;
-
-        const prefix = selMonth === 'all' ? selYear : `${selYear}-${selMonth}`;
-        nameEl.innerText = dName(staffId);
-
-        const entries = Object.entries(dashboardData)
-            .filter(([date]) => date.startsWith(prefix) && dashboardData[date][staffId])
-            .sort((a,b) => b[0].localeCompare(a[0]));
-
-        let totalTasks = 0;
-        let html = '';
-        entries.forEach(([date, dayData]) => {
-            const lines = (dayData[staffId].todo || '').split('\n').filter(l => l.trim().length > 2);
-            if (lines.length === 0) return;
-            totalTasks += lines.length;
-            const dow = new Date(date).toLocaleDateString('en-US', { weekday:'short' });
-            html += `<div class="drill-day">
-                <div class="drill-day-title">
-                    <span class="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
-                    ${date} (${dow}) — ${lines.length} tasks
-                </div>
-                ${lines.map(line => {
-                    const isMaint = line.includes('유지') || line.includes('반복');
-                    return `<div class="drill-task ${isMaint?'maintenance':'innovation'}">${line.trim()}</div>`;
-                }).join('')}
-            </div>`;
-        });
-
-        metaEl.innerText = `${entries.length} days reported · ${totalTasks} total tasks`;
-        bodyEl.innerHTML = html || `<p class="text-slate-500 text-sm italic text-center py-10">No data for this period.</p>`;
-        modal.classList.add('open');
-    };
-
-    window.closeDrill = function() {
-        const modal = document.getElementById('drillModal');
-        if (modal) modal.classList.remove('open');
-    };
-    document.getElementById('drillModal').addEventListener('click', function(e) {
-        if (e.target === this) closeDrill();
-    });
-
-    // ══════════════════════════════════════
-    //  Animate Value
-    // ══════════════════════════════════════
-    function animateValue(id, end, suffix = "") {
-        const obj = document.getElementById(id);
-        if (!obj) return;
-        const duration = 800;
-        const startTime = performance.now();
-        function update(t) {
-            const progress = Math.min((t - startTime) / duration, 1);
-            const val = parseFloat(end) * progress;
-            obj.innerText = (id.includes('velocity') ? val.toFixed(1) : Math.floor(val)) + suffix;
-            if (progress < 1) requestAnimationFrame(update);
-        }
-        requestAnimationFrame(update);
-    }
-
-    // ══════════════════════════════════════
-    //  Firebase Load
-    // ══════════════════════════════════════
-    if (window.db) {
-        db.ref('reports').off('value');
-        db.ref('reports').on('value', snap => {
-            dashboardData = snap.val() || {};
-
-            const staffs = new Set();
-            Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => staffs.add(s)); });
-
-            const sel = document.getElementById('staffFilter');
-            if (!sel) return;
-            const current = sel.value;
-            sel.innerHTML = '<option value="all">EVERYONE</option>';
-            staffs.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s;
-                opt.innerText = (usersData[s] && usersData[s].displayName) ? usersData[s].displayName.toUpperCase() : s.toUpperCase();
-                sel.appendChild(opt);
+            // Low innovation detection
+            Object.entries(stats.staff).forEach(([p, d]) => {
+                if (d.t >= 5 && d.n === 0) anomalies.push({ type:'risk', msg:`${dName(p)}: 0% innovation (all repetitive)` });
             });
-            if (Array.from(sel.options).some(o => o.value === current)) sel.value = current;
-            else sel.value = 'all';
 
-            if (typeof window.refreshDashboard === 'function') window.refreshDashboard();
+            // Overload detection
+            Object.entries(stats.staff).forEach(([p, d]) => {
+                const avg = d.t / (d.activeDays.size || 1);
+                if (avg > 15) anomalies.push({ type:'warn', msg:`${dName(p)}: ${avg.toFixed(1)} tasks/day avg — high load` });
+            });
+
+            if (anomalies.length === 0) {
+                el.innerHTML = `<div class="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-300 text-[10px]">✅ No anomalies detected</div>`;
+                return;
+            }
+            el.innerHTML = anomalies.slice(0,5).map(a => `
+                <div class="p-3 rounded-xl ${a.type==='risk'?'bg-rose-500/5 border border-rose-500/10 text-rose-200':'bg-amber-500/5 border border-amber-500/10 text-amber-200'}">
+                    ${a.type==='risk'?'⚠️':'🔍'} ${a.msg}
+                </div>`).join('');
+        }
+
+        // ══════════════════════════════════════
+        //  Staff Rankings (clickable)
+        // ══════════════════════════════════════
+        function updateStaffRanking(stats) {
+            const el = document.getElementById('staffRanking');
+            if (!el) return;
+            const medals = ['🥇','🥈','🥉'];
+            el.innerHTML = Object.entries(stats.staff)
+                .sort((a,b) => b[1].t - a[1].t)
+                .slice(0, 7)
+                .map(([name, d], i) => {
+                    const perc = Math.round((d.n / (d.t||1)) * 100);
+                    const selY = document.getElementById('yearFilter').value;
+                    const selM = document.getElementById('monthFilter').value;
+                    return `
+                    <div class="rank-item" onclick="openDrill('${name}','${selY}','${selM}')">
+                        <div class="flex justify-between text-[11px] mb-2 font-bold">
+                            <span class="text-slate-200 flex items-center gap-2">${medals[i]||'#'+(i+1)} <span class="uppercase">${dName(name)}</span></span>
+                            <span class="text-blue-400">${d.t} tasks</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full compare-bar" style="width:${perc}%"></div>
+                            </div>
+                            <span class="text-[9px] text-slate-500 font-bold">${perc}% new</span>
+                        </div>
+                    </div>`;
+                }).join('') || '<p class="text-slate-600 text-xs italic">No data</p>';
+        }
+
+        // ══════════════════════════════════════
+        //  Tasks / Keywords
+        // ══════════════════════════════════════
+        function renderTasks(stats) {
+            const el = document.getElementById('taskList');
+            if (!el) return;
+            const sorted = Object.entries(stats.tasks).sort((a,b) => b[1] - a[1]).slice(0, 12);
+            const max = sorted[0] ? sorted[0][1] : 1;
+            el.innerHTML = sorted.map(([name, count]) => `
+                <div class="group">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-slate-400 group-hover:text-slate-200 truncate pr-2 text-[10px]">${name}</span>
+                        <span class="text-[9px] text-blue-400 font-bold flex-shrink-0">${count}</span>
+                    </div>
+                    <div class="w-full h-0.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-600/50 rounded-full transition-all" style="width:${Math.round(count/max*100)}%"></div>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ══════════════════════════════════════
+        //  Compare Mode (NEW)
+        // ══════════════════════════════════════
+        function populateCompareSelects(stats) {
+            const staffList = Object.keys(stats.staff).sort();
+            ['compareA','compareB'].forEach((id,idx) => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const cur = sel.value;
+                sel.innerHTML = staffList.map(s=>`<option value="${s}">${dName(s)}</option>`).join('');
+                if (staffList.includes(cur)) sel.value = cur;
+                else if (staffList[idx]) sel.value = staffList[idx];
+            });
+        }
+
+        window.runCompare = function() {
+            const a = document.getElementById('compareA').value;
+            const b = document.getElementById('compareB').value;
+            const el = document.getElementById('compareResult');
+            if (!el || !dashboardData || a === b) {
+                if (el) el.innerHTML = `<p class="text-[10px] text-slate-500 italic">Please select two different staff members.</p>`;
+                return;
+            }
+            const selY = document.getElementById('yearFilter').value;
+            const selM = document.getElementById('monthFilter').value;
+            const stats = processData(dashboardData, 'all', selY, selM);
+            const sa = stats.staff[a] || { t:0, n:0, activeDays: new Set() };
+            const sb = stats.staff[b] || { t:0, n:0, activeDays: new Set() };
+            const maxT = Math.max(sa.t, sb.t, 1);
+
+            const metrics = [
+                { label:'Total Tasks', va: sa.t, vb: sb.t, max: maxT, suffix:'' },
+                { label:'Innovation Rate', va: Math.round(sa.n/(sa.t||1)*100), vb: Math.round(sb.n/(sb.t||1)*100), max: 100, suffix:'%' },
+                { label:'Active Days', va: sa.activeDays.size, vb: sb.activeDays.size, max: 31, suffix: 'days' },
+                { label:'Avg Tasks/Day', va: +(sa.t/(sa.activeDays.size||1)).toFixed(1), vb: +(sb.t/(sb.activeDays.size||1)).toFixed(1), max: 20, suffix:'' },
+            ];
+
+            el.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 mb-4 text-center">
+                <div class="bg-blue-600/10 border border-blue-500/20 rounded-xl py-2 px-3">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Staff A</p>
+                    <p class="text-sm font-black text-white">${dName(a)}</p>
+                </div>
+                <div class="bg-purple-600/10 border border-purple-500/20 rounded-xl py-2 px-3">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Staff B</p>
+                    <p class="text-sm font-black text-white">${dName(b)}</p>
+                </div>
+            </div>
+            ${metrics.map(m => `
+            <div class="mb-4">
+                <div class="flex justify-between text-[9px] text-slate-500 font-bold uppercase mb-1">
+                    <span>${m.label}</span>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-black text-blue-400 w-12 text-right">${m.va}${m.suffix}</span>
+                    <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden flex">
+                        <div class="h-full bg-blue-500 rounded-full compare-bar" style="width:${Math.round(m.va/m.max*50)}%;margin-left:auto;"></div>
+                        <div class="h-full bg-purple-500 rounded-full compare-bar" style="width:${Math.round(m.vb/m.max*50)}%;"></div>
+                    </div>
+                    <span class="text-[10px] font-black text-purple-400 w-12">${m.vb}${m.suffix}</span>
+                </div>
+            </div>`).join('')}`;
+        };
+
+        // ══════════════════════════════════════
+        //  Drill-down Modal (NEW)
+        // ══════════════════════════════════════
+        window.openDrill = function(staffId, selYear, selMonth) {
+            if (!dashboardData) return;
+            const modal = document.getElementById('drillModal');
+            const bodyEl = document.getElementById('drillBody');
+            const nameEl = document.getElementById('drillName');
+            const metaEl = document.getElementById('drillMeta');
+            if (!modal || !bodyEl) return;
+
+            const prefix = selMonth === 'all' ? selYear : `${selYear}-${selMonth}`;
+            nameEl.innerText = dName(staffId);
+
+            const entries = Object.entries(dashboardData)
+                .filter(([date]) => date.startsWith(prefix) && dashboardData[date][staffId])
+                .sort((a,b) => b[0].localeCompare(a[0]));
+
+            let totalTasks = 0;
+            let html = '';
+            entries.forEach(([date, dayData]) => {
+                const lines = (dayData[staffId].todo || '').split('\n').filter(l => l.trim().length > 2);
+                if (lines.length === 0) return;
+                totalTasks += lines.length;
+                const dow = new Date(date).toLocaleDateString('en-US', { weekday:'short' });
+                html += `<div class="drill-day">
+                    <div class="drill-day-title">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                        ${date} (${dow}) — ${lines.length} tasks
+                    </div>
+                    ${lines.map(line => {
+                        const isMaint = line.includes('유지') || line.includes('반복');
+                        return `<div class="drill-task ${isMaint?'maintenance':'innovation'}">${line.trim()}</div>`;
+                    }).join('')}
+                </div>`;
+            });
+
+            metaEl.innerText = `${entries.length} days reported · ${totalTasks} total tasks`;
+            bodyEl.innerHTML = html || `<p class="text-slate-500 text-sm italic text-center py-10">No data for this period.</p>`;
+            modal.classList.add('open');
+        };
+
+        window.closeDrill = function() {
+            const modal = document.getElementById('drillModal');
+            if (modal) modal.classList.remove('open');
+        };
+        document.getElementById('drillModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDrill();
         });
-    }
 
-    window.addEventListener('resize', () => { if (dashboardData) refreshDashboard(); });
-})();
+        // ══════════════════════════════════════
+        //  Animate Value
+        // ══════════════════════════════════════
+        function animateValue(id, end, suffix = "") {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+            const duration = 800;
+            const startTime = performance.now();
+            function update(t) {
+                const progress = Math.min((t - startTime) / duration, 1);
+                const val = parseFloat(end) * progress;
+                obj.innerText = (id.includes('velocity') ? val.toFixed(1) : Math.floor(val)) + suffix;
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        // ══════════════════════════════════════
+        //  Firebase Load
+        // ══════════════════════════════════════
+        if (window.db) {
+            db.ref('reports').off('value');
+            db.ref('reports').on('value', snap => {
+                dashboardData = snap.val() || {};
+
+                const staffs = new Set();
+                Object.values(dashboardData).forEach(d => { if(d) Object.keys(d).forEach(s => staffs.add(s)); });
+
+                const sel = document.getElementById('staffFilter');
+                if (!sel) return;
+                const current = sel.value;
+                sel.innerHTML = '<option value="all">EVERYONE</option>';
+                staffs.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.innerText = (usersData[s] && usersData[s].displayName) ? usersData[s].displayName.toUpperCase() : s.toUpperCase();
+                    sel.appendChild(opt);
+                });
+                if (Array.from(sel.options).some(o => o.value === current)) sel.value = current;
+                else sel.value = 'all';
+
+                if (typeof window.refreshDashboard === 'function') window.refreshDashboard();
+            });
+        }
+
+        window.addEventListener('resize', () => { if (dashboardData) refreshDashboard(); });
+    })();  // ← 내부 IIFE 종료
+});  // ← waitForDB 콜백 종료
+
 </script>
