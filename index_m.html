@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Login - Daily Report System</title>
+
+    <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="icon" href="data:,">
+
+<script>
+    (function(){
+        // 모바일 기기가 아닌 경우 (즉, PC 브라우저인 경우)
+        const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (!isMobileDevice) {
+            // PC 접속자라면 index.html로 리다이렉트
+            window.location.href = "index.html";
+        }
+    })();
+</script>
+
+<style>
+:root {
+    --primary: #00d4ff;
+    --secondary: #ff006e;
+    --accent: #ffbe0b;
+    --dark-bg: #0a0e27;
+    --darker-bg: #050812;
+    --surface: rgba(20, 30, 60, 0.8);
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Pretendard", sans-serif;
+    color: #f1f5f9;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.loaded {
+    opacity: 1;
+}
+
+/* ── 전기 오토바이 배경 애니메이션 ── */
+.ebike-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.ebike-container {
+    position: absolute;
+    width: 300px;
+    height: 150px;
+    opacity: 0.15;
+    filter: blur(0.5px);
+}
+
+.ebike {
+    width: 100%;
+    height: 100%;
+    animation: driftAcross 20s linear infinite;
+}
+
+.ebike-path-1 { top: 15%; left: -300px; animation-delay: 0s; }
+.ebike-path-2 { top: 35%; left: -300px; animation-delay: -5s; }
+.ebike-path-3 { top: 55%; left: -300px; animation-delay: -10s; }
+.ebike-path-4 { top: 75%; left: -300px; animation-delay: -15s; }
+
+@keyframes driftAcross {
+    0% { transform: translateX(0) rotate(0deg); opacity: 0.1; }
+    10% { opacity: 0.18; }
+    50% { opacity: 0.15; }
+    90% { opacity: 0.08; }
+    100% { transform: translateX(calc(100vw + 300px)) rotate(2deg); opacity: 0; }
+}
+
+/* ── 전기 에너지 맥박 효과 ── */
+.energy-pulse {
+    position: fixed;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    pointer-events: none;
+    z-index: -1;
+    animation: energyPulse 3s ease-in-out infinite;
+}
+
+.pulse-1 { width: 400px; height: 400px; top: 10%; left: 5%; animation-delay: 0s; }
+.pulse-2 { width: 500px; height: 500px; top: 50%; right: 5%; animation-delay: 1s; }
+.pulse-3 { width: 350px; height: 350px; bottom: 10%; left: 50%; animation-delay: 2s; }
+
+@keyframes energyPulse {
+    0%, 100% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.2); opacity: 0.25; }
+}
+
+/* ── 글리치 배경 효과 ── */
+.glitch-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
+    background: linear-gradient(45deg, 
+        rgba(0, 212, 255, 0.03) 0%,
+        rgba(255, 0, 110, 0.02) 25%,
+        rgba(255, 190, 11, 0.02) 50%,
+        rgba(0, 212, 255, 0.03) 75%,
+        rgba(255, 0, 110, 0.02) 100%);
+    background-size: 400% 400%;
+    animation: glitchFlow 15s ease infinite;
+}
+
+@keyframes glitchFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ── TDLiD 위치를 중앙에서 상단으로 변경 ── */
+.tdlid-container {
+    position: fixed;
+    top: 50px; /* 중앙(50%)에서 상단(50px)으로 변경 */
+    left: 50%;
+    transform: translateX(-50%); /* 중앙 정렬 유지 */
+    z-index: -1;
+    pointer-events: none;
+    font-size: clamp(2rem, 8vw, 5rem); /* 크기를 조금 줄여서 상단에 적합하게 조절 */
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    width: 100%;
+    text-align: center;
+}
+
+/* ── 흔들림(애니메이션) 범위 축소 ── */
+@keyframes floatLetters {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        /* 위아래 흔들림 범위를 -40px에서 -10px로 줄여 가독성 확보 */
+        transform: translateY(-10px) scale(1.02);
+        opacity: 0.7;
+    }
+}
+
+.tdlid-letter {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: floatLetters 4s ease-in-out infinite;
+    text-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+}
+
+.tdlid-letter:nth-child(1) { animation-delay: 0s; }
+.tdlid-letter:nth-child(2) { animation-delay: 0.15s; }
+.tdlid-letter:nth-child(3) { animation-delay: 0.3s; }
+.tdlid-letter:nth-child(4) { animation-delay: 0.45s; }
+.tdlid-letter:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes floatLetters {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+        opacity: 0.5;
+    }
+    25% {
+        transform: translateY(-20px) scale(1.05);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-40px) scale(1.1);
+        opacity: 1;
+    }
+    75% {
+        transform: translateY(-20px) scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+/* ── 로그인 카드 3D 효과 ── */
+.login-card {
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 20, 50, 0.9) 100%);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 2rem;
+    box-shadow: 
+        0 0 60px rgba(0, 212, 255, 0.15),
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: cardSlideUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+    animation: cardGlow 4s ease-in-out infinite;
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cardGlow {
+    0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+    50% { transform: translate(20px, -20px); opacity: 0.8; }
+}
+
+/* ── 입력 필드 3D 스타일 ── */
+input, select {
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.8) 0%, rgba(10, 14, 39, 0.7) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
+    border-radius: 1.25rem !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 16px !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
+}
+
+input::placeholder {
+    color: #64748b !important;
+}
+
+input:focus, select:focus {
+    border-color: var(--primary) !important;
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.15),
+        0 12px 40px rgba(0, 212, 255, 0.25),
+        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
+    transform: scale(1.02) translateY(-2px) !important;
+}
+
+/* ── Staff Selector 고급 스타일 ── */
+#selected-staff {
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.85) 0%, rgba(10, 14, 39, 0.8) 100%) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem !important;
+    border-radius: 1.25rem !important;
+    font-size: 1rem !important;
+    min-height: 3.5rem !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
+}
+
+#selected-staff:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.1),
+        0 12px 40px rgba(0, 212, 255, 0.25),
+        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
+    transform: scale(1.01) translateY(-2px);
+}
+
+#selected-staff.active {
+    border-color: var(--primary) !important;
+    box-shadow: 
+        0 0 0 3px rgba(0, 212, 255, 0.2),
+        0 12px 40px rgba(0, 212, 255, 0.3),
+        inset 0 1px 3px rgba(0, 212, 255, 0.3) !important;
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
+}
+
+/* 1. 드롭다운 메뉴: 스크롤바를 강제로 표시하고 영역 확보 */
+#staff-dropdown {
+    position: absolute !important;
+    top: calc(100% + 0.5rem) !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-height: 0; /* 기본값 */
+    overflow-y: auto !important; /* 내용이 많을 때만 스크롤바 생성 */
+    overflow-x: hidden !important;
+    background: linear-gradient(135deg, rgba(15, 20, 50, 0.98) 0%, rgba(10, 14, 39, 0.95) 100%);
+    backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(0, 212, 255, 0.3);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+    pointer-events: none; /* 닫혀있을 때 클릭 방지 */
+    z-index: 10000;
+}
+
+/* 2. 활성화 시 높이 지정 (중요: 맨 아래 직원까지 보이도록 높이 확보) */
+#staff-dropdown.active {
+    max-height: 250px !important; /* 고정 높이를 주어 스크롤이 발생하게 함 */
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    padding: 0.5rem; /* 내부 여백 추가 */
+}
+
+/* 3. 스크롤바 스타일: 배경과 대비되도록 색상 조정 */
+#staff-dropdown::-webkit-scrollbar {
+    width: 6px !important; /* 스크롤바 너비 */
+    display: block !important;
+}
+
+#staff-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px;
+}
+
+#staff-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--secondary)) !important;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* 4. 마지막 요소 하단 여백 추가 (스크롤 끝 도달 확인용) */
+.staff-option:last-child {
+    border-bottom: none;
+    margin-bottom: 10px;
+}
+
+.staff-option {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.staff-option:hover {
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 190, 11, 0.05) 100%);
+    padding-left: 1.5rem;
+}
+
+.staff-option.selected {
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.2) 0%, rgba(255, 190, 11, 0.1) 100%);
+    border-left: 3px solid var(--primary);
+    padding-left: 1.22rem;
+}
+
+.staff-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.staff-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.staff-role {
+    font-size: 0.7rem;
+    color: var(--primary);
+    background: rgba(0, 212, 255, 0.1);
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: var(--primary);
+}
+
+.dropdown-arrow.rotated {
+    transform: rotate(180deg);
+}
+
+#staff-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+#staff-dropdown::-webkit-scrollbar-track {
+    background: rgba(0, 212, 255, 0.05);
+    border-radius: 1rem;
+}
+
+#staff-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    border-radius: 1rem;
+}
+
+/* ── 로그인 버튼 ── */
+#loginBtn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--secondary) 100%);
+    background-size: 200% 200%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 0 30px rgba(0, 212, 255, 0.4),
+        0 8px 30px rgba(255, 0, 110, 0.3);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+    cursor: pointer;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    padding: 1rem 2rem;
+    border-radius: 1.25rem;
+    font-size: 0.95rem;
+    color: #000;
+    width: 100%;
+}
+
+#loginBtn:hover {
+    background-position: 100% 50%;
+    box-shadow: 
+        0 0 50px rgba(0, 212, 255, 0.6),
+        0 12px 40px rgba(255, 0, 110, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px) scale(1.02);
+}
+
+#loginBtn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+#loginBtn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#loginBtn:active::after {
+    opacity: 1;
+}
+
+/* ── Forgot Password 버튼 ── */
+.forgot-btn {
+    position: relative;
+    overflow: hidden;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.forgot-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.forgot-btn:hover::before {
+    width: 100%;
+}
+
+/* ── 생일 팝업 ── */
+#birthday-popup {
+    background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(5, 8, 18, 0.9) 100%);
+    border: 2px solid var(--primary);
+    border-radius: 2rem;
+    box-shadow: 
+        0 0 60px rgba(0, 212, 255, 0.3),
+        0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Ghost Overlay ── */
+#ghost-overlay {
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+    animation: ghostFadeIn 0.3s ease-out forwards;
+}
+
+#ghost-overlay.hidden {
+    display: none !important;
+}
+
+#ghost-image {
+    animation: ghostPulse 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 
+        0 0 80px rgba(0, 212, 255, 0.6),
+        0 0 120px rgba(255, 0, 110, 0.4),
+        0 0 160px rgba(255, 190, 11, 0.2),
+        inset 0 0 50px rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(0, 212, 255, 0.5);
+    filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.4));
+}
+
+@keyframes ghostFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(10px) brightness(0.6);
+    }
+}
+
+@keyframes ghostPulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    25% {
+        opacity: 0.7;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    75% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── 애니메이션 진입 ── */
+.animate-fadeIn {
+    animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
+
+.animate-fadeIn:nth-child(1) { animation-delay: 0.2s; }
+.animate-fadeIn:nth-child(2) { animation-delay: 0.4s; }
+.animate-fadeIn:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── 반응형 디자인 ── */
+@media (max-width: 640px) {
+    .login-card {
+        padding: 1.5rem;
+        border-radius: 1.5rem;
+    }
+
+    .tdlid-container {
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+
+    body {
+        perspective: 800px;
+    }
+
+    #ghost-image {
+        width: 10rem;
+        height: 10rem;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .login-card {
+        padding: 2rem;
+        border-radius: 2rem;
+    }
+
+    .tdlid-container {
+        font-size: 6rem;
+    }
+}
+
+@media (min-width: 1025px) {
+    .login-card {
+        padding: 3rem;
+        border-radius: 2.5rem;
+    }
+
+    .tdlid-container {
+        font-size: 12rem;
+    }
+
+    .login-card:hover {
+        border-color: var(--primary);
+        box-shadow: 
+            0 0 80px rgba(0, 212, 255, 0.25),
+            0 30px 80px rgba(0, 0, 0, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    border-radius: 4px;
+}
+</style>
+
+</head>
+<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
+
+<!-- 글리치 배경 ── -->
+<div class="glitch-bg"></div>
+
+<!-- 에너지 펄스 ── -->
+<div class="energy-pulse pulse-1"></div>
+<div class="energy-pulse pulse-2"></div>
+<div class="energy-pulse pulse-3"></div>
+
+<!-- 전기 오토바이 배경 ── -->
+<div class="ebike-background">
+    <div class="ebike-container ebike-path-1">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- 앞바퀴 -->
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <!-- 휠 스포크 -->
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <!-- 뒷바퀴 -->
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <!-- 프레임 -->
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <!-- 배터리 표시 -->
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <!-- 전기 에너지 선 -->
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-2">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-3">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+    <div class="ebike-container ebike-path-4">
+        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
+            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
+            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
+            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
+            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
+            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
+        </svg>
+    </div>
+</div>
+
+<!-- TDLiD 애니메이션 텍스트 ── -->
+<div class="tdlid-container">
+    <span class="tdlid-letter">T</span><span class="tdlid-letter">D</span><span class="tdlid-letter">L</span><span class="tdlid-letter">i</span><span class="tdlid-letter">D</span>
+</div>
+
+<!-- 컨텐츠 섹션 ── -->
+<div class="w-full max-w-lg flex flex-col items-center gap-8 sm:gap-10 md:gap-12">
+    
+    <!-- 로고 & 타이틀 ── -->
+    <div class="text-center animate-fadeIn w-full px-4">
+        <div class="mb-4 sm:mb-6">
+            <img src="images/login/login.gif" alt="Logo" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain mx-auto rounded-2xl ring-2 ring-cyan-400/30 shadow-2xl shadow-cyan-500/20">
+        </div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-2">
+            <span class="bg-gradient-to-r from-cyan-400 via-accent to-pink-400 bg-clip-text text-transparent">Staff Login</span>
+        </h2>
+        <p class="text-cyan-400/70 text-[10px] sm:text-xs font-black tracking-[0.3em] uppercase">
+            Daily Report System
+        </p>
+    </div>
+
+    <!-- 로그인 카드 ── -->
+    <div class="login-card w-full animate-fadeIn">
+        <div class="relative z-10">
+            <div class="mb-6 sm:mb-8">
+                <p class="text-xl sm:text-2xl font-black text-white">Welcome back</p>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select your profile to continue</p>
+            </div>
+
+            <div class="space-y-5 sm:space-y-6">
+                <!-- Staff Selector ── -->
+                <div class="group">
+                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                        Staff Member
+                    </label>
+                    <div id="staff-selector-container" class="relative">
+                        <div id="selected-staff" tabindex="0" class="cursor-pointer">
+                            <span id="selected-text" class="text-slate-400">Loading staff list</span>
+                            <svg class="dropdown-arrow w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+                            </svg>
+                        </div>
+                        <div id="staff-dropdown"></div>
+                    </div>
+                </div>
+
+                <!-- Password Field ── -->
+                <div class="group">
+                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                        Secure Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="w-full rounded-xl sm:rounded-2xl text-sm sm:text-base"
+                            placeholder="••••••••"
+                        >
+                        <button 
+                            type="button"
+                            onclick="togglePassword()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
+                            style="z-index: 10;"
+                        >
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-end px-1 mt-2 sm:mt-3">
+                        <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] uppercase tracking-widest">
+                            Forgot Password?
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Login Button ── -->
+                <div class="pt-2 sm:pt-4">
+                    <button id="loginBtn" onclick="handleLogin()">
+                        AUTHENTICATE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 생일 팝업 ── -->
+<div id="birthday-popup" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-cyan-400 rounded-2xl shadow-2xl overflow-hidden">
+        <div class="relative z-10">
+            <div class="text-5xl mb-4 animate-bounce">🎂</div>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
+            
+            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold text-sm"></div>
+            
+            <div id="countdown-timer" class="text-[11px] text-cyan-400/60 font-mono mb-4 tracking-widest">
+                CLOSING IN <span id="timer-seconds" class="font-bold text-cyan-400">10</span>s...
+            </div>
+            
+            <button onclick="closePopup()" 
+                    class="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-cyan-500/20">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Ghost Profile Image Overlay ── -->
+<div id="ghost-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none">
+    <div style="position: relative;">
+        <img id="ghost-image" src="" alt="Profile Ghost" class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-full">
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // 페이지 로드 완료 표시
+    window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('loaded');
+    });
+
+    // Firebase 설정
+    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Staff Selector Variables
+    let staffData = {};
+    let selectedStaff = '';
+    const selectedStaffEl = document.getElementById('selected-staff');
+    const selectedTextEl = document.getElementById('selected-text');
+    const staffDropdown = document.getElementById('staff-dropdown');
+    const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
+    const passwordInput = document.getElementById('password');
+
+    // 생일 체크 및 팝업 로직
+    (function() {
+        const popup = document.getElementById('birthday-popup');
+        const content = document.getElementById('popup-content');
+        const timerDisplay = document.getElementById('timer-seconds');
+        let autoCloseTimer;
+        let countdownInterval;
+
+        window.closePopup = () => {
+            clearTimeout(autoCloseTimer);
+            clearInterval(countdownInterval);
+            popup.classList.add('hidden');
+        };
+
+        const checkTodayBirthdays = () => {
+            const now = new Date();
+            const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            
+            firebase.database().ref('users').once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                const winners = [];
+                Object.keys(data).forEach(name => {
+                    if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
+                        winners.push({ name: name, date: data[name].birthday });
+                    }
+                });
+
+                if (winners.length > 0) {
+                    document.getElementById('birthday-list').innerHTML = winners.map(s => `
+                        <div class="p-3 bg-cyan-500/10 border border-cyan-400/20 rounded-lg">
+                            <div class="text-xs text-cyan-300 mb-1">Happy Birthday to ${s.name}!</div>
+                            <div class="text-sm font-bold text-white">${s.date}</div>
+                        </div>
+                    `).join('');
+                    
+                    popup.classList.remove('hidden');
+
+                    let timeLeft = 10;
+                    timerDisplay.innerText = timeLeft;
+                    
+                    countdownInterval = setInterval(() => {
+                        timeLeft -= 1;
+                        timerDisplay.innerText = timeLeft;
+                        if (timeLeft <= 0) clearInterval(countdownInterval);
+                    }, 1000);
+
+                    autoCloseTimer = setTimeout(closePopup, 10000);
+                }
+            });
+        };
+
+        setTimeout(checkTodayBirthdays, 1000);
+    })();
+
+    // Staff Selector 초기화
+    function initStaffSelector() {
+        database.ref('users').limitToFirst(50).once('value', (snapshot) => {
+            const users = snapshot.val();
+            staffData = users || {};
+            
+            if (Object.keys(staffData).length === 0) {
+                selectedTextEl.textContent = 'No staff available';
+                return;
+            }
+
+            selectedTextEl.textContent = 'Select Identity';
+            renderStaffDropdown();
+        }).catch(err => {
+            console.error('Error loading staff:', err);
+            selectedTextEl.textContent = 'Error loading staff';
+        });
+    }
+
+    function renderStaffDropdown() {
+        const fragment = document.createDocumentFragment();
+        
+        Object.keys(staffData).forEach(name => {
+            const user = staffData[name];
+            const option = document.createElement('div');
+            option.className = 'staff-option';
+            option.dataset.name = name;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'staff-avatar';
+            avatar.textContent = name.charAt(0).toUpperCase();
+            
+            const nameEl = document.createElement('div');
+            nameEl.className = 'staff-name';
+            nameEl.textContent = name;
+            
+            option.appendChild(avatar);
+            option.appendChild(nameEl);
+            
+            if (user.role === 'admin' || user.role === 'manager') {
+                const roleEl = document.createElement('div');
+                roleEl.className = 'staff-role';
+                roleEl.textContent = 'Manager';
+                option.appendChild(roleEl);
+            }
+            
+            option.addEventListener('click', () => selectStaff(name, option));
+            fragment.appendChild(option);
+        });
+        
+        staffDropdown.appendChild(fragment);
+    }
+
+    function selectStaff(name, optionEl) {
+        selectedStaff = name;
+        selectedTextEl.textContent = name;
+        
+        staffDropdown.querySelectorAll('.staff-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        if (optionEl) {
+            optionEl.classList.add('selected');
+        }
+        
+        closeDropdown();
+        passwordInput.focus();
+    }
+
+    function toggleDropdown() {
+        const isActive = staffDropdown.classList.contains('active');
+        if (isActive) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    }
+
+    function openDropdown() {
+        staffDropdown.classList.add('active');
+        selectedStaffEl.classList.add('active');
+        dropdownArrow.classList.add('rotated');
+    }
+
+    function closeDropdown() {
+        staffDropdown.classList.remove('active');
+        selectedStaffEl.classList.remove('active');
+        dropdownArrow.classList.remove('rotated');
+    }
+
+    // Event Listeners
+    selectedStaffEl.addEventListener('click', toggleDropdown);
+    
+    selectedStaffEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleDropdown();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('staff-selector-container').contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    passwordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { 
+            e.preventDefault(); 
+            handleLogin(); 
+        }
+    });
+
+    // 로그인 처리
+    window.handleLogin = function() {
+        const name = selectedStaff;
+        const pw = passwordInput.value;
+        
+        if(!name || !pw) {
+            return alert("Please enter your credentials.");
+        }
+        
+        database.ref('users/' + name).once('value', (snapshot) => {
+            const userData = snapshot.val();
+            if (!userData) {
+                return alert("User not found.");
+            }
+            
+            if (userData.password === pw) {
+                sessionStorage.setItem('loggedInUser', name);
+                sessionStorage.setItem('userRole', userData.role);
+                firebase.database().ref('users/' + name).update({
+                    lastLogin: new Date().toISOString()
+                });
+                
+                showGhostEffect(userData.profileImg, name, userData.role);
+                
+            } else { 
+                alert("Incorrect password."); 
+            }
+        });
+    };
+
+    // Ghost 효과 표시
+    function showGhostEffect(profileImg, name, role) {
+        const ghostOverlay = document.getElementById('ghost-overlay');
+        const ghostImage = document.getElementById('ghost-image');
+        
+        let imagePath;
+        
+        if (profileImg) {
+            if (profileImg.startsWith('images/') || profileImg.startsWith('http')) {
+                imagePath = profileImg;
+            } else {
+                imagePath = `images/profile/${profileImg}`;
+            }
+        } else {
+            imagePath = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
+        }
+        
+        ghostImage.src = imagePath;
+        ghostOverlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            ghostOverlay.classList.add('hidden');
+            
+            const userRole = (role || '').toLowerCase();
+            if (userRole === 'admin' || userRole === 'manager') {
+                location.href = "admin.html";
+            } else {
+                const today = new Date().getDate();
+                if (today % 2 !== 0) {
+                    location.href = "staff_main_1.html";
+                } else {
+                    location.href = "staff_main_2.html";
+                }
+            }
+        }, 2500);
+    }
+
+    // 비밀번호 토글
+    window.togglePassword = function() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+        }
+    };
+
+    // 비밀번호 찾기
+    window.findPassword = function() {
+        const name = selectedStaff;
+        
+        if (!name) {
+            return alert("Please select your name from the list first.");
+        }
+        
+        if (confirm(`Request password hint for '${name}'?`)) {
+            database.ref('users/' + name).once('value', (snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.password) {
+                    const pw = userData.password;
+                    const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
+                    alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
+                } else { 
+                    alert("Data not found."); 
+                }
+            });
+        }
+    };
+
+    // Staff Selector 초기화
+    initStaffSelector();
+
+})();
+</script>
+
+</body>
+</html>
