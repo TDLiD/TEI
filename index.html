@@ -46,21 +46,44 @@
     box-sizing: border-box;
 }
 
+/* 1. body 스타일 수정 */
 body {
     font-family: "Pretendard", sans-serif;
     color: #f1f5f9;
-    -webkit-tap-highlight-color: transparent;
     margin: 0;
     overflow-x: hidden;
-    background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+    
+    background-image: url('images/gif/4.gif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
     min-height: 100vh;
-    min-height: -webkit-fill-available;
-    opacity: 0;
-    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    /* 수정: 초기 투명도를 1로 변경하여 즉시 보이게 하거나, 
+       JS에서 window.onload 시점에 opacity를 조절하세요. */
+    opacity: 1; 
+    transition: opacity 0.8s ease;
 }
 
-body.loaded {
-    opacity: 1;
+/* 2. 오버레이 설정 수정 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); 
+    /* 수정: 배경 이미지보다는 위에, 실제 로그인 박스보다는 아래에 있어야 함 */
+    z-index: 0; 
+    pointer-events: none; /* 오버레이가 클릭을 방해하지 않도록 설정 */
+}
+
+/* 3. 콘텐츠가 오버레이 위로 올라오도록 설정 (매우 중요) */
+.login-card, .tdlid-container {
+    position: relative;
+    z-index: 10; /* 오버레이(0)보다 높은 값 부여 */
 }
 
 /* ── 전기 오토바이 배경 애니메이션 ── */
