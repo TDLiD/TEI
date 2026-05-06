@@ -719,12 +719,51 @@ body::before {
 .popup-exit-active {
     animation: swirl-out 0.8s ease-in forwards !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADD: MASSIVE ROAMING 3D TEXT (TDLiD)
+   ═══════════════════════════════════════════════════════════════ */
+.floating-bg-text {
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* 웅장한 크기 설정 */
+    font-size: clamp(10rem, 30vw, 22rem); 
+    font-weight: 900;
+    /* 배경과 어우러지는 은은한 투명도 */
+    color: rgba(99, 102, 99, 99.99); /* 투명도를 살짝 높임 */
+    pointer-events: none; /* 중요: 버튼 클릭 방해 금지 */
+    z-index: 1; /* 콘텐츠(10)보다 아래, 배경(0)보다 위 */
+    white-space: nowrap;
+    text-transform: none; /* TDLiD 대소문자 유지 */
+    perspective: 1500px;
+    user-select: none;
+    animation: roaming3D_Final 35s linear infinite;
+    filter: blur(1.5px); /* 부드러운 배경 느낌 */
+    letter-spacing: -0.02em;
+}
+
+@keyframes roaming3D_Final {
+    0% {
+        transform: translate(-10%, 20%) rotateX(5deg) rotateY(-10deg);
+    }
+    33% {
+        transform: translate(50%, 50%) rotateX(-10deg) rotateY(20deg);
+    }
+    66% {
+        transform: translate(30%, -10%) rotateX(15deg) rotateY(45deg);
+    }
+    100% {
+        transform: translate(-10%, 20%) rotateX(5deg) rotateY(-10deg);
+    }
+}
+
 </style>
 
 </head>
 
 <body>
-
+<div class="floating-bg-text">TDLiD</div>
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
     <div class="orb orb-c"></div>

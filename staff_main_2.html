@@ -502,10 +502,56 @@
                 font-size: 10px;
             }
         }
+/* ═══════════════════════════════════════════════════════════════
+   MODIFIED: SCREEN-ROAMING 3D TEXT (TDLiD)
+   ═══════════════════════════════════════════════════════════════ */
+.floating-bg-text {
+    position: fixed;
+    /* 초기 위치 */
+    top: 10%;
+    left: 10%;
+font-size: clamp(8rem, 25vw, 18rem);
+    font-weight: 900;
+    color: rgba(99, 102, 1, 0.99); /* 투명도를 살짝 높임 */
+    pointer-events: none;
+    z-index: 1; /* 배경 바로 위, 버튼(10) 보다는 아래 */
+    white-space: nowrap;
+    text-transform: none;
+    perspective: 1200px;
+    user-select: none;
+    /* 애니메이션: 이동, 회전, 크기 변화를 동시에 수행 */
+    animation: roaming3D 30s linear infinite;
+filter: blur(2px); /* 크기가 커진 만큼 약간의 블러로 배경 느낌 강조 */
+    letter-spacing: -0.05em; /* 글자가 커서 자간을 살짝 좁힘 */
+}
+
+@keyframes roaming3D {
+    0% {
+        top: 10%; left: 10%;
+        transform: rotateX(0deg) rotateY(0deg) scale(1);
+    }
+    25% {
+        top: 70%; left: 60%;
+        transform: rotateX(20deg) rotateY(45deg) scale(1.2);
+    }
+    50% {
+        top: 40%; left: 80%;
+        transform: rotateX(-20deg) rotateY(90deg) scale(0.8);
+    }
+    75% {
+        top: 80%; left: 20%;
+        transform: rotateX(10deg) rotateY(-45deg) scale(1.1);
+    }
+    100% {
+        top: 10%; left: 10%;
+        transform: rotateX(0deg) rotateY(0deg) scale(1);
+    }
+}
     </style>
 </head>
 
 <body>
+<div class="floating-bg-text">TDLiD</div>
     <!-- Profile Container (Top Left) -->
     <div class="profile-container" id="profileContainer"></div>
 

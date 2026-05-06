@@ -181,9 +181,12 @@ aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb:hover {
 
 <button onclick="switchTab('photos')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
 
-            <div class="mt-5 pt-5 border-t border-white/5">
-                <button onclick="location.href='staff_main.html'" class="w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest text-blue-400 font-black bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-2xl"><span>⬅️</span> Main Menu</button>
-            </div>
+<div class="mt-5 pt-5 border-t border-white/5">
+    <button onclick="const day = new Date().getDate(); location.href = (day % 2 === 0) ? 'staff_main_2.html' : 'staff_main_1.html';" 
+            class="w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest text-blue-400 font-black bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+        <span>⬅️</span> Main Menu
+    </button>
+</div>
         </nav>
         <div class="pt-5 border-t border-white/5">
             <p class="text-[9px] text-slate-600 font-black tracking-[0.2em] uppercase mb-3 ml-2">External Portal</p>
