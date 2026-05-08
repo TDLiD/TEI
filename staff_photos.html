@@ -732,8 +732,9 @@
         </div>
     </div>
 
-    <script>
-        // 전역 상태
+<script>
+    (function () {
+        // 1. 상태 변수 격리 (다른 파일의 state 변수와 충돌 방지)
         const state = {
             allPhotos: [],
             filteredPhotos: [],
@@ -748,7 +749,6 @@
             }
         };
 
-        // 샘플 데이터 (실제 photos.json 사용 시 로드)
         const samplePhotos = [
             ['photo1.jpg', 'Team Meeting Moment', '2024.01.15', 'work'],
             ['photo2.jpg', 'Company Celebration', '2024.02.20', 'event'],
@@ -758,52 +758,60 @@
             ['photo6.jpg', 'Team Outing', '2024.03.15', 'event'],
         ];
 
-        // 사진 로드
-        function loadPhotos() {
-            fetch('images/TEI/photos.json')
-                .then(r => r.json())
-                .then(data => {
-                    state.allPhotos = data.map((item, idx) => ({
-                        id: idx + 1,
-                        filename: item[0],
-                        title: item[1],
-                        date: item[2],
-                        category: item[3]
-                    }));
-                    filterPhotos('all');
-                })
-                .catch(err => {
-                    console.log('Using sample data:', err);
-                    state.allPhotos = samplePhotos.map((item, idx) => ({
-                        id: idx + 1,
-                        filename: item[0],
-                        title: item[1],
-                        date: item[2],
-                        category: item[3]
-                    }));
-                    filterPhotos('all');
-                });
-        }
-
-        // 필터링
-        function filterPhotos(category) {
+        // 2. 외부(HTML)에서 호출해야 하는 함수들을 window 객체에 할당
+        window.filterPhotos = function (category) {
             state.currentFilter = category;
-            state.filteredPhotos = category === 'all' 
-                ? state.allPhotos 
+            state.filteredPhotos = category === 'all'
+                ? state.allPhotos
                 : state.allPhotos.filter(p => p.category === category);
-            
-            // 버튼 업데이트
+
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('filter-btn-active');
             });
-            document.querySelector(`[onclick="filterPhotos('${category}')"]`)?.classList.add('filter-btn-active');
             
-            renderGallery();
-        }
+            // 동적 쿼리 셀렉터 안전 처리
+            const activeBtn = document.querySelector(`[onclick="filterPhotos('${category}')"]`);
+            if (activeBtn) activeBtn.classList.add('filter-btn-active');
 
-        // 갤러리 렌더
+            renderGallery();
+        };
+
+        window.openModal = function (index) {
+            state.currentIndex = index;
+            const photo = state.filteredPhotos[index];
+            if (!photo) return;
+
+            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
+            document.getElementById('modalTitle').innerText = photo.title;
+            document.getElementById('modalDate').innerText = `📅 ${photo.date}`;
+            document.getElementById('modalCategory').innerText = `🏷️ ${photo.category.toUpperCase()}`;
+            document.getElementById('modalCounter').innerText = `${index + 1} / ${state.filteredPhotos.length}`;
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModal = function () {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        };
+
+        window.previousPhoto = function () {
+            if (state.currentIndex > 0) {
+                window.openModal(state.currentIndex - 1);
+            }
+        };
+
+        window.nextPhoto = function () {
+            if (state.currentIndex < state.filteredPhotos.length - 1) {
+                window.openModal(state.currentIndex + 1);
+            }
+        };
+
+        // 3. 내부 보조 함수들
         function renderGallery() {
             const gallery = document.getElementById('gallery');
+            if (!gallery) return;
+
             if (state.filteredPhotos.length === 0) {
                 gallery.innerHTML = `
                     <div class="empty-state">
@@ -826,68 +834,67 @@
             }).join('');
         }
 
-        // 모달 열기
-        function openModal(index) {
-            state.currentIndex = index;
-            const photo = state.filteredPhotos[index];
-            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
-            document.getElementById('modalTitle').innerText = photo.title;
-            document.getElementById('modalDate').innerText = `📅 ${photo.date}`;
-            document.getElementById('modalCategory').innerText = `🏷️ ${photo.category.toUpperCase()}`;
-            document.getElementById('modalCounter').innerText = `${index + 1} / ${state.filteredPhotos.length}`;
-            document.getElementById('modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
+        function loadPhotos() {
+            fetch('images/TEI/photos.json')
+                .then(r => r.json())
+                .then(data => {
+                    state.allPhotos = data.map((item, idx) => ({
+                        id: idx + 1,
+                        filename: item[0],
+                        title: item[1],
+                        date: item[2],
+                        category: item[3]
+                    }));
+                    window.filterPhotos('all');
+                })
+                .catch(err => {
+                    console.warn('JSON load failed, using sample data:', err);
+                    state.allPhotos = samplePhotos.map((item, idx) => ({
+                        id: idx + 1,
+                        filename: item[0],
+                        title: item[1],
+                        date: item[2],
+                        category: item[3]
+                    }));
+                    window.filterPhotos('all');
+                });
         }
 
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // 이전/다음
-        function previousPhoto() {
-            if (state.currentIndex > 0) {
-                openModal(state.currentIndex - 1);
-            }
-        }
-
-        function nextPhoto() {
-            if (state.currentIndex < state.filteredPhotos.length - 1) {
-                openModal(state.currentIndex + 1);
-            }
-        }
-
-        // 키보드 제어
+        // 4. 이벤트 리스너 등록
         document.addEventListener('keydown', (e) => {
-            if (!document.getElementById('modal').classList.contains('active')) return;
-            if (e.key === 'ArrowLeft') previousPhoto();
-            if (e.key === 'ArrowRight') nextPhoto();
-            if (e.key === 'Escape') closeModal();
+            const modal = document.getElementById('modal');
+            if (!modal || !modal.classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') window.previousPhoto();
+            if (e.key === 'ArrowRight') window.nextPhoto();
+            if (e.key === 'Escape') window.closeModal();
         });
 
-        // 모달 외부 클릭으로 닫기
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') closeModal();
-        });
+        const modalOverlay = document.getElementById('modal');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target.id === 'modal') window.closeModal();
+            });
 
-        // 터치 제스처
-        let touchStart = 0;
-        document.getElementById('modal').addEventListener('touchstart', (e) => {
-            touchStart = e.changedTouches[0].screenX;
-        }, { passive: true });
+            // 터치 제스처
+            let touchStart = 0;
+            modalOverlay.addEventListener('touchstart', (e) => {
+                touchStart = e.changedTouches[0].screenX;
+            }, { passive: true });
 
-        document.getElementById('modal').addEventListener('touchend', (e) => {
-            const touchEnd = e.changedTouches[0].screenX;
-            const diff = touchStart - touchEnd;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0) nextPhoto();
-                else previousPhoto();
-            }
-        }, { passive: true });
+            modalOverlay.addEventListener('touchend', (e) => {
+                const touchEnd = e.changedTouches[0].screenX;
+                const diff = touchStart - touchEnd;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) window.nextPhoto();
+                    else window.previousPhoto();
+                }
+            }, { passive: true });
+        }
 
-        // 초기화
+        // 초기 실행
         loadPhotos();
-    </script>
+    })();
+</script>
+
 </body>
 </html>
