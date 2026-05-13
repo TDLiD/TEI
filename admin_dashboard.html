@@ -90,37 +90,74 @@
 .db-top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 640px) { .db-top-row { grid-template-columns: 1fr; } }
 
-/* Info Card */
-.db-info-card {
-    background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(6,78,59,0.1) 100%);
-    border: 1px solid rgba(16,185,129,0.3);
-    border-top: 1px solid rgba(16,185,129,0.5);
-    border-radius: 16px; padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px; cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative; overflow: hidden;
-    box-shadow: 0 8px 24px rgba(16,185,129,0.1), inset 0 1px 0 rgba(255,255,255,0.08);
+/* Jakarta Info (always visible panel) */
+.db-jakarta-panel {
+    background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(6,78,59,0.08) 100%);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-top: 1px solid rgba(16,185,129,0.45);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
 }
-.db-info-card::before {
+.db-jakarta-panel::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(52,211,153,0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent);
 }
-.db-info-card:hover {
-    transform: translateY(-5px) rotateX(3deg);
-    border-color: rgba(16,185,129,0.55);
-    box-shadow: 0 18px 36px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.12);
+.db-jakarta-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid rgba(16,185,129,0.12);
+    cursor: pointer;
 }
-.db-info-icon {
-    width: 40px; height: 40px;
+.db-jakarta-icon {
+    width: 36px; height: 36px;
     background: linear-gradient(135deg, #059669, #047857);
-    border-radius: 11px;
-    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
-    box-shadow: 0 6px 14px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(5,150,105,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
 }
-.db-info-label { font-size: 12px; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em; }
-.db-info-sub { font-size: 9px; color: #475569; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
-.db-info-arrow { margin-left: auto; font-size: 10px; font-weight: 900; color: #34d399; opacity: 0.7; }
+.db-jakarta-title { font-size: 11px; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 0.06em; }
+.db-jakarta-sub { font-size: 9px; color: #475569; font-weight: 700; margin-top: 1px; }
+.db-jakarta-body { padding: 10px 14px 12px; }
+
+/* Jakarta info grid */
+.db-jk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.db-jk-item {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(16,185,129,0.1);
+    border-radius: 10px; padding: 8px 10px;
+}
+.db-jk-item-label { font-size: 8px; font-weight: 900; color: #1e4a3a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.db-jk-item-value { font-size: 12px; font-weight: 900; color: #34d399; }
+.db-jk-item-sub { font-size: 8px; color: #475569; font-weight: 600; margin-top: 1px; }
+
+/* News ticker area */
+.db-news-section { margin-top: 4px; }
+.db-news-title { font-size: 9px; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.db-news-dot { width: 5px; height: 5px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 6px #ef4444; animation: pulse 1.5s infinite; }
+.db-news-list { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto; }
+.db-news-item {
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(30,41,59,0.8);
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.15s;
+    display: flex; gap: 8px; align-items: flex-start;
+}
+.db-news-item:hover { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
+.db-news-tag {
+    font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+}
+.db-news-tag.eco { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.db-news-tag.policy { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+.db-news-tag.general { background: rgba(100,116,139,0.15); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
+.db-news-tag.ev { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.2); }
+.db-news-text { font-size: 9px; color: #64748b; font-weight: 600; line-height: 1.4; }
+.db-news-text a { color: #94a3b8; text-decoration: none; }
+.db-news-text a:hover { color: #60a5fa; }
 
 /* Vacationers */
 .db-vacation-card {
@@ -156,7 +193,7 @@
 .db-vacation-chip .name { font-size: 9px; font-weight: 900; color: #e2e8f0; }
 .db-vacation-chip .dates { font-size: 8px; color: #475569; font-family: monospace; }
 .db-vacation-chip .type { font-size: 8px; font-weight: 900; color: #818cf8; text-transform: uppercase; }
-@keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 6px #6366f1; } 50% { opacity: 0.4; box-shadow: none; } }
+@keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor; } 50% { opacity: 0.4; box-shadow: none; } }
 
 /* ── Stats Row ── */
 .db-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -201,124 +238,88 @@
 .db-stat-sub { font-size: 8px; color: #334155; font-weight: 700; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .db-stat-late { font-size: 9px; color: #f87171; font-weight: 900; margin-top: 4px; text-transform: uppercase; }
 
-/* ── Recent Section ── */
-.db-recent-section {
+/* ── Today/Yesterday Section ── */
+.db-daily-section {
     background: linear-gradient(145deg, rgba(12,18,36,0.95) 0%, rgba(8,12,24,0.9) 100%);
     border: 1px solid #1e293b;
     border-top: 1px solid #253047;
     border-radius: 20px; overflow: hidden;
     box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
 }
+.db-daily-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #1e293b;
+    background: rgba(0,0,0,0.3);
+}
+.db-daily-title {
+    font-size: 10px; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 6px;
+}
+.db-daily-badge {
+    font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.db-daily-badge.today { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.db-daily-badge.yesterday { background: rgba(100,116,139,0.12); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
 
-/* Tab Header */
-.db-tabs {
-    display: flex; border-bottom: 1px solid #1e293b;
-    background: rgba(8,12,24,0.6);
+/* Three-column day comparison */
+.db-day-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
 }
-.db-tab {
-    flex: 1; padding: 12px 6px; font-size: 9px; font-weight: 900; text-transform: uppercase;
-    letter-spacing: 0.08em; color: #1e293b; cursor: pointer; text-align: center;
-    border-bottom: 2px solid transparent; transition: all 0.25s ease;
-    background: none; border-top: none; border-left: none; border-right: none;
-    margin-bottom: -1px; position: relative;
+.db-day-col-wrap {
+    padding: 14px;
+    border-right: 1px solid rgba(30,41,59,0.6);
 }
-.db-tab:hover { color: #475569; background: rgba(255,255,255,0.02); }
-.db-tab.active.att {
-    color: #60a5fa; border-bottom-color: #3b82f6;
-    background: linear-gradient(180deg, rgba(59,130,246,0.06) 0%, transparent 100%);
-    text-shadow: 0 0 12px rgba(59,130,246,0.5);
-}
-.db-tab.active.rep {
-    color: #34d399; border-bottom-color: #10b981;
-    background: linear-gradient(180deg, rgba(16,185,129,0.06) 0%, transparent 100%);
-    text-shadow: 0 0 12px rgba(16,185,129,0.5);
-}
-.db-tab.active.sch {
-    color: #c084fc; border-bottom-color: #a855f7;
-    background: linear-gradient(180deg, rgba(168,85,247,0.06) 0%, transparent 100%);
-    text-shadow: 0 0 12px rgba(168,85,247,0.5);
-}
+.db-day-col-wrap:last-child { border-right: none; }
 
-/* Tab Content */
-.db-tab-content { display: none; padding: 14px; }
-.db-tab-content.active { display: block; }
-
-/* Day Grid */
-.db-day-grid { display: grid; grid-template-columns: repeat(11, minmax(100px, 1fr)); gap: 7px; overflow-x: auto; padding-bottom: 4px; }
-@media (max-width: 768px) { .db-day-grid { grid-template-columns: repeat(6, minmax(90px, 1fr)); } }
-
-.db-day-col {
-    background: linear-gradient(145deg, rgba(20,30,50,0.8), rgba(12,18,32,0.6));
-    border-radius: 12px; overflow: hidden;
-    border: 1px solid rgba(30,41,59,0.9);
-    border-top: 1px solid rgba(40,55,75,0.9);
-    min-width: 90px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: all 0.25s ease;
+.db-day-label {
+    font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
 }
-.db-day-col:hover {
-    border-color: rgba(59,130,246,0.2);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
-    transform: translateY(-2px);
-}
-.db-day-header {
-    padding: 6px 9px; font-size: 9px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+.db-day-label.today { color: #60a5fa; }
+.db-day-label.yesterday { color: #475569; }
+.db-day-label-dot { width: 5px; height: 5px; border-radius: 50%; }
+.db-day-label-dot.today { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+.db-day-label-dot.yesterday { background: #334155; }
+
+/* Staff rows in daily view */
+.db-daily-staff-row {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid rgba(30,41,59,0.9);
-}
-.db-day-header.today {
-    background: linear-gradient(90deg, rgba(59,130,246,0.2), rgba(59,130,246,0.08));
-    color: #60a5fa;
-    border-bottom-color: rgba(59,130,246,0.2);
-}
-.db-day-header.normal { color: #334155; }
-.db-day-add { font-size: 8px; color: #3b82f6; opacity: 0; transition: opacity 0.15s; cursor: pointer; }
-.db-day-col:hover .db-day-add { opacity: 1; }
-.db-day-body { padding: 4px; }
-
-/* Staff rows */
-.db-staff-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 3px 6px; border-radius: 7px; margin-bottom: 2px; cursor: pointer;
+    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
     transition: all 0.15s ease; border: 1px solid transparent;
+    background: rgba(15,23,42,0.4);
 }
-.db-staff-row:hover {
-    background: rgba(59,130,246,0.08);
-    border-color: rgba(59,130,246,0.15);
-    transform: translateX(2px);
+.db-daily-staff-row:hover {
+    background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.15);
 }
-.db-staff-name { font-size: 9px; font-weight: 700; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45px; }
-.db-staff-times { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
-.db-staff-in { font-size: 8px; font-weight: 800; }
-.db-staff-in.normal { color: #34d399; text-shadow: 0 0 8px rgba(52,211,153,0.4); }
-.db-staff-in.late { color: #f87171; text-shadow: 0 0 8px rgba(248,113,113,0.4); }
-.db-staff-out { font-size: 8px; color: #334155; font-weight: 600; }
-.db-staff-badge {
+.db-daily-staff-name { font-size: 9px; font-weight: 800; color: #94a3b8; }
+.db-daily-times { display: flex; align-items: center; gap: 4px; }
+.db-daily-in { font-size: 8px; font-weight: 900; font-family: monospace; }
+.db-daily-in.normal { color: #34d399; }
+.db-daily-in.late { color: #f87171; }
+.db-daily-out { font-size: 8px; color: #334155; font-family: monospace; }
+.db-daily-badge-special {
     font-size: 8px; font-weight: 900; color: #fbbf24;
     padding: 1px 5px;
     background: rgba(245,158,11,0.12);
     border-radius: 4px; border: 1px solid rgba(245,158,11,0.25);
-    box-shadow: 0 0 8px rgba(245,158,11,0.15);
 }
-.db-no-data { font-size: 8px; color: #1e293b; font-style: italic; padding: 4px 5px; }
+.db-no-data { font-size: 8px; color: #1e293b; font-style: italic; padding: 4px 6px; }
 
-/* Reports */
-.db-rep-row {
-    padding: 3px 6px; border-radius: 7px; margin-bottom: 2px; cursor: pointer;
+/* Report rows */
+.db-daily-rep-row {
+    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
     transition: all 0.15s; font-size: 9px; font-weight: 700;
-    border: 1px solid transparent; display: flex; align-items: center; gap: 3px; overflow: hidden;
+    border: 1px solid transparent; display: flex; align-items: center; gap: 4px;
+    background: rgba(15,23,42,0.4);
 }
-.db-rep-row.completed {
-    color: #34d399; background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.2);
-    box-shadow: inset 0 1px 0 rgba(52,211,153,0.1);
-}
-.db-rep-row.pending {
-    color: #fbbf24; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2);
-}
-.db-rep-row.progress {
-    color: #60a5fa; background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2);
-}
-.db-rep-row:hover { filter: brightness(1.25); transform: translateX(2px); }
+.db-daily-rep-row.completed { color: #34d399; border-color: rgba(16,185,129,0.15); }
+.db-daily-rep-row.pending   { color: #fbbf24; border-color: rgba(245,158,11,0.15); }
+.db-daily-rep-row.progress  { color: #60a5fa; border-color: rgba(59,130,246,0.15); }
+.db-daily-rep-row:hover { filter: brightness(1.25); }
 .db-new-badge {
     font-size: 7px; font-weight: 900;
     background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -326,36 +327,36 @@
     box-shadow: 0 0 8px rgba(239,68,68,0.4);
 }
 
-/* Schedule */
-.db-sch-row {
-    padding: 3px 6px; border-radius: 7px; margin-bottom: 2px; cursor: pointer;
+/* Schedule rows */
+.db-daily-sch-row {
+    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
     transition: all 0.15s; font-size: 9px; font-weight: 700;
-    color: #c084fc; background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2);
-    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-    box-shadow: inset 0 1px 0 rgba(192,132,252,0.08);
+    color: #c084fc; border: 1px solid rgba(168,85,247,0.15);
+    background: rgba(168,85,247,0.05);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.db-sch-row:hover { filter: brightness(1.25); transform: translateX(2px); }
-.db-sch-author { font-size: 7px; opacity: 0.55; }
+.db-daily-sch-row:hover { filter: brightness(1.25); }
 
-/* Legend */
+/* Section divider inside day comparison */
+.db-section-divider {
+    font-size: 8px; font-weight: 900; color: #1e293b; text-transform: uppercase;
+    letter-spacing: 0.1em; margin: 8px 0 5px; display: flex; align-items: center; gap: 5px;
+}
+.db-section-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(30,41,59,0.5);
+}
+
+/* ── Legend ── */
 .db-legend {
     display: flex; flex-wrap: wrap; gap: 8px;
     padding: 10px 14px; border-top: 1px solid #0f172a;
     background: rgba(0,0,0,0.2);
 }
 .db-legend-item { display: flex; align-items: center; gap: 4px; font-size: 8px; font-weight: 700; color: #334155; text-transform: uppercase; }
-.db-legend-dot { width: 5px; height: 5px; border-radius: 50%; box-shadow: 0 0 4px currentColor; }
+.db-legend-dot { width: 5px; height: 5px; border-radius: 50%; }
 
-/* ── Tooltip ── */
-#jakartaQuickTooltip {
-    display: none; position: absolute; top: calc(100% + 10px); left: 0; width: 290px;
-    background: linear-gradient(145deg, rgba(12,18,36,0.98), rgba(8,12,24,0.98));
-    border: 1px solid rgba(16,185,129,0.3);
-    border-radius: 18px; padding: 18px;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(16,185,129,0.1);
-    z-index: 100; pointer-events: none;
-    backdrop-filter: blur(20px);
-}
+/* ── Tooltip (legacy, kept) ── */
+#jakartaQuickTooltip { display: none; }
 
 /* ── Modal ── */
 #customAdminModal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -375,8 +376,7 @@
     padding: 22px 22px 16px;
     border-bottom: 1px solid #1e293b;
     background: linear-gradient(135deg, rgba(30,41,59,0.5) 0%, transparent 100%);
-    flex-shrink: 0;
-    position: relative;
+    flex-shrink: 0; position: relative;
 }
 #modalHeaderArea::after {
     content: '';
@@ -393,73 +393,6 @@
 
 /* flatpickr */
 .flatpickr-calendar { z-index: 999999 !important; }
-
-/* ── Calendar ── */
-.db-cal-wrap { overflow-x: auto; }
-.db-cal { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.db-cal th {
-    padding: 7px 4px; font-size: 9px; font-weight: 900; text-transform: uppercase;
-    letter-spacing: 0.07em; color: #334155; text-align: center;
-    border-bottom: 1px solid #1e293b;
-    background: rgba(0,0,0,0.2);
-}
-.db-cal th.sat { color: #60a5fa; text-shadow: 0 0 8px rgba(59,130,246,0.3); }
-.db-cal th.sun { color: #f87171; text-shadow: 0 0 8px rgba(244,63,94,0.3); }
-.db-cal td {
-    vertical-align: top; padding: 4px;
-    border: 1px solid rgba(20,30,48,0.8);
-    min-height: 60px; height: 64px;
-    transition: background 0.15s;
-}
-.db-cal td:hover { background: rgba(59,130,246,0.03); }
-.db-cal td.other-month { opacity: 0.2; }
-.db-cal td.today-cell {
-    background: rgba(59,130,246,0.07);
-    border-color: rgba(59,130,246,0.25);
-    box-shadow: inset 0 0 0 1px rgba(59,130,246,0.15);
-}
-.db-cal td.sat-cell { background: rgba(59,130,246,0.02); }
-.db-cal td.sun-cell { background: rgba(244,63,94,0.03); }
-.db-cal-date { font-size: 9px; font-weight: 900; color: #334155; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
-.db-cal-date.today-num { color: #60a5fa; text-shadow: 0 0 10px rgba(59,130,246,0.5); }
-.db-cal-date.sat-num { color: #3b82f6; }
-.db-cal-date.sun-num { color: #f87171; }
-.db-today-badge {
-    font-size: 7px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white; padding: 1px 5px; border-radius: 4px; font-weight: 900;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
-}
-.db-cal-items { display: flex; flex-direction: column; gap: 1px; }
-
-/* Cal Nav */
-.db-cal-nav { display: flex; align-items: center; gap: 6px; padding: 8px 4px 12px; }
-.db-cal-title { flex: 1; text-align: center; font-size: 12px; font-weight: 900; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 0 20px rgba(148,163,184,0.2); }
-.db-cal-btn {
-    font-size: 9px; font-weight: 900; color: #334155;
-    background: linear-gradient(145deg, rgba(20,30,50,0.8), rgba(12,18,32,0.6));
-    border: 1px solid #1e293b; border-top: 1px solid #253047;
-    border-radius: 8px; padding: 5px 12px; cursor: pointer;
-    transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-}
-.db-cal-btn:hover {
-    color: #94a3b8; border-color: #334155;
-    background: linear-gradient(145deg, rgba(30,41,59,0.8), rgba(20,28,45,0.8));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
-}
-.db-cal-btn:active { transform: translateY(1px); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-.db-cal-btn.today { color: #60a5fa; border-color: rgba(59,130,246,0.3); }
-.db-cal-btn.today:hover { background: rgba(59,130,246,0.1); box-shadow: 0 4px 12px rgba(59,130,246,0.2); }
-
-/* Weekend col width */
-.db-cal col.weekend { width: 5%; }
-.db-cal col.weekday { width: calc((100% - 10%) / 5); }
-.db-cal td.sat-cell,
-.db-cal td.sun-cell { width: 5%; padding: 2px 1px; }
-.db-cal td.sat-cell .db-cal-date,
-.db-cal td.sun-cell .db-cal-date { font-size: 7px; }
 </style>
 
 <div class="db-root animate-fadeIn">
@@ -476,28 +409,75 @@
         </div>
     </div>
 
-    <!-- ② Top Row: Jakarta Info + Vacationers -->
-    <div class="db-top-row">
-        <!-- Jakarta Info -->
-        <div class="relative group">
-            <div class="db-info-card"
-                 onclick="if(window.JakartaInfo){JakartaInfo.showPopup()}"
-                 onmouseenter="if(window.JakartaInfo){JakartaInfo.showQuickTooltip(this)}"
-                 onmouseleave="if(window.JakartaInfo){JakartaInfo.hideQuickTooltip()}">
-                <div class="db-info-icon">🏢</div>
-                <div>
-                    <div class="db-info-label">Jakarta Information</div>
-                    <div class="db-info-sub">View Office Guide & Local Info</div>
-                </div>
-                <div class="db-info-arrow">OPEN →</div>
+    <!-- ② Jakarta Info Panel (always visible) -->
+    <div class="db-jakarta-panel">
+        <div class="db-jakarta-header" onclick="if(window.JakartaInfo){JakartaInfo.showPopup()}">
+            <div class="db-jakarta-icon">🏢</div>
+            <div style="flex:1">
+                <div class="db-jakarta-title">Jakarta Information</div>
+                <div class="db-jakarta-sub">Office Guide & Local Info</div>
             </div>
-            <div id="jakartaQuickTooltip">
-                <div id="tooltipContent" class="space-y-3 text-white"></div>
-                <div style="position:absolute;top:-5px;left:20px;width:10px;height:10px;background:#0f172a;border-left:1px solid rgba(16,185,129,0.25);border-top:1px solid rgba(16,185,129,0.25);transform:rotate(45deg);"></div>
+            <div style="font-size:9px;color:#1e4a3a;font-weight:900;text-transform:uppercase;">FULL GUIDE →</div>
+        </div>
+        <div class="db-jakarta-body">
+            <div id="jakarta_inline_info" class="db-jk-grid">
+                <div class="db-jk-item" id="jk_weather">
+                    <div class="db-jk-item-label">Weather</div>
+                    <div class="db-jk-item-value" id="jk_weather_val">—</div>
+                    <div class="db-jk-item-sub" id="jk_weather_sub">Loading…</div>
+                </div>
+                <div class="db-jk-item" id="jk_time">
+                    <div class="db-jk-item-label">Jakarta Time (WIB)</div>
+                    <div class="db-jk-item-value" id="jk_time_val">—</div>
+                    <div class="db-jk-item-sub" id="jk_time_sub">GMT+7</div>
+                </div>
+<div class="db-jk-item" id="jk_rate">
+    <div class="db-jk-item-label">Exchange Rate</div>
+    <div class="db-jk-item-value" id="jk_rate_val">—</div>
+    <div class="db-jk-item-sub">
+        USD/IDR &nbsp;|&nbsp; KRW <span id="jk_krw_rate">—</span>
+    </div>
+</div>
+                <div class="db-jk-item" id="jk_holiday">
+                    <div class="db-jk-item-label">Next Holiday</div>
+                    <div class="db-jk-item-value" id="jk_holiday_val" style="font-size:10px;">—</div>
+                    <div class="db-jk-item-sub" id="jk_holiday_sub"></div>
+                </div>
+            </div>
+
+            <!-- News Section with EV Motorcycle news -->
+            <div class="db-news-section">
+                <div class="db-news-title"><span class="db-news-dot"></span>Latest Headlines</div>
+                <div class="db-news-list" id="jakarta_news_list">
+                    <!-- EV motorcycle news (static, curated) -->
+<div class="db-news-item" onclick="window.open('https://www.cnbcindonesia.com/news/motor-listrik','_blank')" style="cursor:pointer;">
+    <span class="db-news-tag ev">EV</span>
+    <span class="db-news-text">Motor listrik nasional capai 1,3 juta unit…</span>
+</div>
+
+<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=motor+listrik+subsidi+indonesia&hl=id','_blank')">
+    <span class="db-news-tag ev">EV</span>
+    <span class="db-news-text">Motor listrik nasional capai 1,3 juta unit…</span>
+</div>
+<div class="db-news-item" onclick="window.open('https://www.esdm.go.id/id/media-center/arsip-berita/konversi-motor-listrik','_blank')">
+    <span class="db-news-tag policy">Kebijakan</span>
+    <span class="db-news-text">Pemerintah perpanjang program konversi motor BBM ke listrik…</span>
+</div>
+<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=SPKLU+PLN+Jakarta&hl=id','_blank')">
+    <span class="db-news-tag ev">EV</span>
+    <span class="db-news-text">Pertamina dan PLN perluas jaringan SPKLU…</span>
+</div>
+<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=SNI+motor+listrik+kemenhub&hl=id','_blank')">
+    <span class="db-news-tag policy">Regulasi</span>
+    <span class="db-news-text">Kemenhub terbitkan aturan baru uji tipe kendaraan listrik roda dua…</span>
+</div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- This Week Vacationers -->
+    <!-- ③ Top Row: Vacationers -->
+    <div>
         <div class="db-vacation-card" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
             <div class="db-vacation-header">
                 <div class="db-vacation-title"><span class="db-vacation-dot"></span>Vacationers This Week</div>
@@ -509,7 +489,7 @@
         </div>
     </div>
 
-    <!-- ③ Quick Stats: 4 cards -->
+    <!-- ④ Quick Stats: 4 cards -->
     <div id="quick_stats_container" class="db-stats-row">
         <div class="db-stat blue" onclick="(window.switchAdminTab||window.parent.switchAdminTab)('attendance')">
             <div class="db-stat-label">Today's Attendance</div>
@@ -529,51 +509,68 @@
         </div>
     </div>
 
-    <!-- ④ Recent Data: Tabbed -->
-    <div class="db-recent-section">
-        <div class="db-tabs">
-            <button class="db-tab att active" onclick="switchDbTab('att')">📅 Attendance</button>
-            <button class="db-tab rep" onclick="switchDbTab('rep')">📋 Reports</button>
-            <button class="db-tab sch" onclick="switchDbTab('sch')">📌 Schedule</button>
+    <!-- ⑤ Today / Yesterday: Attendance + Reports + Schedule -->
+    <div class="db-daily-section">
+        <div class="db-daily-header">
+            <div class="db-daily-title">📅 Daily Overview</div>
+            <div style="display:flex;gap:6px">
+                <span class="db-daily-badge yesterday">Yesterday</span>
+                <span class="db-daily-badge today">Today</span>
+            </div>
         </div>
 
-<div id="db-tab-att" class="db-tab-content active">
-    <div class="db-cal-nav">
-        <button class="db-cal-btn" onclick="moveCalMonth('att',-1)">← Prev</button>
-        <span class="db-cal-title" id="cal-title-att"></span>
-        <button class="db-cal-btn today" onclick="moveCalMonth('att',0)">Today</button>
-        <button class="db-cal-btn" onclick="moveCalMonth('att',1)">Next →</button>
-    </div>
-    <div class="db-cal-wrap"><table class="db-cal" id="cal_att"></table></div>
-    <div class="db-legend">
-        <div class="db-legend-item"><span class="db-legend-dot" style="background:#34d399"></span>ATT: Normal</div>
-        <div class="db-legend-item"><span class="db-legend-dot" style="background:#f87171"></span>LATE: Late</div>
-        <div class="db-legend-item" style="color:#fbbf24">WO: Work Out</div>
-        <div class="db-legend-item">PEL · ANL · SIL · OFF</div>
-    </div>
-</div>
+        <!-- Attendance -->
+        <div style="border-bottom:1px solid rgba(30,41,59,0.5)">
+            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
+                <span style="color:#3b82f6">☀</span> Attendance
+            </div>
+            <div class="db-day-comparison">
+                <div class="db-day-col-wrap">
+                    <div class="db-day-label yesterday"><span class="db-day-label-dot yesterday"></span><span id="yesterday_date_label">Yesterday</span></div>
+                    <div id="att_yesterday_list"><div class="db-no-data">Loading…</div></div>
+                </div>
+                <div class="db-day-col-wrap">
+                    <div class="db-day-label today"><span class="db-day-label-dot today"></span>Today</div>
+                    <div id="att_today_list"><div class="db-no-data">Loading…</div></div>
+                </div>
+            </div>
+        </div>
 
-<div id="db-tab-rep" class="db-tab-content">
-    <div class="db-cal-nav">
-        <button class="db-cal-btn" onclick="moveCalMonth('rep',-1)">← Prev</button>
-        <span class="db-cal-title" id="cal-title-rep"></span>
-        <button class="db-cal-btn today" onclick="moveCalMonth('rep',0)">Today</button>
-        <button class="db-cal-btn" onclick="moveCalMonth('rep',1)">Next →</button>
-    </div>
-    <div class="db-cal-wrap"><table class="db-cal" id="cal_rep"></table></div>
-</div>
+        <!-- Reports -->
+        <div style="border-bottom:1px solid rgba(30,41,59,0.5)">
+            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
+                <span style="color:#34d399">📋</span> Reports
+            </div>
+            <div class="db-day-comparison">
+                <div class="db-day-col-wrap">
+                    <div class="db-day-label yesterday"><span class="db-day-label-dot yesterday"></span>Yesterday</div>
+                    <div id="rep_yesterday_list"><div class="db-no-data">Loading…</div></div>
+                </div>
+                <div class="db-day-col-wrap">
+                    <div class="db-day-label today"><span class="db-day-label-dot today"></span>Today</div>
+                    <div id="rep_today_list"><div class="db-no-data">Loading…</div></div>
+                </div>
+            </div>
+        </div>
 
-<div id="db-tab-sch" class="db-tab-content">
-    <div class="db-cal-nav">
-        <button class="db-cal-btn" onclick="moveCalMonth('sch',-1)">← Prev</button>
-        <span class="db-cal-title" id="cal-title-sch"></span>
-        <button class="db-cal-btn today" onclick="moveCalMonth('sch',0)">Today</button>
-        <button class="db-cal-btn" onclick="moveCalMonth('sch',1)">Next →</button>
-    </div>
-    <div class="db-cal-wrap"><table class="db-cal" id="cal_sch"></table></div>
-</div>
+        <!-- Schedule -->
+        <div>
+            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
+                <span style="color:#c084fc">📌</span> Active Schedules
+            </div>
+            <div style="padding:0 14px 14px">
+                <div id="sch_active_list"><div class="db-no-data">Loading…</div></div>
+            </div>
+        </div>
 
+        <div class="db-legend">
+            <div class="db-legend-item"><span class="db-legend-dot" style="background:#34d399"></span>ATT: Normal</div>
+            <div class="db-legend-item"><span class="db-legend-dot" style="background:#f87171"></span>LATE: Late</div>
+            <div class="db-legend-item" style="color:#fbbf24">WO: Work Out</div>
+            <div class="db-legend-item">PEL · ANL · SIL · OFF</div>
+        </div>
     </div>
+
 </div>
 
 <!-- Modal -->
@@ -586,69 +583,201 @@
     </div>
 </div>
 
-<script>
-// Tab switcher
-function switchDbTab(tab) {
-    document.querySelectorAll('.db-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.db-tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector('.db-tab.' + tab).classList.add('active');
-    document.getElementById('db-tab-' + tab).classList.add('active');
-}
+<!-- Hidden tooltip div (legacy compat) -->
+<div id="jakartaQuickTooltip"><div id="tooltipContent"></div></div>
 
+<script>
 (function() {
     const db = firebase.database();
     let editStartPicker, editEndPicker, attStartPicker, attEndPicker;
+
     const today = new Date();
     const todayStr = today.toLocaleDateString('sv-SE');
-    const last5Days = [];
-    for (let i = -5; i <= 5; i++) { const d = new Date(); d.setDate(today.getDate() + i); last5Days.push(d.toLocaleDateString('sv-SE')); }
-    last5Days.sort();
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
 
-    function initEditTimePickers(isAllDay = false) {
-        if (typeof flatpickr === 'undefined') return;
-const config = { enableTime: !isAllDay, dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i", altInput: true, altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", monthSelectorType: "static", locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", static: true, theme: "dark" };
-        if (editStartPicker) editStartPicker.destroy();
-        if (editEndPicker) editEndPicker.destroy();
-        const startEl = document.getElementById("db_sch_start"), endEl = document.getElementById("db_sch_end");
-        if (startEl) editStartPicker = flatpickr(startEl, config);
-        if (endEl) editEndPicker = flatpickr(endEl, config);
+// ── Jakarta Inline Info ──
+function initJakartaInlineInfo() {
+    // Live clock WIB (GMT+7)
+    function updateClock() {
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        const h = String(wib.getHours()).padStart(2, '0');
+        const m = String(wib.getMinutes()).padStart(2, '0');
+        const s = String(wib.getSeconds()).padStart(2, '0');
+        const el = document.getElementById('jk_time_val');
+        if (el) el.textContent = `${h}:${m}:${s}`;
+    }
+    updateClock(); setInterval(updateClock, 1000);
+
+    // ── 환율 fetch (USD/IDR + KRW/IDR) ──
+    fetch('https://open.er-api.com/v6/latest/USD')
+        .then(r => r.json())
+        .then(data => {
+            const idr = data.rates?.IDR;
+            const krw = data.rates?.KRW;
+            const usdEl = document.getElementById('jk_rate_val');
+            const krwEl = document.getElementById('jk_krw_rate');
+            if (usdEl && idr) usdEl.textContent = Math.round(idr).toLocaleString();
+            if (krwEl && krw && idr) krwEl.textContent = (idr / krw).toFixed(2);
+        })
+        .catch(() => {
+            const usdEl = document.getElementById('jk_rate_val');
+            if (usdEl && usdEl.textContent === '—') usdEl.textContent = '~16,200';
+        });
+
+    // Next holiday (static list 2025)
+    const holidays2025 = [
+        { date: '2025-05-29', name: 'Kenaikan Isa Al Masih' },
+        { date: '2025-06-01', name: 'Hari Lahir Pancasila' },
+        { date: '2025-06-06', name: 'Idul Adha' },
+        { date: '2025-06-27', name: 'Tahun Baru Islam' },
+        { date: '2025-08-17', name: 'Kemerdekaan RI' },
+        { date: '2025-09-05', name: 'Maulid Nabi' },
+        { date: '2025-12-25', name: 'Natal' },
+    ];
+    const upcoming = holidays2025.find(h => h.date >= todayStr);
+    if (upcoming) {
+        const hv = document.getElementById('jk_holiday_val');
+        const hs = document.getElementById('jk_holiday_sub');
+        if (hv) hv.textContent = upcoming.name;
+        if (hs) hs.textContent = upcoming.date.substring(5).replace('-', '/');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.JakartaInfo && typeof JakartaInfo.init === 'function') JakartaInfo.init().catch(e => console.error(e));
-        if (typeof firebase === 'undefined') return;
-        ['updateQuickStats','renderWeeklyLeaves','renderRecentAttendance','renderRecentWork','renderRecentSchedule'].forEach(fn => {
-            if (typeof window[fn] === 'function') try { window[fn](); } catch(e) { console.error(fn, e); }
-        });
+    // Weather — try from JakartaInfo or firebase settings
+    if (window.JakartaInfo && typeof window.JakartaInfo.init === 'function') {
+        window.JakartaInfo.init().then(() => {
+            try {
+                const d = window.JakartaInfo.getData ? window.JakartaInfo.getData() : null;
+                if (d) {
+                    if (d.weather) {
+                        const wv = document.getElementById('jk_weather_val');
+                        const ws = document.getElementById('jk_weather_sub');
+                        if (wv) wv.textContent = d.weather.temp || '—';
+                        if (ws) ws.textContent = d.weather.desc || 'Jakarta';
+                    }
+                    if (d.exchangeRate) {
+                        const ev2 = document.getElementById('jk_rate_val');
+                        if (ev2) ev2.textContent = d.exchangeRate;
+                    }
+                    if (d.news && d.news.length > 0) {
+                        const n1 = document.getElementById('jk_news_dynamic_1');
+                        const t1 = document.getElementById('jk_news_text_1');
+                        if (n1 && t1 && d.news[0]) { t1.textContent = d.news[0]; n1.style.display = 'flex'; }
+                    }
+                }
+            } catch(e) {}
+        }).catch(() => {});
+    }
+
+    // Weather fallback from firebase
+    db.ref('settings/weather').once('value', snap => {
+        const w = snap.val();
+        if (!w) {
+            const wv = document.getElementById('jk_weather_val');
+            if (wv && wv.textContent === '—') wv.textContent = '☁ ~30°C';
+            const ws = document.getElementById('jk_weather_sub');
+            if (ws && ws.textContent === 'Loading…') ws.textContent = 'Tropical, Jakarta';
+        }
+    }).catch(() => {
+        const wv = document.getElementById('jk_weather_val');
+        if (wv && wv.textContent === '—') wv.textContent = '☁ ~30°C';
+        const ws = document.getElementById('jk_weather_sub');
+        if (ws && ws.textContent === 'Loading…') ws.textContent = 'Tropical, Jakarta';
     });
-
-    window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
-
-// 기존 선언 전체를 아래로 교체
-// dashboard 전용 모달 제어 (admin.html의 restoreCoreModalFunctions가 없을 때만 등록)
-if (!window._coreModalRestored) {
-window.openAdminCustomModal = function(titleHtml, bodyHtml) {
-    // titleHtml도 innerHTML을 사용해야 태그가 정상 출력됩니다.
-    document.getElementById('modalHeaderArea').innerHTML = titleHtml; 
-    document.getElementById('modalBodyArea').innerHTML = bodyHtml;
-    
-    const m = document.getElementById('customAdminModal');
-    m.classList.add('open');
-    document.body.style.overflow = 'hidden';
-};
-
-    window.closeAdminCustomModal = function() {
-        if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
-        if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
-        if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
-        if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
-        document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
-        const m = document.getElementById('customAdminModal');
-        m.classList.remove('open');
-        document.body.style.overflow = '';
-    };
 }
 
+    // ── Daily Overview: Attendance ──
+    function renderDailyAttendance() {
+        const fmt = t => t && t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : (t || '–');
+
+        function renderAttList(dateStr, containerId) {
+            db.ref(`attendance/${dateStr}`).once('value', snap => {
+                const data = snap.val() || {};
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                let html = '';
+                const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
+                if (!entries.length) { container.innerHTML = '<div class="db-no-data">No data</div>'; return; }
+                entries.forEach(([name, info]) => {
+                    const safe = encodeURIComponent(JSON.stringify(info));
+                    if (typeof info === 'string') {
+                        html += `<div class="db-daily-staff-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
+                            <span class="db-daily-staff-name">${name}</span>
+                            <span class="db-daily-badge-special">${info}</span>
+                        </div>`;
+                    } else {
+                        const isLate = info.attend && info.attend.includes('LATE');
+                        html += `<div class="db-daily-staff-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
+                            <span class="db-daily-staff-name">${name}</span>
+                            <div class="db-daily-times">
+                                <span class="db-daily-in ${isLate?'late':'normal'}">☀${fmt(info.attend)}</span>
+                                ${info.leave ? `<span class="db-daily-out">→🌙${fmt(info.leave)}</span>` : ''}
+                            </div>
+                        </div>`;
+                    }
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        // Yesterday label
+        const yLabel = document.getElementById('yesterday_date_label');
+        if (yLabel) yLabel.textContent = `${yesterday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+
+        renderAttList(yesterdayStr, 'att_yesterday_list');
+        renderAttList(todayStr, 'att_today_list');
+    }
+
+    // ── Daily Overview: Reports ──
+    function renderDailyReports() {
+        function renderRepList(dateStr, containerId) {
+            db.ref(`reports/${dateStr}`).once('value', snap => {
+                const data = snap.val() || {};
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                let html = '';
+                const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
+                if (!entries.length) { container.innerHTML = '<div class="db-no-data">No reports</div>'; return; }
+                entries.forEach(([name, report]) => {
+                    const cls = report.status === 'Completed' ? 'completed' : report.status === 'Pending' ? 'pending' : 'progress';
+                    const isNew = containerId.includes('today') && report.readByAdmin !== true;
+                    html += `<div class="db-daily-rep-row ${cls}" onclick="window.showWorkDetail('${name}','${dateStr}')">
+                        ${isNew ? '<span class="db-new-badge">N</span>' : ''}
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
+                        <span style="margin-left:auto;font-size:7px;opacity:0.5;flex-shrink:0;">${report.status||'?'}</span>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            });
+        }
+        renderRepList(yesterdayStr, 'rep_yesterday_list');
+        renderRepList(todayStr, 'rep_today_list');
+    }
+
+    // ── Daily Overview: Active Schedules ──
+    function renderActiveSchedules() {
+        db.ref('shared_schedules').once('value', snap => {
+            const container = document.getElementById('sch_active_list');
+            if (!container) return;
+            let html = '';
+            const data = snap.val() || {};
+            Object.entries(data).forEach(([id, ev]) => {
+                const s = ev.start ? ev.start.split('T')[0] : '';
+                const e = ev.end ? ev.end.split('T')[0] : s;
+                // show if active today or started yesterday and still ongoing
+                if (s && e && todayStr >= s && todayStr <= e) {
+                    html += `<div class="db-daily-sch-row" onclick="window.showSchDetail('${id}')">
+                        <span style="font-size:7px;opacity:0.5;margin-right:3px;">[${ev.author||'?'}]</span>${ev.title}
+                        <span style="font-size:7px;opacity:0.4;margin-left:auto;flex-shrink:0;">${s.substring(5)}~${e.substring(5)}</span>
+                    </div>`;
+                }
+            });
+            container.innerHTML = html || '<div class="db-no-data">No active schedules today</div>';
+        });
+    }
+
+    // ── Weekly Leaves ──
     window.renderWeeklyLeaves = function() {
         const container = document.getElementById('weekly_leave_container');
         const rangeText = document.getElementById('week_range_text');
@@ -658,7 +787,7 @@ window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         const monday = new Date(new Date().setDate(first)).toISOString().split('T')[0];
         const sunday = new Date(new Date().setDate(first + 6)).toISOString().split('T')[0];
         if (rangeText) rangeText.innerText = `${monday.substring(5)} ~ ${sunday.substring(5)}`;
-        db.ref('leaves').on('value', snap => {
+        db.ref('leaves').once('value', snap => {
             const allLeaves = snap.val() || {};
             let html = '', any = false;
             Object.entries(allLeaves).forEach(([uid, years]) => {
@@ -675,370 +804,130 @@ window.openAdminCustomModal = function(titleHtml, bodyHtml) {
         });
     };
 
-   // updateQuickStats 함수 내의 Attendance 부분(A) 전체 교체
-window.updateQuickStats = function() {
-    const today = new Date(), todayStr = today.toLocaleDateString('sv-SE');
-
-    // A. Attendance (수정됨)
-    db.ref('users').on('value', snap => {
-        const allStaff = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-        db.ref(`attendance/${todayStr}`).on('value', attSnap => {
-            const att = attSnap.val() || {};
-            let attendedList = []; // 출석한 직원 리스트
-            
-            Object.entries(att).forEach(([name, info]) => {
-                if (name.toLowerCase() === 'admin') return;
-                
-                if (typeof info === 'object' && info.attend) {
-                    const timeMatch = info.attend.match(/(\d{1,2}:\d{2})/);
-                    const inTime = timeMatch ? timeMatch[1] : '--:--';
-                    const isLate = info.attend.includes('LATE');
-                    
-                    let outTime = '--:--';
-                    if (info.leave) {
-                        const outMatch = info.leave.match(/(\d{1,2}:\d{2})/);
-                        outTime = outMatch ? outMatch[1] : info.leave;
+    // ── Quick Stats ──
+    window.updateQuickStats = function() {
+        // A. Attendance
+        db.ref('users').on('value', snap => {
+            const allStaff = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+            db.ref(`attendance/${todayStr}`).on('value', attSnap => {
+                const att = attSnap.val() || {};
+                let attendedList = [];
+                Object.entries(att).forEach(([name, info]) => {
+                    if (name.toLowerCase() === 'admin') return;
+                    if (typeof info === 'object' && info.attend) {
+                        const timeMatch = info.attend.match(/(\d{1,2}:\d{2})/);
+                        const inTime = timeMatch ? timeMatch[1] : '--:--';
+                        const isLate = info.attend.includes('LATE');
+                        let outTime = '--:--';
+                        if (info.leave) { const outMatch = info.leave.match(/(\d{1,2}:\d{2})/); outTime = outMatch ? outMatch[1] : info.leave; }
+                        attendedList.push({ name, inTime, outTime, isLate });
                     }
-                    
-                    attendedList.push({
-                        name: name,
-                        inTime: inTime,
-                        outTime: outTime,
-                        isLate: isLate
-                    });
-                }
-            });
-            
-            // 시간순 정렬
-            attendedList.sort((a, b) => a.inTime.localeCompare(b.inTime));
-            
-            // HTML 생성
-            const el = document.getElementById('stat_attendance');
-            if (el) {
-                let listHtml = '';
-                if (attendedList.length > 0) {
-                    listHtml = attendedList.map(staff => `
-                        <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,0.3);">
-                            <span style="font-size:9px;font-weight:900;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${staff.name}</span>
-                            <div style="display:flex;gap:4px;align-items:center;">
-                                <span style="font-size:8px;font-weight:800;color:${staff.isLate ? '#f87171' : '#34d399'};font-family:monospace;">${staff.inTime}</span>
-                                <span style="font-size:8px;color:#334155;">→</span>
-                                <span style="font-size:8px;font-weight:700;color:${staff.outTime === '--:--' ? '#334155' : '#60a5fa'};font-family:monospace;">${staff.outTime}</span>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    listHtml = '<span style="font-size:9px;color:#334155;font-style:italic;">No attendance yet</span>';
-                }
-                
-                el.innerHTML = `
-                    <div class="db-stat-value blue">${attendedList.length}/${allStaff.length}</div>
-                    <div style="margin-top:8px;max-height:120px;overflow-y:auto;padding-right:4px;" class="custom-scrollbar">
-                        ${listHtml}
-                    </div>
-                `;
-            }
-        });
-    });
-
-    // B. Last Leave (기존 코드 유지)
-    const findLastActiveData = () => {
-        let d = new Date(today), attempts = 0;
-        const tryNext = (d) => {
-            d.setDate(d.getDate() - 1);
-            const dStr = d.toLocaleDateString('sv-SE'), dayNum = d.getDate();
-            db.ref(`attendance/${dStr}`).once('value', snap => {
-                const data = snap.val(); attempts++;
-                const has = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
-                if (has || attempts >= 10) renderLastLeave(data || {}, dStr, dayNum);
-                else tryNext(d);
-            });
-        };
-        const renderLastLeave = (yAtt, dStr, dayNum) => {
-            db.ref('users').once('value', uSnap => {
-                const total = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
-                let html = '', cnt = 0;
-                Object.entries(yAtt).forEach(([n, i]) => {
-                    if (n.toLowerCase() === 'admin') return;
-                    if (i && typeof i === 'object' && i.leave && i.leave.trim()) { cnt++; html += `<div style="font-size:9px;color:#94a3b8;font-weight:700;margin-top:2px;">${n} ${i.leave}</div>`; }
                 });
-                const ord = n => { if(n>3&&n<21) return 'th'; switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';} };
-                const lbl = document.getElementById('yesterday_leave_label');
-                if (lbl) lbl.innerText = `Last Leave (${dayNum}${ord(dayNum)})`;
-                const el = document.getElementById('stat_leave_yesterday');
-                if (el) el.innerHTML = `<div class="db-stat-value rose">${cnt}/${total}</div><div style="margin-top:4px;">${cnt > 0 ? html : '<span style="font-size:8px;color:#334155;font-weight:700;">(No Records)</span>'}</div>`;
-            });
-        };
-        tryNext(d);
-    };
-    findLastActiveData();
-
-// C. Reports (어제 작성자 리스트 표시 버전)
-db.ref(`reports/${todayStr}`).on('value', snap => {
-    const todayReported = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-    
-    db.ref('users').once('value', uSnap => {
-        const allStaff = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-        const total = allStaff.length;
-        
-        // 어제 날짜 계산
-        const yesterday = new Date(); // today 변수가 선언되어 있다면 new Date(today) 사용
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
-        
-        // 어제 리포트 가져오기
-        db.ref(`reports/${yesterdayStr}`).once('value', ySnap => {
-            // 어제 실제로 리포트를 작성한 스태프 리스트
-            const yesterdayReported = Object.keys(ySnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-            
-            const el = document.getElementById('stat_pending');
-            if (el) {
-                let yesterdayHtml = '';
-                
-                if (yesterdayReported.length > 0) {
-                    // 작성자가 있을 경우 초록색 테마로 리스트 표시
-                    yesterdayHtml = `
-                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);">
-                            <div style="font-size:8px;color:#34d399;font-weight:900;text-transform:uppercase;margin-bottom:4px;">✓ Yesterday Completed</div>
-                            <div style="display:flex;flex-wrap:wrap;gap:3px;">
-                                ${yesterdayReported.map(n => `<span style="font-size:8px;color:#f1f5f9;font-weight:700;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);padding:2px 6px;border-radius:4px;">${n}</span>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // 작성자가 아무도 없을 경우
-                    yesterdayHtml = `
-                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);">
-                            <div style="font-size:8px;color:#94a3b8;font-weight:900;text-transform:uppercase;">No reports from yesterday</div>
-                        </div>
-                    `;
+                attendedList.sort((a, b) => a.inTime.localeCompare(b.inTime));
+                const el = document.getElementById('stat_attendance');
+                if (el) {
+                    let listHtml = attendedList.length > 0
+                        ? attendedList.map(staff => `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,0.3);"><span style="font-size:9px;font-weight:900;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${staff.name}</span><div style="display:flex;gap:4px;align-items:center;"><span style="font-size:8px;font-weight:800;color:${staff.isLate ? '#f87171' : '#34d399'};font-family:monospace;">${staff.inTime}</span><span style="font-size:8px;color:#334155;">→</span><span style="font-size:8px;font-weight:700;color:${staff.outTime === '--:--' ? '#334155' : '#60a5fa'};font-family:monospace;">${staff.outTime}</span></div></div>`).join('')
+                        : '<span style="font-size:9px;color:#334155;font-style:italic;">No attendance yet</span>';
+                    el.innerHTML = `<div class="db-stat-value blue">${attendedList.length}/${allStaff.length}</div><div style="margin-top:8px;max-height:120px;overflow-y:auto;padding-right:4px;">${listHtml}</div>`;
                 }
-                
-                el.innerHTML = `
-                    <div class="db-stat-value amber">${todayReported.length}/${total}</div>
-                    <div class="db-stat-sub" title="${todayReported.join(', ')}">${todayReported.length ? todayReported.join(', ') : '(No Reports Yet)'}</div>
-                    ${yesterdayHtml}
-                `;
-            }
-        });
-    });
-});
-
-    // D. Schedules (기존 코드 유지)
-    db.ref('shared_schedules').on('value', snap => {
-        let cnt = 0;
-        Object.values(snap.val() || {}).forEach(ev => {
-            const s = (ev.start||ev.startDate||'').split('T')[0], e = (ev.end||ev.endDate||s).split('T')[0];
-            if (s && e && todayStr >= s && todayStr <= e) cnt++;
-        });
-        const el = document.getElementById('stat_schedules');
-        if (el) el.innerHTML = `<div class="db-stat-value purple">${cnt}</div>`;
-    });
-};
-
-
-// ── Calendar State ──
-const calState = {
-    att: { year: new Date().getFullYear(), month: new Date().getMonth() },
-    rep: { year: new Date().getFullYear(), month: new Date().getMonth() },
-    sch: { year: new Date().getFullYear(), month: new Date().getMonth() },
-};
-
-// ── Calendar Nav ──
-window.moveCalMonth = function(tab, dir) {
-    const s = calState[tab];
-    if (dir === 0) {
-        // Today
-        s.year = new Date().getFullYear();
-        s.month = new Date().getMonth();
-    } else {
-        s.month += dir;
-        if (s.month > 11) { s.month = 0; s.year++; }
-        if (s.month < 0)  { s.month = 11; s.year--; }
-    }
-    if (tab === 'att') window.renderRecentAttendance();
-    if (tab === 'rep') window.renderRecentWork();
-    if (tab === 'sch') window.renderRecentSchedule();
-};
-
-// ── Calendar Helper ──
-function buildCalendarBase(tableEl, tab) {
-    if (!tableEl) return;
-    const s = calState[tab];
-    const year = s.year, month = s.month;
-    const todayStr = new Date().toLocaleDateString('sv-SE');
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrev = new Date(year, month, 0).getDate();
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    // Update title
-    const titleEl = document.getElementById(`cal-title-${tab}`);
-    if (titleEl) titleEl.textContent = `${MONTHS[month]} ${year}`;
-
-let html = `<colgroup>
-    <col class="weekend">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekend">
-</colgroup><thead><tr>`;
-DAY_LABELS.forEach((d, i) => {
-    const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
-    html += `<th class="${cls}">${d}</th>`;
-});
-html += '</tr></thead><tbody>';
-
-    let day = 1, nextDay = 1;
-    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-
-    for (let i = 0; i < totalCells; i++) {
-        if (i % 7 === 0) html += '<tr>';
-        const dow = i % 7;
-        const isSat = dow === 6, isSun = dow === 0;
-        let dateStr, otherMonth = false;
-
-        if (i < firstDay) {
-            dateStr = `${year}-${String(month).padStart(2,'0')}-${String(daysInPrev - firstDay + 1 + i).padStart(2,'0')}`;
-            otherMonth = true;
-        } else if (day <= daysInMonth) {
-            dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            day++;
-        } else {
-            const nm = month + 2 > 12 ? 1 : month + 2;
-            const ny = month + 2 > 12 ? year + 1 : year;
-            dateStr = `${ny}-${String(nm).padStart(2,'0')}-${String(nextDay).padStart(2,'0')}`;
-            nextDay++; otherMonth = true;
-        }
-
-        const isToday = dateStr === todayStr;
-        const dayNum = parseInt(dateStr.split('-')[2]);
-        const cellClass = [
-            otherMonth ? 'other-month' : '',
-            isToday    ? 'today-cell'  : '',
-            isSat      ? 'sat-cell'    : '',
-            isSun      ? 'sun-cell'    : '',
-        ].filter(Boolean).join(' ');
-        const numClass = isToday ? 'today-num' : isSat ? 'sat-num' : isSun ? 'sun-num' : '';
-
-        html += `<td class="${cellClass}" data-date="${dateStr}">
-            <div class="db-cal-date ${numClass}">
-                <span>${dayNum}</span>
-                ${isToday ? '<span class="db-today-badge">TODAY</span>' : ''}
-            </div>
-            <div class="db-cal-items" id="cal-cell-${tableEl.id}-${dateStr}"></div>
-        </td>`;
-
-        if (i % 7 === 6) html += '</tr>';
-    }
-    html += '</tbody>';
-    tableEl.innerHTML = html;
-}
-
-// ── Render Attendance Calendar ──
-window.renderRecentAttendance = function() {
-    const table = document.getElementById('cal_att');
-    if (!table) return;
-    const fmt = t => t ? (t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : t) : '';
-    const todayStr = new Date().toLocaleDateString('sv-SE');
-
-    buildCalendarBase(table, 'att');
-
-    db.ref('attendance').on('value', snap => {
-        // clear all cells
-        table.querySelectorAll('.db-cal-items').forEach(el => el.innerHTML = '');
-
-        const data = snap.val() || {};
-        Object.entries(data).forEach(([dateStr, dayData]) => {
-            const cell = document.getElementById(`cal-cell-cal_att-${dateStr}`);
-            if (!cell) return;
-            Object.entries(dayData).forEach(([name, info]) => {
-                const safe = encodeURIComponent(JSON.stringify(info));
-                let el;
-                if (typeof info === 'string') {
-                    el = `<div class="db-staff-row" onclick="event.stopPropagation();window.openEditAttendance('${name}','${dateStr}','${safe}')"><span class="db-staff-name">${name}</span><span class="db-staff-badge">${info}</span></div>`;
-                } else {
-                    const isLate = info.attend && info.attend.includes('LATE');
-                    el = `<div class="db-staff-row" onclick="event.stopPropagation();window.openEditAttendance('${name}','${dateStr}','${safe}')">
-                        <span class="db-staff-name">${name}</span>
-                        <div class="db-staff-times">
-                            <span class="db-staff-in ${isLate?'late':'normal'}">☀${fmt(info.attend)||'–'}</span>
-                            ${info.leave?`<span class="db-staff-out">🌙${fmt(info.leave)}</span>`:''}
-                        </div>
-                    </div>`;
-                }
-                cell.innerHTML += el;
             });
         });
 
-        // click empty cell to add
-        table.querySelectorAll('td[data-date]').forEach(td => {
-            td.onclick = (e) => {
-                if (e.target.closest('.db-staff-row')) return;
-                window.openEditAttendance('', td.dataset.date, '');
+        // B. Last Leave
+        const findLastActiveData = () => {
+            let d = new Date(today), attempts = 0;
+            const tryNext = (d) => {
+                d.setDate(d.getDate() - 1);
+                const dStr = d.toLocaleDateString('sv-SE'), dayNum = d.getDate();
+                db.ref(`attendance/${dStr}`).once('value', snap => {
+                    const data = snap.val(); attempts++;
+                    const has = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
+                    if (has || attempts >= 10) renderLastLeave(data || {}, dStr, dayNum);
+                    else tryNext(d);
+                });
             };
-        });
-    });
-};
+            const renderLastLeave = (yAtt, dStr, dayNum) => {
+                db.ref('users').once('value', uSnap => {
+                    const total = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
+                    let html = '', cnt = 0;
+                    Object.entries(yAtt).forEach(([n, i]) => {
+                        if (n.toLowerCase() === 'admin') return;
+                        if (i && typeof i === 'object' && i.leave && i.leave.trim()) { cnt++; html += `<div style="font-size:9px;color:#94a3b8;font-weight:700;margin-top:2px;">${n} ${i.leave}</div>`; }
+                    });
+                    const ord = n => { if(n>3&&n<21) return 'th'; switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';} };
+                    const lbl = document.getElementById('yesterday_leave_label');
+                    if (lbl) lbl.innerText = `Last Leave (${dayNum}${ord(dayNum)})`;
+                    const el = document.getElementById('stat_leave_yesterday');
+                    if (el) el.innerHTML = `<div class="db-stat-value rose">${cnt}/${total}</div><div style="margin-top:4px;">${cnt > 0 ? html : '<span style="font-size:8px;color:#334155;font-weight:700;">(No Records)</span>'}</div>`;
+                });
+            };
+            tryNext(d);
+        };
+        findLastActiveData();
 
-// ── Render Reports Calendar ──
-window.renderRecentWork = function() {
-    const table = document.getElementById('cal_rep');
-    if (!table) return;
-
-    buildCalendarBase(table, 'rep');  // rep
-
-    db.ref('reports').on('value', snap => {
-        table.querySelectorAll('.db-cal-items').forEach(el => el.innerHTML = '');
-        const data = snap.val() || {};
-        Object.entries(data).forEach(([dateStr, dayData]) => {
-            const cell = document.getElementById(`cal-cell-cal_rep-${dateStr}`);
-            if (!cell) return;
-            Object.entries(dayData).forEach(([name, report]) => {
-                const cls = report.status === 'Completed' ? 'completed' : report.status === 'Pending' ? 'pending' : 'progress';
-                const isNew = report.readByAdmin !== true;
-                cell.innerHTML += `<div class="db-rep-row ${cls}" onclick="window.showWorkDetail('${name}','${dateStr}')">${isNew?'<span class="db-new-badge">N</span>':''}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px;">${name}</span></div>`;
+        // C. Reports
+        db.ref(`reports/${todayStr}`).on('value', snap => {
+            const todayReported = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+            db.ref('users').once('value', uSnap => {
+                const allStaff = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+                const total = allStaff.length;
+                db.ref(`reports/${yesterdayStr}`).once('value', ySnap => {
+                    const yesterdayReported = Object.keys(ySnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
+                    const el = document.getElementById('stat_pending');
+                    if (el) {
+                        let yesterdayHtml = yesterdayReported.length > 0
+                            ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);"><div style="font-size:8px;color:#34d399;font-weight:900;text-transform:uppercase;margin-bottom:4px;">✓ Yesterday Completed</div><div style="display:flex;flex-wrap:wrap;gap:3px;">${yesterdayReported.map(n=>`<span style="font-size:8px;color:#f1f5f9;font-weight:700;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);padding:2px 6px;border-radius:4px;">${n}</span>`).join('')}</div></div>`
+                            : `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);"><div style="font-size:8px;color:#94a3b8;font-weight:900;text-transform:uppercase;">No reports from yesterday</div></div>`;
+                        el.innerHTML = `<div class="db-stat-value amber">${todayReported.length}/${total}</div><div class="db-stat-sub" title="${todayReported.join(', ')}">${todayReported.length ? todayReported.join(', ') : '(No Reports Yet)'}</div>${yesterdayHtml}`;
+                    }
+                });
             });
         });
-    });
-};
 
-// ── Render Schedule Calendar ──
-window.renderRecentSchedule = function() {
-    const table = document.getElementById('cal_sch');
-    if (!table) return;
-
-    buildCalendarBase(table, 'sch');  // sch
-
-    db.ref('shared_schedules').on('value', snap => {
-        table.querySelectorAll('.db-cal-items').forEach(el => el.innerHTML = '');
-        const data = snap.val() || {};
-        const year = calState.sch.year, month = calState.sch.month;
-        const firstOfMonth = `${year}-${String(month+1).padStart(2,'0')}-01`;
-        const lastOfMonth = `${year}-${String(month+1).padStart(2,'0')}-${new Date(year,month+1,0).getDate()}`;
-
-        Object.entries(data).forEach(([id, ev]) => {
-            const s = ev.start ? ev.start.split('T')[0] : '';
-            const e = ev.end ? ev.end.split('T')[0] : s;
-            if (!s || e < firstOfMonth || s > lastOfMonth) return;
-
-            // iterate each day of event within this month
-            let cur = new Date(Math.max(new Date(s), new Date(firstOfMonth)));
-            const end = new Date(Math.min(new Date(e), new Date(lastOfMonth)));
-            while (cur <= end) {
-                const dateStr = cur.toLocaleDateString('sv-SE');
-                const cell = document.getElementById(`cal-cell-cal_sch-${dateStr}`);
-                if (cell) {
-                    cell.innerHTML += `<div class="db-sch-row" onclick="window.showSchDetail('${id}')" title="${ev.title}"><span class="db-sch-author">[${ev.author||'?'}]</span> ${ev.title}</div>`;
-                }
-                cur.setDate(cur.getDate() + 1);
-            }
+        // D. Schedules
+        db.ref('shared_schedules').on('value', snap => {
+            let cnt = 0;
+            Object.values(snap.val() || {}).forEach(ev => {
+                const s = (ev.start||ev.startDate||'').split('T')[0], e = (ev.end||ev.endDate||s).split('T')[0];
+                if (s && e && todayStr >= s && todayStr <= e) cnt++;
+            });
+            const el = document.getElementById('stat_schedules');
+            if (el) el.innerHTML = `<div class="db-stat-value purple">${cnt}</div>`;
         });
-    });
-};
+    };
+
+    // ── Modal ──
+    if (!window._coreModalRestored) {
+        window.openAdminCustomModal = function(titleHtml, bodyHtml) {
+            document.getElementById('modalHeaderArea').innerHTML = titleHtml;
+            document.getElementById('modalBodyArea').innerHTML = bodyHtml;
+            const m = document.getElementById('customAdminModal');
+            m.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        };
+        window.closeAdminCustomModal = function() {
+            if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
+            if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
+            if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
+            if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
+            document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
+            const m = document.getElementById('customAdminModal');
+            m.classList.remove('open');
+            document.body.style.overflow = '';
+        };
+    }
+
+    function initEditTimePickers(isAllDay = false) {
+        if (typeof flatpickr === 'undefined') return;
+        const config = { enableTime: !isAllDay, dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i", altInput: true, altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", monthSelectorType: "static", locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", static: true, theme: "dark" };
+        if (editStartPicker) editStartPicker.destroy();
+        if (editEndPicker) editEndPicker.destroy();
+        const startEl = document.getElementById("db_sch_start"), endEl = document.getElementById("db_sch_end");
+        if (startEl) editStartPicker = flatpickr(startEl, config);
+        if (endEl) editEndPicker = flatpickr(endEl, config);
+    }
+    window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
 
     // ── Show Work Detail ──
     window.showWorkDetail = function(name, date) {
@@ -1051,52 +940,35 @@ window.renderRecentSchedule = function() {
         });
     };
 
-window.openEditAttendance = function(name, date, infoEncoded) {
-    const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, 
-          isSpecial = typeof info === 'string', 
-          isNew = name === '';
-
-    db.ref('users').once('value', userSnap => {
-        const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-        let nameFieldHtml = isNew
-            ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
-            : `<span class="text-lg font-black text-white">${name}</span>`;
-        
-        const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew?'New Registration':'Edit Attendance'}</span>${nameFieldHtml}<span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
-        const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}','${date}',${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
-        
-        // 1. 모달 기본 오픈
-        window.openAdminCustomModal(titleHtml, bodyHtml);
-
-        // 3. 시간 선택기(flatpickr) 초기화 및 위치 조정
-        setTimeout(() => {
-            const positionPicker = (fp) => {
-                const rect = fp.input.getBoundingClientRect();
-                const cal = fp.calendarContainer;
-                cal.style.setProperty('position', 'fixed', 'important');
-                cal.style.setProperty('z-index', '999999', 'important');
-                cal.style.setProperty('top', (rect.bottom + 4) + 'px', 'important');
-                cal.style.setProperty('left', rect.left + 'px', 'important');
-                cal.style.setProperty('width', rect.width + 'px', 'important');
-                cal.classList.remove('arrowTop', 'arrowBottom');
-            };
-const config = {
-    enableTime: true, noCalendar: true, dateFormat: "H:i",
-    time_24hr: true, locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", theme: "dark", disableMobile: true,
-                onOpen: function(_, __, fp) {
-                    requestAnimationFrame(() => positionPicker(fp));
-                    setTimeout(() => positionPicker(fp), 0);
-                    setTimeout(() => positionPicker(fp), 50);
-                }
-            };
-            if (window.attStartPicker) window.attStartPicker.destroy();
-            if (window.attEndPicker) window.attEndPicker.destroy();
-            const aEl = document.getElementById("editAttend"), lEl = document.getElementById("editLeave");
-            if (aEl) window.attStartPicker = flatpickr(aEl, config);
-            if (lEl) window.attEndPicker = flatpickr(lEl, config);
-        }, 200); // 렌더링 안정성을 위해 200ms로 소폭 상향
-    });
-};
+    window.openEditAttendance = function(name, date, infoEncoded) {
+        const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, isSpecial = typeof info === 'string', isNew = name === '';
+        db.ref('users').once('value', userSnap => {
+            const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+            let nameFieldHtml = isNew
+                ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
+                : `<span class="text-lg font-black text-white">${name}</span>`;
+            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew?'New Registration':'Edit Attendance'}</span>${nameFieldHtml}<span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
+            const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}','${date}',${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
+            window.openAdminCustomModal(titleHtml, bodyHtml);
+            setTimeout(() => {
+                const positionPicker = (fp) => {
+                    const rect = fp.input.getBoundingClientRect(), cal = fp.calendarContainer;
+                    cal.style.setProperty('position', 'fixed', 'important');
+                    cal.style.setProperty('z-index', '999999', 'important');
+                    cal.style.setProperty('top', (rect.bottom + 4) + 'px', 'important');
+                    cal.style.setProperty('left', rect.left + 'px', 'important');
+                    cal.style.setProperty('width', rect.width + 'px', 'important');
+                    cal.classList.remove('arrowTop', 'arrowBottom');
+                };
+                const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", theme: "dark", disableMobile: true, onOpen: function(_, __, fp) { requestAnimationFrame(() => positionPicker(fp)); setTimeout(() => positionPicker(fp), 0); setTimeout(() => positionPicker(fp), 50); } };
+                if (window.attStartPicker) window.attStartPicker.destroy();
+                if (window.attEndPicker) window.attEndPicker.destroy();
+                const aEl = document.getElementById("editAttend"), lEl = document.getElementById("editLeave");
+                if (aEl) window.attStartPicker = flatpickr(aEl, config);
+                if (lEl) window.attEndPicker = flatpickr(lEl, config);
+            }, 200);
+        });
+    };
 
     window.processAttendanceSave = function(name, date, isNew) {
         const finalName = isNew ? document.getElementById('editName').value : name;
@@ -1104,13 +976,9 @@ const config = {
         const special = document.getElementById('editSpecial').value;
         const attendVal = document.getElementById('editAttend').value.trim();
         const leaveVal = document.getElementById('editLeave').value.trim();
-        if (special) {
-            db.ref(`attendance/${date}/${finalName}`).set(special).then(() => { alert(isNew?"Registered":"Updated"); window.closeAdminCustomModal(); });
-            return;
-        }
+        if (special) { db.ref(`attendance/${date}/${finalName}`).set(special).then(() => { alert(isNew?"Registered":"Updated"); window.closeAdminCustomModal(); }); return; }
         db.ref('settings/config/stdAttendance').once('value', snap => {
-            const std = (snap.val() || "08:30").trim();
-            let finalAttend = attendVal;
+            const std = (snap.val() || "08:30").trim(); let finalAttend = attendVal;
             if (attendVal) {
                 const m = attendVal.match(/\d{1,2}:\d{2}/), t = m ? m[0] : attendVal;
                 const toNum = s => { const p = s.split(':'); return parseInt(p[0])*100+parseInt(p[1]); };
@@ -1140,10 +1008,6 @@ const config = {
         db.ref(`reports/${date}/${staff}`).update(data).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
     };
     window.deleteDashboardReport = function(date, staff) { if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
-    window.saveAttendanceEdit = function(name, date) {
-        const special = document.getElementById('editSpecial').value, data = special ? special : { attend: document.getElementById('editAttend').value.trim(), leave: document.getElementById('editLeave').value.trim() };
-        db.ref(`attendance/${date}/${name}`).set(data).then(() => { alert("Updated"); window.closeAdminCustomModal(); });
-    };
     window.deleteAttendance = function(name, date) { if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
     window.saveDashboardSchedule = function(id) {
         const title = document.getElementById('db_sch_title').value, start = document.getElementById('db_sch_start').value, end = document.getElementById('db_sch_end').value;
@@ -1152,7 +1016,21 @@ const config = {
     };
     window.deleteDashboardSchedule = function(id) { if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
 
-    window.initAdminDashboard = function() { window.updateQuickStats(); window.renderRecentAttendance(); window.renderRecentWork(); window.renderRecentSchedule(); window.renderWeeklyLeaves(); };
+    // ── Init ──
+    window.initAdminDashboard = function() {
+        initJakartaInlineInfo();
+        window.updateQuickStats();
+        renderDailyAttendance();
+        renderDailyReports();
+        renderActiveSchedules();
+        window.renderWeeklyLeaves();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof firebase === 'undefined') return;
+        setTimeout(window.initAdminDashboard, 100);
+    });
+
     if (document.getElementById('quick_stats_container')) setTimeout(window.initAdminDashboard, 100);
 })();
 </script>
