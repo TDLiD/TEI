@@ -2,9 +2,9 @@
 
 <style>
 /* ══════════════════════════════════════════
-   STAFF STATISTIC — 3D DARK COCKPIT THEME
-   Deep navy + gold/amber command center
-   SF Mono data readability
+   STAFF STATISTICS — UNIFIED DASHBOARD
+   3D Dark Cockpit · Gold / Cyan / Violet
+   SF Mono · Pretendard · Data Readability
 ══════════════════════════════════════════ */
 
 :root {
@@ -13,7 +13,7 @@
     --surface2:  #0d1628;
     --surface3:  #111e33;
     --border:    rgba(255,255,255,0.06);
-    --border2:   rgba(255,255,255,0.12);
+    --border2:   rgba(255,255,255,0.13);
     --text:      #f1f5f9;
     --muted:     #475569;
     --dim:       #1e293b;
@@ -23,715 +23,1158 @@
     --blue:      #3b82f6;
     --amber:     #f59e0b;
     --cyan:      #06b6d4;
-    --green-dim: rgba(16,185,129,0.12);
-    --red-dim:   rgba(244,63,94,0.12);
-    --blue-dim:  rgba(59,130,246,0.12);
-    --amber-dim: rgba(245,158,11,0.12);
-    --gold-dim:  rgba(250,204,21,0.1);
+    --violet:    #a855f7;
+    --indigo:    #6366f1;
+    --gold-dim:  rgba(250,204,21,0.08);
+    --green-dim: rgba(16,185,129,0.10);
+    --blue-dim:  rgba(59,130,246,0.10);
+    --violet-dim:rgba(168,85,247,0.10);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ── Stat Card (3D) ── */
+/* ── Page wrapper ── */
+.stats-root {
+    font-family: 'SF Mono','Fira Code',monospace;
+    color: var(--text);
+    padding-bottom: 60px;
+}
+
+/* ══ TAB NAV ══ */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    background: linear-gradient(145deg, var(--surface2), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 6px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 16px rgba(0,0,0,0.4);
+    flex-wrap: wrap;
+}
+.tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.23,1,0.32,1);
+    text-align: center;
+    position: relative;
+    border: none;
+    background: transparent;
+}
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.tab-btn.active-att  { background: linear-gradient(135deg,rgba(250,204,21,0.18),rgba(250,204,21,0.06)); color: var(--gold) !important; box-shadow: inset 0 1px 0 rgba(250,204,21,0.15), 0 0 20px rgba(250,204,21,0.12); }
+.tab-btn.active-rep  { background: linear-gradient(135deg,rgba(6,182,212,0.18),rgba(6,182,212,0.06));   color: var(--cyan) !important;  box-shadow: inset 0 1px 0 rgba(6,182,212,0.15), 0 0 20px rgba(6,182,212,0.12); }
+.tab-btn.active-vac  { background: linear-gradient(135deg,rgba(168,85,247,0.18),rgba(168,85,247,0.06)); color: var(--violet) !important;box-shadow: inset 0 1px 0 rgba(168,85,247,0.15), 0 0 20px rgba(168,85,247,0.12); }
+
+/* ══ PERIOD NAV ══ */
+.period-bar {
+    display: flex;
+    gap: 4px;
+    background: linear-gradient(145deg, var(--surface3), var(--surface2));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    width: fit-content;
+}
+.period-btn {
+    padding: 7px 16px;
+    border-radius: 10px;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+}
+.period-btn:hover { color: var(--text); }
+.period-btn.active { background: rgba(255,255,255,0.07); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.07); }
+
+/* ══ NAV ROW ══ */
+.nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.nav-title {
+    font-size: 13px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.02em;
+}
+.nav-btns {
+    display: flex;
+    gap: 4px;
+    background: linear-gradient(145deg, var(--surface3), var(--surface2));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.nav-arrow {
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+}
+.nav-arrow:hover { color: #60a5fa; background: rgba(59,130,246,0.1); }
+
+/* ══ STAT CARD ══ */
 .stat-card {
     position: relative;
     background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
     border: 1px solid var(--border);
     border-top: 1px solid var(--border2);
     border-radius: 20px;
-    padding: 20px 22px;
-    margin-bottom: 16px;
+    padding: 22px;
+    margin-bottom: 14px;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.07),
-        inset 0 -1px 0 rgba(0,0,0,0.3),
         0 8px 28px rgba(0,0,0,0.5),
         0 2px 8px rgba(0,0,0,0.3);
-    transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), box-shadow 0.35s ease;
+    transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), box-shadow 0.3s ease;
     overflow: hidden;
 }
 .stat-card::before {
     content: '';
     position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(250,204,21,0.25), transparent);
-    pointer-events: none;
-}
-.stat-card::after {
-    content: '';
-    position: absolute; top: -60px; right: -60px;
-    width: 160px; height: 160px;
-    background: radial-gradient(circle, rgba(250,204,21,0.06), transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--card-accent, rgba(250,204,21,0.22)), transparent);
 }
 .stat-card:hover {
-    transform: translateY(-3px) rotateX(2deg);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.09),
-        0 20px 44px rgba(0,0,0,0.6),
-        0 4px 14px rgba(0,0,0,0.4);
+    transform: translateY(-3px) rotateX(1.5deg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 18px 40px rgba(0,0,0,0.6);
+}
+.stat-card h3 {
+    font-size: 11px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    color: var(--card-accent-solid, var(--gold));
+    text-shadow: 0 0 16px rgba(250,204,21,0.25);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* ── Chart Container — 작게 ── */
-.chart-container {
-    position: relative;
-    height: 220px;
-    width: 100%;
-}
+/* Accent variants */
+.accent-gold  { --card-accent: rgba(250,204,21,0.22); --card-accent-solid: var(--gold); }
+.accent-cyan  { --card-accent: rgba(6,182,212,0.22);  --card-accent-solid: var(--cyan); }
+.accent-violet{ --card-accent: rgba(168,85,247,0.22); --card-accent-solid: var(--violet); }
 
-/* ── Summary Cards ── */
-#summaryCards {
+/* ══ KPIS ══ */
+.kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
-@media (min-width: 640px) {
-    #summaryCards { grid-template-columns: repeat(4, 1fr); }
-}
+@media (min-width: 560px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 
-#summaryCards > div {
+.kpi {
     position: relative;
     background: linear-gradient(145deg, var(--surface2), var(--surface));
     border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
     border-radius: 16px;
     padding: 14px 12px;
     text-align: center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.4);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.4);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     overflow: hidden;
 }
-#summaryCards > div::before {
+.kpi::before {
     content: '';
     position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    background: linear-gradient(90deg, transparent, var(--kpi-line, rgba(255,255,255,0.12)), transparent);
 }
-#summaryCards > div:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 12px 28px rgba(0,0,0,0.55);
-}
+.kpi:hover { transform: translateY(-4px) scale(1.02); box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 12px 28px rgba(0,0,0,0.55); }
+.kpi-label { font-size: 7px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.kpi-val   { font-size: 24px; font-weight: 900; line-height: 1; text-shadow: 0 0 16px currentColor; }
+.kpi-sub   { font-size: 8px; color: var(--muted); margin-top: 4px; }
 
-/* ── Tab Nav ── */
-.flex.gap-6.border-b {
-    border-color: var(--border) !important;
-    background: linear-gradient(145deg, var(--surface2), var(--surface));
-    border-radius: 14px 14px 0 0;
-    padding: 10px 16px 0 !important;
-    margin-bottom: 16px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-}
-.stat-tab-btn {
-    transition: all 0.25s;
+/* ══ CHART ══ */
+.chart-wrap {
     position: relative;
-    font-family: 'SF Mono', monospace;
-    font-size: 9px !important;
-    letter-spacing: 0.12em;
-    color: var(--muted) !important;
-    padding-bottom: 10px !important;
+    height: 210px;
+    width: 100%;
 }
-.stat-tab-btn:hover { color: var(--text) !important; }
-.stat-tab-btn.active {
-    color: var(--gold) !important;
-    text-shadow: 0 0 12px rgba(250,204,21,0.4);
+.chart-wrap-sm { height: 160px; }
+
+/* ══ HEATMAP ══ */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-top: 8px;
 }
-.stat-tab-btn.active::after {
-    content: '';
-    position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    border-radius: 2px;
-    box-shadow: 0 0 8px rgba(250,204,21,0.5);
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s, box-shadow 0.15s;
+    min-width: 0;
+}
+.heatmap-cell:hover { transform: scale(1.3); z-index: 10; }
+.heatmap-day-label {
+    font-size: 7px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 4px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+.heatmap-week-labels {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 2px;
 }
 
-/* ── Nav Buttons ── */
-.nav-btn {
-    font-family: 'SF Mono', monospace;
-    font-size: 9px !important;
-    font-weight: 900 !important;
+/* ══ BADGE TABLE ══ */
+.badge-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+.badge-table th { font-size: 7px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 4px 10px; }
+.badge-table td { padding: 8px 10px; font-size: 10px; }
+.badge-table tr { background: linear-gradient(145deg, var(--surface3), var(--surface2)); border-radius: 10px; }
+.badge-table tr:hover td { background: rgba(59,130,246,0.04); }
+.badge-row td:first-child { border-radius: 10px 0 0 10px; }
+.badge-row td:last-child  { border-radius: 0 10px 10px 0; }
+
+/* ══ TYPE BADGE ══ */
+.type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 8px;
+    font-weight: 900;
+    color: white;
     letter-spacing: 0.06em;
-    border-radius: 8px;
+}
+
+/* ══ PROGRESS BAR ══ */
+.prog-track {
+    width: 100%;
+    background: rgba(30,41,59,0.8);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+    margin-top: 4px;
+}
+.prog-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ══ STREAKS / RANKS ══ */
+.rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: linear-gradient(145deg, var(--surface3), var(--surface2));
+    border-radius: 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border);
     transition: all 0.2s;
-    padding: 5px 10px;
+}
+.rank-row:hover { border-color: rgba(99,102,241,0.3); transform: translateX(4px); }
+.rank-num { font-size: 10px; font-weight: 900; color: var(--muted); min-width: 20px; }
+.rank-name { font-size: 11px; font-weight: 700; flex: 1; }
+.rank-val { font-size: 10px; font-weight: 900; }
+
+/* ══ SECTION DIVIDER ══ */
+.section-row { display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 700px) { .section-row { flex-direction: row; } }
+.section-row > * { flex: 1; min-width: 0; }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--surface2); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 10px; }
+
+/* ══ FADE IN ══ */
+.fade-in { animation: fadeSlide 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes fadeSlide { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+/* ══ BLINK ══ */
+@keyframes blink-red {
+    0%,100% { opacity:1; color:#f87171; }
+    50%      { opacity:0.3; }
+}
+.blink-text { animation: blink-red 1.2s infinite; font-weight: 900; }
+
+/* ══ EMPTY STATE ══ */
+.empty-state { text-align:center; padding:30px; color:var(--muted); font-size:11px; font-style:italic; }
+
+/* ══ LEGEND PILL ══ */
+.legend-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px 9px; font-size: 8px; font-weight: 700;
     color: var(--muted);
 }
-.nav-btn:hover {
-    background: rgba(59,130,246,0.12) !important;
-    color: #60a5fa !important;
-    box-shadow: 0 0 10px rgba(59,130,246,0.15);
-}
-
-/* Nav btn wrapper */
-.flex.bg-slate-800.rounded-lg {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-    padding: 3px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important;
-}
-
-/* ── Chart title ── */
-.stat-card h3 {
-    font-family: 'SF Mono', 'Fira Code', monospace !important;
-    font-size: 12px !important;
-    font-weight: 900 !important;
-    font-style: italic;
-    letter-spacing: -0.01em;
-    color: var(--gold) !important;
-    text-shadow: 0 0 16px rgba(250,204,21,0.25);
-}
-
-/* ── Section header row ── */
-.stat-card .flex.flex-col.md\\:flex-row {
-    margin-bottom: 14px !important;
-}
-
-/* ── Summary card labels/values ── */
-#summaryCards .text-\[9px\] {
-    font-family: 'SF Mono', monospace;
-    letter-spacing: 0.1em;
-    color: var(--muted) !important;
-}
-#summaryCards .text-2xl {
-    font-family: 'SF Mono', monospace;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    text-shadow: 0 0 16px currentColor;
-}
-#summaryCards .text-\[10px\] {
-    font-family: 'SF Mono', monospace;
-    color: var(--muted) !important;
-}
-
-/* ── Modal ── */
-#statDetailModal {
-    z-index: 9999 !important;
-    position: fixed !important;
-    inset: 0 !important;
-    background: rgba(0,0,0,0.88) !important;
-    backdrop-filter: blur(12px) !important;
-}
-#statDetailModal > div {
-    background: linear-gradient(145deg, #0d1628, #080f1e) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-top: 1px solid rgba(255,255,255,0.15) !important;
-    border-radius: 24px !important;
-    box-shadow:
-        0 40px 80px rgba(0,0,0,0.7),
-        inset 0 1px 0 rgba(255,255,255,0.07) !important;
-    animation: modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
-}
-@keyframes modalIn {
-    from { opacity:0; transform: scale(0.93) translateY(20px); }
-    to   { opacity:1; transform: none; }
-}
-#statDetailModal .p-6.border-b {
-    background: rgba(255,255,255,0.02) !important;
-    border-color: var(--border) !important;
-}
-#statDetailModal thead tr {
-    background: var(--surface2) !important;
-    border-color: var(--border) !important;
-}
-#statDetailModal thead th {
-    color: var(--muted) !important;
-    font-family: 'SF Mono', monospace;
-    font-size: 8px !important;
-    letter-spacing: 0.12em;
-}
-#statDetailModal tbody tr:hover {
-    background: rgba(59,130,246,0.05) !important;
-}
-#statDetailModal .p-4.bg-slate-900\/30 {
-    background: rgba(4,8,16,0.5) !important;
-    border-color: var(--border) !important;
-}
-
-/* ── Scrollbar ── */
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: var(--surface2); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
-
-/* ── Leave Histogram card ── */
-#leaveHistSection {
-    border-color: rgba(250,204,21,0.15) !important;
-}
-#leaveHistSection::before {
-    background: linear-gradient(90deg, transparent, rgba(250,204,21,0.2), transparent) !important;
-}
-
-/* ── Summary card color accents ── */
-#summaryCards > div:nth-child(1) { border-top-color: rgba(16,185,129,0.3); }
-#summaryCards > div:nth-child(1)::before {
-    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.2), transparent);
-}
-#summaryCards > div:nth-child(2) { border-top-color: rgba(244,63,94,0.3); }
-#summaryCards > div:nth-child(2)::before {
-    background: linear-gradient(90deg, transparent, rgba(244,63,94,0.2), transparent);
-}
-#summaryCards > div:nth-child(3) { border-top-color: rgba(245,158,11,0.3); }
-#summaryCards > div:nth-child(3)::before {
-    background: linear-gradient(90deg, transparent, rgba(245,158,11,0.2), transparent);
-}
-#summaryCards > div:nth-child(4) { border-top-color: rgba(59,130,246,0.3); }
-#summaryCards > div:nth-child(4)::before {
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
-}
-
-/* ── Fade in animation ── */
-.animate-fadeIn { animation: fadeIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
-
-/* ── Utility overrides ── */
-.space-y-8 > * + * { margin-top: 0 !important; }
-.space-y-8 { display: flex; flex-direction: column; gap: 0; }
-.pb-10 { padding-bottom: 40px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 </style>
 
+<div class="stats-root fade-in">
 
-<div class="animate-fadeIn space-y-8 pb-10">
-    <div class="flex gap-6 border-b border-slate-800 px-2">
-        <button onclick="switchStatTab('att')" id="tabBtnAtt" class="stat-tab-btn active pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Attendance Stats</button>
-        <button onclick="switchStatTab('leave')" id="tabBtnLeave" class="stat-tab-btn pb-3 text-sm font-black text-slate-500 tracking-widest uppercase">Leave Stats</button>
+<!-- ══ TAB BAR ══ -->
+<div class="tab-bar">
+    <button class="tab-btn active-att" id="tabAtt" onclick="switchStatTab('att')">📊 Attendance</button>
+    <button class="tab-btn" id="tabRep" onclick="switchStatTab('rep')">📝 Work Report</button>
+    <button class="tab-btn" id="tabVac" onclick="switchStatTab('vac')">🏖️ Vacation</button>
+</div>
+
+<!-- ══ KPI STRIP ══ -->
+<div class="kpi-grid" id="kpiStrip">
+    <div class="kpi" style="--kpi-line:rgba(16,185,129,0.25)">
+        <div class="kpi-label">Attendance</div>
+        <div class="kpi-val text-emerald-400" id="kpiA">—</div>
+        <div class="kpi-sub" id="kpiASub">days</div>
     </div>
-<!-- 첫 번째 section.stat-card 바로 위에 추가 -->
-<div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
-        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Attendance Days</div>
-        <div id="sumCardAtt" class="text-2xl font-black text-emerald-400">—</div>
-        <div id="sumCardAttPct" class="text-[10px] text-slate-500 mt-1">—%</div>
+    <div class="kpi" style="--kpi-line:rgba(244,63,94,0.25)">
+        <div class="kpi-label">Late</div>
+        <div class="kpi-val text-rose-400" id="kpiB">—</div>
+        <div class="kpi-sub" id="kpiBSub">days</div>
     </div>
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
-        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Late Days</div>
-        <div id="sumCardLate" class="text-2xl font-black text-rose-400">—</div>
-        <div id="sumCardLatePct" class="text-[10px] text-slate-500 mt-1">—%</div>
+    <div class="kpi" style="--kpi-line:rgba(245,158,11,0.25)">
+        <div class="kpi-label">Leave</div>
+        <div class="kpi-val text-amber-400" id="kpiC">—</div>
+        <div class="kpi-sub" id="kpiCSub">days</div>
     </div>
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
-        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Leave Days</div>
-        <div id="sumCardLeave" class="text-2xl font-black text-amber-400">—</div>
-        <div id="sumCardLeavePct" class="text-[10px] text-slate-500 mt-1">—%</div>
-    </div>
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
-        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Punctuality</div>
-        <div id="sumCardPunct" class="text-2xl font-black text-blue-400">—</div>
-        <div id="sumCardPunctLabel" class="text-[10px] text-slate-500 mt-1">On-time rate</div>
+    <div class="kpi" style="--kpi-line:rgba(59,130,246,0.25)">
+        <div class="kpi-label">Punctuality</div>
+        <div class="kpi-val text-blue-400" id="kpiD">—</div>
+        <div class="kpi-sub" id="kpiDSub">on-time rate</div>
     </div>
 </div>
 
-    <section class="stat-card">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-                <h3 class="text-xl font-black text-yellow-400 flex items-center gap-2">
-                    📊 <span id="statTitleMonth">Attendance</span> - Monthly (<span id="txtMonth"></span>)
-                </h3>
-            </div>
-            <div class="flex bg-slate-800 rounded-lg p-1">
-                <button onclick="changeStatPeriod('month', -1)" class="nav-btn px-3 py-1 text-slate-400 transition rounded-md text-xs font-black">PREV MONTH</button>
-                <button onclick="changeStatPeriod('month', 1)" class="nav-btn px-3 py-1 text-slate-400 transition rounded-md text-xs font-black ml-1">NEXT MONTH</button>
-            </div>
-        </div>
-        <div class="chart-container">
-            <canvas id="monthlyChart"></canvas>
-        </div>
-    </section>
-<section id="leaveHistSection" class="stat-card" style="display:none;">
-    <h3 class="text-xl font-black text-yellow-400 mb-6 flex items-center gap-2">
-        🕐 Checkout Time Distribution (This Month)
-    </h3>
-    <div class="chart-container">
-        <canvas id="leaveHistChart"></canvas>
+<!-- ══ PERIOD + NAV ══ -->
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+    <div class="period-bar">
+        <button class="period-btn" id="pWeek"  onclick="setPeriod('week')">Week</button>
+        <button class="period-btn active" id="pMonth" onclick="setPeriod('month')">Month</button>
+        <button class="period-btn" id="pYear"  onclick="setPeriod('year')">Year</button>
     </div>
-</section>
+    <div class="nav-btns">
+        <button class="nav-arrow" onclick="navigate(-1)">◀ PREV</button>
+        <button class="nav-arrow" onclick="navigate(0)" style="color:#60a5fa">TODAY</button>
+        <button class="nav-arrow" onclick="navigate(1)">NEXT ▶</button>
+    </div>
+</div>
+<div style="font-size:11px;font-weight:900;font-style:italic;color:var(--text);margin-bottom:14px;letter-spacing:-0.02em" id="periodLabel">—</div>
 
-    <section class="stat-card">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-                <h3 class="text-xl font-black text-yellow-400 flex items-center gap-2">
-                    📊 <span id="statTitleYear">Attendance</span> - Yearly (<span id="txtYear"></span>)
-                </h3>
-            </div>
-            <div class="flex bg-slate-800 rounded-lg p-1">
-                <button onclick="changeStatPeriod('year', -1)" class="nav-btn px-3 py-1 text-slate-400 transition rounded-md text-xs font-black">PREV YEAR</button>
-                <button onclick="changeStatPeriod('year', 1)" class="nav-btn px-3 py-1 text-slate-400 transition rounded-md text-xs font-black ml-1">NEXT YEAR</button>
-            </div>
-        </div>
-        <div class="chart-container">
-            <canvas id="yearlyChart"></canvas>
-        </div>
-    </section>
+<!-- ══════════════════════════════════
+     ATTENDANCE TAB
+══════════════════════════════════ -->
+<div id="panelAtt">
 
-    <section class="stat-card">
-        <h3 class="text-xl font-black text-yellow-400 mb-6 flex items-center gap-2">
-            🌍 Overall <span id="statTitleOverall">Attendance</span> Statistics
-        </h3>
-        <div class="chart-container">
-            <canvas id="overallChart"></canvas>
+    <div class="section-row">
+        <!-- Bar chart: per-user attendance breakdown -->
+        <div class="stat-card accent-gold" style="flex:2">
+            <h3>📊 Attendance Breakdown by Staff</h3>
+            <div class="chart-wrap"><canvas id="attBarChart"></canvas></div>
         </div>
-    </section>
+        <!-- Donut: type distribution -->
+        <div class="stat-card accent-gold">
+            <h3>🍩 Type Distribution</h3>
+            <div class="chart-wrap"><canvas id="attDonut"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Checkout time heatmap / line chart -->
+    <div class="stat-card accent-gold">
+        <h3>🕐 Daily Checkout Time Trend</h3>
+        <div class="chart-wrap"><canvas id="checkoutLine"></canvas></div>
+    </div>
+
+    <!-- Attendance heatmap -->
+    <div class="stat-card accent-gold">
+        <h3>🗓️ My Attendance Heatmap</h3>
+        <div id="attHeatmap"></div>
+    </div>
+
+    <!-- Ranking -->
+    <div class="section-row">
+        <div class="stat-card accent-gold">
+            <h3>🏆 Punctuality Ranking</h3>
+            <div id="punctRank"></div>
+        </div>
+        <div class="stat-card accent-gold">
+            <h3>📅 Late Arrival Ranking</h3>
+            <div id="lateRank"></div>
+        </div>
+    </div>
+
 </div>
 
-<div id="statDetailModal" class="hidden flex items-center justify-center bg-slate-900/95 backdrop-blur-md p-4">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-            <h3 class="text-xl font-black text-yellow-400">
-                <span id="detailUserName" class="text-white"></span>'s Detail Log
-            </h3>
-            <button onclick="closeStatModal()" class="text-slate-400 hover:text-white text-3xl transition-transform hover:rotate-90">&times;</button>
+<!-- ══════════════════════════════════
+     REPORT TAB
+══════════════════════════════════ -->
+<div id="panelRep" style="display:none">
+
+    <div class="section-row">
+        <!-- Completion rate bar -->
+        <div class="stat-card accent-cyan" style="flex:2">
+            <h3>📝 Report Completion Rate by Staff</h3>
+            <div class="chart-wrap"><canvas id="repBarChart"></canvas></div>
         </div>
-        <div class="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-            <table class="w-full text-left text-sm text-slate-300">
-                <thead class="text-xs uppercase text-slate-500 border-b border-slate-700 sticky top-0 bg-slate-800">
-                    <tr>
-                        <th class="py-3 px-2">Date</th>
-                        <th class="py-3 px-2">Status / Time</th>
-                        <th class="py-3 px-2">Notes</th>
-                    </tr>
-                </thead>
-                <tbody id="detailTableBody" class="divide-y divide-slate-700/50">
-                    </tbody>
+        <!-- My status donut -->
+        <div class="stat-card accent-cyan">
+            <h3>✅ My Status Breakdown</h3>
+            <div class="chart-wrap"><canvas id="repDonut"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Daily report activity -->
+    <div class="stat-card accent-cyan">
+        <h3>📈 Team Daily Report Activity</h3>
+        <div class="chart-wrap"><canvas id="repLine"></canvas></div>
+    </div>
+
+    <!-- My achievement -->
+    <div class="stat-card accent-cyan">
+        <h3>🎯 My Report Achievement</h3>
+        <div style="display:flex;flex-direction:column;gap:12px" id="repAchieve"></div>
+    </div>
+
+    <!-- Missing / Written dates -->
+    <div class="section-row">
+        <div class="stat-card accent-cyan">
+            <h3>✍️ Written Dates</h3>
+            <div id="repWritten" style="display:flex;flex-wrap:wrap;gap:6px;font-size:10px;color:var(--cyan)"></div>
+        </div>
+        <div class="stat-card accent-cyan">
+            <h3 style="color:var(--red)">⚠️ Missing Dates</h3>
+            <div id="repMissing" style="display:flex;flex-wrap:wrap;gap:6px;font-size:10px"></div>
+        </div>
+    </div>
+
+    <!-- Staff report table -->
+    <div class="stat-card accent-cyan">
+        <h3>👥 Staff Report Summary</h3>
+        <div style="overflow-x:auto">
+            <table class="badge-table">
+                <thead><tr><th>Staff</th><th>Written</th><th>Workdays</th><th>Rate</th><th>Streak</th><th>Last Status</th></tr></thead>
+                <tbody id="repTeamTable"></tbody>
             </table>
         </div>
-        <div class="p-4 bg-slate-900/30 border-t border-slate-700 flex justify-end">
-            <button onclick="closeStatModal()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-bold transition">Close</button>
-        </div>
     </div>
+
 </div>
 
+<!-- ══════════════════════════════════
+     VACATION TAB
+══════════════════════════════════ -->
+<div id="panelVac" style="display:none">
+
+    <div class="section-row">
+        <!-- Leave days bar -->
+        <div class="stat-card accent-violet" style="flex:2">
+            <h3>🏖️ Leave Days by Staff</h3>
+            <div class="chart-wrap"><canvas id="vacBarChart"></canvas></div>
+        </div>
+        <!-- Type donut -->
+        <div class="stat-card accent-violet">
+            <h3>🍩 Leave Type Distribution</h3>
+            <div class="chart-wrap"><canvas id="vacDonut"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Monthly leave timeline -->
+    <div class="stat-card accent-violet">
+        <h3>📆 Leave Timeline</h3>
+        <div class="chart-wrap"><canvas id="vacLine"></canvas></div>
+    </div>
+
+    <!-- Approval status -->
+    <div class="section-row">
+        <div class="stat-card accent-violet">
+            <h3>📋 My Leave History</h3>
+            <div id="vacMyList" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
+        </div>
+        <div class="stat-card accent-violet">
+            <h3>👥 Team Leave This Period</h3>
+            <div id="vacTeamList" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
+        </div>
+    </div>
+
+    <!-- Status breakdown -->
+    <div class="stat-card accent-violet">
+        <h3>✅ Approval Status Overview</h3>
+        <div id="vacStatusBars" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+</div>
+
+</div><!-- /stats-root -->
+
 <script>
-    (function() {
-        const db = firebase.database();
-        let monthViewDate = new Date(); 
-        let yearViewDate = new Date();
-        let currentTab = 'att';
-            let showOnlyMe = false;
-    const currentUser = sessionStorage.getItem('loggedInUser') || '';
-        const typeColors = {
-            'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308',
-            'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569',
-            'LEAVE_DONE': '#6366f1'
-        };
+(function () {
+    const db      = firebase.database();
+    const me      = sessionStorage.getItem('loggedInUser') || '';
+    let cachedAtt = {}, cachedRep = {}, cachedVac = {};
+    let currentTab    = 'att';
+    let currentPeriod = 'month';
+    let viewOffset    = 0;          // 0 = current, -1 = prev, etc.
 
-        let charts = { month: null, year: null, overall: null };
-        let cachedData = null;
+    /* ════════════════════ TYPE COLORS ════════════════════ */
+    const ATT_COLORS = {
+        ATT: '#10b981', LATE: '#f43f5e', WO: '#3b82f6',
+        PEL: '#eab308', ANL: '#f97316', HAL: '#a855f7',
+        SIL: '#2dd4bf', SPL: '#64748b', EVL: '#475569'
+    };
+    const LEAVE_TYPES  = ['WO','PEL','ANL','HAL','SIL','SPL','EVL'];
+    const LEAVE_LABELS = { WO:'Work Off', PEL:'Personal', ANL:'Annual', HAL:'Half Day', SIL:'Sick', SPL:'Special', EVL:'Event' };
+    const REP_COLORS   = { Completed:'#10b981', 'In Progress':'#3b82f6', Pending:'#f59e0b' };
 
-        window.switchStatTab = function(tab) {
-            currentTab = tab;
-            document.getElementById('tabBtnAtt').classList.toggle('active', tab === 'att');
-            document.getElementById('tabBtnLeave').classList.toggle('active', tab === 'leave');
-            const titles = ['statTitleMonth', 'statTitleYear', 'statTitleOverall'];
-            const label = tab === 'att' ? 'Attendance' : 'Leave';
-            titles.forEach(id => document.getElementById(id).innerText = label);
-    // ▼ 히스토그램 섹션 표시/숨김
-    const histSection = document.getElementById('leaveHistSection');
-    if (histSection) histSection.style.display = tab === 'leave' ? 'block' : 'none';
-    // ▲ 추가
-            processAndRender();
-        };
+    /* ════════════════════ DATE UTILS ════════════════════ */
+    function getPeriodRange() {
+        const now = new Date();
+        let start, end, label;
 
-        window.changeStatPeriod = function(type, offset) {
-            if(type === 'month') monthViewDate.setMonth(monthViewDate.getMonth() + offset);
-            else if(type === 'year') yearViewDate.setFullYear(yearViewDate.getFullYear() + offset);
-            processAndRender();
-        };
-
-        // --- 추가 기능: 모달 닫기 ---
-        window.closeStatModal = function() {
-            document.getElementById('statDetailModal').classList.add('hidden');
-        };
-
-        // --- 추가 기능: 상세 정보 표시 로직 ---
-        window.showUserDetail = function(userName, periodType) {
-            const monthKey = monthViewDate.toISOString().substring(0, 7);
-            const yearKey = yearViewDate.getFullYear().toString();
-            const tbody = document.getElementById('detailTableBody');
-            
-            document.getElementById('detailUserName').innerText = userName;
-            tbody.innerHTML = '';
-
-            // cachedData에서 해당 사용자의 기록만 필터링 및 정렬 (최신순)
-            const logs = Object.entries(cachedData)
-                .filter(([date]) => {
-                    if (periodType === 'month') return date.startsWith(monthKey);
-                    if (periodType === 'year') return date.startsWith(yearKey);
-                    return true; // overall
-                })
-                .filter(([_, dayData]) => dayData[userName])
-                .sort((a, b) => b[0].localeCompare(a[0]));
-
-            if (logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500">No records found.</td></tr>';
-            }
-
-            logs.forEach(([date, dayData]) => {
-                const record = dayData[userName];
-                // 근태 타입 추출
-                let type = (typeof record === 'string') ? record : (record.attend || record.leave || '-');
-                // 비고/사유 추출 (데이터 구조에 따라 remark 또는 reason 사용)
-                let note = (record.remark || record.reason || '-');
-                
-                // 간단한 타입 정규화 (배지 색상용)
-                const typeKey = type.includes('LATE') ? 'LATE' : (type.includes('ATT') ? 'ATT' : type);
-
-                const row = `
-                    <tr class="border-b border-slate-700/50 hover:bg-slate-700/30 transition">
-                        <td class="py-3 px-2 font-mono text-xs">${date}</td>
-                        <td class="py-3 px-2">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white" style="background:${typeColors[typeKey] || '#475569'}">
-                                ${type}
-                            </span>
-                        </td>
-                        <td class="py-3 px-2 text-slate-400 text-xs">${note}</td>
-                    </tr>`;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-
-            document.getElementById('statDetailModal').classList.remove('hidden');
-        };
-
-        async function initStats() {
-            try {
-                const snap = await db.ref('attendance').once('value');
-                cachedData = snap.val() || {};
-                if (document.getElementById('monthlyChart')) {
-                    processAndRender();
-                }
-            } catch (e) {
-                console.error("Stats Init Error:", e);
-            }
+        if (currentPeriod === 'week') {
+            const base = new Date(now);
+            base.setDate(now.getDate() + viewOffset * 7);
+            const dow = base.getDay();
+            start = new Date(base); start.setDate(base.getDate() - dow);
+            end   = new Date(start); end.setDate(start.getDate() + 6);
+            label = `Week of ${fmt(start)} – ${fmt(end)}`;
+        } else if (currentPeriod === 'month') {
+            const d = new Date(now.getFullYear(), now.getMonth() + viewOffset, 1);
+            start = d;
+            end   = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+            label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+        } else {
+            const y = now.getFullYear() + viewOffset;
+            start = new Date(y, 0, 1);
+            end   = new Date(y, 11, 31);
+            label = `Year ${y}`;
         }
-
-// ▼ 교체: renderLeaveHistogram 호출을 processAndRender 안으로 이동
-        function processAndRender() {
-            if (!cachedData || !document.getElementById('monthlyChart')) return;
-            const monthKey = monthViewDate.toISOString().substring(0, 7);
-            const yearKey = yearViewDate.getFullYear().toString();
-            document.getElementById('txtMonth').innerText = monthViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-            document.getElementById('txtYear').innerText = yearKey;
-            const stats = { month: {}, year: {}, overall: {} };
-
-            Object.entries(cachedData).forEach(([date, dayData]) => {
-                Object.entries(dayData).forEach(([user, record]) => {
-                    if (currentTab === 'att') {
-                        let type = (typeof record === 'string') ? record : (record.attend ? (record.attend.includes("ATT") ? "ATT" : (record.attend.includes("LATE") ? "LATE" : "")) : "");
-                        if (!type || !typeColors[type]) return;
-                        const updateCount = (obj) => {
-                            if (!obj[user]) obj[user] = {};
-                            obj[user][type] = (obj[user][type] || 0) + 1;
-                        };
-                        if (date.startsWith(monthKey)) updateCount(stats.month);
-                        if (date.startsWith(yearKey)) updateCount(stats.year);
-                        updateCount(stats.overall);
-                    } else {
-                        if (typeof record !== 'string' && record.leave) {
-                            const timeParts = record.leave.split(':');
-                            const decimalTime = parseInt(timeParts[0]) + (parseInt(timeParts[1]) / 60);
-                            const updateTimeData = (obj) => {
-                                if (!obj[user]) obj[user] = [];
-                                obj[user].push({ x: date, y: decimalTime });
-                            };
-                            if (date.startsWith(monthKey)) updateTimeData(stats.month);
-                            if (date.startsWith(yearKey)) updateTimeData(stats.year);
-                            updateTimeData(stats.overall);
-                        }
-                    }
-                });
-            });
-
-            renderChart('monthlyChart', 'month', stats.month);
-            renderChart('yearlyChart', 'year', stats.year);
-            renderChart('overallChart', 'overall', stats.overall);
-            if (currentTab === 'att') updateSummaryCards(stats.month);
-            if (currentTab === 'leave') renderLeaveHistogram(stats.month); // ← 함수 안으로 이동
-        }
-
-        function updateSummaryCards(monthStats) {
-            if (!currentUser || !monthStats[currentUser]) return;
-            const my = monthStats[currentUser];
-            const att   = my['ATT']  || 0;
-            const late  = my['LATE'] || 0;
-            const leaveTypes = ['WO','PEL','ANL','HAL','SIL','SPL'];
-            const leave = leaveTypes.reduce((s, t) => s + (my[t] || 0), 0);
-            const total = att + late + leave;
-            const punct = (att + late) > 0 ? Math.round((att / (att + late)) * 100) : 0;
-            const attPct  = total > 0 ? Math.round(((att + late) / total) * 100) : 0;
-            const latePct = (att + late) > 0 ? Math.round((late / (att + late)) * 100) : 0;
-            const leavePct = total > 0 ? Math.round((leave / total) * 100) : 0;
-
-            const el = id => document.getElementById(id);
-            if (el('sumCardAtt'))      el('sumCardAtt').innerText      = att + late;
-            if (el('sumCardAttPct'))   el('sumCardAttPct').innerText   = attPct + '% of total';
-            if (el('sumCardLate'))     el('sumCardLate').innerText     = late;
-            if (el('sumCardLatePct'))  el('sumCardLatePct').innerText  = latePct + '% of attended';
-            if (el('sumCardLeave'))    el('sumCardLeave').innerText    = leave;
-            if (el('sumCardLeavePct')) el('sumCardLeavePct').innerText = leavePct + '% of total';
-            if (el('sumCardPunct'))    el('sumCardPunct').innerText    = punct + '%';
-
-            const punctEl = el('sumCardPunct');
-            if (punctEl) punctEl.style.color = punct >= 90 ? '#10b981' : punct >= 70 ? '#f59e0b' : '#f43f5e';
-        }
-
-        function renderChart(canvasId, chartType, chartData) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || typeof Chart === 'undefined') return;
-            const ctx = canvas.getContext('2d');
-            const existingChart = Chart.getChart(canvas);
-            if (existingChart) { existingChart.destroy(); }
-
-            if (currentTab === 'att') {
-                const users = Object.keys(chartData).sort();
-                const relevantTypes = ['ATT', 'LATE', 'WO', 'PEL', 'ANL', 'HAL', 'SIL', 'SPL', 'EVL'];
-                const datasets = relevantTypes.map(type => {
-                    const dataPoints = users.map(user => chartData[user][type] || 0);
-                    if (dataPoints.every(v => v === 0)) return null;
-                    return {
-                        label: type,
-                        data: dataPoints,
-                        backgroundColor: typeColors[type],
-                        borderRadius: 4
-                    };
-                }).filter(d => d !== null);
-
-                charts[chartType] = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: users, datasets: datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        // --- 추가 코드: 클릭 이벤트 핸들러 ---
-                        onClick: (e, elements) => {
-                            if (elements.length > 0 && currentTab === 'att') {
-                                const index = elements[0].index;
-                                const userName = charts[chartType].data.labels[index];
-                                showUserDetail(userName, chartType);
-                            }
-                        },
-                        scales: {
-                            x: { stacked: false, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                            y: { 
-                                beginAtZero: true, 
-                                ticks: { stepSize: 1, color: '#94a3b8', callback: (value) => value + 'd' },
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                            }
-                        },
-                        plugins: {
-                            legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } }
-                        }
-                    }
-                });
-            } else {
-                const datasets = Object.entries(chartData).map(([user, points], idx) => {
-                    points.sort((a, b) => a.x.localeCompare(b.x));
-                    const color = `hsl(${(idx * 137.5) % 360}, 70%, 60%)`; 
-                    return {
-                        label: user,
-                        data: points,
-                        borderColor: color,
-                        backgroundColor: color,
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        tension: 0.3,
-                        fill: false
-                    };
-                });
-
-                charts[chartType] = new Chart(ctx, {
-                    type: 'line',
-                    data: { datasets: datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { type: 'category', ticks: { color: '#64748b', font: { size: 10 } } },
-                            y: {
-                                min: 17.5, max: 22.0,
-                                afterBuildTicks: function(axis) {
-                                    const ticks = [];
-                                    for (let time = 17.5; time <= 18.5 + 0.0001; time += (5/60)) { ticks.push({ value: time }); }
-                                    for (let time = 18.5 + (20/60); time <= 22.0 + 0.0001; time += (20/60)) { ticks.push({ value: time }); }
-                                    axis.ticks = ticks;
-                                },
-                                ticks: {
-                                    color: '#94a3b8', font: { size: 9 }, autoSkip: false,
-                                    callback: function(value) {
-                                        const h = Math.floor(value + 0.0001);
-                                        const m = Math.round((value - h) * 60);
-                                        return `${h}:${m === 0 ? '00' : (m < 10 ? '0' + m : m)}`;
-                                    }
-                                },
-                                grid: { 
-                                    color: (context) => (context.tick && context.tick.value % 1 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
-                                    lineWidth: (context) => (context.tick && context.tick.value % 1 === 0 ? 1.5 : 1)
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: { position: 'top', labels: { color: '#f8fafc', font: { size: 10 } } },
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => {
-                                        const h = Math.floor(ctx.parsed.y + 0.0001);
-                                        const m = Math.round((ctx.parsed.y - h) * 60);
-                                        return `${ctx.dataset.label}: ${h}:${m < 10 ? '0' + m : m}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-function renderLeaveHistogram(monthData) {
-    const canvas = document.getElementById('leaveHistChart');
-    if (!canvas) return;
-    const existing = Chart.getChart(canvas);
-    if (existing) existing.destroy();
-
-    // 30분 단위 버킷 생성 (17:30 ~ 21:30)
-    const buckets = {};
-    for (let h = 17; h <= 21; h++) {
-        buckets[`${h}:00`] = 0;
-        buckets[`${h}:30`] = 0;
+        document.getElementById('periodLabel').innerText = label;
+        return { start: fmtDate(start), end: fmtDate(end) };
     }
-    buckets['22:00'] = 0;
 
-    Object.values(monthData).forEach(points => {
-        points.forEach(p => {
-            const totalMins = Math.round(p.y * 60);
-            const bucket = Math.floor(totalMins / 30) * 30;
-            const h = Math.floor(bucket / 60);
-            const m = bucket % 60;
-            const key = `${h}:${m === 0 ? '00' : '30'}`;
-            if (buckets[key] !== undefined) buckets[key]++;
-        });
-    });
+    function fmtDate(d) { return d.toISOString().split('T')[0]; }
+    function fmt(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
 
-    new Chart(canvas.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: Object.keys(buckets),
-            datasets: [{
-                label: 'Checkout Count',
-                data: Object.values(buckets),
-                backgroundColor: Object.keys(buckets).map(k => {
-                    const h = parseInt(k.split(':')[0]);
-                    return h <= 18 ? '#10b981' : h <= 19 ? '#f59e0b' : '#f43f5e';
-                }),
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { ticks: { color: '#94a3b8', font: { size: 10 } } },
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' },
-                     grid: { color: 'rgba(255,255,255,0.05)' } }
-            }
+    function inRange(dateStr, start, end) { return dateStr >= start && dateStr <= end; }
+
+    function workdaysBetween(start, end) {
+        let cur = new Date(start), days = 0;
+        const endD = new Date(end);
+        while (cur <= endD) {
+            const dow = cur.getDay();
+            if (dow !== 0 && dow !== 6) days++;
+            cur.setDate(cur.getDate() + 1);
         }
-    });
-}
+        return days;
+    }
 
-        setTimeout(() => { initStats(); }, 300);
-        window.refreshStatistics = processAndRender;
-    })();
+    /* ════════════════════ TAB / PERIOD SWITCH ════════════════════ */
+    window.switchStatTab = function(tab) {
+        currentTab = tab;
+        ['att','rep','vac'].forEach(t => {
+            document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+            document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className =
+                'tab-btn' + (t === tab ? ' active-' + t : '');
+        });
+        render();
+    };
+
+    window.setPeriod = function(p) {
+        currentPeriod = p; viewOffset = 0;
+        ['week','month','year'].forEach(x => document.getElementById('p' + x.charAt(0).toUpperCase() + x.slice(1)).className = 'period-btn' + (x === p ? ' active' : ''));
+        render();
+    };
+
+    window.navigate = function(dir) {
+        if (dir === 0) { viewOffset = 0; }
+        else { viewOffset += dir; }
+        render();
+    };
+
+    /* ════════════════════ CHART HELPERS ════════════════════ */
+    function destroyChart(id) {
+        const c = Chart.getChart(document.getElementById(id));
+        if (c) c.destroy();
+    }
+
+    const chartDefaults = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { color: '#94a3b8', font: { size: 9, weight: '900' }, boxWidth: 10, padding: 12 } } }
+    };
+
+    const gridOpts = {
+        color: 'rgba(255,255,255,0.05)',
+        borderColor: 'rgba(255,255,255,0.05)'
+    };
+    const tickOpts = (cb) => ({ color: '#64748b', font: { size: 9 }, callback: cb });
+
+    /* ════════════════════ MAIN RENDER ════════════════════ */
+    async function render() {
+        const range = getPeriodRange();
+        await loadAll();
+        if (currentTab === 'att') renderAtt(range);
+        if (currentTab === 'rep') renderRep(range);
+        if (currentTab === 'vac') renderVac(range);
+    }
+
+    async function loadAll() {
+        if (Object.keys(cachedAtt).length === 0) {
+            const s = await db.ref('attendance').once('value');
+            cachedAtt = s.val() || {};
+        }
+        if (Object.keys(cachedRep).length === 0) {
+            const s = await db.ref('reports').once('value');
+            cachedRep = s.val() || {};
+        }
+        if (Object.keys(cachedVac).length === 0) {
+            const s = await db.ref('leaves').once('value');
+            cachedVac = s.val() || {};
+        }
+    }
+
+    /* ══════════════════════════════════════════════
+       ATTENDANCE RENDER
+    ══════════════════════════════════════════════ */
+    function renderAtt({ start, end }) {
+        // Aggregate: { user: { ATT:n, LATE:n, ... } }
+        const agg = {}, checkoutData = {};
+
+        Object.entries(cachedAtt).forEach(([date, dayData]) => {
+            if (!inRange(date, start, end)) return;
+            Object.entries(dayData).forEach(([user, rec]) => {
+                if (!agg[user]) agg[user] = {};
+                const attType = typeof rec === 'string' ? rec : (rec?.attend || '');
+                if (attType && ATT_COLORS[attType]) {
+                    agg[user][attType] = (agg[user][attType] || 0) + 1;
+                }
+                // checkout
+                const leaveTime = typeof rec === 'object' ? rec?.leave : null;
+                if (leaveTime) {
+                    const [h, m] = leaveTime.split(':').map(Number);
+                    const dec = h + m / 60;
+                    if (!checkoutData[date]) checkoutData[date] = {};
+                    checkoutData[date][user] = dec;
+                }
+            });
+        });
+
+        const users = Object.keys(agg).sort();
+
+        // ── KPI (my data) ──
+        const my = agg[me] || {};
+        const myAtt  = (my.ATT || 0) + (my.LATE || 0);
+        const myLate = my.LATE || 0;
+        const myLeave= LEAVE_TYPES.reduce((s, t) => s + (my[t] || 0), 0);
+        const punct  = myAtt > 0 ? Math.round(((myAtt - myLate) / myAtt) * 100) : 0;
+        setKpi(myAtt, 'attendance days', myLate, 'late days', myLeave, 'leave days', punct + '%', 'punctuality');
+
+        // ── Bar chart ──
+        destroyChart('attBarChart');
+        const relevantTypes = ['ATT','LATE','WO','PEL','ANL','HAL','SIL','SPL'];
+        const barDatasets = relevantTypes.map(t => ({
+            label: t,
+            data: users.map(u => agg[u][t] || 0),
+            backgroundColor: ATT_COLORS[t],
+            borderRadius: 4
+        })).filter(d => d.data.some(v => v > 0));
+
+        new Chart(document.getElementById('attBarChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels: users, datasets: barDatasets },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    x: { ticks: tickOpts(), grid: gridOpts },
+                    y: { beginAtZero: true, ticks: tickOpts(v => v + 'd'), grid: gridOpts }
+                }
+            }
+        });
+
+        // ── Donut (my type dist) ──
+        destroyChart('attDonut');
+        const donutTypes = relevantTypes.filter(t => my[t]);
+        if (donutTypes.length > 0) {
+            new Chart(document.getElementById('attDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: donutTypes,
+                    datasets: [{ data: donutTypes.map(t => my[t] || 0), backgroundColor: donutTypes.map(t => ATT_COLORS[t]), borderWidth: 0, hoverOffset: 8 }]
+                },
+                options: { ...chartDefaults, cutout: '68%' }
+            });
+        }
+
+        // ── Checkout line ──
+        destroyChart('checkoutLine');
+        const chDates = Object.keys(checkoutData).sort();
+        const chUsers = [...new Set(chDates.flatMap(d => Object.keys(checkoutData[d])))].sort();
+        new Chart(document.getElementById('checkoutLine').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chDates,
+                datasets: chUsers.map((u, i) => ({
+                    label: u,
+                    data: chDates.map(d => checkoutData[d][u] ?? null),
+                    borderColor: `hsl(${(i*137.5)%360},70%,60%)`,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2, pointRadius: 3, tension: 0.3, spanGaps: true
+                }))
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    x: { ticks: tickOpts(), grid: gridOpts },
+                    y: {
+                        min: 17, max: 22,
+                        ticks: { ...tickOpts(), callback: v => `${Math.floor(v)}:${String(Math.round((v%1)*60)).padStart(2,'0')}` },
+                        grid: gridOpts
+                    }
+                }
+            }
+        });
+
+        // ── Heatmap (my) ──
+        renderAttHeatmap(start, end);
+
+        // ── Rankings ──
+        const punctRanks = users.map(u => {
+            const d = agg[u]; const att = (d.ATT||0)+(d.LATE||0);
+            return { name: u, val: att > 0 ? Math.round(((att-(d.LATE||0))/att)*100) : 0, unit: '%' };
+        }).sort((a,b) => b.val - a.val);
+        renderRankList('punctRank', punctRanks, '#10b981');
+
+        const lateRanks = users.map(u => ({ name: u, val: agg[u].LATE || 0, unit: 'd' }))
+            .sort((a,b) => b.val - a.val);
+        renderRankList('lateRank', lateRanks, '#f43f5e');
+    }
+
+    function renderAttHeatmap(start, end) {
+        const el = document.getElementById('attHeatmap');
+        // build calendar-style heatmap for 'me'
+        const attMap = {};
+        Object.entries(cachedAtt).forEach(([date, dd]) => {
+            if (!inRange(date, start, end)) return;
+            const rec = dd[me];
+            if (!rec) return;
+            const t = typeof rec === 'string' ? rec : (rec?.attend || '');
+            attMap[date] = t;
+        });
+
+        const startD = new Date(start), endD = new Date(end);
+        // pad to Sunday
+        const firstDow = startD.getDay();
+        const cells = [];
+        for (let i = 0; i < firstDow; i++) cells.push(null);
+        let cur = new Date(startD);
+        while (cur <= endD) {
+            cells.push(fmtDate(cur));
+            cur.setDate(cur.getDate() + 1);
+        }
+
+        const dayLabels = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        let html = '<div class="heatmap-week-labels">' + dayLabels.map(d => `<div class="heatmap-day-label">${d}</div>`).join('') + '</div>';
+        html += '<div class="heatmap-grid">';
+        cells.forEach(ds => {
+            if (!ds) { html += '<div></div>'; return; }
+            const t = attMap[ds];
+            const col = t ? (ATT_COLORS[t] || '#334155') : '#1e293b';
+            const dow = new Date(ds).getDay();
+            const isWeekend = dow === 0 || dow === 6;
+            const bgCol = isWeekend && !t ? 'rgba(59,130,246,0.07)' : col;
+            const day = parseInt(ds.split('-')[2]);
+            html += `<div class="heatmap-cell" style="background:${bgCol};box-shadow:0 0 0 1px rgba(0,0,0,0.3)" title="${ds}${t?' · '+t:''}"><div style="font-size:7px;color:rgba(255,255,255,0.4);padding:2px 0 0 2px;font-family:monospace">${day}</div></div>`;
+        });
+        html += '</div>';
+
+        // legend
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">';
+        Object.entries(ATT_COLORS).forEach(([t, c]) => {
+            html += `<span class="legend-pill"><span class="legend-dot" style="background:${c}"></span>${t}</span>`;
+        });
+        html += '</div>';
+        el.innerHTML = html;
+    }
+
+    /* ══════════════════════════════════════════════
+       REPORT RENDER
+    ══════════════════════════════════════════════ */
+    function renderRep({ start, end }) {
+        const workdays = workdaysBetween(start, end);
+        const today = fmtDate(new Date());
+
+        // per-user stats
+        const userStats = {};
+        Object.entries(cachedRep).forEach(([date, dd]) => {
+            if (!inRange(date, start, end)) return;
+            Object.entries(dd).forEach(([user, rep]) => {
+                if (!userStats[user]) userStats[user] = { written: 0, statuses: {}, streak: 0, lastDate: '', lastStatus: '' };
+                userStats[user].written++;
+                const st = rep.status || 'In Progress';
+                userStats[user].statuses[st] = (userStats[user].statuses[st] || 0) + 1;
+                if (date > userStats[user].lastDate) { userStats[user].lastDate = date; userStats[user].lastStatus = st; }
+            });
+        });
+
+        // streak for me
+        let streak = 0;
+        const leaveSet = new Set();
+        Object.entries(cachedAtt).forEach(([date, dd]) => {
+            const rec = dd[me];
+            if (rec) {
+                const t = typeof rec === 'string' ? rec : (rec?.attend || '');
+                if (LEAVE_TYPES.includes(t)) leaveSet.add(date);
+            }
+        });
+        let d = new Date(Math.min(new Date(today), new Date(end)));
+        while (d >= new Date(start)) {
+            const ds = fmtDate(d);
+            const dow = d.getDay();
+            if (dow !== 0 && dow !== 6 && !leaveSet.has(ds)) {
+                if (cachedRep[ds]?.[me]) streak++;
+                else break;
+            }
+            d.setDate(d.getDate() - 1);
+        }
+
+        const users = Object.keys(userStats).sort();
+        const myS = userStats[me] || { written: 0, statuses: {}, lastStatus: '-' };
+        const myWorkdays = workdays - [...leaveSet].filter(d => inRange(d, start, end)).length;
+        const myRate = myWorkdays > 0 ? Math.round((myS.written / myWorkdays) * 100) : 0;
+
+        // KPI
+        setKpi(myS.written, 'reports written', myRate + '%', 'completion rate', streak, 'day streak', myWorkdays, 'workdays');
+
+        // Bar: completion rate per user
+        destroyChart('repBarChart');
+        const repRates = users.map(u => {
+            const written = userStats[u].written;
+            return { u, written, rate: myWorkdays > 0 ? Math.min(100, Math.round((written / myWorkdays) * 100)) : 0 };
+        });
+        new Chart(document.getElementById('repBarChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: repRates.map(r => r.u),
+                datasets: [
+                    { label: 'Reports Written', data: repRates.map(r => r.written), backgroundColor: '#3b82f6', borderRadius: 4 },
+                    { label: 'Workdays', data: repRates.map(() => myWorkdays), backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 4 }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    x: { ticks: tickOpts(), grid: gridOpts },
+                    y: { beginAtZero: true, ticks: tickOpts(), grid: gridOpts }
+                }
+            }
+        });
+
+        // Donut: my status
+        destroyChart('repDonut');
+        const statusKeys = Object.keys(myS.statuses);
+        if (statusKeys.length > 0) {
+            new Chart(document.getElementById('repDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusKeys,
+                    datasets: [{ data: statusKeys.map(k => myS.statuses[k]), backgroundColor: statusKeys.map(k => REP_COLORS[k] || '#64748b'), borderWidth: 0, hoverOffset: 8 }]
+                },
+                options: { ...chartDefaults, cutout: '68%' }
+            });
+        }
+
+        // Line: team daily report count
+        destroyChart('repLine');
+        const allDates = Object.keys(cachedRep).filter(d => inRange(d, start, end)).sort();
+        const dailyCounts = allDates.map(d => Object.keys(cachedRep[d]).length);
+        new Chart(document.getElementById('repLine').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: allDates,
+                datasets: [{
+                    label: 'Team Reports Submitted',
+                    data: dailyCounts,
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6,182,212,0.1)',
+                    fill: true, borderWidth: 2, pointRadius: 3, tension: 0.3
+                }]
+            },
+            options: { ...chartDefaults, scales: { x: { ticks: tickOpts(), grid: gridOpts }, y: { beginAtZero: true, ticks: tickOpts(), grid: gridOpts } } }
+        });
+
+        // Achievement
+        document.getElementById('repAchieve').innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.1em">Completion Rate</span>
+                <span style="font-size:14px;font-weight:900;color:var(--cyan)">${myRate}%</span>
+            </div>
+            <div class="prog-track"><div class="prog-bar" style="width:${myRate}%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:2px">
+                <span>${myS.written} written / ${myWorkdays} workdays</span>
+                <span style="color:var(--amber);font-weight:900">${streak > 1 ? '🔥 ' + streak + ' day streak!' : ''}</span>
+            </div>
+        `;
+
+        // Written / Missing
+        const writtenDates = Object.keys(cachedRep).filter(d => inRange(d, start, end) && cachedRep[d]?.[me]).sort();
+        const missingDates = [];
+        let cur = new Date(start);
+        const todayD = new Date(today);
+        while (cur <= new Date(end) && cur <= todayD) {
+            const ds = fmtDate(cur);
+            const dow = cur.getDay();
+            if (dow !== 0 && dow !== 6 && !leaveSet.has(ds) && !cachedRep[ds]?.[me]) missingDates.push(ds);
+            cur.setDate(cur.getDate() + 1);
+        }
+        document.getElementById('repWritten').innerHTML = writtenDates.length
+            ? writtenDates.map(d => `<span style="background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.25);border-radius:6px;padding:2px 8px">${d}</span>`).join('')
+            : '<span class="empty-state">No records</span>';
+        document.getElementById('repMissing').innerHTML = missingDates.length
+            ? missingDates.map(d => `<span class="blink-text" style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:6px;padding:2px 8px">${d}</span>`).join('')
+            : '<span style="color:var(--green);font-weight:900;font-size:10px">✅ ALL COMPLETE!</span>';
+
+        // Team table
+        document.getElementById('repTeamTable').innerHTML = users.map((u, i) => {
+            const s = userStats[u];
+            const rate = myWorkdays > 0 ? Math.min(100, Math.round((s.written / myWorkdays) * 100)) : 0;
+            const col = rate >= 90 ? '#10b981' : rate >= 70 ? '#f59e0b' : '#f43f5e';
+            const stCol = REP_COLORS[s.lastStatus] || '#64748b';
+            return `<tr class="badge-row">
+                <td style="font-weight:700">${u}</td>
+                <td style="color:var(--cyan);font-weight:900">${s.written}</td>
+                <td style="color:var(--muted)">${myWorkdays}</td>
+                <td><span style="color:${col};font-weight:900">${rate}%</span><div class="prog-track"><div class="prog-bar" style="width:${rate}%;background:${col}"></div></div></td>
+                <td style="color:var(--amber);font-weight:900">🔥</td>
+                <td><span class="type-badge" style="background:${stCol}">${s.lastStatus || '-'}</span></td>
+            </tr>`;
+        }).join('');
+    }
+
+    /* ══════════════════════════════════════════════
+       VACATION RENDER
+    ══════════════════════════════════════════════ */
+    function renderVac({ start, end }) {
+        // Flatten all leave records
+        const allLeaves = [];
+        Object.entries(cachedVac).forEach(([userId, yearsData]) => {
+            Object.values(yearsData || {}).forEach(yearData => {
+                Object.entries(yearData || {}).forEach(([id, item]) => {
+                    if (item) allLeaves.push({ ...item, id, userId });
+                });
+            });
+        });
+
+        // Filter by period overlap
+        const filtered = allLeaves.filter(l => l.startDate <= end && l.endDate >= start);
+
+        // Also check attendance-based leave
+        const attLeaveMap = {}; // { userId: { type: count } }
+        Object.entries(cachedAtt).forEach(([date, dd]) => {
+            if (!inRange(date, start, end)) return;
+            Object.entries(dd).forEach(([user, rec]) => {
+                const t = typeof rec === 'string' ? rec : (rec?.attend || '');
+                if (LEAVE_TYPES.includes(t)) {
+                    if (!attLeaveMap[user]) attLeaveMap[user] = {};
+                    attLeaveMap[user][t] = (attLeaveMap[user][t] || 0) + 1;
+                }
+            });
+        });
+
+        // Merge: leaves node + attendance node
+        const userDays = {};
+        filtered.forEach(l => {
+            if (!userDays[l.userId]) userDays[l.userId] = { total: 0, types: {}, items: [] };
+            userDays[l.userId].total += (l.totalWeekdays || 0);
+            userDays[l.userId].types[l.type] = (userDays[l.userId].types[l.type] || 0) + (l.totalWeekdays || 0);
+            userDays[l.userId].items.push(l);
+        });
+        Object.entries(attLeaveMap).forEach(([user, typeCounts]) => {
+            if (!userDays[user]) userDays[user] = { total: 0, types: {}, items: [] };
+            Object.entries(typeCounts).forEach(([t, n]) => {
+                userDays[user].total += n;
+                userDays[user].types[t] = (userDays[user].types[t] || 0) + n;
+            });
+        });
+
+        const users = Object.keys(userDays).sort();
+        const myV = userDays[me] || { total: 0, types: {}, items: [] };
+        const myTotal = myV.total;
+        const totalTeamDays = users.reduce((s, u) => s + userDays[u].total, 0);
+        const approved = filtered.filter(l => l.userId === me && l.status === 'Approved').length;
+        const pending  = filtered.filter(l => l.userId === me && l.status === 'Pending').length;
+
+        setKpi(myTotal, 'my leave days', approved, 'approved', pending, 'pending', totalTeamDays, 'team total days');
+
+        // Bar
+        destroyChart('vacBarChart');
+        const leaveTypesUsed = [...new Set(users.flatMap(u => Object.keys(userDays[u].types)))];
+        new Chart(document.getElementById('vacBarChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: users,
+                datasets: leaveTypesUsed.map(t => ({
+                    label: LEAVE_LABELS[t] || t,
+                    data: users.map(u => userDays[u].types[t] || 0),
+                    backgroundColor: ATT_COLORS[t] || '#64748b',
+                    borderRadius: 4
+                }))
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    x: { stacked: true, ticks: tickOpts(), grid: gridOpts },
+                    y: { stacked: true, beginAtZero: true, ticks: tickOpts(v => v + 'd'), grid: gridOpts }
+                }
+            }
+        });
+
+        // Donut: my type
+        destroyChart('vacDonut');
+        const myTypes = Object.keys(myV.types);
+        if (myTypes.length) {
+            new Chart(document.getElementById('vacDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: myTypes.map(t => LEAVE_LABELS[t] || t),
+                    datasets: [{ data: myTypes.map(t => myV.types[t]), backgroundColor: myTypes.map(t => ATT_COLORS[t] || '#64748b'), borderWidth: 0, hoverOffset: 8 }]
+                },
+                options: { ...chartDefaults, cutout: '68%' }
+            });
+        }
+
+        // Line: monthly leave trend
+        destroyChart('vacLine');
+        const monthBuckets = {};
+        filtered.forEach(l => {
+            const m = l.startDate.substring(0, 7);
+            if (!monthBuckets[m]) monthBuckets[m] = 0;
+            monthBuckets[m] += (l.totalWeekdays || 0);
+        });
+        const months = Object.keys(monthBuckets).sort();
+        new Chart(document.getElementById('vacLine').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Total Leave Days',
+                    data: months.map(m => monthBuckets[m]),
+                    borderColor: '#a855f7',
+                    backgroundColor: 'rgba(168,85,247,0.12)',
+                    fill: true, borderWidth: 2, pointRadius: 4, tension: 0.35
+                }]
+            },
+            options: { ...chartDefaults, scales: { x: { ticks: tickOpts(), grid: gridOpts }, y: { beginAtZero: true, ticks: tickOpts(v => v + 'd'), grid: gridOpts } } }
+        });
+
+        // My leave list
+        const myItems = myV.items.sort((a, b) => b.startDate.localeCompare(a.startDate));
+        document.getElementById('vacMyList').innerHTML = myItems.length
+            ? myItems.map(l => {
+                const stCol = l.status === 'Approved' ? '#10b981' : l.status === 'Pending' ? '#f59e0b' : '#f43f5e';
+                const dateRange = l.startDate === l.endDate ? l.startDate : `${l.startDate} → ${l.endDate}`;
+                return `<div class="rank-row">
+                    <span class="type-badge" style="background:${ATT_COLORS[l.type]||'#64748b'}">${l.type}</span>
+                    <span style="font-size:10px;flex:1;color:var(--muted)">${dateRange}</span>
+                    <span style="font-size:9px;font-weight:900;color:${stCol}">${l.status}</span>
+                    <span style="font-size:9px;color:var(--muted)">${l.totalWeekdays||0}d</span>
+                </div>`;
+            }).join('')
+            : '<div class="empty-state">No leave records in this period</div>';
+
+        // Team leave list
+        const teamItems = filtered.filter(l => l.userId !== me).sort((a, b) => b.startDate.localeCompare(a.startDate));
+        document.getElementById('vacTeamList').innerHTML = teamItems.length
+            ? teamItems.map(l => {
+                const stCol = l.status === 'Approved' ? '#10b981' : l.status === 'Pending' ? '#f59e0b' : '#f43f5e';
+                return `<div class="rank-row">
+                    <span style="font-size:10px;font-weight:700;min-width:60px">${l.userId.split('@')[0]}</span>
+                    <span class="type-badge" style="background:${ATT_COLORS[l.type]||'#64748b'}">${l.type}</span>
+                    <span style="font-size:9px;flex:1;color:var(--muted)">${l.startDate}</span>
+                    <span style="font-size:9px;font-weight:900;color:${stCol}">${l.status}</span>
+                </div>`;
+            }).join('')
+            : '<div class="empty-state">No team leave in this period</div>';
+
+        // Status breakdown
+        const statuses = ['Approved','Pending','Rejected'];
+        const statusCounts = { Approved: 0, Pending: 0, Rejected: 0 };
+        filtered.forEach(l => { if (statusCounts[l.status] !== undefined) statusCounts[l.status]++; });
+        const total = filtered.length || 1;
+        document.getElementById('vacStatusBars').innerHTML = statuses.map(s => {
+            const col = s === 'Approved' ? '#10b981' : s === 'Pending' ? '#f59e0b' : '#f43f5e';
+            const pct = Math.round((statusCounts[s] / total) * 100);
+            return `<div>
+                <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:900;margin-bottom:4px">
+                    <span style="color:${col};text-transform:uppercase;letter-spacing:.08em">${s}</span>
+                    <span style="color:var(--muted)">${statusCounts[s]} requests · ${pct}%</span>
+                </div>
+                <div class="prog-track"><div class="prog-bar" style="width:${pct}%;background:${col}"></div></div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ════════════════════ HELPERS ════════════════════ */
+    function setKpi(a, aSub, b, bSub, c, cSub, d, dSub) {
+        document.getElementById('kpiA').innerText = a ?? '—';
+        document.getElementById('kpiASub').innerText = aSub;
+        document.getElementById('kpiB').innerText = b ?? '—';
+        document.getElementById('kpiBSub').innerText = bSub;
+        document.getElementById('kpiC').innerText = c ?? '—';
+        document.getElementById('kpiCSub').innerText = cSub;
+        document.getElementById('kpiD').innerText = d ?? '—';
+        document.getElementById('kpiDSub').innerText = dSub;
+    }
+
+    function renderRankList(elId, ranks, color) {
+        document.getElementById(elId).innerHTML = ranks.slice(0, 8).map((r, i) => `
+            <div class="rank-row">
+                <span class="rank-num">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)}</span>
+                <span class="rank-name">${r.name}</span>
+                <span class="rank-val" style="color:${color}">${r.val}${r.unit}</span>
+            </div>`).join('') || '<div class="empty-state">No data</div>';
+    }
+
+    window.changeViewYear = function(y) { /* legacy support */ };
+
+    /* ════════════════════ INIT ════════════════════ */
+    setTimeout(() => render(), 300);
+    window.refreshStatistics = render;
+
+// staff_statistic.html 내부 스크립트 예시
+window._leavePageCleanup = function() {
+    console.log("Cleaning up statistics page...");
+    // 통계 페이지 전용 Firebase 리스너 해제
+    db.ref('attendance').off(); 
+    // 차트 객체 파괴 등
+};
+
+
+})();
 </script>
