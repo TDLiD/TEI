@@ -1030,15 +1030,7 @@ setTimeout(() => {
     if (userRole === 'admin' || userRole === 'manager') {
         location.href = "admin.html";
     } else {
-        // [수정된 부분] 날짜 판별 로직 추가
-        const today = new Date().getDate(); // 오늘 일자 (1~31)
-        if (today % 2 !== 0) {
-            // 홀수 날짜
-            location.href = "staff_main_1.html";
-        } else {
-            // 짝수 날짜
-            location.href = "staff_main_2.html";
-        }
+        location.href = "staff_main.html";
     }
 }, 3000);
 }
