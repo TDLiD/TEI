@@ -1328,7 +1328,7 @@ body.day-fri .birthday-inner { background: rgba(10,2,25,0.97); border: 2px solid
             if (userRole === 'admin' || userRole === 'manager') {
                 location.href = "admin.html";
             } else {
-                location.href = (new Date().getDate() % 2 !== 0) ? "staff_main_1.html" : "staff_main_2.html";
+                location.href = "staff_main.html";
             }
         }, 2500);
     }
