@@ -2,541 +2,315 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<meta name="theme-color" content="#03060f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Menu Select - Daily System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Daily System - Dashboard</title>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400;1,700&family=DM+Serif+Display&family=Bungee&display=swap" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<style>
-/* ══════════════════════════════════════════════════════════════
-   1. VARIABLES & RESET (최적화)
-   ══════════════════════════════════════════════════════════════ */
-:root {
-    --bg: #03060f;
-    --surface: rgba(8, 18, 36, 0.85);
-    --surface-2: rgba(16, 32, 60, 0.6);
-    --blue: #3b82f6;
-    --blue-glow: rgba(59, 130, 246, 0.25);
-    --cyan: #06b6d4;
-    --violet: #818cf8;
-    --rose: #f43f5e;
-    --text: #cbd5e1;
-    --muted: #475569;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-2: rgba(255, 255, 255, 0.15);
-    --vh: 1vh;
-}
-
+    <style>
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
 *, *::before, *::after {
+    margin: 0; padding: 0;
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     overflow: hidden;
-    background: var(--bg);
 }
 
 body {
-    font-family: "Pretendard", system-ui, sans-serif;
-    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
-    -webkit-font-smoothing: antialiased;
+    transition: background 0.5s ease, color 0.5s ease;
     position: relative;
-    perspective: 1500px;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   2. ATMOSPHERE (부하 감소 처리)
-   ══════════════════════════════════════════════════════════════ */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.02;
-    pointer-events: none;
-}
-
-.orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
-    z-index: 1;
-    animation: orb-float 20s ease-in-out infinite alternate;
-}
-
-.orb-a { 
-    width: 600px; 
-    height: 600px; 
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%); 
-    top: -20%; 
-    right: -10%; 
-}
-
-.orb-b { 
-    width: 400px; 
-    height: 400px; 
-    background: radial-gradient(circle, rgba(129, 140, 248, 0.08), transparent 70%); 
-    bottom: -10%; 
-    left: -10%; 
-    animation-delay: -5s; 
-}
-
-@keyframes orb-float {
-    from { transform: translate(0, 0) scale(1); opacity: 0.5; }
-    to { transform: translate(30px, 30px) scale(1.1); opacity: 0.7; }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   3. LAYOUT & HEADER
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   SCROLLABLE WRAPPER
+═══════════════════════════════════════════════════════ */
 .content-wrapper {
     position: relative;
-    z-index: 2;
+    z-index: 10;
     width: 100%;
     height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4.5rem, 12vw, 6rem) clamp(1rem, 4vw, 1.5rem) clamp(1rem, 3vw, 1.5rem);
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem;
     scrollbar-width: none;
+    gap: clamp(0.75rem, 2.5vw, 1.25rem);
 }
+.content-wrapper::-webkit-scrollbar { display: none; }
 
-.content-wrapper::-webkit-scrollbar { 
-    display: none; 
-}
-
-.header-section {
-    text-align: center;
-    margin-bottom: clamp(2rem, 5vh, 3.5rem);
-    animation: reveal 0.8s ease-out;
-}
-
-.live-time {
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    color: var(--cyan);
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.live-dot {
-    width: 6px; 
-    height: 6px;
-    border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-.greeting {
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 900;
-    color: #fff;
-    margin-bottom: 10px;
-}
-
-.greeting span {
-    background: linear-gradient(135deg, var(--blue), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.sub-label {
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-top: 8px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   4. MENU GRID & CARDS (4개 카드)
-   ══════════════════════════════════════════════════════════════ */
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
-    max-width: 900px;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 500px;
-        gap: 12px;
-    }
-}
-
-@media (max-width: 600px) {
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-}
-
-.menu-card {
-    position: relative;
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
-    border: 1px solid var(--border-2);
-    border-radius: 24px;
-    padding: 30px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 
-        0 8px 20px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.3);
-    transform-style: preserve-3d;
-}
-
-.menu-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 20%;
-    right: 20%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
-}
-
-.menu-card::after {
-    content: '';
-    position: absolute;
+/* ═══════════════════════════════════════════════════════
+   BACKGROUND LAYER
+═══════════════════════════════════════════════════════ */
+#bg-layer {
+    position: fixed;
     inset: 0;
-    border-radius: 24px;
-    background: linear-gradient(145deg, rgba(59,130,246,0.05), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 
-@media (hover: hover) {
-    .menu-card:hover {
-        transform: translateY(-8px);
-        background: rgba(59, 130, 246, 0.15);
-        border-color: var(--blue);
-        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
-    }
-    
-    .menu-card:hover::after {
-        opacity: 1;
-    }
-}
-
-.menu-card:active {
-    transform: translateY(-4px) scale(0.98);
-}
-
-.card-icon-wrap {
-    width: 70px;
-    height: 70px;
-    filter: drop-shadow(0 8px 20px rgba(59,130,246,0.3));
-    transform-style: preserve-3d;
-    transition: transform 0.3s;
-}
-
-.menu-card:hover .card-icon-wrap {
-    transform: translateZ(20px) scale(1.1);
-}
-
-.card-icon-wrap img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; 
-}
-
-.card-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text);
-    text-align: center;
-    line-height: 1.4;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   5. BOTTOM ACTIONS (4개 버튼)
-   ══════════════════════════════════════════════════════════════ */
-.bottom-actions {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
-    max-width: 900px;
-    margin-top: 1rem;
-}
-
-@media (max-width: 768px) {
-    .bottom-actions {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 500px;
-        gap: 12px;
-    }
-}
-
-@media (max-width: 600px) {
-    .bottom-actions {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-}
-
-.action-btn {
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.7), rgba(8, 18, 36, 0.9));
-    border: 1px solid var(--border-2);
-    border-radius: 20px;
-    padding: 24px 20px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 
-        0 8px 20px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.3);
-    position: relative;
-    text-decoration: none;
-    color: inherit;
-}
-
-.action-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 20%;
-    right: 20%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.4), transparent);
-}
-
-@media (hover: hover) {
-    .action-btn:hover {
-        transform: translateY(-8px) scale(1.02);
-        background: linear-gradient(145deg, rgba(129, 140, 248, 0.15), rgba(16, 32, 60, 0.8));
-        border-color: var(--violet);
-        box-shadow: 
-            0 15px 35px rgba(129, 140, 248, 0.25),
-            0 0 25px rgba(129, 140, 248, 0.15),
-            inset 0 2px 0 rgba(255,255,255,0.15);
-    }
-}
-
-.action-btn:active {
-    transform: translateY(-4px) scale(0.98);
-}
-
-.action-icon {
-    width: 55px;
-    height: 55px;
-    border-radius: 16px;
-    background: linear-gradient(145deg, rgba(59,130,246,0.15), rgba(16,32,60,0.5));
-    border: 1px solid rgba(255,255,255,0.1);
+/* ═══════════════════════════════════════════════════════
+   TOP BAR — profile left, day indicator right
+═══════════════════════════════════════════════════════ */
+.top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    transition: all 0.3s;
-    box-shadow: 
-        0 4px 12px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.1);
+    justify-content: space-between;
+    padding: clamp(0.6rem, 2vw, 0.875rem) clamp(0.875rem, 3vw, 1.25rem);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid transparent;
+    transition: all 0.5s ease;
 }
 
-@media (min-width: 768px) {
-    .action-icon {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-.action-btn:active .action-icon { 
-    transform: scale(0.9); 
-}
-
-.action-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   6. DAY INDICATOR & PROFILE
-   ══════════════════════════════════════════════════════════════ */
-.day-indicator {
-    position: fixed; 
-    top: 20px; 
-    right: 20px;
-    text-align: right; 
-    z-index: 10;
-}
-
-.day-name { 
-    font-size: 10px; 
-    color: var(--muted); 
-    letter-spacing: 0.2em; 
-    text-transform: uppercase; 
-}
-
-.day-number { 
-    font-size: 2rem; 
-    font-weight: 900; 
-    color: rgba(255,255,255,0.1); 
-}
-
-.profile-container { 
-    margin-left: 10px; 
-    pointer-events: none; 
+.profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    max-width: 55%;
 }
 
 .profile-img {
-    width: 50px; 
-    height: 50px;
+    width: clamp(2rem, 8vw, 2.5rem);
+    height: clamp(2rem, 8vw, 2.5rem);
     border-radius: 50%;
-    border: 2px solid var(--cyan);
     object-fit: cover;
-    box-shadow: 0 0 15px var(--blue-glow);
+    flex-shrink: 0;
+    border: 2px solid transparent;
+    transition: border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   7. RESPONSIVE TABLET (768px)
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 767px) {
-    .menu-card {
-        padding: 25px 12px;
-        border-radius: 20px;
-    }
-    
-    .card-icon-wrap {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .card-label {
-        font-size: 10px;
-    }
-    
-    .action-btn {
-        padding: 20px 15px;
-        border-radius: 18px;
-    }
-    
-    .action-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.6rem;
-    }
-    
-    .action-label {
-        font-size: 9px;
-    }
+.profile-name {
+    font-size: clamp(0.7rem, 3vw, 0.85rem);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.5s ease;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   8. RESPONSIVE MOBILE (600px)
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 600px) {
-    .menu-grid { 
-        grid-template-columns: repeat(2, 1fr); 
-        gap: 10px; 
-    }
-    
-    .greeting { 
-        font-size: 2.2rem; 
-    }
-    
-    .menu-card { 
-        padding: 20px 10px; 
-        border-radius: 16px; 
-    }
-    
-    .card-icon-wrap { 
-        width: 50px; 
-        height: 50px; 
-    }
-    
-    .card-label {
-        font-size: 8px;
-    }
-    
-    .bottom-actions {
-        gap: 10px;
-    }
-    
-    .action-btn {
-        padding: 16px 10px;
-    }
-    
-    .action-icon {
-        width: 45px;
-        height: 45px;
-        font-size: 1.4rem;
-    }
-    
-    .action-label {
-        font-size: 8px;
-    }
-    
-    .orb { 
-        display: none; 
-    }
+.day-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    flex-shrink: 0;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   9. ANIMATIONS
-   ══════════════════════════════════════════════════════════════ */
-@keyframes reveal {
-    from { 
-        opacity: 0; 
-        transform: translateY(10px); 
-    }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
+.day-chip .chip-label {
+    font-size: clamp(0.55rem, 2vw, 0.65rem);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.5s ease;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   POPUP MODAL STYLES
-   ══════════════════════════════════════════════════════════════ */
+.day-chip .chip-num {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-weight: 900;
+    line-height: 1;
+    transition: color 0.5s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER SECTION
+═══════════════════════════════════════════════════════ */
+.header-section {
+    text-align: center;
+    width: 100%;
+    animation: slideDown 0.6s ease-out both;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.live-time-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: clamp(0.5rem, 2vw, 0.875rem);
+    transition: color 0.5s ease;
+}
+
+.live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+.greeting {
+    font-size: clamp(1.6rem, 7vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: clamp(0.2rem, 1vw, 0.375rem);
+    transition: color 0.5s ease, font-family 0.1s;
+}
+
+.greeting em {
+    font-style: normal;
+    transition: all 0.5s ease;
+}
+
+.sub-label {
+    font-size: clamp(0.6rem, 2.5vw, 0.7rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.5s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MENU GRID
+═══════════════════════════════════════════════════════ */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.6rem, 2.5vw, 0.875rem);
+    width: 100%;
+    max-width: 460px;
+    animation: slideUp 0.6s 0.1s ease-out both;
+}
+
+.bottom-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.5rem, 2vw, 0.75rem);
+    width: 100%;
+    max-width: 460px;
+    animation: slideUp 0.6s 0.2s ease-out both;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Shared card base ── */
+.menu-card, .action-btn {
+    position: relative;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    border: 1px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.menu-card {
+    padding: clamp(1rem, 4vw, 1.5rem) clamp(0.75rem, 3vw, 1rem);
+    gap: clamp(0.5rem, 2vw, 0.75rem);
+    min-height: clamp(110px, 22vw, 148px);
+}
+
+.action-btn {
+    padding: clamp(0.625rem, 2.5vw, 0.875rem) clamp(0.375rem, 1.5vw, 0.5rem);
+    gap: clamp(0.35rem, 1.5vw, 0.5rem);
+    min-height: clamp(75px, 17vw, 105px);
+    background: none;
+    font-family: inherit;
+}
+
+.menu-card:active, .action-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* Icon wrap */
+.card-icon-wrap {
+    width: clamp(2.5rem, 9vw, 3.25rem);
+    height: clamp(2.5rem, 9vw, 3.25rem);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card-icon-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.action-icon {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    line-height: 1;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.menu-card:hover .action-icon,
+.action-btn:hover .action-icon { transform: scale(1.15); }
+
+.card-label, .action-label {
+    font-size: clamp(0.6rem, 2.5vw, 0.72rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.2;
+    transition: color 0.3s ease;
+}
+
+/* Shine overlay on cards */
+.menu-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 60%);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   POPUP MODAL (unchanged)
+═══════════════════════════════════════════════════════ */
 .popup-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(3, 6, 15, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(10,14,39,0.95);
+    backdrop-filter: blur(8px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -545,286 +319,572 @@ body::before {
     animation: fadeIn 0.3s ease-out;
 }
 
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 .popup-container {
     position: relative;
-    background: linear-gradient(145deg, rgba(16, 32, 60, 0.95), rgba(8, 18, 36, 0.98));
-    border: 2px solid var(--border-2);
-    border-radius: 24px;
+    background: linear-gradient(135deg, #1a1f3a 0%, #232d4d 100%);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 16px;
     max-width: 90vw;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow: hidden;
-    box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(59, 130, 246, 0.2),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1);
-    animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes popupSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: slideUp 0.4s ease-out;
 }
 
 .popup-close-top {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 40px;
-    height: 40px;
-    background: rgba(244, 63, 94, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
+    top: 15px; right: 15px;
+    width: 36px; height: 36px;
+    background: #ec4899;
+    border: none; border-radius: 6px;
+    color: white; font-size: 18px;
     cursor: pointer;
     z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(236,72,153,0.3);
 }
-
-.popup-close-top:hover {
-    background: rgba(244, 63, 94, 1);
-    transform: rotate(90deg) scale(1.1);
-}
+.popup-close-top:hover { transform: rotate(90deg) scale(1.1); background: #e91e63; }
 
 .popup-content {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    cursor: pointer;
-    max-height: calc(90vh - 100px);
+    padding: 30px 20px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+    max-height: calc(85vh - 100px);
     overflow-y: auto;
 }
 
 .popup-image {
-    max-width: 100%;
-    max-height: 60vh;
-    width: auto;
-    height: auto;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 100%; max-height: 50vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     object-fit: contain;
 }
 
 .popup-message {
-    display: inline-block;
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    font-weight: 800;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
     text-align: center;
-    background: linear-gradient(
-        to right, 
-        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000
-    );
-    background-size: 200% auto;
+    background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: 
-        rainbow-flow 3s linear infinite,
-        text-wave 2s ease-in-out infinite;
+    background-clip: text;
     padding: 10px 20px;
-}
-
-@keyframes rainbow-flow {
-    to { background-position: 200% center; }
-}
-
-@keyframes text-wave {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    animation: blink 2s ease-in-out infinite;
 }
 
 .popup-close-bottom {
     width: calc(100% - 40px);
-    margin: 0 20px 20px;
-    padding: 16px;
-    background: linear-gradient(145deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    border: none; border-radius: 8px;
     color: white;
-    font-size: 14px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    margin: 0 20px 20px;
+    display: block;
+}
+.popup-close-bottom:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+
+/* ═══════════════════════════════════════════════════════
+   ██  MONDAY THEME — CYBERPUNK NEON
+═══════════════════════════════════════════════════════ */
+body.day-mon {
+    font-family: 'Pretendard', sans-serif;
+    background: #060916;
+    color: #e2e8f0;
 }
 
-.popup-close-bottom:hover {
-    background: linear-gradient(145deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+.day-mon .top-bar {
+    background: rgba(6,9,22,0.85);
+    border-bottom-color: rgba(0,212,255,0.2);
+}
+.day-mon .profile-img { border-color: #00d4ff; box-shadow: 0 0 12px rgba(0,212,255,0.4); }
+.day-mon .profile-name { color: #e2e8f0; }
+.day-mon .chip-label { color: rgba(0,212,255,0.6); font-family: 'Orbitron', sans-serif; }
+.day-mon .chip-num  { color: #00d4ff; font-family: 'Orbitron', sans-serif; }
+
+.day-mon .live-time-row { color: #00d4ff; }
+.day-mon .live-dot { background: #00d4ff; box-shadow: 0 0 10px #00d4ff; }
+.day-mon .greeting { color: #fff; font-family: 'Orbitron', sans-serif; font-size: clamp(1.2rem, 5vw, 2rem); }
+.day-mon .greeting em {
+    background: linear-gradient(90deg, #00d4ff, #ffbe0b, #ff006e);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.day-mon .sub-label { color: rgba(0,212,255,0.45); font-family: 'Orbitron', sans-serif; font-size: clamp(0.5rem, 2vw, 0.6rem); }
+
+.day-mon .menu-card, .day-mon .action-btn {
+    background: linear-gradient(135deg, rgba(20,30,60,0.95), rgba(12,16,42,0.9));
+    border-color: rgba(0,212,255,0.25);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,212,255,0.08);
+}
+.day-mon .menu-card:hover, .day-mon .action-btn:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: #00d4ff;
+    box-shadow: 0 10px 30px rgba(0,212,255,0.25), 0 0 0 1px rgba(0,212,255,0.15);
+}
+.day-mon .card-label, .day-mon .action-label { color: #94a3b8; }
+.day-mon .menu-card:hover .card-label, .day-mon .action-btn:hover .action-label { color: #00d4ff; }
+
+/* Mon BG */
+.mon-pulse {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(0,212,255,0.1);
+    animation: monPulse 5s ease-in-out infinite;
+}
+.mon-pulse.p1 { width: 500px; height: 500px; top: -15%; left: -10%; animation-delay: 0s; }
+.mon-pulse.p2 { width: 600px; height: 600px; bottom: -20%; right: -10%; border-color: rgba(255,0,110,0.08); animation-delay: 2s; }
+.mon-scan {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+    animation: scanLine 7s linear infinite;
+}
+@keyframes monPulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.12);opacity:1} }
+@keyframes scanLine { 0%{top:-2px;opacity:0} 5%{opacity:1} 95%{opacity:0.8} 100%{top:100%;opacity:0} }
+
+/* ═══════════════════════════════════════════════════════
+   ██  TUESDAY THEME — WABI-SABI JAPANESE
+═══════════════════════════════════════════════════════ */
+body.day-tue {
+    font-family: 'Noto Serif JP', serif;
+    background: #f2ede7;
+    color: #2d2621;
 }
 
-.popup-close-bottom:active {
-    transform: translateY(0);
+.day-tue .top-bar {
+    background: rgba(242,237,231,0.88);
+    border-bottom-color: rgba(140,110,80,0.2);
+}
+.day-tue .profile-img { border-color: #7c6652; box-shadow: 0 0 12px rgba(124,102,82,0.2); }
+.day-tue .profile-name { color: #2d2621; font-family: 'Noto Serif JP', serif; }
+.day-tue .chip-label { color: rgba(92,74,53,0.55); font-family: 'Noto Serif JP', serif; }
+.day-tue .chip-num  { color: #5c4a35; font-family: 'Noto Serif JP', serif; }
+
+.day-tue .live-time-row { color: #7c6652; }
+.day-tue .live-dot { background: #7c6652; box-shadow: 0 0 8px rgba(124,102,82,0.4); }
+.day-tue .greeting { color: #2d2621; font-family: 'Noto Serif JP', serif; font-weight: 700; }
+.day-tue .greeting em { background: linear-gradient(90deg, #5c4a35, #b8a898); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.day-tue .sub-label { color: rgba(92,74,53,0.5); font-family: 'Noto Serif JP', serif; }
+
+.day-tue .menu-card, .day-tue .action-btn {
+    background: rgba(255,252,248,0.92);
+    border-color: rgba(180,160,135,0.4);
+    box-shadow: 0 2px 12px rgba(45,38,33,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+    border-radius: 6px;
+}
+.day-tue .menu-card::before { background: none; }
+.day-tue .menu-card:hover, .day-tue .action-btn:hover {
+    transform: translateY(-4px);
+    border-color: #7c6652;
+    box-shadow: 0 10px 30px rgba(45,38,33,0.14), 0 0 0 1px rgba(124,102,82,0.2);
+}
+.day-tue .card-label, .day-tue .action-label { color: #5c4a35; }
+
+/* Tue BG */
+.tue-circle {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(45,38,33,0.05);
+}
+.tue-stroke {
+    position: absolute;
+    background: rgba(45,38,33,0.04);
+    border-radius: 2px;
 }
 
+/* ═══════════════════════════════════════════════════════
+   ██  WEDNESDAY THEME — ART DECO LUXURY
+═══════════════════════════════════════════════════════ */
+body.day-wed {
+    font-family: 'Cormorant Garamond', serif;
+    background: #0d1a0f;
+    color: #f0e8d0;
+}
+
+.day-wed .top-bar {
+    background: rgba(13,26,15,0.88);
+    border-bottom-color: rgba(180,145,60,0.2);
+}
+.day-wed .profile-img { border-color: #b4913c; box-shadow: 0 0 12px rgba(180,145,60,0.35); }
+.day-wed .profile-name { color: #f0e8d0; font-family: 'Cormorant Garamond', serif; font-style: italic; }
+.day-wed .chip-label { color: rgba(200,168,80,0.5); font-family: 'Cormorant Garamond', serif; letter-spacing: 0.2em; font-style: italic; }
+.day-wed .chip-num  { color: #b4913c; font-family: 'Cormorant Garamond', serif; }
+
+.day-wed .live-time-row { color: rgba(180,145,60,0.7); font-family: 'Cormorant Garamond', serif; font-style: italic; }
+.day-wed .live-dot { background: #b4913c; box-shadow: 0 0 10px rgba(180,145,60,0.5); }
+.day-wed .greeting { color: #f0e8d0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(1.6rem, 6.5vw, 2.75rem); }
+.day-wed .greeting em { background: linear-gradient(90deg, #b4913c, #e8d48a, #b4913c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.day-wed .sub-label { color: rgba(200,168,80,0.4); font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0.2em; }
+
+.day-wed .menu-card, .day-wed .action-btn {
+    background: linear-gradient(135deg, rgba(18,30,18,0.96), rgba(10,20,12,0.92));
+    border-color: rgba(180,145,60,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(180,145,60,0.1);
+    border-radius: 0;
+}
+.day-wed .menu-card::before { background: linear-gradient(135deg, rgba(180,145,60,0.06) 0%, transparent 60%); }
+.day-wed .menu-card:hover, .day-wed .action-btn:hover {
+    transform: translateY(-4px);
+    border-color: rgba(180,145,60,0.6);
+    box-shadow: 0 12px 35px rgba(180,145,60,0.2), 0 0 0 1px rgba(180,145,60,0.15);
+}
+.day-wed .card-label, .day-wed .action-label { color: rgba(200,168,80,0.7); font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0.12em; font-size: clamp(0.65rem, 2.5vw, 0.78rem); }
+.day-wed .action-btn { border-radius: 0; }
+
+/* Wed BG */
+.wed-diamond {
+    position: absolute;
+    border: 1px solid rgba(180,145,60,0.07);
+    transform: rotate(45deg);
+}
+.wed-hline {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,145,60,0.12), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ██  THURSDAY THEME — BIOPHILIC NATURE
+═══════════════════════════════════════════════════════ */
+body.day-thu {
+    font-family: 'DM Serif Display', serif;
+    background: #f5f0e8;
+    color: #2c2015;
+}
+
+.day-thu .top-bar {
+    background: rgba(245,240,232,0.88);
+    border-bottom-color: rgba(140,105,70,0.2);
+}
+.day-thu .profile-img { border-color: #5a8250; box-shadow: 0 0 12px rgba(90,130,80,0.25); }
+.day-thu .profile-name { color: #2c2015; font-family: 'DM Serif Display', serif; }
+.day-thu .chip-label { color: rgba(90,80,60,0.55); font-family: 'DM Serif Display', serif; }
+.day-thu .chip-num  { color: #3d6e33; font-family: 'DM Serif Display', serif; }
+
+.day-thu .live-time-row { color: #5a8250; }
+.day-thu .live-dot { background: #5a8250; box-shadow: 0 0 8px rgba(90,130,80,0.4); }
+.day-thu .greeting { color: #2c2015; font-family: 'DM Serif Display', serif; }
+.day-thu .greeting em { background: linear-gradient(90deg, #3d6e33, #b46e46); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.day-thu .sub-label { color: rgba(90,80,60,0.5); font-family: 'DM Serif Display', serif; }
+
+.day-thu .menu-card, .day-thu .action-btn {
+    background: rgba(255,253,246,0.93);
+    border-color: rgba(140,105,70,0.25);
+    box-shadow: 0 2px 12px rgba(44,32,21,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+    border-radius: 1.25rem 0.35rem 1.25rem 0.35rem;
+}
+.day-thu .action-btn { border-radius: 1.25rem 0.35rem 1.25rem 0.35rem; }
+.day-thu .menu-card::before { background: none; }
+.day-thu .menu-card:hover, .day-thu .action-btn:hover {
+    transform: translateY(-4px);
+    border-color: #5a8250;
+    box-shadow: 0 10px 28px rgba(90,130,80,0.2), 0 0 0 1px rgba(90,130,80,0.15);
+}
+.day-thu .card-label, .day-thu .action-label { color: #5c4a35; }
+.day-thu .menu-card:hover .card-label, .day-thu .action-btn:hover .action-label { color: #3d6e33; }
+
+/* Thu BG */
+.thu-leaf {
+    position: absolute;
+    border: 1px solid rgba(90,130,80,0.1);
+    border-radius: 0 70% 0 70%;
+    animation: leafFloat 10s ease-in-out infinite;
+}
+@keyframes leafFloat { 0%,100%{transform:rotate(-20deg) scale(1)} 50%{transform:rotate(-14deg) scale(1.03)} }
+
+/* ═══════════════════════════════════════════════════════
+   ██  FRIDAY THEME — VAPORWAVE PARTY
+═══════════════════════════════════════════════════════ */
+body.day-fri {
+    font-family: 'Bungee', cursive;
+    background: #0a0520;
+    color: #fff;
+}
+
+.day-fri .top-bar {
+    background: rgba(10,5,32,0.88);
+    border-bottom-color: rgba(255,0,204,0.25);
+}
+.day-fri .profile-img { border-color: #ff00cc; box-shadow: 0 0 14px rgba(255,0,204,0.45); }
+.day-fri .profile-name { color: #fff; font-family: 'Bungee', cursive; font-size: clamp(0.6rem, 2.5vw, 0.75rem); }
+.day-fri .chip-label { color: rgba(0,238,255,0.55); font-family: 'Bungee', cursive; font-size: clamp(0.45rem, 1.8vw, 0.55rem); }
+.day-fri .chip-num  { color: #ff00cc; font-family: 'Bungee', cursive; text-shadow: 0 0 10px rgba(255,0,204,0.5); }
+
+.day-fri .live-time-row { color: #00eeff; font-family: 'Bungee', cursive; font-size: clamp(0.55rem, 2vw, 0.65rem); }
+.day-fri .live-dot { background: #00eeff; box-shadow: 0 0 10px #00eeff; }
+.day-fri .greeting { color: #fff; font-family: 'Bungee', cursive; font-size: clamp(1.15rem, 5vw, 1.9rem); text-shadow: 0 0 20px rgba(255,0,204,0.3); }
+.day-fri .greeting em {
+    background: linear-gradient(90deg, #ff00cc, #ffee00, #00eeff);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: friShift 2s linear infinite;
+}
+@keyframes friShift { 0%{background-position:0%} 100%{background-position:200%} }
+.day-fri .sub-label { color: rgba(0,238,255,0.45); font-family: 'Bungee', cursive; font-size: clamp(0.45rem, 1.8vw, 0.55rem); }
+
+.day-fri .menu-card, .day-fri .action-btn {
+    background: linear-gradient(135deg, rgba(26,5,53,0.96), rgba(15,2,35,0.92));
+    border-color: rgba(255,0,204,0.3);
+    box-shadow: 0 0 0 1px rgba(255,0,204,0.15), 0 6px 25px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,0,204,0.07);
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+.day-fri .action-btn { clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px)); }
+.day-fri .menu-card::before { background: none; }
+.day-fri .menu-card:hover, .day-fri .action-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(255,0,204,0.6);
+    box-shadow: 0 0 0 1px rgba(255,0,204,0.4), 0 12px 35px rgba(255,0,204,0.25), 0 0 30px rgba(0,238,255,0.1);
+}
+.day-fri .card-label, .day-fri .action-label { color: rgba(0,238,255,0.7); font-family: 'Bungee', cursive; font-size: clamp(0.5rem, 2vw, 0.62rem); }
+.day-fri .menu-card:hover .card-label, .day-fri .action-btn:hover .action-label { color: #00eeff; text-shadow: 0 0 8px rgba(0,238,255,0.5); }
+
+/* Fri BG */
+.fri-grid {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.07) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,238,255,0.06) 40px);
+    transform: perspective(350px) rotateX(35deg);
+    transform-origin: bottom center;
+    pointer-events: none;
+}
+.fri-sun {
+    position: absolute;
+    width: 200px; height: 100px;
+    top: 8%; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(0deg, #ff00cc 0%, #ffee00 100%);
+    border-radius: 100px 100px 0 0;
+    opacity: 0.1;
+}
+.fri-star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:0.15} 50%{opacity:0.9} }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES
+═══════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+    .bottom-actions { grid-template-columns: repeat(2, 1fr); }
+    .action-btn { min-height: clamp(70px, 20vw, 90px); }
+}
+
+@media (min-width: 640px) {
+    .menu-grid { max-width: 500px; }
+    .bottom-actions { max-width: 500px; }
+}
+
+@media (min-width: 1024px) {
+    .menu-card:hover {
+        transform: perspective(1000px) rotateX(-4deg) rotateY(4deg) translateY(-6px) scale(1.03);
+    }
+    .menu-grid { max-width: 520px; }
+    .bottom-actions { max-width: 520px; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   POPUP RESPONSIVE
+═══════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
-    .popup-container {
-        max-width: 95vw;
-        max-height: 95vh;
-        border-radius: 20px;
-    }
-    
-    .popup-image {
-        max-height: 50vh;
-    }
-    
-    .popup-close-top {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-        top: 10px;
-        right: 10px;
-    }
+    .popup-container { max-width: 95vw; max-height: 90vh; }
+    .popup-image { max-height: 40vh; }
+    .popup-close-top { width: 32px; height: 32px; font-size: 16px; }
 }
-
-.confetti-container { 
-    display: none !important; 
-}
-
-.profile-modal-overlay, .profile-edit-icon { 
-    display: none !important; 
-}
-
-@keyframes swirl-out {
-    0% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0) rotate(720deg);
-        opacity: 0;
-    }
-}
-
-.popup-exit-active {
-    animation: swirl-out 0.8s ease-in forwards !important;
-}
-</style>
-
+    </style>
 </head>
 
 <body>
 
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="orb orb-c"></div>
+<!-- Background decoration layer -->
+<div id="bg-layer" aria-hidden="true"></div>
 
-    <div class="day-indicator">
-        <span class="day-name" id="dayName"></span>
-        <span class="day-number" id="dayNumber"></span>
+<!-- ── Top Bar ── -->
+<div class="top-bar">
+    <div class="profile-pill" id="profileContainer"></div>
+    <div class="day-chip">
+        <span class="chip-label" id="dayName"></span>
+        <span class="chip-num"  id="dayNumber"></span>
+    </div>
+</div>
+
+<!-- ── Main Content ── -->
+<div class="content-wrapper">
+
+    <!-- Header -->
+    <div class="header-section">
+        <div class="live-time-row">
+            <span class="live-dot"></span>
+            <span id="liveTime">--:--:--</span>
+        </div>
+        <h1 class="greeting">Hello,&nbsp;<em id="userGreeting">User</em></h1>
+        <p class="sub-label" id="pageSub">Select Task To Continue</p>
     </div>
 
-    <div class="content-wrapper">
-        <div class="main-section">
-
-            <div class="header-section">
-                <div class="live-time">
-                    <span class="live-dot"></span>
-                    <span id="liveTime">--:--:--</span>
-                    <span class="live-dot"></span>
-                </div>
-                <h1 class="greeting">
-                    Hello, <span id="userGreeting">—</span>
-                </h1>
-                <p class="sub-label">Select Task To Continue</p>
+    <!-- Menu Grid (4 cards) -->
+    <div class="menu-grid">
+        <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
+            <div class="card-icon-wrap">
+                <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
             </div>
-
- <div class="menu-grid">
-    <!-- 상단 4개 메뉴 카드 -->
-    <div class="menu-card" onclick="navigateTo('staff_dashboard.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/Attendance.gif" alt="Attendance">
+            <span class="card-label">Attendance</span>
         </div>
-        <span class="card-label">Attendance</span>
-    </div>
 
-    <div class="menu-card" onclick="navigateTo('staff_report.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+        <div class="menu-card" onclick="navigateTo('staff_report.html')">
+            <div class="card-icon-wrap">
+                <img src="images/gif/staff_list/work-report.gif" alt="Work Report">
+            </div>
+            <span class="card-label">Work Report</span>
         </div>
-        <span class="card-label">Work<br>Report</span>
-    </div>
 
-    <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+        <div class="menu-card" onclick="navigateTo('staff_calendar.html')">
+            <div class="card-icon-wrap">
+                <img src="images/gif/staff_list/calendar.gif" alt="Calendar">
+            </div>
+            <span class="card-label">Calendar</span>
         </div>
-        <span class="card-label">Calendar</span>
-    </div>
 
-    <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
-        <div class="card-glow"></div>
-        <div class="card-icon-wrap">
-            <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
-        </div>
-        <span class="card-label">Vacation</span>
-    </div>
-</div>
-
-<!-- 하단 4개 액션 버튼 -->
-<div class="bottom-actions">
-    <button class="action-btn photos" onclick="navigateTo('staff_photos.html')">
-        <div class="action-icon">📸</div>
-        <span class="action-label">Staff Photos</span>
-    </button>
-    <button class="action-btn settings" onclick="navigateTo('staff_setting.html')">
-        <div class="action-icon">⚙️</div>
-        <span class="action-label">Settings</span>
-    </button>
-    <button class="action-btn logout" onclick="handleLogout()">
-        <div class="action-icon">🚪</div>
-        <span class="action-label">Logout</span>
-    </button>
-    <a href="https://tdlid.github.io" target="_blank" class="action-btn" style="text-decoration: none;">
-        <div class="action-icon">🌐</div>
-        <span class="action-label">Homepage</span>
-    </a>
-</div>
-
-
+        <div class="menu-card" onclick="navigateTo('staff_vacation.html')">
+            <div class="card-icon-wrap">
+                <img src="images/gif/staff_list/vacation.gif" alt="Vacation">
+            </div>
+            <span class="card-label">Vacation</span>
         </div>
     </div>
+
+    <!-- Bottom Actions (4 buttons) -->
+    <div class="bottom-actions">
+        <button class="action-btn" onclick="navigateTo('staff_photos.html')">
+            <span class="action-icon">📸</span>
+            <span class="action-label">Photos</span>
+        </button>
+
+        <button class="action-btn" onclick="navigateTo('staff_setting.html')">
+            <span class="action-icon">⚙️</span>
+            <span class="action-label">Settings</span>
+        </button>
+
+        <button class="action-btn" onclick="handleLogout()">
+            <span class="action-icon">🚪</span>
+            <span class="action-label">Logout</span>
+        </button>
+
+        <a href="https://tdlid.github.io" target="_blank" class="action-btn">
+            <span class="action-icon">🌐</span>
+            <span class="action-label">Homepage</span>
+        </a>
+    </div>
+
+</div><!-- /content-wrapper -->
 
 <!-- Popup Modal -->
-<div id="popup_overlay" class="popup-overlay" style="display: none;">
+<div id="popup_overlay" class="popup-overlay" style="display:none;">
     <div class="popup-container">
         <button class="popup-close-top" onclick="closePopup()">✕</button>
-<div class="popup-content" onclick="closePopup()">
-    <div id="confetti_wrap" class="confetti-container"></div> <img id="popup_img" src="" alt="Popup" class="popup-image">
-    <p id="popup_text" class="popup-message"></p>
-</div>
-
+        <div class="popup-content" onclick="closePopup()">
+            <img id="popup_img" src="" alt="Popup" class="popup-image" style="display:none;">
+            <p  id="popup_text" class="popup-message" style="display:none;"></p>
+        </div>
         <button class="popup-close-bottom" onclick="closePopup()">Close</button>
     </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════════════════════════════
-   GLOBAL CONFIGURATION
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   DAY THEME ENGINE
+═══════════════════════════════════════════════════════ */
+const DAY_CONFIG = {
+    1: { // Monday
+        cls: 'day-mon',
+        greetingPrefix: 'Hello,\u00A0',
+        sub: 'Select Task To Continue',
+        chipLabel: '⚡ Monday',
+        buildBg: (el) => {
+            el.innerHTML = `
+                <div class="mon-pulse p1"></div>
+                <div class="mon-pulse p2"></div>
+                <div class="mon-scan"></div>`;
+        }
+    },
+    2: { // Tuesday
+        cls: 'day-tue',
+        greetingPrefix: 'Hello,\u00A0',
+        sub: 'Select Task To Continue',
+        chipLabel: '◎ Tuesday',
+        buildBg: (el) => {
+            el.innerHTML = `
+                <div class="tue-circle" style="width:500px;height:500px;top:-150px;right:-150px;"></div>
+                <div class="tue-circle" style="width:350px;height:350px;bottom:-120px;left:-120px;"></div>
+                <div class="tue-stroke" style="width:2px;height:65vh;top:8%;left:12%;transform:rotate(-6deg);"></div>
+                <div class="tue-stroke" style="width:1.5px;height:45vh;top:5%;right:18%;transform:rotate(4deg);"></div>`;
+        }
+    },
+    3: { // Wednesday
+        cls: 'day-wed',
+        greetingPrefix: 'Welcome,\u00A0',
+        sub: 'Enter a Task To Proceed',
+        chipLabel: '◆ Wednesday',
+        buildBg: (el) => {
+            el.innerHTML = `
+                <div class="wed-diamond" style="width:420px;height:420px;top:-120px;right:-120px;"></div>
+                <div class="wed-diamond" style="width:550px;height:550px;bottom:-180px;left:-180px;"></div>
+                <div class="wed-diamond" style="width:200px;height:200px;top:30%;right:6%;"></div>
+                <div class="wed-hline" style="top:18%;"></div>
+                <div class="wed-hline" style="bottom:18%;"></div>`;
+        }
+    },
+    4: { // Thursday
+        cls: 'day-thu',
+        greetingPrefix: 'Morning,\u00A0',
+        sub: 'Choose a task & begin',
+        chipLabel: '🌿 Thursday',
+        buildBg: (el) => {
+            el.innerHTML = `
+                <div class="thu-leaf" style="width:180px;height:270px;top:4%;right:4%;animation-delay:0s;"></div>
+                <div class="thu-leaf" style="width:130px;height:200px;bottom:8%;left:2%;transform:rotate(15deg) scaleX(-1);animation-delay:-4s;"></div>
+                <div class="thu-leaf" style="width:90px;height:140px;top:45%;right:12%;transform:rotate(-35deg);animation-delay:-7s;"></div>`;
+        }
+    },
+    5: { // Friday
+        cls: 'day-fri',
+        greetingPrefix: "TGIF,\u00A0",
+        sub: "Pick a task & let's go 🚀",
+        chipLabel: '🎉 Friday',
+        buildBg: (el) => {
+            let stars = '';
+            for (let i = 0; i < 45; i++) {
+                const x = Math.random() * 100;
+                const y = Math.random() * 55;
+                const s = Math.random() * 2.5 + 1;
+                const d = Math.random() * 3;
+                stars += `<div class="fri-star" style="left:${x}%;top:${y}%;width:${s}px;height:${s}px;animation-delay:${d}s;"></div>`;
+            }
+            el.innerHTML = `<div class="fri-sun"></div>${stars}<div class="fri-grid"></div>`;
+        }
+    }
+};
+
+const now = new Date();
+let dayIdx = now.getDay();
+
+if (dayIdx === 0 || dayIdx === 6) dayIdx = 1; // weekend → Monday
+
+const cfg = DAY_CONFIG[dayIdx] || DAY_CONFIG[1];
+
+// Apply day class immediately (before DOM ready to avoid flash)
+document.body.classList.add(cfg.cls);
+
+/* ═══════════════════════════════════════════════════════
+   FIREBASE CONFIGURATION
+═══════════════════════════════════════════════════════ */
 let database;
 
 const FIREBASE_CONFIG = {
@@ -835,9 +895,9 @@ const FIREBASE_CONFIG = {
     storageBucket: "tdlid-dailyreport.appspot.com"
 };
 
-/* ══════════════════════════════════════════════════════════════
-   NAVIGATION & AUTHENTICATION
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION & AUTH
+═══════════════════════════════════════════════════════ */
 const navigateTo = (page) => {
     sessionStorage.setItem('targetPage', page);
     location.href = 'staff.html';
@@ -847,370 +907,182 @@ const handleLogout = () => {
     if (confirm("Do you want to logout?")) {
         sessionStorage.clear();
         localStorage.removeItem('loggedInUser');
-        
         if (typeof firebase !== 'undefined' && firebase.auth) {
-            firebase.auth().signOut().finally(() => {
-                location.replace('index.html');
-            });
+            firebase.auth().signOut().finally(() => { location.replace('index.html'); });
         } else {
             location.replace('index.html');
         }
     }
 };
 
-
+/* ═══════════════════════════════════════════════════════
+   LOAD USER PROFILE
+═══════════════════════════════════════════════════════ */
 const loadProfileImg = (userId) => {
     if (!userId || !database) return;
-
     database.ref(`users/${userId}`).on('value', (snapshot) => {
-        const userData = snapshot.val() || {};
-        const imgFileName = userData.profileImg;
-        const displayName = userData.displayName || userId;
+        const ud = snapshot.val() || {};
+        const displayName = ud.displayName || userId;
+
+        // Greeting
         const greetingEl = document.getElementById('userGreeting');
+        if (greetingEl) greetingEl.textContent = displayName;
 
-        if (greetingEl) greetingEl.innerText = displayName;
+        // Profile container
+        const container = document.getElementById('profileContainer');
+        if (!container) return;
 
-        let container = document.querySelector('.profile-container');
-        
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'profile-container';
-            // [삭제함] container.onclick = openProfileImagePicker; <-- 이 줄을 삭제해서 클릭을 막습니다.
-            
-            const imgEl = document.createElement('img');
-            imgEl.className = 'profile-img';
-            imgEl.alt = 'Profile';
-            
-            // [삭제함] editIcon 생성 및 추가 로직 삭제 (연필 모양 아이콘 제거)
-
-            container.appendChild(imgEl);
-            
-            if (greetingEl && greetingEl.parentNode) {
-                greetingEl.parentNode.insertBefore(container, greetingEl.nextSibling);
-            }
+        // Profile image
+        let img = container.querySelector('.profile-img');
+        if (!img) {
+            img = document.createElement('img');
+            img.className = 'profile-img';
+            img.alt = 'Profile';
+            container.appendChild(img);
         }
+        img.src = ud.profileImg ? `images/profile/${ud.profileImg}` : 'images/default-profile.png';
+        img.onerror = () => {
+            img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6366f1&color=fff`;
+        };
 
-        const img = container.querySelector('.profile-img');
-        if (img) {
-            const newSrc = imgFileName ? 
-                `images/profile/${imgFileName}` : 
-                'images/default-profile.png';
-            
-            if (img.getAttribute('src') !== newSrc) {
-                img.src = newSrc;
-                img.onerror = () => {
-                    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff`;
-                };
-            }
+        // Profile name
+        let nameEl = container.querySelector('.profile-name');
+        if (!nameEl) {
+            nameEl = document.createElement('div');
+            nameEl.className = 'profile-name';
+            container.appendChild(nameEl);
         }
+        nameEl.textContent = displayName;
     });
 };
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    CLOCK & DATE
-   ══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════ */
 const updateClock = () => {
-    const clockEl = document.getElementById('liveTime');
-    if (clockEl) {
-        clockEl.textContent = new Date().toLocaleTimeString('en-US', { 
-            hour12: false 
-        });
-    }
+    const el = document.getElementById('liveTime');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
 };
 
 const initDateDisplay = () => {
-    const daysArr = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const now = new Date();
-    
-    const dayNameEl = document.getElementById('dayName');
-    const dayNumberEl = document.getElementById('dayNumber');
-    
-    if (dayNameEl) dayNameEl.textContent = daysArr[now.getDay()];
-    if (dayNumberEl) dayNumberEl.textContent = String(now.getDate()).padStart(2, '0');
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const n = new Date();
+    const dn = document.getElementById('dayName');
+    const dnum = document.getElementById('dayNumber');
+    if (dn) dn.textContent = cfg.chipLabel;
+    if (dnum) dnum.textContent = String(n.getDate()).padStart(2, '0');
 };
 
-/* ══════════════════════════════════════════════════════════════
-   POPUP MANAGEMENT
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   POPUP MANAGEMENT (unchanged)
+═══════════════════════════════════════════════════════ */
 let popupAutoCloseTimer = null;
 
 const closePopup = () => {
     const overlay = document.getElementById('popup_overlay');
-    const content = document.querySelector('.popup-content');
-    
-    if (!overlay || !content) return;
-
-    // 소용돌이 애니메이션 클래스 추가
-    content.classList.add('popup-exit-active');
-
-    // 애니메이션 시간(0.8초)이 지난 후 실제로 숨김 처리
-    setTimeout(() => {
+    if (overlay) {
         overlay.style.display = 'none';
-        
-        // 다음 팝업을 위해 상태 초기화
-        content.classList.remove('popup-exit-active');
-        
-        if (popupAutoCloseTimer) {
-            clearTimeout(popupAutoCloseTimer);
-            popupAutoCloseTimer = null;
-        }
-    }, 800);
+        if (popupAutoCloseTimer) { clearTimeout(popupAutoCloseTimer); popupAutoCloseTimer = null; }
+    }
 };
 
-// Popup 체크 및 표시 함수 (수정됨)
 const checkAndShowPopup = () => {
     if (!database) return;
-
     database.ref('settings/config/Popup').once('value', (snapshot) => {
-        const popupData = snapshot.val();
-        
-        if (!popupData || popupData.Flag !== 'ON') {
-            return;
-        }
+        const p = snapshot.val();
+        if (!p || p.Flag !== 'ON') return;
 
-        // 날짜 범위 체크
         const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-        
-        const startDate = popupData.Start || '00000000';
-        const endDate = popupData.End || '99999999';
+        const todayStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+        if (todayStr < (p.Start || '00000000') || todayStr > (p.End || '99999999')) return;
 
-        if (todayStr < startDate || todayStr > endDate) {
-            console.log('Popup not in date range');
-            return;
-        }
-
-        // 팝업 표시
         const overlay = document.getElementById('popup_overlay');
         const img = document.getElementById('popup_img');
         const text = document.getElementById('popup_text');
 
-        if (popupData.Image) {
-            img.src = popupData.Image;
-            img.style.display = 'block';
-            img.onerror = () => {
-                img.style.display = 'none';
-            };
-        } else {
-            img.style.display = 'none';
-        }
+        if (p.Image) {
+            img.src = p.Image; img.style.display = 'block';
+            img.onerror = () => { img.style.display = 'none'; };
+        } else { img.style.display = 'none'; }
 
-        if (popupData.Msg) {
-            text.textContent = popupData.Msg;
-            text.style.display = 'block';
-        } else {
-            text.style.display = 'none';
-        }
+        if (p.Msg) { text.textContent = p.Msg; text.style.display = 'block'; }
+        else { text.style.display = 'none'; }
 
         overlay.style.display = 'flex';
-
-        // 5초 후 자동 닫기
-        popupAutoCloseTimer = setTimeout(() => {
-            closePopup();
-        }, 5000);
+        popupAutoCloseTimer = setTimeout(closePopup, 5000);
     });
 };
 
-// Expose closePopup to global scope
 window.closePopup = closePopup;
 
-/* ══════════════════════════════════════════════════════════════
-   INITIALIZATION에 팝업 체크 추가
-   ══════════════════════════════════════════════════════════════ */
-// 기존 DOMContentLoaded 이벤트 리스너 내부 마지막에 추가:
-document.addEventListener('DOMContentLoaded', () => {
-    // ... 기존 코드 ...
-    
-    // Check and show popup (마지막에 추가)
-    setTimeout(() => {
-        checkAndShowPopup();
-    }, 1000); // 페이지 로드 1초 후 팝업 체크
-});
-
-
-/* ══════════════════════════════════════════════════════════════
-   3D TILT EFFECT (Desktop only)
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   3D TILT EFFECT (Desktop only — unchanged)
+═══════════════════════════════════════════════════════ */
 const init3DTiltEffect = () => {
-    if (!window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
-        return;
-    }
-
-    const cards = document.querySelectorAll('.menu-card');
-    
-    cards.forEach(card => {
-        let targetX = 0, targetY = 0;
-        let currentX = 0, currentY = 0;
-        let rafId = null;
-        let isAnimating = false;
-
-        const lerp = (start, end, factor) => start + (end - start) * factor;
-
+    if (!window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) return;
+    document.querySelectorAll('.menu-card').forEach(card => {
+        let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+        let rafId = null, isAnimating = false;
+        const lerp = (s, e, f) => s + (e - s) * f;
         const animate = () => {
             if (!isAnimating) return;
-
             currentX = lerp(currentX, targetX, 0.12);
             currentY = lerp(currentY, targetY, 0.12);
-
-            card.style.transform = `
-                perspective(1200px) 
-                rotateX(${currentX}deg) 
-                rotateY(${currentY}deg) 
-                scale(1.05)
-            `;
-
+            card.style.transform = `perspective(1200px) rotateX(${currentX}deg) rotateY(${currentY}deg) scale(1.05)`;
             rafId = requestAnimationFrame(animate);
         };
-
-        card.addEventListener('mouseenter', () => {
-            isAnimating = true;
-            rafId = requestAnimationFrame(animate);
-        });
-
+        card.addEventListener('mouseenter', () => { isAnimating = true; rafId = requestAnimationFrame(animate); });
         card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            targetX = -((e.clientY - centerY) / (rect.height / 2)) * 12;
-            targetY = ((e.clientX - centerX) / (rect.width / 2)) * 12;
+            const r = card.getBoundingClientRect();
+            targetX = -((e.clientY - (r.top + r.height/2)) / (r.height/2)) * 10;
+            targetY =  ((e.clientX - (r.left + r.width/2)) / (r.width/2)) * 10;
         });
-
         card.addEventListener('mouseleave', () => {
             isAnimating = false;
             if (rafId) cancelAnimationFrame(rafId);
-            
             card.style.transform = '';
-            currentX = 0;
-            currentY = 0;
-            targetX = 0;
-            targetY = 0;
+            currentX = currentY = targetX = targetY = 0;
         });
     });
 };
 
-/* ══════════════════════════════════════════════════════════════
-   MOBILE TOUCH OPTIMIZATION
-   ══════════════════════════════════════════════════════════════ */
-const initMobileTouchEffects = () => {
-    // 모바일에서만 실행
-    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
-        const cards = document.querySelectorAll('.menu-card');
-        
-        cards.forEach(card => {
-            // 터치 시작
-            card.addEventListener('touchstart', () => {
-                card.style.transform = 'scale(0.96)';
-            }, { passive: true });
-            
-            // 터치 종료
-            card.addEventListener('touchend', () => {
-                card.style.transform = '';
-            }, { passive: true });
-            
-            // 터치 취소
-            card.addEventListener('touchcancel', () => {
-                card.style.transform = '';
-            }, { passive: true });
-        });
-        
-        // 액션 버튼 터치 피드백
-        const actionBtns = document.querySelectorAll('.action-btn');
-        actionBtns.forEach(btn => {
-            const icon = btn.querySelector('.action-icon');
-            
-            btn.addEventListener('touchstart', () => {
-                if (icon) icon.style.transform = 'scale(0.92)';
-            }, { passive: true });
-            
-            btn.addEventListener('touchend', () => {
-                if (icon) icon.style.transform = '';
-            }, { passive: true });
-        });
-    }
-};
-
-/* ══════════════════════════════════════════════════════════════
-   PREVENT ZOOM ON DOUBLE TAP (iOS)
-   ══════════════════════════════════════════════════════════════ */
-const preventDoubleTapZoom = () => {
-    let lastTouchEnd = 0;
-    
-    document.addEventListener('touchend', (event) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, { passive: false });
-};
-
-/* ══════════════════════════════════════════════════════════════
-   MOBILE VIEWPORT HEIGHT FIX
-   ══════════════════════════════════════════════════════════════ */
-const setMobileVH = () => {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-};
-
-// 리사이즈 시 재계산
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        setMobileVH();
-    }, 100);
-});
-
-// 오리엔테이션 변경 감지
-window.addEventListener('orientationchange', () => {
-    setTimeout(setMobileVH, 100);
-});
-
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    INITIALIZATION
-   ══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
     const userId = sessionStorage.getItem('loggedInUser');
-    
-    if (!userId) {
-        location.href = 'index.html';
-        return;
-    }
+    if (!userId) { location.href = 'index.html'; return; }
 
-    // Firebase initialization
-    if (!firebase.apps.length) {
-        firebase.initializeApp(FIREBASE_CONFIG);
-    }
+    // Build background
+    const bgEl = document.getElementById('bg-layer');
+    if (cfg.buildBg) cfg.buildBg(bgEl);
+
+    // Set sub-label
+    const subEl = document.getElementById('pageSub');
+    if (subEl) subEl.textContent = cfg.sub;
+
+    // Firebase
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     database = firebase.database();
 
-    // Load user profile
-    firebase.auth().onAuthStateChanged(() => {
-        loadProfileImg(userId);
-    });
+    firebase.auth().onAuthStateChanged(() => { loadProfileImg(userId); });
 
-    // Initialize clock
+    // Clock
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Initialize date display
+    // Date
     initDateDisplay();
 
-    // Initialize 3D tilt effect (Desktop)
+    // 3D tilt
     init3DTiltEffect();
-    
-    // ===== 아래 3줄 추가 =====
-    // Mobile optimizations
-    initMobileTouchEffects();
-    preventDoubleTapZoom();
-    setMobileVH();
+
+    // Popup
+    setTimeout(checkAndShowPopup, 1000);
 });
 
-// Expose functions to global scope
 window.navigateTo = navigateTo;
 window.handleLogout = handleLogout;
-
 </script>
-
 </body>
 </html>
