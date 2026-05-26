@@ -8,21 +8,23 @@
     <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+
+    <!-- Day-specific fonts -->
+    <!-- MON: Orbitron (cyber) / TUE: Noto Serif JP (wabi-sabi) / WED: Cormorant Garamond (art deco) / THU: DM Serif Display (nature) / FRI: Bungee (pop) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700&family=Cormorant+Garamond:wght@300;400;700&family=DM+Serif+Display&family=Bungee&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <link rel="icon" href="data:,">
 
 <script>
     (function(){
-        // 모바일 기기 체크
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        // URL 파라미터 체크 (억지로 PC모드로 보려는 경우 방지)
         const urlParams = new URLSearchParams(window.location.search);
         const isPCMode = urlParams.get('view_mode') === 'pc';
-
         if (isMobileDevice && !isPCMode) {
             let path = window.location.pathname;
             let page = path.split("/").pop();
-            // index.html이거나 경로만 있는 경우 index_m.html로 리다이렉트
             if (page === "" || page === "index.html") {
                 window.location.href = "index_m.html";
             }
@@ -31,856 +33,1170 @@
 </script>
 
 <style>
-:root {
-    --primary: #00d4ff;
-    --secondary: #ff006e;
-    --accent: #ffbe0b;
-    --dark-bg: #0a0e27;
-    --darker-bg: #050812;
-    --surface: rgba(20, 30, 60, 0.8);
-}
-
-* {
+/* ═══════════════════════════════════════════
+   BASE RESET & LAYOUT
+═══════════════════════════════════════════ */
+*, *::before, *::after {
+    box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    box-sizing: border-box;
 }
 
-/* 1. body 스타일 수정 */
 body {
-    font-family: "Pretendard", sans-serif;
-    color: #f1f5f9;
     margin: 0;
-    overflow-x: hidden;
-    
-    background-image: url('images/gif/4.gif');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    
     min-height: 100vh;
-    /* 수정: 초기 투명도를 1로 변경하여 즉시 보이게 하거나, 
-       JS에서 window.onload 시점에 opacity를 조절하세요. */
-    opacity: 1; 
-    transition: opacity 0.8s ease;
-}
-
-/* 2. 오버레이 설정 수정 */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4); 
-    /* 수정: 배경 이미지보다는 위에, 실제 로그인 박스보다는 아래에 있어야 함 */
-    z-index: 0; 
-    pointer-events: none; /* 오버레이가 클릭을 방해하지 않도록 설정 */
-}
-
-/* 3. 콘텐츠가 오버레이 위로 올라오도록 설정 (매우 중요) */
-.login-card, .tdlid-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: clamp(1rem, 4vw, 2rem);
+    overflow-x: hidden;
+    transition: background 0.8s ease, color 0.8s ease;
     position: relative;
-    z-index: 10; /* 오버레이(0)보다 높은 값 부여 */
 }
 
-/* ── 전기 오토바이 배경 애니메이션 ── */
-.ebike-background {
-    position: fixed;
-    top: 0;
-    left: 0;
+.page-wrapper {
     width: 100%;
-    height: 100%;
-    z-index: -2;
-    overflow: hidden;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+    position: relative;
+    z-index: 10;
 }
 
-.ebike-container {
-    position: absolute;
-    width: 300px;
-    height: 150px;
-    opacity: 0.15;
-    filter: blur(0.5px);
-}
-
-.ebike {
-    width: 100%;
-    height: 100%;
-    animation: driftAcross 20s linear infinite;
-}
-
-.ebike-path-1 { top: 15%; left: -300px; animation-delay: 0s; }
-.ebike-path-2 { top: 35%; left: -300px; animation-delay: -5s; }
-.ebike-path-3 { top: 55%; left: -300px; animation-delay: -10s; }
-.ebike-path-4 { top: 75%; left: -300px; animation-delay: -15s; }
-
-@keyframes driftAcross {
-    0% { transform: translateX(0) rotate(0deg); opacity: 0.1; }
-    10% { opacity: 0.18; }
-    50% { opacity: 0.15; }
-    90% { opacity: 0.08; }
-    100% { transform: translateX(calc(100vw + 300px)) rotate(2deg); opacity: 0; }
-}
-
-/* ── 전기 에너지 맥박 효과 ── */
-.energy-pulse {
-    position: fixed;
-    border-radius: 50%;
-    border: 2px solid var(--primary);
-    pointer-events: none;
-    z-index: -1;
-    animation: energyPulse 3s ease-in-out infinite;
-}
-
-.pulse-1 { width: 400px; height: 400px; top: 10%; left: 5%; animation-delay: 0s; }
-.pulse-2 { width: 500px; height: 500px; top: 50%; right: 5%; animation-delay: 1s; }
-.pulse-3 { width: 350px; height: 350px; bottom: 10%; left: 50%; animation-delay: 2s; }
-
-@keyframes energyPulse {
-    0%, 100% { transform: scale(1); opacity: 0.1; }
-    50% { transform: scale(1.2); opacity: 0.25; }
-}
-
-/* ── 글리치 배경 효과 ── */
-.glitch-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -3;
-    background: linear-gradient(45deg, 
-        rgba(0, 212, 255, 0.03) 0%,
-        rgba(255, 0, 110, 0.02) 25%,
-        rgba(255, 190, 11, 0.02) 50%,
-        rgba(0, 212, 255, 0.03) 75%,
-        rgba(255, 0, 110, 0.02) 100%);
-    background-size: 400% 400%;
-    animation: glitchFlow 15s ease infinite;
-}
-
-@keyframes glitchFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* ── TDLiD 위치를 중앙에서 상단으로 변경 ── */
-.tdlid-container {
-    position: fixed;
-    top: 50px; /* 중앙(50%)에서 상단(50px)으로 변경 */
-    left: 50%;
-    transform: translateX(-50%); /* 중앙 정렬 유지 */
-    z-index: -1;
-    pointer-events: none;
-    font-size: clamp(2rem, 8vw, 5rem); /* 크기를 조금 줄여서 상단에 적합하게 조절 */
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    width: 100%;
-    text-align: center;
-}
-
-/* ── 흔들림(애니메이션) 범위 축소 ── */
-@keyframes floatLetters {
-    0%, 100% {
-        transform: translateY(0px) scale(1);
-        opacity: 0.4;
-    }
-    50% {
-        /* 위아래 흔들림 범위를 -40px에서 -10px로 줄여 가독성 확보 */
-        transform: translateY(-10px) scale(1.02);
-        opacity: 0.7;
-    }
-}
-
-.tdlid-letter {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: floatLetters 4s ease-in-out infinite;
-    text-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
-}
-
-.tdlid-letter:nth-child(1) { animation-delay: 0s; }
-.tdlid-letter:nth-child(2) { animation-delay: 0.15s; }
-.tdlid-letter:nth-child(3) { animation-delay: 0.3s; }
-.tdlid-letter:nth-child(4) { animation-delay: 0.45s; }
-.tdlid-letter:nth-child(5) { animation-delay: 0.6s; }
-
-@keyframes floatLetters {
-    0%, 100% {
-        transform: translateY(0px) scale(1);
-        opacity: 0.5;
-    }
-    25% {
-        transform: translateY(-20px) scale(1.05);
-        opacity: 0.8;
-    }
-    50% {
-        transform: translateY(-40px) scale(1.1);
-        opacity: 1;
-    }
-    75% {
-        transform: translateY(-20px) scale(1.05);
-        opacity: 0.8;
-    }
-}
-
-/* ── 로그인 카드 3D 효과 ── */
+/* ═══════════════════════════════════════════
+   SHARED CARD & INPUT STYLES (overridden per day)
+═══════════════════════════════════════════ */
 .login-card {
-    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 20, 50, 0.9) 100%);
-    backdrop-filter: blur(40px) saturate(200%);
-    border: 2px solid rgba(0, 212, 255, 0.3);
-    border-radius: 2rem;
-    box-shadow: 
-        0 0 60px rgba(0, 212, 255, 0.15),
-        0 20px 60px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    width: 100%;
+    border-radius: clamp(1.25rem, 4vw, 2rem);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
     position: relative;
     overflow: hidden;
-    animation: cardSlideUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s ease;
 }
 
-.login-card::before {
-    content: '';
+.field-label {
+    display: block;
+    font-size: clamp(0.6rem, 2vw, 0.7rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+.field-wrap {
+    margin-bottom: clamp(1rem, 3vw, 1.5rem);
+}
+
+.input-field {
+    width: 100%;
+    padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+    font-size: 16px; /* prevent zoom on iOS */
+    border-radius: clamp(0.75rem, 3vw, 1.25rem);
+    border: none;
+    outline: none;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.password-wrap {
+    position: relative;
+}
+
+.eye-btn {
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-    animation: cardGlow 4s ease-in-out infinite;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: opacity 0.2s;
+    z-index: 5;
 }
 
-@keyframes cardSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(60px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.eye-btn:hover { opacity: 0.7; }
+
+.forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
 }
 
-@keyframes cardGlow {
-    0%, 100% { transform: translate(0, 0); opacity: 0.5; }
-    50% { transform: translate(20px, -20px); opacity: 0.8; }
+.forgot-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: clamp(0.6rem, 2vw, 0.7rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 0.25rem 0;
+    transition: all 0.2s;
 }
 
-/* ── 입력 필드 3D 스타일 ── */
-input, select {
-    background: linear-gradient(135deg, rgba(15, 20, 50, 0.8) 0%, rgba(10, 14, 39, 0.7) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    color: #fff !important;
-    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
-    border-radius: 1.25rem !important;
-    padding: 1rem 1.25rem !important;
-    font-size: 16px !important;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.3),
-        inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
+.login-btn {
+    width: 100%;
+    padding: clamp(0.875rem, 2.5vw, 1rem) 2rem;
+    border: none;
+    cursor: pointer;
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    border-radius: clamp(0.75rem, 3vw, 1.25rem);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    margin-top: clamp(0.75rem, 2.5vw, 1rem);
 }
 
-input::placeholder {
-    color: #64748b !important;
-}
+.login-btn:hover { transform: translateY(-3px) scale(1.02); }
+.login-btn:active { transform: translateY(-1px) scale(0.98); }
 
-input:focus, select:focus {
-    border-color: var(--primary) !important;
-    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
-    box-shadow: 
-        0 0 0 3px rgba(0, 212, 255, 0.15),
-        0 12px 40px rgba(0, 212, 255, 0.25),
-        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
-    transform: scale(1.02) translateY(-2px) !important;
-}
-
-/* ── Staff Selector 고급 스타일 ── */
+/* Staff Selector */
 #selected-staff {
-    background: linear-gradient(135deg, rgba(15, 20, 50, 0.85) 0%, rgba(10, 14, 39, 0.8) 100%) !important;
-    color: #fff !important;
-    border: 1.5px solid rgba(0, 212, 255, 0.2) !important;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem !important;
-    border-radius: 1.25rem !important;
-    font-size: 1rem !important;
-    min-height: 3.5rem !important;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(0, 212, 255, 0.1) !important;
+    padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+    border-radius: clamp(0.75rem, 3vw, 1.25rem);
+    font-size: 16px;
+    min-height: 3.25rem;
+    transition: all 0.3s ease;
+    border: none;
+    width: 100%;
 }
 
-#selected-staff:hover {
-    border-color: var(--primary) !important;
-    box-shadow: 
-        0 0 0 3px rgba(0, 212, 255, 0.1),
-        0 12px 40px rgba(0, 212, 255, 0.25),
-        inset 0 1px 3px rgba(0, 212, 255, 0.2) !important;
-    transform: scale(1.01) translateY(-2px);
-}
+#staff-selector-container { position: relative; }
 
-#selected-staff.active {
-    border-color: var(--primary) !important;
-    box-shadow: 
-        0 0 0 3px rgba(0, 212, 255, 0.2),
-        0 12px 40px rgba(0, 212, 255, 0.3),
-        inset 0 1px 3px rgba(0, 212, 255, 0.3) !important;
-    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95) 0%, rgba(15, 25, 55, 0.9) 100%) !important;
-}
-
-/* 1. 드롭다운 메뉴: 스크롤바를 강제로 표시하고 영역 확보 */
 #staff-dropdown {
-    position: absolute !important;
-    top: calc(100% + 0.5rem) !important;
-    left: 0 !important;
-    right: 0 !important;
-    max-height: 0; /* 기본값 */
-    overflow-y: auto !important; /* 내용이 많을 때만 스크롤바 생성 */
-    overflow-x: hidden !important;
-    background: linear-gradient(135deg, rgba(15, 20, 50, 0.98) 0%, rgba(10, 14, 39, 0.95) 100%);
-    backdrop-filter: blur(30px);
-    border: 1.5px solid rgba(0, 212, 255, 0.3);
-    border-radius: 1.25rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0; right: 0;
+    max-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: clamp(0.75rem, 3vw, 1.25rem);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     opacity: 0;
-    pointer-events: none; /* 닫혀있을 때 클릭 방지 */
+    pointer-events: none;
     z-index: 10000;
 }
 
-/* 2. 활성화 시 높이 지정 (중요: 맨 아래 직원까지 보이도록 높이 확보) */
 #staff-dropdown.active {
-    max-height: 250px !important; /* 고정 높이를 주어 스크롤이 발생하게 함 */
+    max-height: 240px;
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
-    padding: 0.5rem; /* 내부 여백 추가 */
+    padding: 0.5rem;
 }
 
-/* 3. 스크롤바 스타일: 배경과 대비되도록 색상 조정 */
-#staff-dropdown::-webkit-scrollbar {
-    width: 6px !important; /* 스크롤바 너비 */
-    display: block !important;
-}
-
-#staff-dropdown::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-radius: 10px;
-}
-
-#staff-dropdown::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary), var(--secondary)) !important;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-/* 4. 마지막 요소 하단 여백 추가 (스크롤 끝 도달 확인용) */
-.staff-option:last-child {
-    border-bottom: none;
-    margin-bottom: 10px;
-}
+#staff-dropdown::-webkit-scrollbar { width: 5px; }
+#staff-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
 
 .staff-option {
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.staff-option:hover {
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 190, 11, 0.05) 100%);
-    padding-left: 1.5rem;
-}
-
-.staff-option.selected {
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.2) 0%, rgba(255, 190, 11, 0.1) 100%);
-    border-left: 3px solid var(--primary);
-    padding-left: 1.22rem;
+    margin-bottom: 0.25rem;
 }
 
 .staff-avatar {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
     flex-shrink: 0;
-    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
 }
 
-.staff-name {
-    flex: 1;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
+.staff-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+.staff-role-badge { font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.4rem; font-weight: 700; }
 
-.staff-role {
-    font-size: 0.7rem;
-    color: var(--primary);
-    background: rgba(0, 212, 255, 0.1);
-    padding: 0.35rem 0.65rem;
-    border-radius: 0.5rem;
-    font-weight: 700;
-    border: 1px solid rgba(0, 212, 255, 0.2);
-}
+.dropdown-arrow { transition: transform 0.3s ease; flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
+.dropdown-arrow.rotated { transform: rotate(180deg); }
 
-.dropdown-arrow {
-    transition: transform 0.3s ease;
-    color: var(--primary);
-}
-
-.dropdown-arrow.rotated {
-    transform: rotate(180deg);
-}
-
-#staff-dropdown::-webkit-scrollbar {
-    width: 6px;
-}
-
-#staff-dropdown::-webkit-scrollbar-track {
-    background: rgba(0, 212, 255, 0.05);
-    border-radius: 1rem;
-}
-
-#staff-dropdown::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary), var(--accent));
-    border-radius: 1rem;
-}
-
-/* ── 로그인 버튼 ── */
-#loginBtn {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--secondary) 100%);
-    background-size: 200% 200%;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 
-        0 0 30px rgba(0, 212, 255, 0.4),
-        0 8px 30px rgba(255, 0, 110, 0.3);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: none;
-    cursor: pointer;
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    padding: 1rem 2rem;
-    border-radius: 1.25rem;
-    font-size: 0.95rem;
-    color: #000;
-    width: 100%;
-}
-
-#loginBtn:hover {
-    background-position: 100% 50%;
-    box-shadow: 
-        0 0 50px rgba(0, 212, 255, 0.6),
-        0 12px 40px rgba(255, 0, 110, 0.5),
-        inset 0 0 20px rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px) scale(1.02);
-}
-
-#loginBtn:active {
-    transform: translateY(-1px) scale(0.98);
-}
-
-#loginBtn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#loginBtn:active::after {
-    opacity: 1;
-}
-
-/* ── Forgot Password 버튼 ── */
-.forgot-btn {
-    position: relative;
-    overflow: hidden;
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.forgot-btn::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.forgot-btn:hover::before {
-    width: 100%;
-}
-
-/* ── 생일 팝업 ── */
-#birthday-popup {
-    background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(5, 8, 18, 0.9) 100%);
-    border: 2px solid var(--primary);
+/* Day badge */
+.day-badge {
+    font-size: clamp(0.55rem, 2vw, 0.65rem);
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.9rem;
     border-radius: 2rem;
-    box-shadow: 
-        0 0 60px rgba(0, 212, 255, 0.3),
-        0 20px 60px rgba(0, 0, 0, 0.7);
+    display: inline-block;
 }
 
-/* ── Ghost Overlay ── */
-#ghost-overlay {
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
-    animation: ghostFadeIn 0.3s ease-out forwards;
+/* Header logo */
+.logo-img {
+    width: clamp(3.5rem, 10vw, 5rem);
+    height: clamp(3.5rem, 10vw, 5rem);
+    object-fit: contain;
+    border-radius: 1.25rem;
+    display: block;
+    margin: 0 auto clamp(0.75rem, 2.5vw, 1rem);
 }
 
-#ghost-overlay.hidden {
-    display: none !important;
+.page-title {
+    font-size: clamp(1.75rem, 6vw, 2.75rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin: 0 0 0.35rem;
 }
 
-#ghost-image {
-    animation: ghostPulse 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    box-shadow: 
-        0 0 80px rgba(0, 212, 255, 0.6),
-        0 0 120px rgba(255, 0, 110, 0.4),
-        0 0 160px rgba(255, 190, 11, 0.2),
-        inset 0 0 50px rgba(255, 255, 255, 0.1);
-    border: 3px solid rgba(0, 212, 255, 0.5);
-    filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.4));
+.page-subtitle {
+    font-size: clamp(0.6rem, 2vw, 0.7rem);
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin: 0;
 }
 
-@keyframes ghostFadeIn {
-    from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-    }
-    to {
-        opacity: 1;
-        backdrop-filter: blur(10px) brightness(0.6);
-    }
+.welcome-heading {
+    font-size: clamp(1rem, 3.5vw, 1.35rem);
+    font-weight: 900;
+    margin: 0 0 0.35rem;
 }
 
-@keyframes ghostPulse {
-    0% {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-    25% {
-        opacity: 0.7;
-        transform: scale(0.8);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    75% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+.welcome-sub {
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+    margin: 0 0 clamp(1.25rem, 4vw, 2rem);
 }
 
-/* ── 애니메이션 진입 ── */
-.animate-fadeIn {
-    animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* TDLiD brand */
+.brand-text {
+    font-size: clamp(3.5rem, 15vw, 9rem);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    position: fixed;
+    top: clamp(0.5rem, 3vw, 2rem);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+    width: 100%;
+    text-align: center;
+}
+
+.brand-letter {
+    display: inline-block;
+    animation: floatLetter 4s ease-in-out infinite;
+}
+.brand-letter:nth-child(1) { animation-delay: 0s; }
+.brand-letter:nth-child(2) { animation-delay: 0.15s; }
+.brand-letter:nth-child(3) { animation-delay: 0.3s; }
+.brand-letter:nth-child(4) { animation-delay: 0.45s; }
+.brand-letter:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes floatLetter {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+/* Card entrance animation */
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(50px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-up {
     opacity: 0;
+    animation: cardUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.animate-up:nth-child(1) { animation-delay: 0.1s; }
+.animate-up:nth-child(2) { animation-delay: 0.25s; }
+
+/* Ghost Overlay */
+#ghost-overlay {
+    position: fixed; inset: 0;
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px) brightness(0.6);
+    pointer-events: none;
+    animation: ghostFadeIn 0.3s ease forwards;
+}
+#ghost-overlay.hidden { display: none !important; }
+#ghost-image {
+    width: clamp(10rem, 30vw, 16rem);
+    height: clamp(10rem, 30vw, 16rem);
+    object-fit: cover;
+    border-radius: 50%;
+    animation: ghostPulse 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes ghostFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ghostPulse {
+    0% { opacity: 0; transform: scale(0.4); }
+    60% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
-.animate-fadeIn:nth-child(1) { animation-delay: 0.2s; }
-.animate-fadeIn:nth-child(2) { animation-delay: 0.4s; }
-.animate-fadeIn:nth-child(3) { animation-delay: 0.6s; }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Birthday popup */
+#birthday-popup {
+    position: fixed; inset: 0;
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+}
+#birthday-popup.hidden { display: none !important; }
+.birthday-inner {
+    width: 90%;
+    max-width: 340px;
+    padding: clamp(1.5rem, 5vw, 2rem);
+    border-radius: 1.5rem;
+    text-align: center;
 }
 
-/* ── 반응형 디자인 ── */
-@media (max-width: 640px) {
-    .login-card {
-        padding: 1.5rem;
-        border-radius: 1.5rem;
-    }
-
-    .tdlid-container {
-        font-size: 2.5rem;
-        opacity: 0.3;
-    }
-
-    body {
-        perspective: 800px;
-    }
-
-    #ghost-image {
-        width: 10rem;
-        height: 10rem;
-    }
+/* PC layout enhancements */
+@media (min-width: 1024px) {
+    .page-wrapper { max-width: 520px; }
+    .login-card { padding: 3rem; }
+    body { padding: 2rem; }
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
-    .login-card {
-        padding: 2rem;
-        border-radius: 2rem;
-    }
-
-    .tdlid-container {
-        font-size: 6rem;
-    }
+/* ═══════════════════════════════════════════
+   MONDAY — CYBERPUNK NEON (original vibe, refined)
+═══════════════════════════════════════════ */
+body.day-mon {
+    font-family: "Pretendard", "Inter", sans-serif;
+    background-color: #060916;
+    background-image:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0,212,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(255,0,110,0.1) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300d4ff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    color: #e2e8f0;
 }
 
-@media (min-width: 1025px) {
-    .login-card {
-        padding: 3rem;
-        border-radius: 2.5rem;
-    }
-
-    .tdlid-container {
-        font-size: 12rem;
-    }
-
-    .login-card:hover {
-        border-color: var(--primary);
-        box-shadow: 
-            0 0 80px rgba(0, 212, 255, 0.25),
-            0 30px 80px rgba(0, 0, 0, 0.7),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    }
+body.day-mon .brand-text {
+    background: linear-gradient(135deg, #00d4ff, #ff006e, #ffbe0b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    opacity: 0.15;
+    font-family: 'Orbitron', sans-serif;
 }
 
-::-webkit-scrollbar {
-    width: 8px;
+body.day-mon .login-card {
+    background: linear-gradient(135deg, rgba(20,30,60,0.97) 0%, rgba(12,16,42,0.95) 100%);
+    border: 1.5px solid rgba(0,212,255,0.3);
+    box-shadow: 0 0 60px rgba(0,212,255,0.12), 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07);
+    animation: cardUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.2s;
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(0, 212, 255, 0.05);
+body.day-mon .day-badge { background: rgba(0,212,255,0.15); color: #00d4ff; border: 1px solid rgba(0,212,255,0.3); }
+
+body.day-mon .page-title {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(90deg, #00d4ff, #ffbe0b, #ff006e);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--primary), var(--accent));
-    border-radius: 4px;
+body.day-mon .page-subtitle { color: rgba(0,212,255,0.6); font-family: 'Orbitron', sans-serif; font-size: clamp(0.5rem, 1.8vw, 0.62rem); }
+body.day-mon .field-label { color: rgba(0,212,255,0.7); font-family: 'Orbitron', sans-serif; font-size: clamp(0.5rem, 1.5vw, 0.62rem); }
+body.day-mon .welcome-heading { color: #fff; font-family: 'Orbitron', sans-serif; }
+body.day-mon .welcome-sub { color: #64748b; }
+
+body.day-mon .input-field, body.day-mon #selected-staff {
+    background: rgba(8,12,35,0.8);
+    color: #fff;
+    border: 1.5px solid rgba(0,212,255,0.2) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 3px rgba(0,212,255,0.08);
 }
+body.day-mon .input-field::placeholder { color: #334155; }
+body.day-mon .input-field:focus {
+    border-color: #00d4ff !important;
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.15), 0 8px 30px rgba(0,212,255,0.2) !important;
+    transform: translateY(-2px);
+}
+body.day-mon #selected-staff:hover, body.day-mon #selected-staff.active {
+    border-color: #00d4ff !important;
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.15) !important;
+}
+
+body.day-mon #staff-dropdown {
+    background: rgba(10,14,39,0.98);
+    border: 1.5px solid rgba(0,212,255,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+body.day-mon #staff-dropdown::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00d4ff, #ff006e); }
+body.day-mon .staff-option:hover { background: rgba(0,212,255,0.08); }
+body.day-mon .staff-option.selected { background: rgba(0,212,255,0.15); border-left: 3px solid #00d4ff; }
+body.day-mon .staff-avatar { background: linear-gradient(135deg, #00d4ff, #ffbe0b); color: #000; }
+body.day-mon .staff-name { color: #e2e8f0; }
+body.day-mon .staff-role-badge { background: rgba(0,212,255,0.12); color: #00d4ff; border: 1px solid rgba(0,212,255,0.2); }
+body.day-mon #selected-text { color: #94a3b8; }
+body.day-mon #selected-staff .dropdown-arrow { color: #00d4ff; }
+body.day-mon .eye-btn { color: #64748b; }
+body.day-mon .eye-btn:hover { color: #00d4ff; }
+body.day-mon .forgot-btn { color: #00d4ff; }
+
+body.day-mon .login-btn {
+    background: linear-gradient(135deg, #00d4ff 0%, #ffbe0b 50%, #ff006e 100%);
+    background-size: 200% 200%;
+    color: #000;
+    box-shadow: 0 0 30px rgba(0,212,255,0.35), 0 8px 25px rgba(255,0,110,0.25);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.2em;
+}
+body.day-mon .login-btn:hover {
+    box-shadow: 0 0 50px rgba(0,212,255,0.55), 0 12px 35px rgba(255,0,110,0.4);
+}
+
+/* Cyberpunk background particles */
+body.day-mon .bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.cyber-pulse {
+    position: absolute; border-radius: 50%;
+    border: 1.5px solid rgba(0,212,255,0.15);
+    animation: cyberPulse 4s ease-in-out infinite;
+}
+.cp1 { width: 500px; height: 500px; top: -10%; left: -10%; animation-delay: 0s; }
+.cp2 { width: 600px; height: 600px; bottom: -15%; right: -10%; border-color: rgba(255,0,110,0.1); animation-delay: 1.5s; }
+.cp3 { width: 400px; height: 400px; bottom: 10%; left: 30%; border-color: rgba(255,190,11,0.1); animation-delay: 3s; }
+@keyframes cyberPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
+}
+.scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+    animation: scanMove 6s linear infinite;
+}
+@keyframes scanMove {
+    0% { top: -2px; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════
+   TUESDAY — WABI-SABI JAPANESE MINIMAL
+   Palette: warm parchment, deep charcoal, muted indigo
+═══════════════════════════════════════════ */
+body.day-tue {
+    font-family: "Noto Serif JP", serif;
+    background-color: #f2ede7;
+    background-image:
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(186,170,147,0.5) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23e8ddd1'/%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23c8b99a' opacity='0.5'/%3E%3C/svg%3E");
+    color: #2d2621;
+}
+
+body.day-tue .brand-text {
+    color: rgba(45,38,33,0.06);
+    font-family: 'Noto Serif JP', serif;
+    -webkit-text-fill-color: rgba(45,38,33,0.06);
+    font-size: clamp(3rem, 12vw, 7rem);
+}
+
+body.day-tue .login-card {
+    background: rgba(255,252,248,0.92);
+    border: 1px solid rgba(180,160,135,0.4);
+    box-shadow: 0 2px 4px rgba(45,38,33,0.06), 0 20px 60px rgba(45,38,33,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    border-radius: 0.5rem;
+    animation: cardUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.2s;
+}
+
+body.day-tue .day-badge { background: rgba(100,80,60,0.1); color: #5c4a35; border: 1px solid rgba(100,80,60,0.25); font-family: 'Noto Serif JP', serif; }
+
+body.day-tue .page-title {
+    font-family: 'Noto Serif JP', serif;
+    color: #2d2621;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
+    letter-spacing: 0.05em;
+}
+body.day-tue .page-subtitle { color: rgba(92,74,53,0.6); font-family: 'Noto Serif JP', serif; letter-spacing: 0.15em; }
+body.day-tue .field-label { color: rgba(92,74,53,0.65); font-family: 'Noto Serif JP', serif; }
+body.day-tue .welcome-heading { color: #2d2621; font-family: 'Noto Serif JP', serif; font-weight: 700; }
+body.day-tue .welcome-sub { color: #8a7362; }
+
+body.day-tue .input-field, body.day-tue #selected-staff {
+    background: rgba(242,237,231,0.8);
+    color: #2d2621;
+    border: 1px solid rgba(180,160,135,0.5) !important;
+    box-shadow: inset 0 1px 4px rgba(45,38,33,0.08);
+}
+body.day-tue .input-field::placeholder { color: #b8a898; }
+body.day-tue .input-field:focus {
+    border-color: #7c6652 !important;
+    background: rgba(255,252,248,0.95) !important;
+    box-shadow: 0 0 0 3px rgba(124,102,82,0.12), inset 0 1px 4px rgba(45,38,33,0.06) !important;
+    transform: none;
+}
+body.day-tue #selected-staff:hover, body.day-tue #selected-staff.active { border-color: #7c6652 !important; box-shadow: 0 0 0 3px rgba(124,102,82,0.12) !important; }
+
+body.day-tue #staff-dropdown {
+    background: rgba(252,249,244,0.98);
+    border: 1px solid rgba(180,160,135,0.4);
+    box-shadow: 0 12px 40px rgba(45,38,33,0.18);
+}
+body.day-tue #staff-dropdown::-webkit-scrollbar-thumb { background: #b8a898; }
+body.day-tue .staff-option:hover { background: rgba(124,102,82,0.07); }
+body.day-tue .staff-option.selected { background: rgba(124,102,82,0.12); border-left: 2px solid #7c6652; }
+body.day-tue .staff-avatar { background: linear-gradient(135deg, #b8a898, #7c6652); color: #fff; }
+body.day-tue .staff-name { color: #2d2621; }
+body.day-tue .staff-role-badge { background: rgba(124,102,82,0.1); color: #5c4a35; border: 1px solid rgba(124,102,82,0.2); }
+body.day-tue #selected-text { color: #8a7362; }
+body.day-tue #selected-staff .dropdown-arrow { color: #7c6652; }
+body.day-tue .eye-btn { color: #a09080; }
+body.day-tue .eye-btn:hover { color: #5c4a35; }
+body.day-tue .forgot-btn { color: #7c6652; border-bottom: 1px solid transparent; }
+body.day-tue .forgot-btn:hover { border-bottom-color: #7c6652; }
+
+body.day-tue .login-btn {
+    background: #2d2621;
+    color: #f2ede7;
+    letter-spacing: 0.25em;
+    font-family: 'Noto Serif JP', serif;
+    box-shadow: 0 4px 20px rgba(45,38,33,0.3);
+}
+body.day-tue .login-btn:hover {
+    background: #3d3630;
+    box-shadow: 0 8px 30px rgba(45,38,33,0.4);
+}
+
+/* Tue background deco — ink stroke */
+body.day-tue .bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.ink-circle {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(45,38,33,0.06);
+}
+.ic1 { width: 600px; height: 600px; top: -200px; right: -200px; }
+.ic2 { width: 400px; height: 400px; bottom: -150px; left: -150px; }
+.ink-stroke {
+    position: absolute;
+    background: rgba(45,38,33,0.04);
+    border-radius: 50%;
+}
+.is1 { width: 3px; height: 80vh; top: 10%; left: 15%; border-radius: 2px; transform: rotate(-8deg); }
+.is2 { width: 2px; height: 50vh; top: 5%; right: 20%; border-radius: 2px; transform: rotate(4deg); }
+
+/* ═══════════════════════════════════════════
+   WEDNESDAY — ART DECO LUXURY
+   Palette: deep forest green, champagne gold, ivory
+═══════════════════════════════════════════ */
+body.day-wed {
+    font-family: "Cormorant Garamond", serif;
+    background-color: #0d1a0f;
+    background-image:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(180,145,60,0.18) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23b4913c' fill-opacity='0.04'%3E%3Cpath d='M20 0L40 20L20 40L0 20z'/%3E%3C/g%3E%3C/svg%3E");
+    color: #f0e8d0;
+}
+
+body.day-wed .brand-text {
+    background: linear-gradient(135deg, #b4913c, #e8d48a, #b4913c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    opacity: 0.1;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 0.2em;
+}
+
+body.day-wed .login-card {
+    background: linear-gradient(160deg, rgba(18,30,18,0.97) 0%, rgba(10,20,12,0.95) 100%);
+    border: 1px solid rgba(180,145,60,0.35);
+    box-shadow: 0 0 80px rgba(180,145,60,0.1), 0 25px 70px rgba(0,0,0,0.8), inset 0 1px 0 rgba(180,145,60,0.15);
+    border-radius: 0;
+    animation: cardUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.2s;
+    position: relative;
+}
+body.day-wed .login-card::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(180,145,60,0.12);
+    pointer-events: none;
+}
+
+body.day-wed .day-badge { background: rgba(180,145,60,0.12); color: #c9a84c; border: 1px solid rgba(180,145,60,0.3); font-family: 'Cormorant Garamond', serif; letter-spacing: 0.3em; }
+
+body.day-wed .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    background: linear-gradient(135deg, #b4913c, #e8d48a, #b4913c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: clamp(1.75rem, 5.5vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+body.day-wed .page-subtitle { color: rgba(200,168,80,0.5); font-family: 'Cormorant Garamond', serif; letter-spacing: 0.4em; font-style: italic; }
+body.day-wed .field-label { color: rgba(200,168,80,0.55); font-family: 'Cormorant Garamond', serif; letter-spacing: 0.25em; font-style: italic; }
+body.day-wed .welcome-heading { color: #f0e8d0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 700; }
+body.day-wed .welcome-sub { color: #5d7055; }
+
+body.day-wed .input-field, body.day-wed #selected-staff {
+    background: rgba(8,16,10,0.7);
+    color: #f0e8d0;
+    border: 1px solid rgba(180,145,60,0.25) !important;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+    border-radius: 0 !important;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+}
+body.day-wed .input-field::placeholder { color: #3a4f38; }
+body.day-wed .input-field:focus {
+    border-color: rgba(180,145,60,0.6) !important;
+    box-shadow: 0 0 0 2px rgba(180,145,60,0.1), inset 0 1px 4px rgba(0,0,0,0.3) !important;
+    transform: none;
+}
+body.day-wed #selected-staff { border-radius: 0 !important; }
+body.day-wed #selected-staff:hover, body.day-wed #selected-staff.active { border-color: rgba(180,145,60,0.6) !important; box-shadow: 0 0 0 2px rgba(180,145,60,0.1) !important; }
+
+body.day-wed #staff-dropdown {
+    background: rgba(8,16,10,0.98);
+    border: 1px solid rgba(180,145,60,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+    border-radius: 0 !important;
+}
+body.day-wed #staff-dropdown::-webkit-scrollbar-thumb { background: #b4913c; }
+body.day-wed .staff-option { border-radius: 0; border-bottom: 1px solid rgba(180,145,60,0.08); }
+body.day-wed .staff-option:hover { background: rgba(180,145,60,0.08); }
+body.day-wed .staff-option.selected { background: rgba(180,145,60,0.15); border-left: 2px solid #b4913c; }
+body.day-wed .staff-avatar { background: linear-gradient(135deg, #b4913c, #e8d48a); color: #0d1a0f; }
+body.day-wed .staff-name { color: #f0e8d0; font-family: 'Cormorant Garamond', serif; }
+body.day-wed .staff-role-badge { background: rgba(180,145,60,0.12); color: #c9a84c; border: 1px solid rgba(180,145,60,0.2); font-family: 'Cormorant Garamond', serif; }
+body.day-wed #selected-text { color: #5d7055; font-family: 'Cormorant Garamond', serif; font-style: italic; }
+body.day-wed #selected-staff .dropdown-arrow { color: #b4913c; }
+body.day-wed .eye-btn { color: #5d7055; }
+body.day-wed .eye-btn:hover { color: #b4913c; }
+body.day-wed .forgot-btn { color: #b4913c; font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0.2em; }
+
+body.day-wed .login-btn {
+    background: linear-gradient(135deg, #b4913c, #e8d48a, #b4913c);
+    background-size: 200% 100%;
+    color: #0d1a0f;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    letter-spacing: 0.3em;
+    border-radius: 0 !important;
+    box-shadow: 0 4px 30px rgba(180,145,60,0.3);
+}
+body.day-wed .login-btn:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 8px 40px rgba(180,145,60,0.5);
+}
+
+/* Wed deco — art deco geometric */
+body.day-wed .bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.deco-diamond {
+    position: absolute;
+    border: 1px solid rgba(180,145,60,0.08);
+    transform: rotate(45deg);
+}
+.dd1 { width: 400px; height: 400px; top: -100px; right: -100px; }
+.dd2 { width: 600px; height: 600px; bottom: -200px; left: -200px; }
+.dd3 { width: 200px; height: 200px; top: 30%; right: 5%; }
+.deco-hline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,145,60,0.15), transparent);
+}
+.dh1 { top: 20%; }
+.dh2 { bottom: 20%; }
+
+/* ═══════════════════════════════════════════
+   THURSDAY — ORGANIC NATURE / BIOPHILIC
+   Palette: forest green, terracotta, warm sand, bark brown
+═══════════════════════════════════════════ */
+body.day-thu {
+    font-family: "DM Serif Display", serif;
+    background-color: #f5f0e8;
+    background-image:
+        radial-gradient(ellipse 80% 60% at 80% 20%, rgba(90,130,80,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 20% 80%, rgba(180,110,70,0.1) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%235a8250' stroke-opacity='0.04' stroke-width='1'%3E%3Cellipse cx='20' cy='20' rx='8' ry='12' transform='rotate(-30 20 20)'/%3E%3Cellipse cx='60' cy='60' rx='6' ry='10' transform='rotate(20 60 60)'/%3E%3Cellipse cx='60' cy='20' rx='5' ry='9' transform='rotate(-15 60 20)'/%3E%3C/g%3E%3C/svg%3E");
+    color: #2c2015;
+}
+
+body.day-thu .brand-text {
+    color: rgba(44,32,21,0.06);
+    -webkit-text-fill-color: rgba(44,32,21,0.06);
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3rem, 12vw, 7rem);
+}
+
+body.day-thu .login-card {
+    background: rgba(255,253,246,0.94);
+    border: 1.5px solid rgba(140,105,70,0.25);
+    box-shadow: 0 2px 4px rgba(44,32,21,0.06), 0 20px 60px rgba(44,32,21,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+    border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
+    animation: cardUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.2s;
+}
+
+body.day-thu .day-badge { background: rgba(90,130,80,0.12); color: #3d6e33; border: 1px solid rgba(90,130,80,0.3); font-family: 'DM Serif Display', serif; }
+
+body.day-thu .page-title {
+    font-family: 'DM Serif Display', serif;
+    color: #2c2015;
+    font-size: clamp(1.6rem, 5.5vw, 2.5rem);
+    letter-spacing: -0.01em;
+}
+body.day-thu .page-subtitle { color: rgba(90,130,80,0.6); font-family: 'DM Serif Display', serif; letter-spacing: 0.2em; }
+body.day-thu .field-label { color: rgba(90,80,60,0.65); font-family: 'Inter', sans-serif; font-size: 0.6rem; }
+body.day-thu .welcome-heading { color: #2c2015; font-family: 'DM Serif Display', serif; }
+body.day-thu .welcome-sub { color: #8a7060; }
+
+body.day-thu .input-field, body.day-thu #selected-staff {
+    background: rgba(245,240,232,0.7);
+    color: #2c2015;
+    border: 1.5px solid rgba(140,105,70,0.25) !important;
+    box-shadow: inset 0 2px 6px rgba(44,32,21,0.06);
+    border-radius: 1rem !important;
+}
+body.day-thu .input-field::placeholder { color: #c4b09a; }
+body.day-thu .input-field:focus {
+    border-color: #5a8250 !important;
+    background: rgba(255,253,246,0.95) !important;
+    box-shadow: 0 0 0 3px rgba(90,130,80,0.14), inset 0 2px 6px rgba(44,32,21,0.04) !important;
+    transform: none;
+}
+body.day-thu #selected-staff { border-radius: 1rem !important; }
+body.day-thu #selected-staff:hover, body.day-thu #selected-staff.active { border-color: #5a8250 !important; box-shadow: 0 0 0 3px rgba(90,130,80,0.14) !important; }
+
+body.day-thu #staff-dropdown {
+    background: rgba(252,249,242,0.99);
+    border: 1.5px solid rgba(140,105,70,0.2);
+    box-shadow: 0 12px 40px rgba(44,32,21,0.16);
+    border-radius: 1rem !important;
+}
+body.day-thu #staff-dropdown::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #5a8250, #b46e46); }
+body.day-thu .staff-option { border-radius: 0.75rem; border-bottom: none; margin-bottom: 0.25rem; }
+body.day-thu .staff-option:hover { background: rgba(90,130,80,0.08); }
+body.day-thu .staff-option.selected { background: rgba(90,130,80,0.14); border-left: 3px solid #5a8250; }
+body.day-thu .staff-avatar { background: linear-gradient(135deg, #5a8250, #b46e46); color: #fff; }
+body.day-thu .staff-name { color: #2c2015; font-family: 'DM Serif Display', serif; }
+body.day-thu .staff-role-badge { background: rgba(90,130,80,0.1); color: #3d6e33; border: 1px solid rgba(90,130,80,0.2); }
+body.day-thu #selected-text { color: #8a7060; font-family: 'DM Serif Display', serif; font-style: italic; }
+body.day-thu #selected-staff .dropdown-arrow { color: #5a8250; }
+body.day-thu .eye-btn { color: #a09080; }
+body.day-thu .eye-btn:hover { color: #3d6e33; }
+body.day-thu .forgot-btn { color: #5a8250; }
+
+body.day-thu .login-btn {
+    background: linear-gradient(135deg, #3d6e33, #5a8250);
+    color: #fff;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    letter-spacing: 0.15em;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 4px 25px rgba(90,130,80,0.35);
+}
+body.day-thu .login-btn:hover {
+    background: linear-gradient(135deg, #2d5525, #4a7040);
+    box-shadow: 0 8px 35px rgba(90,130,80,0.5);
+}
+
+/* Thu deco — leaf shapes */
+body.day-thu .bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.leaf-shape {
+    position: absolute;
+    border-radius: 0 70% 0 70%;
+    border: 1px solid rgba(90,130,80,0.1);
+    animation: leafSway 8s ease-in-out infinite;
+}
+.ls1 { width: 200px; height: 300px; top: 5%; right: 5%; transform: rotate(-20deg); animation-delay: 0s; }
+.ls2 { width: 150px; height: 220px; bottom: 10%; left: 3%; transform: rotate(15deg) scaleX(-1); animation-delay: -3s; }
+.ls3 { width: 100px; height: 160px; top: 50%; right: 15%; transform: rotate(-35deg); animation-delay: -6s; }
+@keyframes leafSway {
+    0%, 100% { transform: rotate(-20deg) scale(1); }
+    50% { transform: rotate(-15deg) scale(1.02); }
+}
+
+/* ═══════════════════════════════════════════
+   FRIDAY — VAPORWAVE POP ART PARTY
+   Palette: hot pink, electric yellow, cobalt blue, white
+═══════════════════════════════════════════ */
+body.day-fri {
+    font-family: "Bungee", cursive;
+    background-color: #0a0520;
+    background-image:
+        linear-gradient(180deg, #0a0520 0%, #1a0535 40%, #0a0520 100%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,200,0.08) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,200,255,0.06) 40px);
+    color: #fff;
+}
+
+body.day-fri .brand-text {
+    background: linear-gradient(90deg, #ff00cc, #ffee00, #00eeff, #ff00cc);
+    background-size: 300% 100%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    opacity: 0.18;
+    font-family: 'Bungee', cursive;
+    animation: brandShift 3s linear infinite;
+}
+@keyframes brandShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+body.day-fri .login-card {
+    background: linear-gradient(135deg, rgba(26,5,53,0.97) 0%, rgba(15,2,35,0.95) 100%);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 0 0 0 2px rgba(255,0,204,0.5), 0 0 60px rgba(255,0,204,0.2), 0 0 100px rgba(0,238,255,0.1), 0 25px 60px rgba(0,0,0,0.8);
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 1.5rem) 0, 100% 1.5rem, 100% 100%, 1.5rem 100%, 0 calc(100% - 1.5rem));
+    animation: cardUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 0.2s;
+}
+
+body.day-fri .day-badge { background: rgba(255,0,204,0.15); color: #ff00cc; border: 1px solid rgba(255,0,204,0.4); text-shadow: 0 0 10px rgba(255,0,204,0.5); }
+
+body.day-fri .page-title {
+    font-family: 'Bungee', cursive;
+    background: linear-gradient(90deg, #ff00cc, #ffee00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: clamp(1.4rem, 5vw, 2.25rem);
+    letter-spacing: 0.02em;
+    text-shadow: none;
+    filter: drop-shadow(0 0 15px rgba(255,0,204,0.4));
+}
+body.day-fri .page-subtitle { color: rgba(0,238,255,0.55); font-family: 'Bungee', cursive; letter-spacing: 0.2em; font-size: clamp(0.5rem, 1.8vw, 0.62rem); }
+body.day-fri .field-label { color: rgba(0,238,255,0.6); font-family: 'Bungee', cursive; letter-spacing: 0.15em; font-size: clamp(0.5rem, 1.5vw, 0.6rem); }
+body.day-fri .welcome-heading { color: #fff; font-family: 'Bungee', cursive; text-shadow: 0 0 20px rgba(255,0,204,0.4); }
+body.day-fri .welcome-sub { color: rgba(0,238,255,0.5); }
+
+body.day-fri .input-field, body.day-fri #selected-staff {
+    background: rgba(10,2,25,0.7);
+    color: #fff;
+    border: 1.5px solid rgba(255,0,204,0.3) !important;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,0,204,0.06);
+    border-radius: 0 !important;
+    font-family: 'Inter', sans-serif;
+}
+body.day-fri .input-field::placeholder { color: #3a1a4a; }
+body.day-fri .input-field:focus {
+    border-color: #ff00cc !important;
+    box-shadow: 0 0 0 3px rgba(255,0,204,0.15), 0 0 20px rgba(255,0,204,0.2), inset 0 1px 4px rgba(0,0,0,0.4) !important;
+    transform: none;
+}
+body.day-fri #selected-staff { border-radius: 0 !important; }
+body.day-fri #selected-staff:hover, body.day-fri #selected-staff.active { border-color: #ff00cc !important; box-shadow: 0 0 0 3px rgba(255,0,204,0.15), 0 0 20px rgba(255,0,204,0.2) !important; }
+
+body.day-fri #staff-dropdown {
+    background: rgba(10,2,25,0.98);
+    border: 1.5px solid rgba(255,0,204,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 40px rgba(255,0,204,0.15);
+    border-radius: 0 !important;
+}
+body.day-fri #staff-dropdown::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff00cc, #00eeff); }
+body.day-fri .staff-option { border-radius: 0; border-bottom: 1px solid rgba(255,0,204,0.08); }
+body.day-fri .staff-option:hover { background: rgba(255,0,204,0.08); }
+body.day-fri .staff-option.selected { background: rgba(255,0,204,0.15); border-left: 3px solid #ff00cc; box-shadow: inset 0 0 20px rgba(255,0,204,0.08); }
+body.day-fri .staff-avatar { background: linear-gradient(135deg, #ff00cc, #00eeff); color: #000; }
+body.day-fri .staff-name { color: #fff; }
+body.day-fri .staff-role-badge { background: rgba(0,238,255,0.1); color: #00eeff; border: 1px solid rgba(0,238,255,0.25); text-shadow: 0 0 8px rgba(0,238,255,0.5); }
+body.day-fri #selected-text { color: rgba(0,238,255,0.5); }
+body.day-fri #selected-staff .dropdown-arrow { color: #ff00cc; }
+body.day-fri .eye-btn { color: #4a2a5a; }
+body.day-fri .eye-btn:hover { color: #ff00cc; }
+body.day-fri .forgot-btn { color: #00eeff; text-shadow: 0 0 10px rgba(0,238,255,0.4); }
+
+body.day-fri .login-btn {
+    background: linear-gradient(90deg, #ff00cc, #ffee00, #00eeff, #ff00cc);
+    background-size: 300% 100%;
+    color: #0a0520;
+    font-family: 'Bungee', cursive;
+    letter-spacing: 0.1em;
+    border-radius: 0 !important;
+    clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 0.75rem, 100% 100%, 0.75rem 100%, 0 calc(100% - 0.75rem));
+    box-shadow: 0 0 40px rgba(255,0,204,0.4), 0 0 60px rgba(0,238,255,0.2);
+    animation: btnShimmer 2s linear infinite;
+}
+@keyframes btnShimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+body.day-fri .login-btn:hover {
+    box-shadow: 0 0 60px rgba(255,0,204,0.6), 0 0 80px rgba(0,238,255,0.3);
+    transform: translateY(-3px) scale(1.01);
+}
+
+/* Fri deco — vaporwave grid & stars */
+body.day-fri .bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.vapor-grid {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: 
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,0,204,0.07) 40px, rgba(255,0,204,0.07) 41px),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,238,255,0.07) 40px, rgba(0,238,255,0.07) 41px);
+    perspective: 300px;
+    transform: perspective(300px) rotateX(30deg);
+    transform-origin: bottom center;
+}
+.vapor-sun {
+    position: absolute;
+    width: 180px; height: 90px;
+    top: 8%;
+    left: 50%; transform: translateX(-50%);
+    background: linear-gradient(0deg, #ff00cc 0%, #ffee00 100%);
+    border-radius: 90px 90px 0 0;
+    opacity: 0.12;
+}
+.vapor-star {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════
+   BIRTHDAY POPUP
+═══════════════════════════════════════════ */
+.birthday-inner {
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+
+body.day-mon .birthday-inner { background: rgba(10,14,39,0.97); border: 2px solid #00d4ff; }
+body.day-tue .birthday-inner { background: rgba(252,249,244,0.98); border: 1px solid rgba(180,160,135,0.5); color: #2d2621; }
+body.day-wed .birthday-inner { background: rgba(10,20,12,0.97); border: 2px solid #b4913c; }
+body.day-thu .birthday-inner { background: rgba(252,249,242,0.97); border: 1.5px solid rgba(140,105,70,0.3); color: #2c2015; }
+body.day-fri .birthday-inner { background: rgba(10,2,25,0.97); border: 2px solid #ff00cc; box-shadow: 0 0 40px rgba(255,0,204,0.3); }
+
 </style>
-
 </head>
-<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
 
-<!-- 글리치 배경 ── -->
-<div class="glitch-bg"></div>
+<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen">
 
-<!-- 에너지 펄스 ── -->
-<div class="energy-pulse pulse-1"></div>
-<div class="energy-pulse pulse-2"></div>
-<div class="energy-pulse pulse-3"></div>
+<!-- Day-specific background decorations -->
+<div class="bg-deco" id="bg-deco"></div>
 
-<!-- 전기 오토바이 배경 ── -->
-<div class="ebike-background">
-    <div class="ebike-container ebike-path-1">
-        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-            <!-- 앞바퀴 -->
-            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
-            <!-- 휠 스포크 -->
-            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <!-- 뒷바퀴 -->
-            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
-            <!-- 프레임 -->
-            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
-            <!-- 배터리 표시 -->
-            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
-            <!-- 전기 에너지 선 -->
-            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
-        </svg>
-    </div>
-    <div class="ebike-container ebike-path-2">
-        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
-            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
-            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
-            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
-            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
-        </svg>
-    </div>
-    <div class="ebike-container ebike-path-3">
-        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
-            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
-            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
-            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
-            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
-        </svg>
-    </div>
-    <div class="ebike-container ebike-path-4">
-        <svg class="ebike" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="30" cy="70" r="15" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="2"/>
-            <line x1="30" y1="55" x2="30" y2="85" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <line x1="15" y1="70" x2="45" y2="70" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1"/>
-            <circle cx="170" cy="70" r="15" fill="none" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2"/>
-            <rect x="35" y="40" width="130" height="30" rx="5" fill="none" stroke="rgba(0, 212, 255, 0.4)" stroke-width="2"/>
-            <rect x="80" y="50" width="40" height="10" rx="2" fill="none" stroke="rgba(255, 190, 11, 0.6)" stroke-width="1"/>
-            <line x1="100" y1="45" x2="100" y2="35" stroke="rgba(255, 0, 110, 0.5)" stroke-width="2" stroke-dasharray="2,2"/>
-        </svg>
-    </div>
+<!-- Floating brand text -->
+<div class="brand-text" id="brand-text">
+    <span class="brand-letter">T</span><span class="brand-letter">D</span><span class="brand-letter">L</span><span class="brand-letter">i</span><span class="brand-letter">D</span>
 </div>
 
-<!-- TDLiD 애니메이션 텍스트 ── -->
-<div class="tdlid-container">
-    <span class="tdlid-letter">T</span><span class="tdlid-letter">D</span><span class="tdlid-letter">L</span><span class="tdlid-letter">i</span><span class="tdlid-letter">D</span>
-</div>
+<!-- Main content -->
+<div class="page-wrapper">
 
-<!-- 컨텐츠 섹션 ── -->
-<div class="w-full max-w-lg flex flex-col items-center gap-8 sm:gap-10 md:gap-12">
-    
-    <!-- 로고 & 타이틀 ── -->
-    <div class="text-center animate-fadeIn w-full px-4">
-        <div class="mb-4 sm:mb-6">
-            <img src="images/login/login.gif" alt="Logo" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain mx-auto rounded-2xl ring-2 ring-cyan-400/30 shadow-2xl shadow-cyan-500/20">
-        </div>
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-2">
-            <span class="bg-gradient-to-r from-cyan-400 via-accent to-pink-400 bg-clip-text text-transparent">Staff Login</span>
-        </h2>
-        <p class="text-cyan-400/70 text-[10px] sm:text-xs font-black tracking-[0.3em] uppercase">
-            Daily Report System
-        </p>
+    <!-- Header -->
+    <div class="text-center animate-up w-full px-2">
+        <img src="images/login/login.gif" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+
+        <div id="day-badge-wrap" style="margin-bottom:0.75rem;"></div>
+
+        <h1 class="page-title" id="page-title">Staff Login</h1>
+        <p class="page-subtitle" id="page-subtitle">Daily Report System</p>
     </div>
 
-    <!-- 로그인 카드 ── -->
-    <div class="login-card w-full animate-fadeIn">
-        <div class="relative z-10">
-            <div class="mb-6 sm:mb-8">
-                <p class="text-xl sm:text-2xl font-black text-white">Welcome back</p>
-                <p class="text-slate-400 text-xs sm:text-sm mt-1 font-medium">Select your profile to continue</p>
+    <!-- Login Card -->
+    <div class="login-card animate-up w-full">
+        <div style="position:relative;z-index:10;">
+
+            <p class="welcome-heading" id="welcome-heading">Welcome back</p>
+            <p class="welcome-sub" id="welcome-sub">Select your profile to continue</p>
+
+            <!-- Staff Selector -->
+            <div class="field-wrap">
+                <label class="field-label">Staff Member</label>
+                <div id="staff-selector-container">
+                    <div id="selected-staff" tabindex="0">
+                        <span id="selected-text">Loading staff list...</span>
+                        <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor">
+                            <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
+                        </svg>
+                    </div>
+                    <div id="staff-dropdown"></div>
+                </div>
             </div>
 
-            <div class="space-y-5 sm:space-y-6">
-                <!-- Staff Selector ── -->
-                <div class="group">
-                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                        Staff Member
-                    </label>
-                    <div id="staff-selector-container" class="relative">
-                        <div id="selected-staff" tabindex="0" class="cursor-pointer">
-                            <span id="selected-text" class="text-slate-400">Loading staff list</span>
-                            <svg class="dropdown-arrow w-4 h-4 sm:w-5 sm:h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
-                                <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                            </svg>
-                        </div>
-                        <div id="staff-dropdown"></div>
-                    </div>
-                </div>
-
-                <!-- Password Field ── -->
-                <div class="group">
-                    <label class="block text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                        Secure Password
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="w-full rounded-xl sm:rounded-2xl text-sm sm:text-base"
-                            placeholder="••••••••"
-                        >
-                        <button 
-                            type="button"
-                            onclick="togglePassword()"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
-                            style="z-index: 10;"
-                        >
-                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="flex justify-end px-1 mt-2 sm:mt-3">
-                        <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] uppercase tracking-widest">
-                            Forgot Password?
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Login Button ── -->
-                <div class="pt-2 sm:pt-4">
-                    <button id="loginBtn" onclick="handleLogin()">
-                        AUTHENTICATE
+            <!-- Password -->
+            <div class="field-wrap">
+                <label class="field-label">Secure Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password" class="input-field" placeholder="••••••••">
+                    <button type="button" class="eye-btn" onclick="togglePassword()">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
                     </button>
                 </div>
+                <div class="forgot-row">
+                    <button onclick="findPassword()" class="forgot-btn">Forgot Password?</button>
+                </div>
             </div>
+
+            <!-- Login Button -->
+            <button id="loginBtn" class="login-btn" onclick="handleLogin()">AUTHENTICATE</button>
         </div>
+    </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- Birthday Popup -->
+<div id="birthday-popup" class="hidden">
+    <div class="birthday-inner">
+        <div style="font-size:3rem;margin-bottom:0.75rem;">🎂</div>
+        <h2 style="font-size:1.35rem;font-weight:700;background:linear-gradient(90deg,#00d4ff,#ff69b4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 0.75rem;">
+            Happy Birthday!
+        </h2>
+        <div id="birthday-list" style="margin-bottom:1rem;"></div>
+        <div style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.5;margin-bottom:1rem;">
+            CLOSING IN <span id="timer-seconds" style="font-weight:900;">10</span>s
+        </div>
+        <button onclick="closePopup()" id="birthday-close-btn"
+            style="width:100%;padding:0.75rem;border:none;cursor:pointer;border-radius:0.75rem;font-weight:700;font-size:0.85rem;background:linear-gradient(90deg,#00d4ff,#0099bb);color:#000;transition:all 0.2s;">
+            Close
+        </button>
     </div>
 </div>
 
-<!-- 생일 팝업 ── -->
-<div id="birthday-popup" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-cyan-400 rounded-2xl shadow-2xl overflow-hidden">
-        <div class="relative z-10">
-            <div class="text-5xl mb-4 animate-bounce">🎂</div>
-            <h2 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
-            
-            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold text-sm"></div>
-            
-            <div id="countdown-timer" class="text-[11px] text-cyan-400/60 font-mono mb-4 tracking-widest">
-                CLOSING IN <span id="timer-seconds" class="font-bold text-cyan-400">10</span>s...
-            </div>
-            
-            <button onclick="closePopup()" 
-                    class="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-cyan-500/20">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Ghost Profile Image Overlay ── -->
-<div id="ghost-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none">
-    <div style="position: relative;">
-        <img id="ghost-image" src="" alt="Profile Ghost" class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-full">
-    </div>
+<!-- Ghost Overlay -->
+<div id="ghost-overlay" class="hidden">
+    <img id="ghost-image" src="" alt="Profile">
 </div>
 
 <script>
 (function() {
     'use strict';
 
-    // 페이지 로드 완료 표시
-    window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('loaded');
-    });
+    /* ── DAY THEMING ── */
+    const DAY_CONFIG = {
+        1: { // Monday
+            cls: 'day-mon',
+            badge: '⚡ Monday',
+            title: 'Staff Login',
+            subtitle: 'Daily Report System',
+            heading: 'Welcome back',
+            sub: 'Select your profile to continue',
+            btnText: 'AUTHENTICATE',
+            deco: function(el) {
+                el.innerHTML = `
+                    <div class="cyber-pulse cp1"></div>
+                    <div class="cyber-pulse cp2"></div>
+                    <div class="cyber-pulse cp3"></div>
+                    <div class="scan-line"></div>`;
+            }
+        },
+        2: { // Tuesday
+            cls: 'day-tue',
+            badge: '◎ Tuesday',
+            title: 'Staff Login',
+            subtitle: 'Daily Report System',
+            heading: '안녕하세요 ^^*',
+            sub: 'Select your profile to continue',
+            btnText: 'SIGN IN',
+            deco: function(el) {
+                el.innerHTML = `
+                    <div class="ink-circle ic1"></div>
+                    <div class="ink-circle ic2"></div>
+                    <div class="ink-stroke is1"></div>
+                    <div class="ink-stroke is2"></div>`;
+            }
+        },
+        3: { // Wednesday
+            cls: 'day-wed',
+            badge: '◆ Wednesday',
+            title: 'Staff Login',
+            subtitle: 'Daily Report System',
+            heading: 'Welcome',
+            sub: 'Enter your credentials to proceed',
+            btnText: 'ENTER',
+            deco: function(el) {
+                el.innerHTML = `
+                    <div class="deco-diamond dd1"></div>
+                    <div class="deco-diamond dd2"></div>
+                    <div class="deco-diamond dd3"></div>
+                    <div class="deco-hline dh1"></div>
+                    <div class="deco-hline dh2"></div>`;
+            }
+        },
+        4: { // Thursday
+            cls: 'day-thu',
+            badge: '🌿 Thursday',
+            title: 'Staff Login',
+            subtitle: 'Daily Report System',
+            heading: 'Good morning',
+            sub: 'Choose your name and sign in',
+            btnText: 'SIGN IN',
+            deco: function(el) {
+                el.innerHTML = `
+                    <div class="leaf-shape ls1"></div>
+                    <div class="leaf-shape ls2"></div>
+                    <div class="leaf-shape ls3"></div>`;
+            }
+        },
+        5: { // Friday
+            cls: 'day-fri',
+            badge: '🎉 Friday',
+            title: 'TGIF Login',
+            subtitle: 'Daily Report System',
+            heading: "It's Friday!",
+            sub: 'Pick your name and let\'s go 🚀',
+            btnText: 'LET\'S GO',
+            deco: function(el) {
+                let stars = '';
+                for (let i = 0; i < 40; i++) {
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 60;
+                    const delay = Math.random() * 3;
+                    stars += `<div class="vapor-star" style="left:${x}%;top:${y}%;animation-delay:${delay}s;"></div>`;
+                }
+                el.innerHTML = `<div class="vapor-sun"></div>${stars}<div class="vapor-grid"></div>`;
+            }
+        }
+    };
 
-    // Firebase 설정
+    const now = new Date();
+    let day = now.getDay(); // 0=Sun,1=Mon,...,6=Sat
+
+    // Map weekend to Monday for dev/testing (or keep as Mon)
+    if (day === 0 || day === 6) day = 1;
+
+    const cfg = DAY_CONFIG[day] || DAY_CONFIG[1];
+
+    // Apply day class
+    document.body.classList.add(cfg.cls);
+
+    // Set badge
+    const badgeWrap = document.getElementById('day-badge-wrap');
+    badgeWrap.innerHTML = `<span class="day-badge">${cfg.badge}</span>`;
+
+    // Set copy
+    document.getElementById('page-title').textContent = cfg.title;
+    document.getElementById('page-subtitle').textContent = cfg.subtitle;
+    document.getElementById('welcome-heading').textContent = cfg.heading;
+    document.getElementById('welcome-sub').textContent = cfg.sub;
+    document.getElementById('loginBtn').textContent = cfg.btnText;
+
+    // Render background deco
+    const decoEl = document.getElementById('bg-deco');
+    if (cfg.deco) cfg.deco(decoEl);
+
+    /* ── FIREBASE ── */
     const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Staff Selector Variables
+    /* ── STAFF SELECTOR ── */
     let staffData = {};
     let selectedStaff = '';
     const selectedStaffEl = document.getElementById('selected-staff');
@@ -889,278 +1205,204 @@ input:focus, select:focus {
     const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
     const passwordInput = document.getElementById('password');
 
-    // 생일 체크 및 팝업 로직
-    (function() {
-        const popup = document.getElementById('birthday-popup');
-        const content = document.getElementById('popup-content');
-        const timerDisplay = document.getElementById('timer-seconds');
-        let autoCloseTimer;
-        let countdownInterval;
-
-        window.closePopup = () => {
-            clearTimeout(autoCloseTimer);
-            clearInterval(countdownInterval);
-            popup.classList.add('hidden');
-        };
-
-        const checkTodayBirthdays = () => {
-            const now = new Date();
-            const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            
-            firebase.database().ref('users').once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                const winners = [];
-                Object.keys(data).forEach(name => {
-                    if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
-                        winners.push({ name: name, date: data[name].birthday });
-                    }
-                });
-
-                if (winners.length > 0) {
-                    document.getElementById('birthday-list').innerHTML = winners.map(s => `
-                        <div class="p-3 bg-cyan-500/10 border border-cyan-400/20 rounded-lg">
-                            <div class="text-xs text-cyan-300 mb-1">Happy Birthday to ${s.name}!</div>
-                            <div class="text-sm font-bold text-white">${s.date}</div>
-                        </div>
-                    `).join('');
-                    
-                    popup.classList.remove('hidden');
-
-                    let timeLeft = 10;
-                    timerDisplay.innerText = timeLeft;
-                    
-                    countdownInterval = setInterval(() => {
-                        timeLeft -= 1;
-                        timerDisplay.innerText = timeLeft;
-                        if (timeLeft <= 0) clearInterval(countdownInterval);
-                    }, 1000);
-
-                    autoCloseTimer = setTimeout(closePopup, 10000);
-                }
-            });
-        };
-
-        setTimeout(checkTodayBirthdays, 1000);
-    })();
-
-    // Staff Selector 초기화
     function initStaffSelector() {
-        database.ref('users').limitToFirst(50).once('value', (snapshot) => {
-            const users = snapshot.val();
-            staffData = users || {};
-            
-            if (Object.keys(staffData).length === 0) {
+        database.ref('users').limitToFirst(50).once('value', (snap) => {
+            staffData = snap.val() || {};
+            if (!Object.keys(staffData).length) {
                 selectedTextEl.textContent = 'No staff available';
                 return;
             }
-
             selectedTextEl.textContent = 'Select Identity';
             renderStaffDropdown();
-        }).catch(err => {
-            console.error('Error loading staff:', err);
-            selectedTextEl.textContent = 'Error loading staff';
-        });
+        }).catch(() => { selectedTextEl.textContent = 'Error loading staff'; });
     }
 
     function renderStaffDropdown() {
-        const fragment = document.createDocumentFragment();
-        
+        const frag = document.createDocumentFragment();
         Object.keys(staffData).forEach(name => {
             const user = staffData[name];
-            const option = document.createElement('div');
-            option.className = 'staff-option';
-            option.dataset.name = name;
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'staff-avatar';
-            avatar.textContent = name.charAt(0).toUpperCase();
-            
-            const nameEl = document.createElement('div');
-            nameEl.className = 'staff-name';
-            nameEl.textContent = name;
-            
-            option.appendChild(avatar);
-            option.appendChild(nameEl);
-            
+            const opt = document.createElement('div');
+            opt.className = 'staff-option';
+            opt.dataset.name = name;
+
+            const av = document.createElement('div');
+            av.className = 'staff-avatar';
+            av.textContent = name.charAt(0).toUpperCase();
+
+            const nm = document.createElement('div');
+            nm.className = 'staff-name';
+            nm.textContent = name;
+
+            opt.appendChild(av);
+            opt.appendChild(nm);
+
             if (user.role === 'admin' || user.role === 'manager') {
-                const roleEl = document.createElement('div');
-                roleEl.className = 'staff-role';
-                roleEl.textContent = 'Manager';
-                option.appendChild(roleEl);
+                const rb = document.createElement('div');
+                rb.className = 'staff-role-badge';
+                rb.textContent = 'Manager';
+                opt.appendChild(rb);
             }
-            
-            option.addEventListener('click', () => selectStaff(name, option));
-            fragment.appendChild(option);
+
+            opt.addEventListener('click', () => selectStaff(name, opt));
+            frag.appendChild(opt);
         });
-        
-        staffDropdown.appendChild(fragment);
+        staffDropdown.appendChild(frag);
     }
 
-    function selectStaff(name, optionEl) {
+    function selectStaff(name, optEl) {
         selectedStaff = name;
         selectedTextEl.textContent = name;
-        
-        staffDropdown.querySelectorAll('.staff-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        if (optionEl) {
-            optionEl.classList.add('selected');
-        }
-        
+        staffDropdown.querySelectorAll('.staff-option').forEach(o => o.classList.remove('selected'));
+        if (optEl) optEl.classList.add('selected');
         closeDropdown();
         passwordInput.focus();
     }
 
     function toggleDropdown() {
-        const isActive = staffDropdown.classList.contains('active');
-        if (isActive) {
-            closeDropdown();
-        } else {
-            openDropdown();
-        }
+        staffDropdown.classList.contains('active') ? closeDropdown() : openDropdown();
     }
-
     function openDropdown() {
         staffDropdown.classList.add('active');
         selectedStaffEl.classList.add('active');
         dropdownArrow.classList.add('rotated');
     }
-
     function closeDropdown() {
         staffDropdown.classList.remove('active');
         selectedStaffEl.classList.remove('active');
         dropdownArrow.classList.remove('rotated');
     }
 
-    // Event Listeners
     selectedStaffEl.addEventListener('click', toggleDropdown);
-    
-    selectedStaffEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleDropdown();
-        }
+    selectedStaffEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown(); }
+    });
+    document.addEventListener('click', e => {
+        if (!document.getElementById('staff-selector-container').contains(e.target)) closeDropdown();
+    });
+    passwordInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
     });
 
-    document.addEventListener('click', (e) => {
-        if (!document.getElementById('staff-selector-container').contains(e.target)) {
-            closeDropdown();
-        }
-    });
-
-    passwordInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { 
-            e.preventDefault(); 
-            handleLogin(); 
-        }
-    });
-
-    // 로그인 처리
+    /* ── LOGIN ── */
     window.handleLogin = function() {
         const name = selectedStaff;
         const pw = passwordInput.value;
-        
-        if(!name || !pw) {
-            return alert("Please enter your credentials.");
-        }
-        
-        database.ref('users/' + name).once('value', (snapshot) => {
-            const userData = snapshot.val();
-            if (!userData) {
-                return alert("User not found.");
-            }
-            
-            if (userData.password === pw) {
+        if (!name || !pw) return alert("Please enter your credentials.");
+
+        database.ref('users/' + name).once('value', snap => {
+            const ud = snap.val();
+            if (!ud) return alert("User not found.");
+            if (ud.password === pw) {
                 sessionStorage.setItem('loggedInUser', name);
-                sessionStorage.setItem('userRole', userData.role);
-                firebase.database().ref('users/' + name).update({
-                    lastLogin: new Date().toISOString()
-                });
-                
-                showGhostEffect(userData.profileImg, name, userData.role);
-                
-            } else { 
-                alert("Incorrect password."); 
+                sessionStorage.setItem('userRole', ud.role);
+                database.ref('users/' + name).update({ lastLogin: new Date().toISOString() });
+                showGhostEffect(ud.profileImg, name, ud.role);
+            } else {
+                alert("Incorrect password.");
             }
         });
     };
 
-    // Ghost 효과 표시
     function showGhostEffect(profileImg, name, role) {
-        const ghostOverlay = document.getElementById('ghost-overlay');
-        const ghostImage = document.getElementById('ghost-image');
-        
-        let imagePath;
-        
+        const overlay = document.getElementById('ghost-overlay');
+        const img = document.getElementById('ghost-image');
+        let src;
         if (profileImg) {
-            if (profileImg.startsWith('images/') || profileImg.startsWith('http')) {
-                imagePath = profileImg;
-            } else {
-                imagePath = `images/profile/${profileImg}`;
-            }
+            src = (profileImg.startsWith('images/') || profileImg.startsWith('http'))
+                ? profileImg : `images/profile/${profileImg}`;
         } else {
-            imagePath = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
+            src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
         }
-        
-        ghostImage.src = imagePath;
-        ghostOverlay.classList.remove('hidden');
+
+        // Day-specific ghost border
+        const borders = { 'day-mon': '#00d4ff', 'day-tue': '#7c6652', 'day-wed': '#b4913c', 'day-thu': '#5a8250', 'day-fri': '#ff00cc' };
+        img.style.border = `3px solid ${borders[cfg.cls] || '#00d4ff'}`;
+        img.style.boxShadow = `0 0 60px ${borders[cfg.cls] || '#00d4ff'}88`;
+
+        img.src = src;
+        overlay.classList.remove('hidden');
 
         setTimeout(() => {
-            ghostOverlay.classList.add('hidden');
-            
+            overlay.classList.add('hidden');
             const userRole = (role || '').toLowerCase();
             if (userRole === 'admin' || userRole === 'manager') {
                 location.href = "admin.html";
             } else {
-                const today = new Date().getDate();
-                if (today % 2 !== 0) {
-                    location.href = "staff_main_1.html";
-                } else {
-                    location.href = "staff_main_2.html";
-                }
+                location.href = (new Date().getDate() % 2 !== 0) ? "staff_main_1.html" : "staff_main_2.html";
             }
         }, 2500);
     }
 
-    // 비밀번호 토글
+    /* ── TOGGLE PASSWORD ── */
     window.togglePassword = function() {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            eyeIcon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
+        const inp = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>`;
         } else {
-            passwordInput.type = 'password';
-            eyeIcon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            inp.type = 'password';
+            icon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
         }
     };
 
-    // 비밀번호 찾기
+    /* ── FORGOT PASSWORD ── */
     window.findPassword = function() {
         const name = selectedStaff;
-        
-        if (!name) {
-            return alert("Please select your name from the list first.");
-        }
-        
+        if (!name) return alert("Please select your name from the list first.");
         if (confirm(`Request password hint for '${name}'?`)) {
-            database.ref('users/' + name).once('value', (snapshot) => {
-                const userData = snapshot.val();
-                if (userData && userData.password) {
-                    const pw = userData.password;
-                    const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
+            database.ref('users/' + name).once('value', snap => {
+                const ud = snap.val();
+                if (ud && ud.password) {
+                    const pw = ud.password;
+                    const hint = pw.length > 2 ? pw.substring(0, 2) + '*'.repeat(pw.length - 2) : pw;
                     alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
-                } else { 
-                    alert("Data not found."); 
+                } else {
+                    alert("Data not found.");
                 }
             });
         }
     };
 
-    // Staff Selector 초기화
+    /* ── BIRTHDAY POPUP ── */
+    (function() {
+        const popup = document.getElementById('birthday-popup');
+        const timerEl = document.getElementById('timer-seconds');
+        let autoClose, countdown;
+
+        window.closePopup = function() {
+            clearTimeout(autoClose);
+            clearInterval(countdown);
+            popup.classList.add('hidden');
+        };
+
+        const checkBirthdays = () => {
+            const n = new Date();
+            const todayMD = `${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+            database.ref('users').once('value', snap => {
+                const data = snap.val();
+                if (!data) return;
+                const winners = Object.keys(data).filter(nm => data[nm].birthday && data[nm].birthday.slice(5,10) === todayMD)
+                    .map(nm => ({ name: nm, date: data[nm].birthday }));
+                if (!winners.length) return;
+
+                document.getElementById('birthday-list').innerHTML = winners.map(s => `
+                    <div style="padding:0.6rem 0.75rem;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:0.75rem;margin-bottom:0.5rem;">
+                        <div style="font-size:0.75rem;font-weight:700;">🎂 ${s.name}</div>
+                        <div style="font-size:0.7rem;opacity:0.6;">${s.date}</div>
+                    </div>`).join('');
+
+                popup.classList.remove('hidden');
+                let t = 10;
+                timerEl.textContent = t;
+                countdown = setInterval(() => { timerEl.textContent = --t; if (t <= 0) clearInterval(countdown); }, 1000);
+                autoClose = setTimeout(window.closePopup, 10000);
+            });
+        };
+
+        setTimeout(checkBirthdays, 1000);
+    })();
+
     initStaffSelector();
 
 })();
