@@ -528,6 +528,28 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
+/* 메인 메뉴 버튼 스타일 */
+.modal-home-btn {
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(57, 255, 20, 0.1); /* 네온 그린 배경 */
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+}
+
+.modal-home-btn:hover {
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+    transform: translateY(-2px);
+}
     </style>
 </head>
 <body>
@@ -619,19 +641,25 @@
             renderGallery();
         };
 
-        window.openModal = function (index) {
-            state.currentIndex = index;
-            const photo = state.filteredPhotos[index];
-            if (!photo) return;
+window.openModal = function (index) {
+    state.currentIndex = index;
+    const photo = state.filteredPhotos[index];
+    if (!photo) return;
 
-            document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
-            document.getElementById('modalTitle').innerText = photo.title;
-            document.getElementById('modalDate').innerText = `📅 ${photo.date}`;
-            document.getElementById('modalCategory').innerText = `🏷️ ${photo.category.toUpperCase()}`;
-            document.getElementById('modalCounter').innerText = `${index + 1} / ${state.filteredPhotos.length}`;
-            document.getElementById('modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        };
+    document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
+    document.getElementById('modalTitle').innerText = photo.title;
+    document.getElementById('modalDate').innerText = `📅 ${photo.date}`;
+    document.getElementById('modalCategory').innerText = `🏷️ ${photo.category.toUpperCase()}`;
+
+    // [수정된 부분] 카운터 숫자 옆에 메인 메뉴로 가는 버튼을 추가합니다.
+    document.getElementById('modalCounter').innerHTML = `
+        <span style="margin-right: 15px;">${index + 1} / ${state.filteredPhotos.length}</span>
+        <a href="staff.html" class="modal-home-btn" style="text-decoration: none;">🏠 MAIN MENU</a>
+    `;
+
+    document.getElementById('modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
 
         window.closeModal = function () {
             document.getElementById('modal').classList.remove('active');
