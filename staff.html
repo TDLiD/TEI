@@ -975,18 +975,39 @@ window.switchTab = function(t) {
 window.loadHTML = async function(u) {
     try {
         const f = document.getElementById('contentFrame');
+        // 로딩 스피너 표시
         f.innerHTML = `<div class="flex items-center justify-center h-64"><div class="w-10 h-10 border-4 rounded-full animate-spin day-spin"></div></div>`;
+        
         const r = await fetch(u);
         const h = await r.text();
+        
+        // 1. 컨텐츠 삽입
         f.innerHTML = h;
-        const fc = document.getElementById('footerContainer');
-        if (fc && !fc.innerHTML) {
-            const fr = await fetch('staff_footer.html');
-            if (fr.ok) fc.innerHTML = await fr.text();
-        }
-        executeScripts(f);
+
+        // 2. 브라우저가 DOM을 파싱하고 렌더링할 시간을 줍니다.
+        // requestAnimationFrame은 다음 화면 갱신 직전에 실행되므로 DOM 안정성을 높여줍니다.
+        requestAnimationFrame(() => {
+            const fc = document.getElementById('footerContainer');
+            if (fc && !fc.innerHTML) {
+                fetch('staff_footer.html').then(fr => {
+                    if (fr.ok) return fr.text();
+                }).then(footerHtml => {
+                    if (footerHtml) fc.innerHTML = footerHtml;
+                });
+            }
+
+            // 3. 요소들이 확실히 존재할 때 스크립트 실행
+            try {
+                executeScripts(f);
+            } catch (scriptError) {
+                console.error("스크립트 실행 중 오류 발생:", scriptError);
+            }
+        });
+
     } catch(e) {
-        document.getElementById('contentFrame').innerHTML = `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
+        console.error("페이지 로드 실패:", e);
+        document.getElementById('contentFrame').innerHTML = 
+            `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
     }
 };
 
