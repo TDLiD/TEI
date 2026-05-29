@@ -9,170 +9,722 @@
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+
     <style>
-        body { font-family: Pretendard, sans-serif; background: #000; color: #f1f5f9; margin: 0; padding: 0; }
-        .tab-btn { transition: .25s; cursor: pointer; border-radius: 0.75rem; margin-bottom: 0.25rem; }
-        .tab-active { color: #3b82f6; font-weight: 900; background: rgba(59, 130, 246, .1); }
-        .tab-inactive { color: #64748b; }
-        .tab-inactive:hover { color: #f1f5f9; background: rgba(255, 255, 255, 0.05); }
-        .mobile-tab-active { color: #3b82f6 !important; font-weight: 900; }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        /* =====================================================
+           DAY-BASED THEME SYSTEM
+           0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+        ===================================================== */
+
+        /* MON - Deep Navy Steel: Cold industrial blue */
+        body.day-1 {
+            --day-accent: #3b82f6;
+            --day-accent2: #1d4ed8;
+            --day-accent3: #60a5fa;
+            --day-glow: rgba(59,130,246,0.18);
+            --day-glow2: rgba(29,78,216,0.12);
+            --day-border: rgba(59,130,246,0.25);
+            --day-surface: rgba(15,23,42,0.95);
+            --day-card: rgba(15,23,42,0.8);
+            --day-name: "MONDAY";
+            --day-label: "MON";
+            --panel-bg: linear-gradient(160deg, #050e1f 0%, #0a1628 50%, #07112a 100%);
+            --aside-bg: linear-gradient(180deg, #04091a 0%, #071022 60%, #060e1e 100%);
+        }
+        /* TUE - Dark Emerald Forge: Deep green factory */
+        body.day-2 {
+            --day-accent: #10b981;
+            --day-accent2: #047857;
+            --day-accent3: #34d399;
+            --day-glow: rgba(16,185,129,0.18);
+            --day-glow2: rgba(4,120,87,0.12);
+            --day-border: rgba(16,185,129,0.25);
+            --day-surface: rgba(2,20,14,0.95);
+            --day-card: rgba(3,16,12,0.8);
+            --panel-bg: linear-gradient(160deg, #021008 0%, #041a10 50%, #031410 100%);
+            --aside-bg: linear-gradient(180deg, #020c06 0%, #04140a 60%, #030e08 100%);
+        }
+        /* WED - Crimson Obsidian: Deep blood red */
+        body.day-3 {
+            --day-accent: #ef4444;
+            --day-accent2: #b91c1c;
+            --day-accent3: #f87171;
+            --day-glow: rgba(239,68,68,0.18);
+            --day-glow2: rgba(185,28,28,0.12);
+            --day-border: rgba(239,68,68,0.25);
+            --day-surface: rgba(20,5,5,0.95);
+            --day-card: rgba(18,4,4,0.8);
+            --panel-bg: linear-gradient(160deg, #100303 0%, #1a0505 50%, #140404 100%);
+            --aside-bg: linear-gradient(180deg, #0c0202 0%, #160404 60%, #100303 100%);
+        }
+        /* THU - Violet Abyss: Dark purple cosmos */
+        body.day-4 {
+            --day-accent: #a855f7;
+            --day-accent2: #7c3aed;
+            --day-accent3: #c084fc;
+            --day-glow: rgba(168,85,247,0.18);
+            --day-glow2: rgba(124,58,237,0.12);
+            --day-border: rgba(168,85,247,0.25);
+            --day-surface: rgba(12,5,20,0.95);
+            --day-card: rgba(10,4,18,0.8);
+            --panel-bg: linear-gradient(160deg, #080313 0%, #0f0520 50%, #0a0418 100%);
+            --aside-bg: linear-gradient(180deg, #06020f 0%, #0d041a 60%, #090315 100%);
+        }
+        /* FRI - Amber Furnace: Dark gold forge */
+        body.day-5 {
+            --day-accent: #f59e0b;
+            --day-accent2: #d97706;
+            --day-accent3: #fcd34d;
+            --day-glow: rgba(245,158,11,0.18);
+            --day-glow2: rgba(217,119,6,0.12);
+            --day-border: rgba(245,158,11,0.25);
+            --day-surface: rgba(20,14,2,0.95);
+            --day-card: rgba(18,12,2,0.8);
+            --panel-bg: linear-gradient(160deg, #100900 0%, #1a1000 50%, #140c00 100%);
+            --aside-bg: linear-gradient(180deg, #0c0700 0%, #160e00 60%, #100900 100%);
+        }
+        /* SAT/SUN fallback - Slate Void */
+        body.day-0, body.day-6 {
+            --day-accent: #64748b;
+            --day-accent2: #475569;
+            --day-accent3: #94a3b8;
+            --day-glow: rgba(100,116,139,0.15);
+            --day-glow2: rgba(71,85,105,0.10);
+            --day-border: rgba(100,116,139,0.2);
+            --day-surface: rgba(8,10,15,0.95);
+            --day-card: rgba(7,9,13,0.8);
+            --panel-bg: linear-gradient(160deg, #050709 0%, #080a0f 50%, #060809 100%);
+            --aside-bg: linear-gradient(180deg, #040508 0%, #070910 60%, #050709 100%);
+        }
+
+        /* =====================================================
+           GLOBAL BASE
+        ===================================================== */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: Pretendard, sans-serif;
+            background: var(--panel-bg);
+            color: #e2e8f0;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--day-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--day-border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridShift 30s linear infinite;
+        }
+        @keyframes gridShift {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 60px; }
+        }
+
+        /* Radial ambient glow */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -30%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(ellipse, var(--day-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: ambientFloat 12s ease-in-out infinite alternate;
+        }
+        @keyframes ambientFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(8%, 5%) scale(1.1); }
+        }
+
+        main, aside, header, nav { position: relative; z-index: 1; }
+
+        /* =====================================================
+           3D CARD SYSTEM
+        ===================================================== */
+        .card-3d {
+            background: var(--day-card);
+            border: 1px solid var(--day-border);
+            box-shadow:
+                0 0 0 1px var(--day-border),
+                0 4px 8px rgba(0,0,0,0.4),
+                0 8px 24px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.06),
+                inset 0 -1px 0 rgba(0,0,0,0.3);
+            transform: translateZ(0);
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .card-3d:hover {
+            box-shadow:
+                0 0 0 1px var(--day-accent),
+                0 8px 16px rgba(0,0,0,0.5),
+                0 16px 40px var(--day-glow),
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                inset 0 -1px 0 rgba(0,0,0,0.3);
+            transform: translateY(-2px) translateZ(0);
+        }
+
+        /* =====================================================
+           ASIDE / SIDEBAR
+        ===================================================== */
+        aside {
+            background: var(--aside-bg);
+            border-right: 1px solid var(--day-border);
+            box-shadow:
+                inset -1px 0 0 var(--day-border),
+                4px 0 30px rgba(0,0,0,0.6),
+                inset 0 0 60px var(--day-glow2);
+            overflow: hidden;
+        }
+        aside > div:first-child { flex-shrink: 0; }
+        aside nav.flex {
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--day-accent) transparent;
+            min-height: 0;
+            padding-bottom: 0.5rem;
+        }
+        aside nav.flex::-webkit-scrollbar { width: 2px; }
+        aside nav.flex::-webkit-scrollbar-track { background: transparent; }
+        aside nav.flex::-webkit-scrollbar-thumb { background: var(--day-accent); border-radius: 99px; }
+        aside > button:last-child { flex-shrink: 0; }
+
+        /* Sidebar brand */
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -0.03em;
+            text-shadow: 0 0 20px var(--day-glow), 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .brand-accent { color: var(--day-accent); }
+
+        /* Profile card */
+        .profile-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--day-border);
+            border-radius: 1.25rem;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.06),
+                0 4px 20px rgba(0,0,0,0.4),
+                0 0 30px var(--day-glow2);
+        }
+
+        /* Profile image container */
+        .profile-img-wrap {
+            border: 2px solid var(--day-accent);
+            box-shadow:
+                0 0 0 3px var(--day-glow),
+                0 0 20px var(--day-glow),
+                inset 0 0 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .profile-img-wrap:hover {
+            box-shadow:
+                0 0 0 4px var(--day-accent),
+                0 0 30px var(--day-glow),
+                0 0 60px var(--day-glow2);
+            transform: scale(1.05);
+        }
+
+        /* Edit badge */
+        .edit-badge {
+            background: var(--day-accent);
+            box-shadow: 0 0 10px var(--day-glow), 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Weather chip */
+        .weather-chip {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--day-border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .weather-temp { color: var(--day-accent3) !important; }
+
+        /* Online dot */
+        .online-dot {
+            background: var(--day-accent);
+            box-shadow: 0 0 6px var(--day-glow), 0 0 12px var(--day-glow);
+        }
+        .online-text { color: var(--day-accent3) !important; }
+
+        /* =====================================================
+           NAV TABS
+        ===================================================== */
+        .tab-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-radius: 0.75rem;
+            margin-bottom: 0.25rem;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--day-accent);
+            border-radius: 0 2px 2px 0;
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        .tab-active {
+            color: var(--day-accent3);
+            font-weight: 900;
+            background: var(--day-glow);
+            border-color: var(--day-border);
+            box-shadow:
+                0 2px 8px var(--day-glow2),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            text-shadow: 0 0 10px var(--day-glow);
+        }
+        .tab-active::before { transform: scaleY(1); }
+        .tab-inactive { color: #475569; }
+        .tab-inactive:hover {
+            color: #94a3b8;
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.05);
+        }
+
+        /* Day indicator badge in sidebar */
+        .day-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--day-glow);
+            border: 1px solid var(--day-border);
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            color: var(--day-accent3);
+            text-transform: uppercase;
+            box-shadow: 0 0 12px var(--day-glow2);
+        }
+        .day-badge-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--day-accent);
+            box-shadow: 0 0 6px var(--day-accent);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.7); }
+        }
+
+        /* =====================================================
+           MOBILE HEADER
+        ===================================================== */
+        .mobile-header {
+            background: var(--aside-bg);
+            border-bottom: 1px solid var(--day-border);
+            box-shadow:
+                0 2px 20px rgba(0,0,0,0.5),
+                0 0 30px var(--day-glow2),
+                inset 0 -1px 0 var(--day-border);
+        }
+
+        /* =====================================================
+           MOBILE NAV
+        ===================================================== */
+        .mobile-nav {
+            background: var(--aside-bg);
+            border-top: 1px solid var(--day-border);
+            box-shadow:
+                0 -4px 20px rgba(0,0,0,0.6),
+                0 -1px 0 var(--day-border),
+                inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .mobile-tab-active {
+            color: var(--day-accent) !important;
+            font-weight: 900;
+            text-shadow: 0 0 8px var(--day-glow);
+        }
+        .mobile-nav button span:first-child {
+            filter: drop-shadow(0 0 4px var(--day-glow));
+        }
+
+        /* =====================================================
+           MAIN CONTENT AREA
+        ===================================================== */
+        main {
+            background: transparent;
+        }
+
+        /* Day header strip in main */
+        .day-strip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            margin-bottom: 1.5rem;
+            border-radius: 1rem;
+            background: var(--day-glow2);
+            border: 1px solid var(--day-border);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.04),
+                0 2px 12px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .day-strip::after {
+            content: '';
+            position: absolute;
+            right: -20px; top: -20px;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--day-glow);
+            filter: blur(20px);
+        }
+        .day-strip-label {
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            color: var(--day-accent);
+            text-transform: uppercase;
+        }
+        .day-strip-date {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+        .day-strip-divider {
+            width: 1px; height: 16px;
+            background: var(--day-border);
+        }
+
+        /* =====================================================
+           MODAL
+        ===================================================== */
+        #adminCustomModal > div {
+            background: var(--day-surface);
+            border: 1px solid var(--day-border);
+            box-shadow:
+                0 0 0 1px var(--day-border),
+                0 20px 60px rgba(0,0,0,0.8),
+                0 0 80px var(--day-glow2),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+        #adminCustomModal > div > div:first-child {
+            background: var(--day-glow2);
+            border-bottom: 1px solid var(--day-border);
+        }
+        #modalTitle {
+            color: var(--day-accent3);
+            text-shadow: 0 0 12px var(--day-glow);
+        }
+        #adminCustomModal > div > div:first-child button {
+            color: #64748b;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        #adminCustomModal > div > div:first-child button:hover {
+            color: var(--day-accent);
+            background: var(--day-glow);
+        }
+
+        /* Logout button */
+        .logout-btn {
+            color: #475569;
+            transition: all 0.2s ease;
+            border-radius: 0.75rem;
+            border: 1px solid transparent;
+        }
+        .logout-btn:hover {
+            color: #ef4444;
+            background: rgba(239,68,68,0.08);
+            border-color: rgba(239,68,68,0.2);
+        }
+
+        /* Separator line */
+        .aside-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--day-border), transparent);
+            margin: 1rem 0;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
         @media (max-width: 767px) {
             aside { display: none !important; }
             main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
             .mobile-header { display: flex !important; }
             .mobile-nav { display: grid !important; }
         }
-        /* 프로필 픽커 스타일 */
-        .profile-picker-item { transition: all 0.2s; border: 2px solid transparent; }
-        .profile-picker-item:hover { transform: scale(1.05); border-color: #3b82f6; }
-        .admin-profile-img-container { width: 45px !important; height: 45px !important; transition: all 0.3s ease; }
-        @media (min-width: 1024px) { .admin-profile-img-container { width: 100px !important; height: 100px !important; } }
+
+        /* =====================================================
+           SCROLLBAR
+        ===================================================== */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* =====================================================
+           ANIMATIONS
+        ===================================================== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.4s ease both; }
+
+        /* =====================================================
+           PROFILE PICKER
+        ===================================================== */
+        .profile-picker-item {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+        }
+        .profile-picker-item:hover {
+            transform: scale(1.06);
+            border-color: var(--day-accent);
+            box-shadow: 0 0 12px var(--day-glow);
+        }
+
+        /* admin profile containers */
+        .admin-profile-img-container {
+            width: 45px !important;
+            height: 45px !important;
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 1024px) {
+            .admin-profile-img-container {
+                width: 88px !important;
+                height: 88px !important;
+            }
+        }
+
+        /* Typing cursor */
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-/* 생일 알림 효과 */
-#mobile-birthday-dot.active { display: block !important; }
-/* 기존 ::-webkit-scrollbar 규칙 아래에 추가 */
-::-webkit-scrollbar { width: 0px; background: transparent; }
 
-/* ▼ 추가: aside 내부 nav 스크롤 허용 */
-aside { overflow: hidden; }
-aside > div:first-child { flex-shrink: 0; }   /* 프로필 카드 고정 */
-aside nav.flex { 
-    overflow-y: auto; 
-    overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(59,130,246,0.3) transparent;
-    min-height: 0;        /* flex 자식이 shrink되려면 필요 */
-    padding-bottom: 0.5rem;
-}
-aside nav.flex::-webkit-scrollbar { width: 3px; }
-aside nav.flex::-webkit-scrollbar-track { background: transparent; }
-aside nav.flex::-webkit-scrollbar-thumb { 
-    background: rgba(59,130,246,0.3); 
-    border-radius: 99px; 
-}
-aside nav.flex::-webkit-scrollbar-thumb:hover { 
-    background: rgba(59,130,246,0.6); 
-}
-aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
+        /* Birthday alert */
+        #mobile-birthday-dot.active { display: block !important; }
+
+        /* Birthday section accent */
+        #adminBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
+        #mobileBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
+
+        /* Horizontal rule in sidebar */
+        .special-tab {
+            color: var(--day-accent) !important;
+            font-weight: 900;
+        }
+
+        /* TDLiD link */
+        .tdlid-link {
+            color: var(--day-accent3) !important;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            border: 1px solid transparent;
+        }
+        .tdlid-link:hover {
+            background: var(--day-glow);
+            border-color: var(--day-border);
+        }
+
+        /* Loading spinner uses accent color */
+        .day-spinner {
+            border-color: var(--day-border);
+            border-top-color: var(--day-accent);
+        }
     </style>
-
 </head>
+
 <body class="flex min-h-screen">
-<header class="mobile-header fixed top-0 left-0 right-0 h-14 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 z-40 hidden items-center px-4 justify-between">
+
+<!-- MOBILE HEADER -->
+<header class="mobile-header fixed top-0 left-0 right-0 h-14 z-40 hidden items-center px-4 justify-between">
     <div class="flex items-center gap-3">
         <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
-            <div class="admin-profile-img-container rounded-full border border-slate-700 overflow-hidden bg-slate-800">
-                <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+            <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
+                <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img"
+                     onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
             </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-600 rounded-full border border-slate-950 flex items-center justify-center text-[8px] shadow-lg">✏️</div>
+            <div class="absolute -bottom-1 -right-1 w-4 h-4 edit-badge rounded-full border border-slate-950 flex items-center justify-center text-[8px]">✏️</div>
         </div>
-<div class="flex flex-col">
-    <h1 class="text-sm font-black italic leading-none">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-    
-    <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
-        <span class="text-[9px] font-black text-yellow-500 animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-        <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+
+        <div class="flex flex-col">
+            <h1 class="brand-title text-sm leading-none">ADMIN <span class="brand-accent">SYSTEM</span></h1>
+
+            <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
+                <span class="text-[9px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+            </div>
+
+            <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
+                <span class="weather-icon text-[10px]">☀️</span>
+                <span class="weather-temp text-[9px] font-bold">--°C</span>
+                <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
+            </div>
+        </div>
     </div>
 
-    <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
-        <span class="weather-icon text-[10px]">☀️</span>
-        <span class="weather-temp text-[9px] font-bold text-blue-400">--°C</span>
-        <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
-    </div>
-</div>
-
-    </div>
     <div class="flex items-center gap-3">
-
-        <a href="https://tdlid.github.io" target="_blank" class="text-emerald-500 text-sm font-bold">🌐</a>
-        <button onclick="adminLogout()" class="text-slate-400 text-lg">➡️</button>
+        <!-- Day Badge mobile -->
+        <div class="day-badge hidden md:flex" id="mobileDayBadge">
+            <span class="day-badge-dot"></span>
+            <span id="mobileDayLabel">MON</span>
+        </div>
+        <a href="https://tdlid.github.io" target="_blank" class="tdlid-link px-2 py-1 text-sm font-bold">🌐</a>
+        <button onclick="adminLogout()" class="logout-btn px-2 py-1 text-lg">➡️</button>
     </div>
 </header>
 
-    <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 z-50 hidden grid-cols-8 h-[70px] px-1 shadow-2xl">
-        <button onclick="switchAdminTab('dashboard')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
-        <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">👤</span><span>ATTEND</span></button>
-        <button onclick="switchAdminTab('reports')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📝</span><span>REPORTS</span></button>
-        <button onclick="switchAdminTab('vacation')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">🏖️</span><span>VACATION</span></button>
-        <button onclick="switchAdminTab('schedule')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📅</span><span>CAL</span></button>
-        <button onclick="switchAdminTab('workstat')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📉</span><span>W.ANIS</span></button>
-        <button onclick="switchAdminTab('statistic')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📈</span><span>A.STAT</span></button>
-        <button onclick="switchAdminTab('settings')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
-    </nav>
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav fixed bottom-0 left-0 right-0 z-50 hidden grid-cols-8 h-[70px] px-1 shadow-2xl">
+    <button onclick="switchAdminTab('dashboard')"  class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
+    <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">👤</span><span>ATTEND</span></button>
+    <button onclick="switchAdminTab('reports')"    class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📝</span><span>REPORTS</span></button>
+    <button onclick="switchAdminTab('vacation')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">🏖️</span><span>VACATION</span></button>
+    <button onclick="switchAdminTab('schedule')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📅</span><span>CAL</span></button>
+    <button onclick="switchAdminTab('workstat')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📉</span><span>W.ANIS</span></button>
+    <button onclick="switchAdminTab('statistic')"  class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📈</span><span>A.STAT</span></button>
+    <button onclick="switchAdminTab('settings')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
+</nav>
 
-<aside class="hidden md:flex w-72 bg-slate-950/60 border-r border-slate-800 p-6 sticky top-0 h-screen flex-col min-h-0">
-        <div class="mb-10">
-            <h1 class="text-2xl font-black italic mb-6">ADMIN <span class="text-blue-500">SYSTEM</span></h1>
-            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-                <div class="relative group cursor-pointer shadow-lg" onclick="openProfileImagePicker()">
-                    <div class="admin-profile-img-container rounded-full border-2 border-blue-500/30 overflow-hidden bg-slate-800 shrink-0 shadow-blue-500/10 transition-transform group-hover:scale-105">
-                        <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
-                    </div>
-                    <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-blue-600 rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px] shadow-lg group-hover:bg-blue-500 transition-colors">🎂</div>
+<!-- SIDEBAR -->
+<aside class="hidden md:flex w-72 p-6 sticky top-0 h-screen flex-col min-h-0">
+
+    <!-- Brand + Day Badge -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-5">
+            <h1 class="brand-title">ADMIN <span class="brand-accent">SYSTEM</span></h1>
+            <div class="day-badge" id="sidebarDayBadge">
+                <span class="day-badge-dot"></span>
+                <span id="sidebarDayLabel">MON</span>
+            </div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card p-4 flex items-center gap-4">
+            <div class="relative group cursor-pointer shrink-0" onclick="openProfileImagePicker()">
+                <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
+                    <img src="images/profile/image-01.jfif" alt="Admin"
+                         class="w-full h-full object-cover admin-profile-img"
+                         onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
                 </div>
-                <div class="overflow-hidden flex-1">
-                    <div class="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-0.5">Administrator</div>
-                    <div class="text-sm font-black text-white truncate uppercase">Master Manager</div>
-                    
-                    <div class="flex items-center gap-2 mt-1.5 py-1 px-2 bg-black/20 rounded-lg border border-white/5 w-fit">
-                        <span class="weather-icon text-xs">☀️</span>
-                        <span class="weather-temp text-[11px] font-bold text-blue-400 tracking-tighter">--°C</span>
-                        <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
-                    </div>
+                <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 edit-badge rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px]">🎂</div>
+            </div>
 
+            <div class="overflow-hidden flex-1">
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Administrator</div>
+                <div class="text-sm font-black text-white truncate uppercase tracking-tight">Master Manager</div>
 
-<div id="adminBirthdayAlert" class="hidden flex flex-col mt-2 ml-1">
-    <span class="text-[10px] font-black text-amber-500 animate-pulse flex items-center gap-1">
-        🎂 HAPPY BIRTHDAY!
-    </span>
-    <span id="adminBirthdayNames" class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-0.5 leading-tight"></span>
-</div>
-                    <div class="inline-flex items-center gap-1.5 mt-2">
-                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
-                    </div>
+                <!-- Weather -->
+                <div class="weather-chip flex items-center gap-2 mt-2 py-1 px-2 rounded-lg w-fit">
+                    <span class="weather-icon text-xs">☀️</span>
+                    <span class="weather-temp text-[11px] font-bold tracking-tighter">--°C</span>
+                    <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
+                </div>
+
+                <!-- Birthday Alert -->
+                <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2">
+                    <span class="text-[10px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                    <span id="adminBirthdayNames" class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-0.5 leading-tight"></span>
+                </div>
+
+                <!-- Online indicator -->
+                <div class="inline-flex items-center gap-1.5 mt-2">
+                    <span class="w-1.5 h-1.5 rounded-full online-dot animate-pulse"></span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest online-text">Online</span>
                 </div>
             </div>
         </div>
-<nav class="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto">
-            <button id="btn-dashboard" onclick="switchAdminTab('dashboard')" class="tab-btn px-4 py-3 text-left">📊 DASHBOARD</button>
-            <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn px-4 py-3 text-left">👤 ATTENDANCE</button>
-            <button id="btn-reports" onclick="switchAdminTab('reports')" class="tab-btn px-4 py-3 text-left">📝 WORK REPORT</button>
-            <button id="btn-vacation" onclick="switchAdminTab('vacation')" class="tab-btn px-4 py-3 text-left">🏖️ VACATION MGT</button>
-            <button id="btn-schedule" onclick="switchAdminTab('schedule')" class="tab-btn px-4 py-3 text-left">📅 CALENDAR</button>
-            <button id="btn-workstat" onclick="switchAdminTab('workstat')" class="tab-btn px-4 py-3 text-left font-bold text-amber-500">📉 WORK ANALYSIS</button>
-            <button id="btn-statistic" onclick="switchAdminTab('statistic')" class="tab-btn px-4 py-3 text-left">📈 ATTEND STAT</button>
-            <button id="btn-settings" onclick="switchAdminTab('settings')" class="tab-btn px-4 py-3 text-left">⚙️ SETTINGS</button>
-            <div class="h-[1px] bg-slate-800 my-4"></div>
-            <a href="https://tdlid.github.io" target="_blank" class="px-4 py-3 text-xs uppercase tracking-widest text-emerald-500 font-bold hover:bg-emerald-500/10 rounded-xl transition-all flex items-center gap-2">🌐 TDLiD Homepage</a>
-        </nav>
-        <button onclick="adminLogout()" class="mt-auto flex items-center gap-2 px-4 py-3 text-slate-500 hover:text-rose-500 transition-colors font-bold text-sm">➡️ Logout System</button>
-    </aside>
+    </div>
 
+    <!-- Nav -->
+    <nav class="flex flex-col gap-0.5 flex-1 min-h-0 overflow-y-auto">
+        <button id="btn-dashboard"  onclick="switchAdminTab('dashboard')"  class="tab-btn tab-inactive px-4 py-3 text-left">📊 DASHBOARD</button>
+        <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn tab-inactive px-4 py-3 text-left">👤 ATTENDANCE</button>
+        <button id="btn-reports"    onclick="switchAdminTab('reports')"    class="tab-btn tab-inactive px-4 py-3 text-left">📝 WORK REPORT</button>
+        <button id="btn-workstat"   onclick="switchAdminTab('workstat')"   class="tab-btn tab-inactive special-tab px-4 py-3 text-left">📉 WORK ANALYSIS</button>
+        <button id="btn-vacation"   onclick="switchAdminTab('vacation')"   class="tab-btn tab-inactive px-4 py-3 text-left">🏖️ VACATION MGT</button>
+        <button id="btn-schedule"   onclick="switchAdminTab('schedule')"   class="tab-btn tab-inactive px-4 py-3 text-left">📅 CALENDAR</button>
+        <button id="btn-statistic"  onclick="switchAdminTab('statistic')"  class="tab-btn tab-inactive px-4 py-3 text-left">📈 ATTEND STAT</button>
+        <button id="btn-settings"   onclick="switchAdminTab('settings')"   class="tab-btn tab-inactive px-4 py-3 text-left">⚙️ SETTINGS</button>
+
+        <div class="aside-separator"></div>
+
+        <a href="https://tdlid.github.io" target="_blank"
+           class="tdlid-link px-4 py-3 text-xs uppercase tracking-widest font-bold flex items-center gap-2">
+            🌐 TDLiD Homepage
+        </a>
+    </nav>
+
+    <button onclick="adminLogout()" class="logout-btn mt-4 flex items-center gap-2 px-4 py-3 font-bold text-sm">
+        ➡️ Logout System
+    </button>
+</aside>
+
+<!-- MAIN CONTENT -->
 <main class="flex-1 p-8 overflow-y-auto">
     <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
 </main>
 
+<!-- MODAL -->
 <div id="adminCustomModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
-    <div class="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-fadeIn">
-        <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
-            <h3 id="modalTitle" class="text-lg font-black text-white uppercase tracking-widest italic"></h3>
-            <button onclick="closeAdminCustomModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl hover:bg-white/10 rounded-full">&times;</button>
+    <div class="w-full max-w-xl rounded-[2rem] overflow-hidden shadow-2xl animate-fadeIn">
+        <div class="p-6 border-b flex justify-between items-center" style="border-color: var(--day-border)">
+            <h3 id="modalTitle" class="text-lg font-black uppercase tracking-widest italic"></h3>
+            <button onclick="closeAdminCustomModal()"
+                    class="w-10 h-10 flex items-center justify-center text-3xl transition-all">&times;</button>
         </div>
-<div id="modalBody" class="p-8 max-h-[85vh] overflow-y-auto no-scrollbar text-slate-300"></div>
+        <div id="modalBody" class="p-8 max-h-[85vh] overflow-y-auto text-slate-300"
+             style="scrollbar-width:none;"></div>
     </div>
 </div>
 
+
 <script>
-// 1. Firebase 초기화
+/* ============================================================
+   DAY THEME INIT — runs immediately
+============================================================ */
+(function applyDayTheme() {
+    const day = new Date().getDay(); // 0=Sun … 6=Sat
+    document.body.classList.add('day-' + day);
+    const dayNames = { 0:'SUN', 1:'MON', 2:'TUE', 3:'WED', 4:'THU', 5:'FRI', 6:'SAT' };
+    const label = dayNames[day] || 'MON';
+
+    // Set labels once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        ['sidebarDayLabel','mobileDayLabel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = label;
+        });
+    });
+})();
+
+/* ============================================================
+   FIREBASE INIT
+============================================================ */
 (function () {
     if (!window.firebase) return;
     const firebaseConfig = {
@@ -189,72 +741,73 @@ aside > button:last-child { flex-shrink: 0; }  /* Logout 버튼 고정 */
     if (!window.db) window.db = firebase.database();
 })();
 
+/* ============================================================
+   PROFILE IMAGES LIST
+============================================================ */
 const PROFILE_IMAGES = [
-    // 기본 WebP 이미지
-    'image-001.webp', 'image-002.webp', 'image-003.webp', 'image-004.webp', 'image-005.webp',
-    
-    // GIF 애니메이션 이미지 (01~27)
-    'image-01.gif', 'image-02.gif', 'image-03.gif', 'image-04.gif', 'image-05.gif', 
-    'image-06.gif', 'image-07.gif', 'image-08.gif', 'image-09.gif', 'image-10.gif', 
-    'image-11.gif', 'image-12.gif', 'image-13.gif', 'image-14.gif', 'image-15.gif', 
-    'image-16.gif', 'image-17.gif', 'image-18.gif', 'image-19.gif', 'image-20.gif', 
-    'image-21.gif', 'image-22.gif', 'image-23.gif', 'image-24.gif', 'image-25.gif', 
-    'image-26.gif', 'image-27.gif',
-
-    // 새로 추가된 이미지 (jfif, jpg, webp 추가분)
-    'image-01.jfif', 'image-02.jpg', 'image-03.webp', 'image-04.jfif', 'image-05.jpg',
-    'image-06.webp', 'image-07.jfif', 'image-08.jpg', 'image-09.jfif', 'image-10.jpg',
-    'image-11.jfif', 'image-12.jpg', 'image-13.jfif', 'image-14.jpg', 'image-15.jfif',
-    'image-16.jpg', 'image-17.jfif', 'image-18.jpg', 'image-19.jfif', 'image-20.jpg',
-    'image-21.jfif', 'image-22.jpg', 'image-23.jfif', 'Yuda.png'
+    'image-001.webp','image-002.webp','image-003.webp','image-004.webp','image-005.webp',
+    'image-01.gif','image-02.gif','image-03.gif','image-04.gif','image-05.gif',
+    'image-06.gif','image-07.gif','image-08.gif','image-09.gif','image-10.gif',
+    'image-11.gif','image-12.gif','image-13.gif','image-14.gif','image-15.gif',
+    'image-16.gif','image-17.gif','image-18.gif','image-19.gif','image-20.gif',
+    'image-21.gif','image-22.gif','image-23.gif','image-24.gif','image-25.gif',
+    'image-26.gif','image-27.gif',
+    'image-01.jfif','image-02.jpg','image-03.webp','image-04.jfif','image-05.jpg',
+    'image-06.webp','image-07.jfif','image-08.jpg','image-09.jfif','image-10.jpg',
+    'image-11.jfif','image-12.jpg','image-13.jfif','image-14.jpg','image-15.jfif',
+    'image-16.jpg','image-17.jfif','image-18.jpg','image-19.jfif','image-20.jpg',
+    'image-21.jfif','image-22.jpg','image-23.jfif','Yuda.png'
 ];
-    
+
+/* ============================================================
+   PROFILE IMAGE PICKER
+============================================================ */
 window.openProfileImagePicker = function() {
-    let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-4 mb-8">`;
+    let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-8">`;
     PROFILE_IMAGES.forEach(img => {
-        gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer rounded-xl overflow-hidden bg-slate-800 border-2 border-transparent hover:border-blue-500 shadow-md"><img src="images/profile/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
+        gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer"><img src="images/profile/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
     });
     gridHtml += `</div>`;
-    
-    // 프로필 변경 및 생일 설정 구역
+
     gridHtml += `
-        <div class="mt-6 pt-6 border-t border-slate-800">
+        <div class="mt-6 pt-6 border-t" style="border-color:var(--day-border)">
             <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest">Admin Birthday Setting</h4>
             <div class="space-y-4">
                 <div class="flex gap-2">
-                    <select id="adminBirthType" class="bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-3 outline-none focus:border-blue-500">
+                    <select id="adminBirthType" class="bg-slate-900 border text-white text-sm rounded-xl px-3 py-3 outline-none" style="border-color:var(--day-border)">
                         <option value="Solar">Solar (양력)</option>
                         <option value="Lunar">Lunar (음력)</option>
                     </select>
-                    <input type="date" id="adminBirthDate" class="flex-1 bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-blue-500">
+                    <input type="date" id="adminBirthDate" class="flex-1 bg-slate-900 border text-white text-sm rounded-xl px-4 py-3 outline-none" style="border-color:var(--day-border)">
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button onclick="saveAdminBirthday()" id="adminBirthSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
+                    <button onclick="saveAdminBirthday()" id="adminBirthSaveBtn"
+                            class="w-full text-white font-bold py-3 rounded-xl transition-all"
+                            style="background:var(--day-accent2);border:1px solid var(--day-border)">
                         <span>SAVE CHANGES</span>
                     </button>
-                    <button onclick="closeAdminCustomModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold py-3 rounded-xl transition-all">
+                    <button onclick="closeAdminCustomModal()"
+                            class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold py-3 rounded-xl transition-all">
                         <span>CANCEL</span>
                     </button>
                 </div>
             </div>
         </div>
-        
-        <div class="mt-8 pt-6 border-t border-slate-800">
+
+        <div class="mt-8 pt-6 border-t" style="border-color:var(--day-border)">
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-sm font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                <h4 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color:var(--day-accent3)">
                     <span>🎂 Staff Birthdays</span>
                 </h4>
             </div>
-<div id="birthdayListInModal" class="space-y-2 pr-1">
+            <div id="birthdayListInModal" class="space-y-2 pr-1">
                 <div class="text-[10px] text-slate-600 italic text-center py-4">Loading Staff Data...</div>
             </div>
         </div>`;
 
     openAdminCustomModal('Admin Profile & Birthday', gridHtml);
 
-    // 데이터 로딩 및 표시 로직
     setTimeout(() => {
-        // 1. 관리자 기존 정보 세팅
         db.ref('users/Admin').once('value', snap => {
             const data = snap.val();
             if (data) {
@@ -263,52 +816,42 @@ window.openProfileImagePicker = function() {
             }
         });
 
-        // 2. 전체 Staff 생일 목록 가져오기 (staff.html 스타일 적용)
         db.ref('users').once('value', snap => {
             const users = snap.val() || {};
             const container = document.getElementById('birthdayListInModal');
             if (!container) return;
-
             const today = new Date();
             const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-            
-            // 생일 정보가 있는 사용자만 필터링 및 월/일 기준 정렬
             const list = Object.keys(users)
                 .filter(uid => users[uid].birthday)
                 .sort((a,b) => users[a].birthday.substring(5).localeCompare(users[b].birthday.substring(5)));
-
             if (list.length === 0) {
                 container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`;
                 return;
             }
-
             container.innerHTML = list.map(uid => {
                 const u = users[uid];
                 const bType = u.birthType || 'Solar';
                 const bDate = u.birthday.replace(/-/g, '.');
                 const isToday = u.birthday.substring(5) === tMonthDay;
                 const pImg = u.profileImg || '';
-                
-                // 이미지 경로 처리
-                const imgSrc = uid.toLowerCase() === 'admin' 
-                    ? (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-01.jfif'}`) 
+                const imgSrc = uid.toLowerCase() === 'admin'
+                    ? (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-01.jfif'}`)
                     : (pImg.includes('/') ? pImg : `images/profile/${pImg || 'image-001.webp'}`);
-
-                const typeColor = bType === 'Lunar' || bType === '음력' 
-                    ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' 
-                    : 'text-blue-400 bg-blue-500/10 border-blue-500/20';
-
+                const typeColor = (bType === 'Lunar' || bType === '음력')
+                    ? 'color:var(--day-accent3);background:var(--day-glow);border:1px solid var(--day-border)'
+                    : 'color:var(--day-accent3);background:var(--day-glow2);border:1px solid var(--day-border)';
                 return `
-                <div class="flex items-center justify-between p-3 rounded-xl border ${isToday ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/5'} hover:bg-white/5 transition-colors">
+                <div class="flex items-center justify-between p-3 rounded-xl border transition-colors" style="${isToday ? 'border-color:var(--day-accent);background:var(--day-glow2)' : 'border-color:var(--day-border)'}">
                     <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-8 h-8 rounded-full border border-white/10 object-cover flex-shrink-0" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
+                        <img src="${imgSrc}" class="w-8 h-8 rounded-full border object-cover flex-shrink-0" style="border-color:var(--day-border)" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
                         <div class="flex flex-col">
-                            <span class="text-[11px] font-black text-white uppercase">${uid}${isToday ? ' <span class="text-[8px] bg-yellow-500 text-black px-1.5 py-0.5 rounded font-black ml-1">🎂 TODAY</span>' : ''}</span>
+                            <span class="text-[11px] font-black text-white uppercase">${uid}${isToday ? ' <span class="text-[8px] text-black px-1.5 py-0.5 rounded font-black ml-1" style="background:var(--day-accent)">🎂 TODAY</span>' : ''}</span>
                             <span class="text-[9px] text-slate-500 font-bold uppercase">${u.role || 'Staff'}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${typeColor} uppercase">${bType}</span>
+                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded uppercase" style="${typeColor}">${bType}</span>
                         <span class="text-[10px] font-bold text-slate-300">${bDate}</span>
                     </div>
                 </div>`;
@@ -317,6 +860,9 @@ window.openProfileImagePicker = function() {
     }, 100);
 };
 
+/* ============================================================
+   SAVE ADMIN BIRTHDAY
+============================================================ */
 window.saveAdminBirthday = function() {
     const birthDate = document.getElementById('adminBirthDate').value;
     const birthType = document.getElementById('adminBirthType').value;
@@ -330,36 +876,47 @@ window.saveAdminBirthday = function() {
         saveBtn.disabled = false;
         saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
         if (typeof checkStaffBirthdays === 'function') checkStaffBirthdays();
-    }).catch(e => {
+    }).catch(() => {
         alert("Save failed");
         saveBtn.disabled = false;
         saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
     });
 };
 
+/* ============================================================
+   SAVE ADMIN PROFILE IMAGE
+============================================================ */
 window.saveAdminProfile = function(imgName) {
     const path = `images/profile/${imgName}`;
     if (!confirm("Would you like to change your admin profile to this image?")) return;
     db.ref('users/Admin').update({ profileImg: path, updatedAt: firebase.database.ServerValue.TIMESTAMP })
     .then(() => {
-        const timestamp = new Date().getTime();
-        document.querySelectorAll('.admin-profile-img').forEach(img => { img.src = `${path}?t=${timestamp}`; });
+        const ts = new Date().getTime();
+        document.querySelectorAll('.admin-profile-img').forEach(img => { img.src = `${path}?t=${ts}`; });
         closeAdminCustomModal();
     }).catch(e => { console.error(e); alert("Save failed"); });
 };
 
+/* ============================================================
+   PROFILE SYNC
+============================================================ */
 (function initProfileSync() {
     const checkDB = setInterval(() => {
         if (window.db) {
             clearInterval(checkDB);
             db.ref('users/Admin/profileImg').on('value', snap => {
                 const imgUrl = snap.val();
-                if (imgUrl) document.querySelectorAll('.admin-profile-img').forEach(img => { if (!img.src.includes(imgUrl)) img.src = imgUrl; });
+                if (imgUrl) document.querySelectorAll('.admin-profile-img').forEach(img => {
+                    if (!img.src.includes(imgUrl)) img.src = imgUrl;
+                });
             });
         }
     }, 100);
 })();
 
+/* ============================================================
+   WEATHER
+============================================================ */
 async function updateAdminWeather() {
     try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true');
@@ -377,16 +934,18 @@ async function updateAdminWeather() {
     } catch (e) { console.error("Weather Update Failed", e); }
 }
 
+/* ============================================================
+   BIRTHDAY CHECK
+============================================================ */
 async function checkStaffBirthdays() {
     const today = new Date();
-    const tMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const lunar = Lunar.fromDate(today);
-    const lMonthDay = `${String(lunar.getMonth()).padStart(2, '0')}-${String(lunar.getDay()).padStart(2, '0')}`;
+    const lMonthDay = `${String(lunar.getMonth()).padStart(2,'0')}-${String(lunar.getDay()).padStart(2,'0')}`;
 
     db.ref('users').once('value', snap => {
         const users = snap.val();
         if (!users) return;
-
         let birthdayMessages = [];
         Object.keys(users).forEach(id => {
             const u = users[id];
@@ -394,43 +953,34 @@ async function checkStaffBirthdays() {
             const bMonthDay = u.birthday.substring(5);
             const type = u.birthType || "Solar";
             const bDateFull = u.birthday.replace(/-/g, '.');
-
             const isSolarMatch = (type === "Solar" || type === "양력") && bMonthDay === tMonthDay;
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
-
-            if (isSolarMatch || isLunarMatch) {
-                birthdayMessages.push(`${id}: ${bDateFull}`);
-            }
+            if (isSolarMatch || isLunarMatch) birthdayMessages.push(`${id}: ${bDateFull}`);
         });
 
-        // 1. 사용할 모든 DOM 요소를 먼저 선언합니다. (ReferenceError 방지)
         const alertBox = document.getElementById('adminBirthdayAlert');
         const nameText = document.getElementById('adminBirthdayNames');
         const mobAlert = document.getElementById('mobileBirthdayAlert');
         const mobNames = document.getElementById('mobileBirthdayNames');
 
-        // 2. PC 버전 업데이트 (요소가 존재할 때만 실행)
         if (alertBox && nameText) {
             if (birthdayMessages.length > 0) {
                 alertBox.classList.remove('hidden');
                 nameText.innerHTML = birthdayMessages.join('<br>');
-            } else {
-                alertBox.classList.add('hidden');
-            }
+            } else { alertBox.classList.add('hidden'); }
         }
-
-        // 3. 모바일 버전 업데이트 (요소가 존재할 때만 실행)
         if (mobAlert && mobNames) {
             if (birthdayMessages.length > 0) {
                 mobAlert.classList.remove('hidden');
                 mobNames.innerHTML = birthdayMessages.join('<br>');
-            } else {
-                mobAlert.classList.add('hidden');
-            }
+            } else { mobAlert.classList.add('hidden'); }
         }
     });
 }
 
+/* ============================================================
+   SHOW ALL STAFF BIRTHDAYS
+============================================================ */
 window.showAllStaffBirthdays = function() {
     db.ref('users').once('value', snap => {
         const users = snap.val();
@@ -442,17 +992,17 @@ window.showAllStaffBirthdays = function() {
                 const bType = u.birthType || "Solar";
                 const bDate = u.birthday.replace(/-/g, '.');
                 const pImg = u.profileImg || 'image-001.webp';
-                const imgSrc = key === 'Admin' ? (pImg.includes('/') ? pImg : `images/profile/${pImg}`) : (pImg.includes('/') ? pImg : `images/profile/${pImg}`);
-                html += `<div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
+                const imgSrc = pImg.includes('/') ? pImg : `images/profile/${pImg}`;
+                html += `<div class="flex items-center justify-between p-3 rounded-2xl border transition-colors hover:opacity-90" style="border-color:var(--day-border);background:var(--day-glow2)">
                     <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-8 h-8 rounded-full border border-white/10 object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${key}'">
+                        <img src="${imgSrc}" class="w-8 h-8 rounded-full border object-cover" style="border-color:var(--day-border)" onerror="this.src='https://ui-avatars.com/api/?name=${key}'">
                         <div class="flex flex-col">
                             <span class="text-xs font-black text-white uppercase">${key}</span>
                             <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${u.role || 'Staff'}</span>
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-[10px] font-black text-blue-400 uppercase tracking-tighter italic">${bType}</div>
+                        <div class="text-[10px] font-black uppercase tracking-tighter italic" style="color:var(--day-accent3)">${bType}</div>
                         <div class="text-xs font-bold text-slate-300">${bDate}</div>
                     </div>
                 </div>`;
@@ -463,8 +1013,11 @@ window.showAllStaffBirthdays = function() {
     });
 };
 
+/* ============================================================
+   MODAL RESTORE
+============================================================ */
 function restoreCoreModalFunctions() {
-    window._coreModalRestored = true;  // ← 이 줄 추가
+    window._coreModalRestored = true;
 
     window.openAdminCustomModal = function(title, bodyHtml) {
         const ac = document.getElementById('adminContent');
@@ -485,7 +1038,6 @@ function restoreCoreModalFunctions() {
     };
 
     window.closeAdminCustomModal = function() {
-        // flatpickr 정리도 함께
         ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
             if (window[key]) { window[key].destroy(); window[key] = null; }
         });
@@ -495,30 +1047,37 @@ function restoreCoreModalFunctions() {
     };
 }
 
+/* ============================================================
+   TAB SWITCHER
+============================================================ */
 async function switchAdminTab(tab) {
-    // flatpickr 잔재 정리
     ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
         if (window[key]) { window[key].destroy(); window[key] = null; }
     });
     document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
 
-    // 열려있는 모달 닫기
     const existingModal = document.getElementById('adminCustomModal');
     if (existingModal) { existingModal.classList.add('hidden'); document.body.style.overflow = ''; }
 
     const area = document.getElementById('adminContent');
     if (!area) return;
-    area.innerHTML = '<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>';
+    area.innerHTML = `<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 day-spinner" style="border-color:var(--day-border);border-top-color:var(--day-accent)"></div></div>`;
 
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('tab-active', 'tab-inactive'));
-    document.getElementById(`btn-${tab}`)?.classList.add('tab-active');
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('tab-active');
+        b.classList.add('tab-inactive');
+    });
+    const activeBtn = document.getElementById(`btn-${tab}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('tab-inactive');
+        activeBtn.classList.add('tab-active');
+    }
 
     const mBtns = document.querySelectorAll('.mobile-nav button');
     mBtns.forEach(b => b.classList.remove('mobile-tab-active'));
-
     const idxMap = { dashboard:0, attendance:1, reports:2, vacation:3, schedule:4, workstat:5, statistic:6, settings:7 };
     const idx = idxMap[tab];
-    if (idx !== undefined) mBtns[idx].classList.add('mobile-tab-active');
+    if (idx !== undefined) mBtns[idx]?.classList.add('mobile-tab-active');
 
     const fileMap = {
         dashboard: 'admin_dashboard.html',
@@ -562,16 +1121,22 @@ async function switchAdminTab(tab) {
         setTimeout(() => restoreCoreModalFunctions(), 0);
 
     } catch (e) {
-        area.innerHTML = `<div class="p-10 text-center text-rose-500">Load Failed.</div>`;
+        area.innerHTML = `<div class="p-10 text-center font-bold" style="color:var(--day-accent)">Load Failed.</div>`;
     }
 }
 
+/* ============================================================
+   LOGOUT
+============================================================ */
 window.adminLogout = function() {
     if (confirm("Logout?")) {
         firebase.auth().signOut().then(() => window.location.replace("index.html"));
     }
 };
 
+/* ============================================================
+   INIT
+============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
     restoreCoreModalFunctions();
     updateAdminWeather();
@@ -581,6 +1146,5 @@ window.addEventListener('DOMContentLoaded', () => {
     setInterval(checkStaffBirthdays, 3600000);
 });
 </script>
-
 </body>
 </html>
