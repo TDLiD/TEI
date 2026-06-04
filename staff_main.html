@@ -905,12 +905,17 @@ const navigateTo = (page) => {
 
 const handleLogout = () => {
     if (confirm("Do you want to logout?")) {
-        sessionStorage.clear();
-        localStorage.removeItem('loggedInUser');
-        if (typeof firebase !== 'undefined' && firebase.auth) {
-            firebase.auth().signOut().finally(() => { location.replace('index.html'); });
-        } else {
+        const name = sessionStorage.getItem('loggedInUser');
+        const doLogout = () => {
+            sessionStorage.clear();
+            localStorage.removeItem('loggedInUser');
             location.replace('index.html');
+        };
+        if (name && database) {
+            database.ref('users/' + name).update({ online_sts: 'OFF' })
+                .then(doLogout).catch(doLogout);
+        } else {
+            doLogout();
         }
     }
 };

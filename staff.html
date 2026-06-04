@@ -1130,9 +1130,34 @@ function renderBirthdayModal() {
 /* ── Logout ── */
 window.logout = function() {
     if (!confirm("Log out?")) return;
-    sessionStorage.clear();
-    localStorage.removeItem('loggedInUser');
-    firebase.auth().signOut().finally(() => window.location.replace("index.html"));
+
+    const name = sessionStorage.getItem('loggedInUser');
+
+    // 로그아웃 공통 처리 함수
+    const doLogout = () => {
+        sessionStorage.clear();
+        localStorage.removeItem('loggedInUser');
+        
+        // Firebase Auth 로그아웃 후 페이지 이동
+        firebase.auth().signOut().finally(() => {
+            window.location.replace("index.html");
+        });
+    };
+
+    // Firebase Realtime Database 인스턴스 확인 (기존 코드의 database 또는 db 변수명에 맞춰 사용하세요)
+    // 여기서는 표준적인 firebase.database()를 기준으로 작성했습니다.
+    const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+    if (name && db) {
+        db.ref('users/' + name).update({ online_sts: 'OFF' })
+            .then(doLogout)
+            .catch((error) => {
+                console.error("Status update failed:", error);
+                doLogout(); // 에러가 발생해도 로그아웃은 진행
+            });
+    } else {
+        doLogout();
+    }
 };
 
 /* ── Init ── */

@@ -1295,8 +1295,11 @@ body.day-fri .birthday-inner { background: rgba(10,2,25,0.97); border: 2px solid
             if (ud.password === pw) {
                 sessionStorage.setItem('loggedInUser', name);
                 sessionStorage.setItem('userRole', ud.role);
-                database.ref('users/' + name).update({ lastLogin: new Date().toISOString() });
-                showGhostEffect(ud.profileImg, name, ud.role);
+database.ref('users/' + name).update({
+    lastLogin: new Date().toISOString(),
+    online_sts: 'ON'
+});
+showGhostEffect(ud.profileImg, name, ud.role);
             } else {
                 alert("Incorrect password.");
             }

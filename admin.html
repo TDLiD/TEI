@@ -20,7 +20,7 @@
            0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
         ===================================================== */
 
-        /* MON - Deep Navy Steel: Cold industrial blue */
+        /* MON - Deep Navy Steel */
         body.day-1 {
             --day-accent: #3b82f6;
             --day-accent2: #1d4ed8;
@@ -30,12 +30,21 @@
             --day-border: rgba(59,130,246,0.25);
             --day-surface: rgba(15,23,42,0.95);
             --day-card: rgba(15,23,42,0.8);
-            --day-name: "MONDAY";
-            --day-label: "MON";
             --panel-bg: linear-gradient(160deg, #050e1f 0%, #0a1628 50%, #07112a 100%);
             --aside-bg: linear-gradient(180deg, #04091a 0%, #071022 60%, #060e1e 100%);
+            /* Online panel unique per day */
+            --online-bg: linear-gradient(135deg, rgba(5,14,31,0.98) 0%, rgba(10,22,40,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(59,130,246,0.15) 100%);
+            --online-item-bg: rgba(59,130,246,0.06);
+            --online-item-hover: rgba(59,130,246,0.12);
+            --online-pulse: #3b82f6;
+            --online-scan: rgba(59,130,246,0.08);
+            --online-dot-color: #22d3ee;
+            --online-time-color: #38bdf8;
+            --online-label: "NETWORK ONLINE";
+            --online-icon: "📡";
         }
-        /* TUE - Dark Emerald Forge: Deep green factory */
+        /* TUE - Dark Emerald Forge */
         body.day-2 {
             --day-accent: #10b981;
             --day-accent2: #047857;
@@ -47,8 +56,18 @@
             --day-card: rgba(3,16,12,0.8);
             --panel-bg: linear-gradient(160deg, #021008 0%, #041a10 50%, #031410 100%);
             --aside-bg: linear-gradient(180deg, #020c06 0%, #04140a 60%, #030e08 100%);
+            --online-bg: linear-gradient(135deg, rgba(2,10,8,0.98) 0%, rgba(4,26,16,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(4,120,87,0.3) 0%, rgba(16,185,129,0.15) 100%);
+            --online-item-bg: rgba(16,185,129,0.06);
+            --online-item-hover: rgba(16,185,129,0.12);
+            --online-pulse: #10b981;
+            --online-scan: rgba(16,185,129,0.08);
+            --online-dot-color: #6ee7b7;
+            --online-time-color: #34d399;
+            --online-label: "SYSTEM ACTIVE";
+            --online-icon: "🖥️";
         }
-        /* WED - Crimson Obsidian: Deep blood red */
+        /* WED - Crimson Obsidian */
         body.day-3 {
             --day-accent: #ef4444;
             --day-accent2: #b91c1c;
@@ -60,8 +79,18 @@
             --day-card: rgba(18,4,4,0.8);
             --panel-bg: linear-gradient(160deg, #100303 0%, #1a0505 50%, #140404 100%);
             --aside-bg: linear-gradient(180deg, #0c0202 0%, #160404 60%, #100303 100%);
+            --online-bg: linear-gradient(135deg, rgba(16,3,3,0.98) 0%, rgba(26,5,5,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(185,28,28,0.3) 0%, rgba(239,68,68,0.15) 100%);
+            --online-item-bg: rgba(239,68,68,0.06);
+            --online-item-hover: rgba(239,68,68,0.12);
+            --online-pulse: #ef4444;
+            --online-scan: rgba(239,68,68,0.08);
+            --online-dot-color: #fca5a5;
+            --online-time-color: #f87171;
+            --online-label: "ALERT ACTIVE";
+            --online-icon: "🔴";
         }
-        /* THU - Violet Abyss: Dark purple cosmos */
+        /* THU - Violet Abyss */
         body.day-4 {
             --day-accent: #a855f7;
             --day-accent2: #7c3aed;
@@ -73,8 +102,18 @@
             --day-card: rgba(10,4,18,0.8);
             --panel-bg: linear-gradient(160deg, #080313 0%, #0f0520 50%, #0a0418 100%);
             --aside-bg: linear-gradient(180deg, #06020f 0%, #0d041a 60%, #090315 100%);
+            --online-bg: linear-gradient(135deg, rgba(8,3,19,0.98) 0%, rgba(15,5,32,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(124,58,237,0.3) 0%, rgba(168,85,247,0.15) 100%);
+            --online-item-bg: rgba(168,85,247,0.06);
+            --online-item-hover: rgba(168,85,247,0.12);
+            --online-pulse: #a855f7;
+            --online-scan: rgba(168,85,247,0.08);
+            --online-dot-color: #d8b4fe;
+            --online-time-color: #c084fc;
+            --online-label: "COSMIC LINK";
+            --online-icon: "🌌";
         }
-        /* FRI - Amber Furnace: Dark gold forge */
+        /* FRI - Amber Furnace */
         body.day-5 {
             --day-accent: #f59e0b;
             --day-accent2: #d97706;
@@ -86,8 +125,18 @@
             --day-card: rgba(18,12,2,0.8);
             --panel-bg: linear-gradient(160deg, #100900 0%, #1a1000 50%, #140c00 100%);
             --aside-bg: linear-gradient(180deg, #0c0700 0%, #160e00 60%, #100900 100%);
+            --online-bg: linear-gradient(135deg, rgba(16,9,0,0.98) 0%, rgba(26,16,0,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(217,119,6,0.3) 0%, rgba(245,158,11,0.15) 100%);
+            --online-item-bg: rgba(245,158,11,0.06);
+            --online-item-hover: rgba(245,158,11,0.12);
+            --online-pulse: #f59e0b;
+            --online-scan: rgba(245,158,11,0.08);
+            --online-dot-color: #fde68a;
+            --online-time-color: #fcd34d;
+            --online-label: "FORGE ONLINE";
+            --online-icon: "🔥";
         }
-        /* SAT/SUN fallback - Slate Void */
+        /* SAT/SUN - Slate Void */
         body.day-0, body.day-6 {
             --day-accent: #64748b;
             --day-accent2: #475569;
@@ -99,6 +148,16 @@
             --day-card: rgba(7,9,13,0.8);
             --panel-bg: linear-gradient(160deg, #050709 0%, #080a0f 50%, #060809 100%);
             --aside-bg: linear-gradient(180deg, #040508 0%, #070910 60%, #050709 100%);
+            --online-bg: linear-gradient(135deg, rgba(5,7,9,0.98) 0%, rgba(8,10,15,0.95) 100%);
+            --online-header-bg: linear-gradient(90deg, rgba(71,85,105,0.3) 0%, rgba(100,116,139,0.15) 100%);
+            --online-item-bg: rgba(100,116,139,0.06);
+            --online-item-hover: rgba(100,116,139,0.10);
+            --online-pulse: #64748b;
+            --online-scan: rgba(100,116,139,0.06);
+            --online-dot-color: #cbd5e1;
+            --online-time-color: #94a3b8;
+            --online-label: "STANDBY MODE";
+            --online-icon: "🌑";
         }
 
         /* =====================================================
@@ -116,7 +175,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated background grid */
         body::before {
             content: '';
             position: fixed;
@@ -135,7 +193,6 @@
             100% { background-position: 60px 60px; }
         }
 
-        /* Radial ambient glow */
         body::after {
             content: '';
             position: fixed;
@@ -206,7 +263,6 @@
         aside nav.flex::-webkit-scrollbar-thumb { background: var(--day-accent); border-radius: 99px; }
         aside > button:last-child { flex-shrink: 0; }
 
-        /* Sidebar brand */
         .brand-title {
             font-size: 1.4rem;
             font-weight: 900;
@@ -216,7 +272,6 @@
         }
         .brand-accent { color: var(--day-accent); }
 
-        /* Profile card */
         .profile-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--day-border);
@@ -227,7 +282,6 @@
                 0 0 30px var(--day-glow2);
         }
 
-        /* Profile image container */
         .profile-img-wrap {
             border: 2px solid var(--day-accent);
             box-shadow:
@@ -244,13 +298,11 @@
             transform: scale(1.05);
         }
 
-        /* Edit badge */
         .edit-badge {
             background: var(--day-accent);
             box-shadow: 0 0 10px var(--day-glow), 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Weather chip */
         .weather-chip {
             background: rgba(0,0,0,0.3);
             border: 1px solid var(--day-border);
@@ -258,7 +310,6 @@
         }
         .weather-temp { color: var(--day-accent3) !important; }
 
-        /* Online dot */
         .online-dot {
             background: var(--day-accent);
             box-shadow: 0 0 6px var(--day-glow), 0 0 12px var(--day-glow);
@@ -308,7 +359,6 @@
             border-color: rgba(255,255,255,0.05);
         }
 
-        /* Day indicator badge in sidebar */
         .day-badge {
             display: inline-flex;
             align-items: center;
@@ -371,11 +421,8 @@
         /* =====================================================
            MAIN CONTENT AREA
         ===================================================== */
-        main {
-            background: transparent;
-        }
+        main { background: transparent; }
 
-        /* Day header strip in main */
         .day-strip {
             display: flex;
             align-items: center;
@@ -448,7 +495,6 @@
             background: var(--day-glow);
         }
 
-        /* Logout button */
         .logout-btn {
             color: #475569;
             transition: all 0.2s ease;
@@ -461,7 +507,6 @@
             border-color: rgba(239,68,68,0.2);
         }
 
-        /* Separator line */
         .aside-separator {
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--day-border), transparent);
@@ -478,23 +523,14 @@
             .mobile-nav { display: grid !important; }
         }
 
-        /* =====================================================
-           SCROLLBAR
-        ===================================================== */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
-        /* =====================================================
-           ANIMATIONS
-        ===================================================== */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .fade-in-up { animation: fadeInUp 0.4s ease both; }
 
-        /* =====================================================
-           PROFILE PICKER
-        ===================================================== */
         .profile-picker-item {
             transition: all 0.2s;
             border: 2px solid transparent;
@@ -508,7 +544,6 @@
             box-shadow: 0 0 12px var(--day-glow);
         }
 
-        /* admin profile containers */
         .admin-profile-img-container {
             width: 45px !important;
             height: 45px !important;
@@ -521,24 +556,19 @@
             }
         }
 
-        /* Typing cursor */
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* Birthday alert */
         #mobile-birthday-dot.active { display: block !important; }
 
-        /* Birthday section accent */
         #adminBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
         #mobileBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
 
-        /* Horizontal rule in sidebar */
         .special-tab {
             color: var(--day-accent) !important;
             font-weight: 900;
         }
 
-        /* TDLiD link */
         .tdlid-link {
             color: var(--day-accent3) !important;
             transition: all 0.2s;
@@ -550,10 +580,275 @@
             border-color: var(--day-border);
         }
 
-        /* Loading spinner uses accent color */
         .day-spinner {
             border-color: var(--day-border);
             border-top-color: var(--day-accent);
+        }
+
+        /* =====================================================
+           ONLINE USERS PANEL — day-themed
+        ===================================================== */
+        #onlineUsersPanel {
+            background: var(--online-bg);
+            border: 1px solid var(--day-border);
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px var(--day-border),
+                0 4px 20px rgba(0,0,0,0.5),
+                inset 0 0 30px var(--online-scan);
+            position: relative;
+        }
+
+        /* scanning line animation */
+        #onlineUsersPanel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--online-scan), transparent);
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes scanline {
+            0% { left: -60%; }
+            100% { left: 160%; }
+        }
+
+        .online-panel-header {
+            background: var(--online-header-bg);
+            border-bottom: 1px solid var(--day-border);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+        .online-panel-title {
+            font-size: 0.6rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            color: var(--day-accent3);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .online-count-badge {
+            font-size: 0.55rem;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: var(--day-accent);
+            color: #000;
+            letter-spacing: 0.05em;
+            min-width: 18px;
+            text-align: center;
+            box-shadow: 0 0 8px var(--day-glow);
+            animation: countPop 0.3s ease;
+        }
+        @keyframes countPop {
+            0% { transform: scale(0.7); }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #onlineUsersList {
+            position: relative;
+            z-index: 1;
+            max-height: 180px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        #onlineUsersList::-webkit-scrollbar { display: none; }
+
+        .online-user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 8px;
+            border-radius: 0.6rem;
+            background: var(--online-item-bg);
+            border: 1px solid transparent;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            animation: slideInUser 0.35s ease both;
+        }
+        @keyframes slideInUser {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .online-user-item:hover {
+            background: var(--online-item-hover);
+            border-color: var(--day-border);
+            transform: translateX(2px);
+        }
+        .online-user-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 2px;
+            background: var(--online-pulse);
+            border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 6px var(--day-glow);
+        }
+
+        .online-user-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid var(--day-border);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 0 8px var(--day-glow2);
+        }
+        .online-user-name {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex: 1;
+            truncate: true;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .online-user-time {
+            font-size: 0.52rem;
+            font-weight: 700;
+            color: var(--online-time-color);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .online-user-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--online-dot-color);
+            box-shadow: 0 0 5px var(--online-dot-color);
+            flex-shrink: 0;
+            animation: livePulse 1.8s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--online-dot-color); }
+            50% { opacity: 0.5; box-shadow: 0 0 2px var(--online-dot-color); }
+        }
+
+        /* empty state */
+        .online-empty {
+            text-align: center;
+            padding: 14px 8px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* =====================================================
+           MOBILE ONLINE USERS PANEL
+        ===================================================== */
+        #mobileOnlinePanel {
+            background: var(--online-bg);
+            border-bottom: 1px solid var(--day-border);
+            border-top: 1px solid var(--day-border);
+            overflow: hidden;
+            position: relative;
+        }
+        #mobileOnlinePanel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--online-scan), transparent);
+            animation: scanline 5s linear infinite;
+            pointer-events: none;
+        }
+        .mobile-online-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .mobile-online-inner::-webkit-scrollbar { display: none; }
+        .mobile-online-label {
+            font-size: 0.5rem;
+            font-weight: 900;
+            color: var(--day-accent3);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .mobile-online-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--day-border);
+            flex-shrink: 0;
+        }
+        .mobile-online-user {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: var(--online-item-bg);
+            border: 1px solid var(--day-border);
+            flex-shrink: 0;
+            white-space: nowrap;
+            animation: fadeInChip 0.3s ease both;
+        }
+        @keyframes fadeInChip {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .mobile-online-user img {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--day-border);
+        }
+        .mobile-online-user-name {
+            font-size: 0.5rem;
+            font-weight: 900;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .mobile-online-user-time {
+            font-size: 0.45rem;
+            color: var(--online-time-color);
+            font-weight: 700;
+        }
+        .mobile-online-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--online-dot-color);
+            box-shadow: 0 0 4px var(--online-dot-color);
+            animation: livePulse 1.8s ease-in-out infinite;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -561,40 +856,56 @@
 <body class="flex min-h-screen">
 
 <!-- MOBILE HEADER -->
-<header class="mobile-header fixed top-0 left-0 right-0 h-14 z-40 hidden items-center px-4 justify-between">
-    <div class="flex items-center gap-3">
-        <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
-            <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
-                <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img"
-                     onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+<header class="mobile-header fixed top-0 left-0 right-0 z-40 hidden flex-col">
+    <!-- main header row -->
+    <div class="flex items-center px-4 h-14 justify-between">
+        <div class="flex items-center gap-3">
+            <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
+                <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
+                    <img src="images/profile/image-01.jfif" alt="Admin" class="w-full h-full object-cover admin-profile-img"
+                         onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 edit-badge rounded-full border border-slate-950 flex items-center justify-center text-[8px]">✏️</div>
             </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 edit-badge rounded-full border border-slate-950 flex items-center justify-center text-[8px]">✏️</div>
+
+            <div class="flex flex-col">
+                <h1 class="brand-title text-sm leading-none">ADMIN <span class="brand-accent">SYSTEM</span></h1>
+
+                <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
+                    <span class="text-[9px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                    <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+                </div>
+
+                <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
+                    <span class="weather-icon text-[10px]">☀️</span>
+                    <span class="weather-temp text-[9px] font-bold">--°C</span>
+                    <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
+                </div>
+            </div>
         </div>
 
-        <div class="flex flex-col">
-            <h1 class="brand-title text-sm leading-none">ADMIN <span class="brand-accent">SYSTEM</span></h1>
-
-            <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
-                <span class="text-[9px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-                <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
+        <div class="flex items-center gap-3">
+            <div class="day-badge hidden md:flex" id="mobileDayBadge">
+                <span class="day-badge-dot"></span>
+                <span id="mobileDayLabel">MON</span>
             </div>
-
-            <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
-                <span class="weather-icon text-[10px]">☀️</span>
-                <span class="weather-temp text-[9px] font-bold">--°C</span>
-                <span class="text-[8px] text-slate-500 font-bold uppercase ml-0.5">JKT</span>
-            </div>
+            <a href="https://tdlid.github.io" target="_blank" class="tdlid-link px-2 py-1 text-sm font-bold">🌐</a>
+            <button onclick="adminLogout()" class="logout-btn px-2 py-1 text-lg">➡️</button>
         </div>
     </div>
 
-    <div class="flex items-center gap-3">
-        <!-- Day Badge mobile -->
-        <div class="day-badge hidden md:flex" id="mobileDayBadge">
-            <span class="day-badge-dot"></span>
-            <span id="mobileDayLabel">MON</span>
+    <!-- mobile online users strip -->
+    <div id="mobileOnlinePanel">
+        <div class="mobile-online-inner">
+            <div class="mobile-online-label">
+                <span class="mobile-online-dot"></span>
+                <span>LIVE</span>
+            </div>
+            <div class="mobile-online-divider"></div>
+            <div id="mobileOnlineList" class="flex items-center gap-2">
+                <span class="text-[9px] text-slate-600 font-bold uppercase">Loading...</span>
+            </div>
         </div>
-        <a href="https://tdlid.github.io" target="_blank" class="tdlid-link px-2 py-1 text-sm font-bold">🌐</a>
-        <button onclick="adminLogout()" class="logout-btn px-2 py-1 text-lg">➡️</button>
     </div>
 </header>
 
@@ -614,7 +925,7 @@
 <aside class="hidden md:flex w-72 p-6 sticky top-0 h-screen flex-col min-h-0">
 
     <!-- Brand + Day Badge -->
-    <div class="mb-8">
+    <div class="mb-6">
         <div class="flex items-center justify-between mb-5">
             <h1 class="brand-title">ADMIN <span class="brand-accent">SYSTEM</span></h1>
             <div class="day-badge" id="sidebarDayBadge">
@@ -638,20 +949,17 @@
                 <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Administrator</div>
                 <div class="text-sm font-black text-white truncate uppercase tracking-tight">Master Manager</div>
 
-                <!-- Weather -->
                 <div class="weather-chip flex items-center gap-2 mt-2 py-1 px-2 rounded-lg w-fit">
                     <span class="weather-icon text-xs">☀️</span>
                     <span class="weather-temp text-[11px] font-bold tracking-tighter">--°C</span>
                     <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
                 </div>
 
-                <!-- Birthday Alert -->
                 <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2">
                     <span class="text-[10px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
                     <span id="adminBirthdayNames" class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-0.5 leading-tight"></span>
                 </div>
 
-                <!-- Online indicator -->
                 <div class="inline-flex items-center gap-1.5 mt-2">
                     <span class="w-1.5 h-1.5 rounded-full online-dot animate-pulse"></span>
                     <span class="text-[10px] font-bold uppercase tracking-widest online-text">Online</span>
@@ -662,6 +970,22 @@
 
     <!-- Nav -->
     <nav class="flex flex-col gap-0.5 flex-1 min-h-0 overflow-y-auto">
+
+        <!-- ★ ONLINE USERS PANEL — above dashboard ★ -->
+        <div id="onlineUsersPanel">
+            <div class="online-panel-header">
+                <div class="online-panel-title">
+                    <span class="mobile-online-dot"></span>
+                    <span id="onlinePanelLabel">CONNECTED NOW</span>
+                </div>
+                <span class="online-count-badge" id="onlineCountBadge">0</span>
+            </div>
+            <div id="onlineUsersList">
+                <div class="online-empty">SCANNING...</div>
+            </div>
+        </div>
+        <!-- /ONLINE USERS PANEL -->
+
         <button id="btn-dashboard"  onclick="switchAdminTab('dashboard')"  class="tab-btn tab-inactive px-4 py-3 text-left">📊 DASHBOARD</button>
         <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn tab-inactive px-4 py-3 text-left">👤 ATTENDANCE</button>
         <button id="btn-reports"    onclick="switchAdminTab('reports')"    class="tab-btn tab-inactive px-4 py-3 text-left">📝 WORK REPORT</button>
@@ -705,15 +1029,13 @@
 
 <script>
 /* ============================================================
-   DAY THEME INIT — runs immediately
+   DAY THEME INIT
 ============================================================ */
 (function applyDayTheme() {
-    const day = new Date().getDay(); // 0=Sun … 6=Sat
+    const day = new Date().getDay();
     document.body.classList.add('day-' + day);
     const dayNames = { 0:'SUN', 1:'MON', 2:'TUE', 3:'WED', 4:'THU', 5:'FRI', 6:'SAT' };
     const label = dayNames[day] || 'MON';
-
-    // Set labels once DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
         ['sidebarDayLabel','mobileDayLabel'].forEach(id => {
             const el = document.getElementById(id);
@@ -1130,9 +1452,211 @@ async function switchAdminTab(tab) {
 ============================================================ */
 window.adminLogout = function() {
     if (confirm("Logout?")) {
-        firebase.auth().signOut().then(() => window.location.replace("index.html"));
+        const name = sessionStorage.getItem('loggedInUser');
+        const doLogout = () => {
+            sessionStorage.clear();
+            window.location.replace("index.html");
+        };
+        if (name) {
+            db.ref('users/' + name).update({ online_sts: 'OFF' })
+                .then(doLogout).catch(doLogout);
+        } else {
+            doLogout();
+        }
     }
 };
+
+/* ============================================================
+   ONLINE USERS TRACKER
+   - Reads from Firebase: presence/{uid} = { name, lastSeen, profileImg, role }
+   - Falls back to users/{uid} if presence node absent
+   - Considers "online" = lastSeen within last 5 minutes
+============================================================ */
+(function initOnlineTracker() {
+    const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
+    /* ---- day-specific panel labels ---- */
+    const DAY_LABELS = {
+        0: '🌑 STANDBY', 1: '📡 NETWORK', 2: '🖥️ ACTIVE',
+        3: '🔴 ALERT', 4: '🌌 COSMIC', 5: '🔥 FORGE', 6: '🌙 OFFLINE'
+    };
+    const dayOfWeek = new Date().getDay();
+
+    /* Format elapsed time as short string */
+    function formatElapsed(ms) {
+        const s = Math.floor(ms / 1000);
+        if (s < 60) return `${s}s ago`;
+        const m = Math.floor(s / 60);
+        if (m < 60) return `${m}m ago`;
+        const h = Math.floor(m / 60);
+        return `${h}h ago`;
+    }
+
+    /* Format to HH:MM */
+    function formatHHMM(ts) {
+        const d = new Date(ts);
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    /* Render sidebar panel */
+    function renderSidebarOnline(users) {
+        const listEl = document.getElementById('onlineUsersList');
+        const countEl = document.getElementById('onlineCountBadge');
+        const labelEl = document.getElementById('onlinePanelLabel');
+        if (!listEl) return;
+
+        if (labelEl) labelEl.textContent = DAY_LABELS[dayOfWeek] || 'CONNECTED';
+
+        const now = Date.now();
+        const online = users.filter(u => (now - u.lastSeen) < ONLINE_THRESHOLD_MS)
+                            .sort((a, b) => b.lastSeen - a.lastSeen);
+
+        if (countEl) {
+            countEl.textContent = online.length;
+            // re-trigger pop animation
+            countEl.classList.remove('countPop-trigger');
+            void countEl.offsetWidth;
+            countEl.classList.add('countPop-trigger');
+        }
+
+        if (online.length === 0) {
+            listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`;
+            return;
+        }
+
+        listEl.innerHTML = online.map((u, i) => {
+            const elapsed = now - u.lastSeen;
+            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
+            const loginStr = formatHHMM(u.loginTime || u.lastSeen);
+            const imgSrc = u.profileImg
+                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b&size=64`;
+            const isLive = elapsed < 120000;
+            return `<div class="online-user-item" style="animation-delay:${i * 0.05}s">
+                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name}"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
+                <div class="flex flex-col flex-1 min-w-0">
+                    <span class="online-user-name">${u.name}</span>
+                    <span style="font-size:0.48rem;color:#475569;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">${u.role || 'Staff'} · IN ${loginStr}</span>
+                </div>
+                <div class="flex flex-col items-end gap-0.5">
+                    <span class="online-user-time">${timeStr}</span>
+                    ${isLive ? '<span class="online-user-dot"></span>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* Render mobile strip */
+    function renderMobileOnline(users) {
+        const listEl = document.getElementById('mobileOnlineList');
+        if (!listEl) return;
+
+        const now = Date.now();
+        const online = users.filter(u => (now - u.lastSeen) < ONLINE_THRESHOLD_MS)
+                            .sort((a, b) => b.lastSeen - a.lastSeen);
+
+        if (online.length === 0) {
+            listEl.innerHTML = `<span class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">NO SESSIONS</span>`;
+            return;
+        }
+
+        listEl.innerHTML = online.map((u, i) => {
+            const elapsed = Date.now() - u.lastSeen;
+            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
+            const imgSrc = u.profileImg
+                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b&size=32`;
+            return `<div class="mobile-online-user" style="animation-delay:${i * 0.06}s">
+                <img src="${imgSrc}" alt="${u.name}"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
+                <span class="mobile-online-user-name">${u.name}</span>
+                <span class="mobile-online-user-time">${timeStr}</span>
+                ${elapsed < 120000 ? '<span class="mobile-online-dot"></span>' : ''}
+            </div>`;
+        }).join('');
+    }
+
+/* Fetch and merge presence + user data -> Filter by users online_sts */
+    function fetchOnlineUsers() {
+        if (!window.db) return;
+
+        const now = Date.now();
+
+        // users 노드를 조회하여 online_sts가 'ON'인 유저만 필터링합니다.
+        db.ref('users').once('value').then(usersSnap => {
+            const usersData = usersSnap ? (usersSnap.val() || {}) : {};
+            let userList = [];
+
+            Object.keys(usersData).forEach(uid => {
+                const u = usersData[uid];
+                // online_sts가 'ON'인 스태프만 목록에 포함
+                if (u && u.online_sts === 'ON') {
+                    const lastSeen = u.lastSeen || u.lastOnline || u.updatedAt || now;
+                    userList.push({
+                        name: u.name || uid,
+                        role: u.role || 'Staff',
+                        profileImg: u.profileImg || '',
+                        lastSeen: typeof lastSeen === 'number' ? lastSeen : now,
+                        loginTime: u.loginTime || u.connectedAt || lastSeen
+                    });
+                }
+            });
+
+            renderSidebarOnline(userList);
+            renderMobileOnline(userList);
+        }).catch(err => console.error("Fetch online users error:", err));
+    }
+
+    /* Live listener on users node tracking online_sts */
+    function startPresenceListener() {
+        if (!window.db) return;
+
+        // 실시간으로 users 노드의 상태 변화를 감지합니다.
+        db.ref('users').on('value', snap => {
+            const usersData = snap.val() || {};
+            const now = Date.now();
+            let userList = [];
+
+            Object.keys(usersData).forEach(uid => {
+                const u = usersData[uid];
+                // online_sts가 'ON'인 스태프 실시간 필터링
+                if (u && u.online_sts === 'ON') {
+                    const lastSeen = u.lastSeen || u.lastOnline || u.updatedAt || now;
+                    userList.push({
+                        name: u.name || uid,
+                        role: u.role || 'Staff',
+                        profileImg: u.profileImg || '',
+                        lastSeen: typeof lastSeen === 'number' ? lastSeen : now,
+                        loginTime: u.loginTime || u.connectedAt || lastSeen
+                    });
+                }
+            });
+
+            renderSidebarOnline(userList);
+            renderMobileOnline(userList);
+        });
+    }
+
+    /* Init with delay to ensure db is ready */
+    function initWhenReady() {
+        if (window.db) {
+            fetchOnlineUsers();
+            startPresenceListener();
+            // Refresh elapsed time labels every 30s
+            setInterval(() => {
+                if (!window.db) return;
+                fetchOnlineUsers();
+            }, 30000);
+        } else {
+            setTimeout(initWhenReady, 300);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initWhenReady, 500);
+    });
+})();
 
 /* ============================================================
    INIT
