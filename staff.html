@@ -627,6 +627,13 @@
                     class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-2">
                 🖐️ Logout 🔓
             </button>
+
+<li class="px-6 py-2 text-center">
+    <div class="text-xs text-gray-400 font-mono bg-black/20 rounded py-1 inline-block px-3">
+        Up to automatic logout: <span id="logout-timer" class="text-amber-400 font-bold">10:00</span>
+    </div>
+</li>
+
         </div>
 
         <!-- Nav -->
@@ -975,6 +982,8 @@ window.switchTab = function(t) {
 window.loadHTML = async function(u) {
     try {
         const f = document.getElementById('contentFrame');
+        if (!f) return;
+        
         // 로딩 스피너 표시
         f.innerHTML = `<div class="flex items-center justify-center h-64"><div class="w-10 h-10 border-4 rounded-full animate-spin day-spin"></div></div>`;
         
@@ -984,38 +993,51 @@ window.loadHTML = async function(u) {
         // 1. 컨텐츠 삽입
         f.innerHTML = h;
 
-        // 2. 브라우저가 DOM을 파싱하고 렌더링할 시간을 줍니다.
-        // requestAnimationFrame은 다음 화면 갱신 직전에 실행되므로 DOM 안정성을 높여줍니다.
-        requestAnimationFrame(() => {
+        // 2. [수정] setTimeout(..., 50)을 사용하여 브라우저가 
+        // 하위 HTML 태그들을 완벽하게 DOM 구조로 파싱하고 렌더링할 절대적 시간을 확보합니다.
+        setTimeout(() => {
             const fc = document.getElementById('footerContainer');
             if (fc && !fc.innerHTML) {
                 fetch('staff_footer.html').then(fr => {
                     if (fr.ok) return fr.text();
                 }).then(footerHtml => {
-                    if (footerHtml) fc.innerHTML = footerHtml;
+                    if (footerHtml && fc) fc.innerHTML = footerHtml;
                 });
             }
 
-            // 3. 요소들이 확실히 존재할 때 스크립트 실행
+            // 3. 요소들이 확실히 렌더링 완료되어 존재할 때 내부 스크립트 순차 실행
             try {
                 executeScripts(f);
             } catch (scriptError) {
-                console.error("스크립트 실행 중 오류 발생:", scriptError);
+                console.error("서브 페이지 스크립트 실행 중 오류 발생:", scriptError);
             }
-        });
+        }, 50); // 50ms의 안전 지연 시간을 부여하여 비동기 타이밍 문제를 해결합니다.
 
     } catch(e) {
         console.error("페이지 로드 실패:", e);
-        document.getElementById('contentFrame').innerHTML = 
-            `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
+        const f = document.getElementById('contentFrame');
+        if (f) {
+            f.innerHTML = `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
+        }
     }
 };
 
 function executeScripts(con) {
+    if (!con) return;
     con.querySelectorAll('script').forEach(os => {
         const ns = document.createElement('script');
+        // 기존 스크립트의 속성들을 안전하게 복사
         Array.from(os.attributes).forEach(at => ns.setAttribute(at.name, at.value));
-        if (os.src) { ns.src = os.src; ns.async = false; } else { ns.textContent = os.textContent; }
+        
+        if (os.src) { 
+            ns.src = os.src; 
+            ns.async = false; 
+        } else { 
+            // [수정] 개별 스크립트 내에서도 실행 시 요소가 없을 때 
+            // 런타임 오류가 나서 멈추는 것을 방지하기 위해 Null Check 가드 코드를 전역 래핑할 수 있습니다.
+            ns.textContent = os.textContent; 
+        }
+        
         document.head.appendChild(ns).parentNode.removeChild(ns);
     });
 }
@@ -1126,6 +1148,104 @@ function renderBirthdayModal() {
     html += `</div>`;
     openProfileModal('Staff Birthdays', html);
 }
+
+/* ── [추가] 10분 미활동 자동 로그아웃 및 타이머 로직 ── */
+(function() {
+    const INACTIVE_TIMEOUT = 10 * 60 * 1000; // 10분 (밀리초)
+    let remainingTime = INACTIVE_TIMEOUT;
+    let timerInterval = null;
+    let logoutTimeout = null;
+
+    // 타이머 UI 업데이트 함수
+    function updateTimerUI() {
+        const timerEl = document.getElementById('logout-timer');
+        if (!timerEl) return;
+
+        const minutes = Math.floor(remainingTime / 60000);
+        const seconds = Math.floor((remainingTime % 60000) / 1000);
+        
+        // 00:00 포맷팅
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    // 타이머 리셋 함수 (사용자 활동 감지 시 호출)
+    function resetInactivityTimer() {
+        remainingTime = INACTIVE_TIMEOUT;
+        updateTimerUI();
+
+        // 기존 타이머 클리어
+        if (logoutTimeout) clearTimeout(logoutTimeout);
+        if (timerInterval) clearInterval(timerInterval);
+
+        // 1초마다 남은 시간 감소 및 UI 갱신
+        timerInterval = setInterval(() => {
+            remainingTime -= 1000;
+            if (remainingTime <= 0) {
+                clearInterval(timerInterval);
+            }
+            updateTimerUI();
+        }, 1000);
+
+// 10분 뒤 자동 로그아웃 실행 (수정본)
+        logoutTimeout = setTimeout(() => {
+            if (typeof window.logout === 'function') {
+                // [중요] 세션을 지우기 전에 유저명을 먼저 안전하게 변수에 확보합니다.
+                const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+                
+                // 후속 처리를 담당할 로그아웃 공통 함수
+                const finalizeLogout = () => {
+                    sessionStorage.clear();
+                    localStorage.removeItem('loggedInUser');
+                    firebase.auth().signOut().finally(() => {
+                        window.location.replace("index.html");
+                    });
+                };
+                
+                const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+                
+                // 유저 정보와 DB가 확인되면 상태를 먼저 'OFF'로 변경한 뒤 로그아웃을 진행합니다.
+                if (name && db) {
+                    db.ref('users/' + name).update({ online_sts: 'OFF' })
+                        .then(finalizeLogout)
+                        .catch((err) => {
+                            console.error("Auto logout status update failed:", err);
+                            finalizeLogout();
+                        });
+                } else {
+                    finalizeLogout();
+                }
+            }
+        }, INACTIVE_TIMEOUT);
+    }
+
+    // 사용자 활동 이벤트 리스너 등록
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    activityEvents.forEach(event => {
+        window.addEventListener(event, resetInactivityTimer, { passive: true });
+    });
+
+    // 페이지 로드 시 타이머 최초 실행
+    document.addEventListener('DOMContentLoaded', () => {
+        resetInactivityTimer();
+    });
+})();
+
+/* ── [추가 추천] 브라우저 강제 종료 및 네트워크 단절 대응 ── */
+function setupDisconnectHook() {
+    const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+    if (name && db) {
+        // Firebase 서버에 예약: "나와 연결이 끊어지면 이 유저의 online_sts를 OFF로 변경해라"
+        db.ref('users/' + name + '/online_sts').onDisconnect().set('OFF');
+    }
+}
+
+// 페이지 로드 시 예약 등록
+document.addEventListener('DOMContentLoaded', () => {
+    // DB 유동적 연결 대기를 위해 약간의 지연 후 실행하거나 기존 init 구조에 포함
+    setTimeout(setupDisconnectHook, 1000);
+});
 
 /* ── Logout ── */
 window.logout = function() {
