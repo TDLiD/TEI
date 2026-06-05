@@ -18,94 +18,167 @@
 
     <style>
         /* =====================================================
-           DAY-BASED THEME SYSTEM
+           DAY-BASED THEME SYSTEM — REVOLUTIONARY EDITION
            0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+           
+           각 요일: 색상 + 고유한 배경 패턴 + 특수 효과
         ===================================================== */
 
-        /* MON — Deep Navy Steel */
+        /* ── MON ── Deep Navy Steel : 격자 홀로그램 */
         body.day-1 {
-            --da: #3b82f6;
-            --da2: #1d4ed8;
-            --da3: #60a5fa;
-            --dg: rgba(59,130,246,0.16);
-            --dg2: rgba(29,78,216,0.10);
-            --db: rgba(59,130,246,0.22);
-            --db2: rgba(59,130,246,0.10);
-            --ds: rgba(12,20,40,0.92);
-            --dc: rgba(10,18,36,0.80);
-            --panel-bg: linear-gradient(150deg,#03091a 0%,#060f26 55%,#04091e 100%);
-            --aside-bg: linear-gradient(180deg,#030818 0%,#060e22 60%,#040a1c 100%);
+            --da: #3b82f6; --da2: #1d4ed8; --da3: #60a5fa;
+            --dg: rgba(59,130,246,0.16); --dg2: rgba(29,78,216,0.10);
+            --db: rgba(59,130,246,0.22); --db2: rgba(59,130,246,0.08);
+            --ds: rgba(12,20,40,0.95); --dc: rgba(10,18,36,0.82);
+            --panel-bg: linear-gradient(150deg,#020812 0%,#050f26 55%,#03091e 100%);
+            --aside-bg: linear-gradient(180deg,#020714 0%,#060d22 60%,#040a1e 100%);
+            /* MON 전용 — 청사진 격자 */
+            --day-pattern: repeating-linear-gradient(
+                0deg, transparent, transparent 39px, rgba(59,130,246,0.12) 39px, rgba(59,130,246,0.12) 40px
+            ), repeating-linear-gradient(
+                90deg, transparent, transparent 39px, rgba(59,130,246,0.12) 39px, rgba(59,130,246,0.12) 40px
+            );
+            --day-label: "MON BLUEPRINT";
+            --day-font-style: normal;
+            --day-letter-spacing: 0.2em;
         }
-        /* TUE — Dark Emerald Forge */
+
+        /* ── TUE ── Dark Emerald Forge : 사선 해킹 스캔라인 */
         body.day-2 {
-            --da: #10b981;
-            --da2: #047857;
-            --da3: #34d399;
-            --dg: rgba(16,185,129,0.16);
-            --dg2: rgba(4,120,87,0.10);
-            --db: rgba(16,185,129,0.22);
-            --db2: rgba(16,185,129,0.10);
-            --ds: rgba(2,16,11,0.92);
-            --dc: rgba(2,14,10,0.80);
-            --panel-bg: linear-gradient(150deg,#010d06 0%,#031608 55%,#021009 100%);
-            --aside-bg: linear-gradient(180deg,#010905 0%,#031407 60%,#020e06 100%);
+            --da: #10b981; --da2: #047857; --da3: #34d399;
+            --dg: rgba(16,185,129,0.16); --dg2: rgba(4,120,87,0.10);
+            --db: rgba(16,185,129,0.22); --db2: rgba(16,185,129,0.08);
+            --ds: rgba(2,14,10,0.95); --dc: rgba(2,12,9,0.82);
+            --panel-bg: linear-gradient(150deg,#010d06 0%,#031a0c 55%,#021008 100%);
+            --aside-bg: linear-gradient(180deg,#010905 0%,#041408 60%,#030e07 100%);
+            /* TUE 전용 — 매트릭스 사선 스캔 */
+            --day-pattern: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 8px,
+                rgba(16,185,129,0.05) 8px, rgba(16,185,129,0.05) 9px
+            );
+            --day-label: "TUE//MATRIX";
+            --day-font-style: italic;
+            --day-letter-spacing: 0.05em;
         }
-        /* WED — Crimson Obsidian */
+
+        /* ── WED ── Crimson Obsidian : 다이아몬드 경고 패턴 */
         body.day-3 {
-            --da: #ef4444;
-            --da2: #b91c1c;
-            --da3: #f87171;
-            --dg: rgba(239,68,68,0.16);
-            --dg2: rgba(185,28,28,0.10);
-            --db: rgba(239,68,68,0.22);
-            --db2: rgba(239,68,68,0.10);
-            --ds: rgba(18,4,4,0.92);
-            --dc: rgba(16,3,3,0.80);
-            --panel-bg: linear-gradient(150deg,#0e0202 0%,#180404 55%,#120303 100%);
-            --aside-bg: linear-gradient(180deg,#0a0101 0%,#140303 60%,#0e0202 100%);
+            --da: #ef4444; --da2: #b91c1c; --da3: #f87171;
+            --dg: rgba(239,68,68,0.16); --dg2: rgba(185,28,28,0.10);
+            --db: rgba(239,68,68,0.22); --db2: rgba(239,68,68,0.08);
+            --ds: rgba(16,4,4,0.95); --dc: rgba(14,3,3,0.82);
+            --panel-bg: linear-gradient(150deg,#0e0202 0%,#1c0404 55%,#130303 100%);
+            --aside-bg: linear-gradient(180deg,#0b0202 0%,#160303 60%,#100202 100%);
+            /* WED 전용 — 위험 다이아몬드 격자 */
+            --day-pattern: repeating-conic-gradient(
+                rgba(239,68,68,0.07) 0% 25%, transparent 0% 50%
+            ) 0 0 / 28px 28px;
+            --day-label: "WED ◆ ALERT";
+            --day-font-style: normal;
+            --day-letter-spacing: 0.15em;
         }
-        /* THU — Violet Abyss */
+
+        /* ── THU ── Violet Abyss : 육각형 우주 허니콤 */
         body.day-4 {
-            --da: #a855f7;
-            --da2: #7c3aed;
-            --da3: #c084fc;
-            --dg: rgba(168,85,247,0.16);
-            --dg2: rgba(124,58,237,0.10);
-            --db: rgba(168,85,247,0.22);
-            --db2: rgba(168,85,247,0.10);
-            --ds: rgba(10,4,18,0.92);
-            --dc: rgba(8,3,16,0.80);
-            --panel-bg: linear-gradient(150deg,#060110 0%,#0c0319 55%,#080214 100%);
-            --aside-bg: linear-gradient(180deg,#04010c 0%,#0a0217 60%,#060110 100%);
+            --da: #a855f7; --da2: #7c3aed; --da3: #c084fc;
+            --dg: rgba(168,85,247,0.16); --dg2: rgba(124,58,237,0.10);
+            --db: rgba(168,85,247,0.22); --db2: rgba(168,85,247,0.08);
+            --ds: rgba(9,3,17,0.95); --dc: rgba(8,3,16,0.82);
+            --panel-bg: linear-gradient(150deg,#060112 0%,#0d031e 55%,#090216 100%);
+            --aside-bg: linear-gradient(180deg,#04010e 0%,#0a021a 60%,#070112 100%);
+            /* THU 전용 — 허니콤 육각형 */
+            --day-pattern: radial-gradient(circle at 50% 50%, rgba(168,85,247,0.06) 15%, transparent 16%) 0 0 / 26px 26px,
+                           radial-gradient(circle at 0 100%, rgba(168,85,247,0.06) 15%, transparent 16%) 0 0 / 26px 26px;
+            --day-label: "THU ✦ COSMOS";
+            --day-font-style: italic;
+            --day-letter-spacing: 0.1em;
         }
-        /* FRI — Amber Furnace */
+
+        /* ── FRI ── Amber Furnace : 물결 열기 이퀄라이저 */
         body.day-5 {
-            --da: #f59e0b;
-            --da2: #d97706;
-            --da3: #fcd34d;
-            --dg: rgba(245,158,11,0.16);
-            --dg2: rgba(217,119,6,0.10);
-            --db: rgba(245,158,11,0.22);
-            --db2: rgba(245,158,11,0.10);
-            --ds: rgba(18,12,2,0.92);
-            --dc: rgba(16,10,1,0.80);
-            --panel-bg: linear-gradient(150deg,#0e0700 0%,#170e00 55%,#120a00 100%);
-            --aside-bg: linear-gradient(180deg,#0a0500 0%,#140c00 60%,#0e0700 100%);
+            --da: #f59e0b; --da2: #d97706; --da3: #fcd34d;
+            --dg: rgba(245,158,11,0.16); --dg2: rgba(217,119,6,0.10);
+            --db: rgba(245,158,11,0.22); --db2: rgba(245,158,11,0.08);
+            --ds: rgba(18,12,2,0.95); --dc: rgba(16,11,2,0.82);
+            --panel-bg: linear-gradient(150deg,#0f0700 0%,#1a0e00 55%,#130b00 100%);
+            --aside-bg: linear-gradient(180deg,#0c0600 0%,#160c00 60%,#100900 100%);
+            /* FRI 전용 — 불꽃 물결 */
+            --day-pattern: repeating-radial-gradient(
+                ellipse at 50% 200%,
+                transparent 0%, transparent 20%,
+                rgba(245,158,11,0.06) 21%, rgba(245,158,11,0.06) 22%,
+                transparent 23%
+            );
+            --day-label: "FRI // IGNITE";
+            --day-font-style: italic;
+            --day-letter-spacing: 0.08em;
         }
-        /* SAT/SUN — Slate Void */
-        body.day-0, body.day-6 {
-            --da: #64748b;
-            --da2: #475569;
-            --da3: #94a3b8;
-            --dg: rgba(100,116,139,0.14);
-            --dg2: rgba(71,85,105,0.08);
-            --db: rgba(100,116,139,0.20);
-            --db2: rgba(100,116,139,0.08);
-            --ds: rgba(8,10,14,0.92);
-            --dc: rgba(6,8,12,0.80);
-            --panel-bg: linear-gradient(150deg,#040507 0%,#07090d 55%,#050608 100%);
+
+        /* ── SAT ── Slate Void : 노이즈 점점이 성운 */
+        body.day-6 {
+            --da: #64748b; --da2: #475569; --da3: #94a3b8;
+            --dg: rgba(100,116,139,0.14); --dg2: rgba(71,85,105,0.08);
+            --db: rgba(100,116,139,0.20); --db2: rgba(100,116,139,0.07);
+            --ds: rgba(7,9,13,0.95); --dc: rgba(6,8,12,0.82);
+            --panel-bg: linear-gradient(150deg,#040507 0%,#070a0f 55%,#050608 100%);
             --aside-bg: linear-gradient(180deg,#030406 0%,#060810 60%,#040507 100%);
+            --day-pattern: radial-gradient(circle, rgba(100,116,139,0.12) 1px, transparent 1px) 0 0 / 18px 18px;
+            --day-label: "SAT · VOID";
+            --day-font-style: normal;
+            --day-letter-spacing: 0.25em;
         }
+
+        /* ── SUN ── Slate Void : 동심원 에너지 파동 */
+        body.day-0 {
+            --da: #64748b; --da2: #475569; --da3: #94a3b8;
+            --dg: rgba(100,116,139,0.14); --dg2: rgba(71,85,105,0.08);
+            --db: rgba(100,116,139,0.20); --db2: rgba(100,116,139,0.07);
+            --ds: rgba(7,9,13,0.95); --dc: rgba(6,8,12,0.82);
+            --panel-bg: radial-gradient(ellipse at 30% 40%, #0a0c10 0%, #050608 100%);
+            --aside-bg: linear-gradient(180deg,#030406 0%,#060810 60%,#040507 100%);
+            --day-pattern: repeating-radial-gradient(circle at 50% 50%,
+                transparent 0px, transparent 30px,
+                rgba(100,116,139,0.06) 31px, rgba(100,116,139,0.06) 32px
+            );
+            --day-label: "SUN · REST";
+            --day-font-style: normal;
+            --day-letter-spacing: 0.25em;
+        }
+
+        /* =====================================================
+           요일별 ASIDE 특수 장식 (상단 바 스타일)
+        ===================================================== */
+        body.day-1 aside::before { background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8); }
+        body.day-2 aside::before { background: linear-gradient(90deg, #047857, #10b981, #34d399, #10b981, #047857); }
+        body.day-3 aside::before { background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171, #ef4444, #b91c1c); }
+        body.day-4 aside::before { background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc, #a855f7, #7c3aed); }
+        body.day-5 aside::before { background: linear-gradient(90deg, #d97706, #f59e0b, #fcd34d, #f59e0b, #d97706); }
+        body.day-0 aside::before, body.day-6 aside::before { background: linear-gradient(90deg, #475569, #64748b, #94a3b8, #64748b, #475569); }
+
+        /* 요일별 글로우 애니메이션 색상 */
+        body.day-1 .day-orb { background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%); }
+        body.day-2 .day-orb { background: radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%); }
+        body.day-3 .day-orb { background: radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%); }
+        body.day-4 .day-orb { background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%); }
+        body.day-5 .day-orb { background: radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%); }
+        body.day-0 .day-orb, body.day-6 .day-orb { background: radial-gradient(circle, rgba(100,116,139,0.2) 0%, transparent 70%); }
+
+        /* 요일별 BADGE 모양 */
+        body.day-1 .day-badge { border-radius: 4px; }            /* MON: 각진 사각형 */
+        body.day-2 .day-badge { border-radius: 0; clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }  /* TUE: 평행사변형 */
+        body.day-3 .day-badge { clip-path: polygon(8px 0%,100% 0%,100% 100%,0 100%,0 8px); border-radius:0; }          /* WED: 노치 코너 */
+        body.day-4 .day-badge { border-radius: 999px; }          /* THU: 풀 알약 */
+        body.day-5 .day-badge { border-radius: 2px 12px 2px 12px; } /* FRI: 대각 라운드 */
+        body.day-0 .day-badge, body.day-6 .day-badge { border-radius: 50%; width: 40px; height: 40px; display:inline-flex;align-items:center;justify-content:center; } /* SAT/SUN: 원 */
+
+        /* 요일별 사이드바 특수 타이포 스타일 */
+        body.day-1 .brand-title { font-weight: 900; letter-spacing: -0.04em; font-style: normal; }
+        body.day-2 .brand-title { font-weight: 900; letter-spacing: 0.02em; font-style: italic; text-transform: uppercase; }
+        body.day-3 .brand-title { font-weight: 900; letter-spacing: 0.08em; font-style: normal; text-transform: uppercase; }
+        body.day-4 .brand-title { font-weight: 900; letter-spacing: -0.02em; font-style: italic; }
+        body.day-5 .brand-title { font-weight: 900; letter-spacing: 0.04em; font-style: italic; }
+        body.day-0 .brand-title, body.day-6 .brand-title { font-weight: 400; letter-spacing: 0.15em; font-style: normal; }
 
         /* =====================================================
            GLOBAL BASE
@@ -123,43 +196,59 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Animated grid */
+        /* 요일별 배경 패턴 레이어 */
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image:
-                linear-gradient(var(--db2) 1px, transparent 1px),
-                linear-gradient(90deg, var(--db2) 1px, transparent 1px);
-            background-size: 56px 56px;
-            opacity: 0.22;
+            background: var(--day-pattern);
+            opacity: 0.9;
             pointer-events: none;
             z-index: 0;
-            animation: gridDrift 35s linear infinite;
+            animation: patternDrift 60s linear infinite;
         }
-        @keyframes gridDrift {
-            0%   { background-position: 0 0; }
-            100% { background-position: 56px 56px; }
+        @keyframes patternDrift {
+            0%   { background-position: 0 0, 0 0; }
+            100% { background-position: 60px 60px, 60px 60px; }
         }
 
-        /* Ambient radial glow */
-        body::after {
-            content: '';
-            position: fixed;
-            top: -25%; left: -15%;
-            width: 75%; height: 75%;
-            background: radial-gradient(ellipse, var(--dg) 0%, transparent 68%);
-            pointer-events: none; z-index: 0;
-            animation: glowFloat 14s ease-in-out infinite alternate;
+        /* 보조 미세 격자 (MON 전용은 더 촘촘) */
+        body.day-1::before {
+            animation: patternDrift 45s linear infinite;
         }
-        @keyframes glowFloat {
-            0%   { transform: translate(0,0) scale(1); }
-            100% { transform: translate(6%,4%) scale(1.08); }
+        body.day-2::before {
+            animation: patternDrift 80s linear infinite;
+        }
+
+        /* 앰비언트 글로우 오브 */
+        .day-orb {
+            position: fixed;
+            top: -20%; left: -10%;
+            width: 65%; height: 65%;
+            pointer-events: none; z-index: 0;
+            animation: orbFloat 16s ease-in-out infinite alternate;
+        }
+        @keyframes orbFloat {
+            0%   { transform: translate(0,0) scale(1) rotate(0deg); }
+            100% { transform: translate(8%,5%) scale(1.12) rotate(3deg); }
+        }
+
+        /* 보조 글로우 (우측 하단) */
+        .day-orb-2 {
+            position: fixed;
+            bottom: -15%; right: -10%;
+            width: 45%; height: 45%;
+            pointer-events: none; z-index: 0;
+            animation: orbFloat2 20s ease-in-out infinite alternate;
+        }
+        @keyframes orbFloat2 {
+            0%   { transform: translate(0,0) scale(1); opacity: 0.5; }
+            100% { transform: translate(-5%,-5%) scale(1.08); opacity: 0.8; }
         }
 
         main, aside, header, nav { position: relative; z-index: 1; }
 
         /* =====================================================
-           GLASS PANEL (replaces .glass-panel)
+           GLASS PANEL
         ===================================================== */
         .glass-panel {
             background: var(--dc);
@@ -182,9 +271,25 @@
             box-shadow:
                 4px 0 32px rgba(0,0,0,0.6),
                 inset 0 0 50px var(--dg2);
+            position: relative;
         }
 
-        /* Sidebar scrollable nav */
+        /* 요일별 상단 색상 바 */
+        aside::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+            z-index: 10;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 사이드바 nav 스크롤 */
         aside .hidden.lg\:flex { min-height: 0; }
         aside .hidden.lg\:flex > nav.flex {
             overflow-y: auto;
@@ -195,17 +300,14 @@
             padding-bottom: 0.5rem;
         }
         aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar { width: 2px; }
-        aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-track { background: transparent; }
         aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb { background: var(--da); border-radius: 99px; }
 
         /* =====================================================
            BRAND
         ===================================================== */
         .brand-title {
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: -0.03em;
-            text-shadow: 0 0 18px var(--dg), 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 0 20px var(--dg), 0 2px 4px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
         }
         .brand-accent { color: var(--da); }
 
@@ -235,8 +337,7 @@
         }
 
         .edit-badge {
-            position: absolute;
-            bottom: 5px; right: 5px;
+            position: absolute; bottom: 5px; right: 5px;
             background: var(--da);
             width: 22px; height: 22px;
             border-radius: 50%;
@@ -246,20 +347,20 @@
         }
 
         /* =====================================================
-           DAY BADGE
+           DAY BADGE — 요일별 다른 모양
         ===================================================== */
         .day-badge {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 3px 10px;
-            border-radius: 999px;
             background: var(--dg2);
             border: 1px solid var(--db);
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 900;
             letter-spacing: 0.12em;
             color: var(--da3);
             text-transform: uppercase;
-            box-shadow: 0 0 10px var(--dg2);
+            box-shadow: 0 0 10px var(--dg2), 0 0 20px var(--dg);
+            transition: all 0.3s ease;
         }
         .day-dot {
             width: 5px; height: 5px;
@@ -281,12 +382,10 @@
             border: 1px solid var(--db);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
         }
-        #weatherTemp, #mobileWeatherTemp {
-            color: var(--da3) !important;
-        }
+        #weatherTemp, #mobileWeatherTemp { color: var(--da3) !important; }
 
         /* =====================================================
-           NAV BUTTONS
+           NAV BUTTONS — 요일별 활성화 스타일
         ===================================================== */
         .btn-3d {
             transition: all 0.2s;
@@ -295,68 +394,71 @@
         .btn-3d:active { transform: translateY(2px) scale(0.97); }
 
         .pc-tab-btn {
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
             border: 1px solid transparent !important;
             transition: all 0.2s ease;
         }
+
+        /* 요일별 좌측 액티브 바 */
         .pc-tab-btn::before {
             content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
+            position: absolute; left: 0; top: 0; bottom: 0;
             width: 3px;
             background: var(--da);
             border-radius: 0 2px 2px 0;
             transform: scaleY(0);
             transition: transform 0.2s ease;
         }
+
+        /* MON: 우측에도 미러 바 */
+        body.day-1 .pc-tab-btn.tab-active::after {
+            content: '';
+            position: absolute; right: 0; top: 0; bottom: 0;
+            width: 1px;
+            background: var(--db);
+        }
+
+        /* WED: 활성시 배경에 위험 패턴 */
+        body.day-3 .tab-active {
+            background: repeating-linear-gradient(
+                45deg, var(--dg), var(--dg) 3px, transparent 3px, transparent 8px
+            ) !important;
+        }
+
+        /* THU: 활성시 글로우 강화 */
+        body.day-4 .tab-active {
+            box-shadow: 0 0 20px var(--dg), inset 0 0 10px var(--dg2) !important;
+        }
+
         .tab-active {
             background: var(--dg) !important;
             color: var(--da3) !important;
             font-weight: 900 !important;
             border-color: var(--db) !important;
-            box-shadow:
-                0 4px 12px var(--dg2),
-                inset 0 1px 0 rgba(255,255,255,0.05) !important;
-            transform: translateY(0) !important;
+            box-shadow: 0 4px 12px var(--dg2), inset 0 1px 0 rgba(255,255,255,0.05) !important;
             text-shadow: 0 0 8px var(--dg);
         }
         .tab-active::before { transform: scaleY(1); }
-
         .mobile-tab-active {
             color: var(--da) !important;
             font-weight: 900;
             text-shadow: 0 0 8px var(--dg);
         }
 
-        /* Back-to-main button */
         .main-menu-btn {
             color: var(--da3) !important;
             background: var(--dg2) !important;
             border: 1px solid var(--db) !important;
         }
-        .main-menu-btn:hover {
-            background: var(--dg) !important;
-        }
-
-        /* TDLiD link */
+        .main-menu-btn:hover { background: var(--dg) !important; }
         .tdlid-link {
             color: var(--da3) !important;
             border: 1px solid var(--db);
             transition: all 0.2s;
         }
-        .tdlid-link:hover {
-            background: var(--dg2);
-        }
-
-        /* Online dot */
-        .online-dot {
-            background: var(--da) !important;
-            box-shadow: 0 0 5px var(--da);
-        }
+        .tdlid-link:hover { background: var(--dg2); }
+        .online-dot { background: var(--da) !important; box-shadow: 0 0 5px var(--da); }
         .online-text { color: var(--da3) !important; }
-
-        /* Section divider */
         .aside-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--db), transparent);
@@ -369,19 +471,22 @@
         #mobileHeader {
             background: var(--aside-bg);
             border-bottom: 1px solid var(--db);
-            box-shadow:
-                0 2px 20px rgba(0,0,0,0.5),
-                0 0 30px var(--dg2),
-                inset 0 -1px 0 var(--db);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 30px var(--dg2), inset 0 -1px 0 var(--db);
+            position: relative;
+        }
+        /* 모바일 헤더도 상단 컬러 바 */
+        #mobileHeader::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--da2), var(--da), var(--da3), var(--da), var(--da2));
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
         }
 
-        /* Mobile bottom nav uses glass-panel colors */
         .mobile-bottom-nav {
             background: var(--aside-bg) !important;
             border-top: 1px solid var(--db) !important;
-            box-shadow:
-                0 -4px 24px rgba(0,0,0,0.6),
-                inset 0 1px 0 rgba(255,255,255,0.04) !important;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04) !important;
         }
 
         /* =====================================================
@@ -400,66 +505,35 @@
             background: var(--dg2);
             border-bottom: 1px solid var(--db);
         }
-        #modalTitle {
-            color: var(--da3) !important;
-            text-shadow: 0 0 10px var(--dg);
-        }
-        #profileCustomModal > div > div:first-child button {
-            color: #475569;
-            transition: all 0.2s;
-        }
-        #profileCustomModal > div > div:first-child button:hover {
-            color: var(--da);
-            background: var(--dg2);
-        }
+        #modalTitle { color: var(--da3) !important; text-shadow: 0 0 10px var(--dg); }
+        #profileCustomModal > div > div:first-child button { color: #475569; transition: all 0.2s; }
+        #profileCustomModal > div > div:first-child button:hover { color: var(--da); background: var(--dg2); }
 
-        /* Modal footer */
         .modal-footer-btns {
-            display: flex; gap: 12px;
-            margin-top: 20px;
+            display: flex; gap: 12px; margin-top: 20px;
             padding: 20px 0 10px 0;
             border-top: 1px solid var(--db);
             position: sticky; bottom: 0;
-            background: var(--ds);
-            z-index: 20;
+            background: var(--ds); z-index: 20;
         }
         .modal-footer-btns button {
-            flex: 1; padding: 14px;
-            border-radius: 1rem;
+            flex: 1; padding: 14px; border-radius: 1rem;
             font-size: 11px; font-weight: 900;
             text-transform: uppercase; letter-spacing: 0.1em;
             transition: all 0.2s;
         }
-        .btn-modal-cancel {
-            background: rgba(255,255,255,0.04);
-            color: #94a3b8;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .btn-modal-save {
-            background: var(--da2);
-            color: white;
-            border: 1px solid var(--db);
-            box-shadow: 0 6px 14px var(--dg2);
-        }
-        .btn-modal-save:disabled {
-            opacity: 0.4; cursor: not-allowed; filter: grayscale(1);
-        }
+        .btn-modal-cancel { background: rgba(255,255,255,0.04); color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); }
+        .btn-modal-save { background: var(--da2); color: white; border: 1px solid var(--db); box-shadow: 0 6px 14px var(--dg2); }
+        .btn-modal-save:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
         /* =====================================================
            PROFILE PICKER
         ===================================================== */
         .profile-opt {
-            border: 2px solid transparent;
-            border-radius: 1rem;
-            overflow: hidden;
-            background: rgba(255,255,255,0.04);
-            transition: all 0.2s;
+            border: 2px solid transparent; border-radius: 1rem;
+            overflow: hidden; background: rgba(255,255,255,0.04); transition: all 0.2s;
         }
-        .profile-opt:hover {
-            border-color: var(--da);
-            box-shadow: 0 0 10px var(--dg);
-            transform: scale(1.04);
-        }
+        .profile-opt:hover { border-color: var(--da); box-shadow: 0 0 10px var(--dg); transform: scale(1.04); }
         .profile-option-active {
             border-color: var(--da) !important;
             box-shadow: 0 0 18px var(--dg) !important;
@@ -479,11 +553,190 @@
         #mobileBirthdayAlert span:first-child { color: var(--da3) !important; }
 
         /* =====================================================
-           LOADING SPINNER
+           요일별 타이머 & 온라인 패널 테마
         ===================================================== */
-        .day-spin {
-            border-color: var(--db);
-            border-top-color: var(--da);
+        .day-spin { border-color: var(--db); border-top-color: var(--da); }
+
+        /* 타이머 컨테이너 */
+        .timer-wrapper {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--db);
+            border-radius: 0.75rem;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        #logout-timer {
+            color: var(--da3);
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* =====================================================
+           ONLINE USERS PANEL — 요일 테마 완전 적용
+        ===================================================== */
+        #onlineUsersPanel {
+            border-radius: 0.875rem;
+            border: 1px solid var(--db);
+            overflow: hidden;
+            position: relative;
+            background: rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 1px var(--db), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 20px var(--dg2);
+            margin-bottom: 0.5rem;
+        }
+
+        /* 스캔라인 효과 */
+        #onlineUsersPanel::before {
+            content: '';
+            position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--dg2), transparent);
+            animation: onlineScan 5s linear infinite;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes onlineScan {
+            0% { left: -60%; } 100% { left: 160%; }
+        }
+
+        .online-panel-header {
+            background: var(--dg2);
+            border-bottom: 1px solid var(--db);
+            padding: 7px 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: relative; z-index: 1;
+        }
+        .online-panel-title {
+            font-size: 0.58rem; font-weight: 900;
+            letter-spacing: 0.15em; color: var(--da3);
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .online-count-badge {
+            font-size: 0.55rem; font-weight: 900;
+            padding: 2px 7px; border-radius: 999px;
+            background: var(--da); color: #000;
+            letter-spacing: 0.05em; min-width: 18px; text-align: center;
+            box-shadow: 0 0 8px var(--dg);
+            animation: countPop 0.3s ease;
+        }
+        @keyframes countPop {
+            0% { transform: scale(0.7); } 60% { transform: scale(1.2); } 100% { transform: scale(1); }
+        }
+
+        #onlineUsersList {
+            position: relative; z-index: 1;
+            max-height: 160px; overflow-y: auto; overflow-x: hidden;
+            scrollbar-width: none; padding: 5px; display: flex;
+            flex-direction: column; gap: 3px;
+        }
+        #onlineUsersList::-webkit-scrollbar { display: none; }
+
+        .online-user-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 8px; border-radius: 0.6rem;
+            background: var(--dg2); border: 1px solid transparent;
+            transition: all 0.25s ease;
+            position: relative; overflow: hidden;
+            animation: slideInUser 0.35s ease both;
+        }
+        @keyframes slideInUser {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .online-user-item:hover { background: var(--dg); border-color: var(--db); transform: translateX(2px); }
+        .online-user-item::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+            background: var(--da); border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 6px var(--dg);
+        }
+
+        .online-user-avatar {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: 1.5px solid var(--db); object-fit: cover; flex-shrink: 0;
+            box-shadow: 0 0 8px var(--dg2);
+        }
+        .online-user-name {
+            font-size: 0.63rem; font-weight: 900; color: #e2e8f0;
+            text-transform: uppercase; letter-spacing: 0.05em; flex: 1;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .online-user-time {
+            font-size: 0.5rem; font-weight: 700; color: var(--da3);
+            letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
+        }
+        .online-live-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--da); box-shadow: 0 0 5px var(--da); flex-shrink: 0;
+            animation: livePulse 1.8s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+        }
+        .online-empty {
+            text-align: center; padding: 12px 8px;
+            font-size: 0.58rem; font-weight: 700; color: #334155;
+            letter-spacing: 0.1em; text-transform: uppercase;
+        }
+
+        /* =====================================================
+           요일별 사이드바 장식 요소
+        ===================================================== */
+
+        /* MON: 사이드바 좌측 세로 라인 3개 */
+        body.day-1 aside .deco-lines {
+            position: absolute; right: 6px; top: 80px; bottom: 80px;
+            display: flex; gap: 3px; pointer-events: none; z-index: 0;
+        }
+        body.day-1 aside .deco-lines span {
+            display: block; width: 1px; border-radius: 999px;
+            background: var(--db);
+        }
+        body.day-1 aside .deco-lines span:nth-child(1) { opacity: 0.8; }
+        body.day-1 aside .deco-lines span:nth-child(2) { opacity: 0.4; }
+        body.day-1 aside .deco-lines span:nth-child(3) { opacity: 0.15; }
+
+        /* WED: 경고 코너 노치 */
+        body.day-3 aside .deco-corner {
+            position: absolute; bottom: 16px; left: 16px;
+            width: 24px; height: 24px;
+            border-left: 2px solid var(--da);
+            border-bottom: 2px solid var(--da);
+            opacity: 0.4; pointer-events: none;
+        }
+        body.day-3 aside .deco-corner-tr {
+            position: absolute; top: 16px; right: 16px;
+            width: 24px; height: 24px;
+            border-right: 2px solid var(--da);
+            border-top: 2px solid var(--da);
+            opacity: 0.4; pointer-events: none;
+        }
+
+        /* THU: 떠다니는 별 파티클 */
+        body.day-4 .star-particle {
+            position: fixed; pointer-events: none; z-index: 0;
+            width: 2px; height: 2px;
+            border-radius: 50%; background: var(--da);
+            animation: starFloat var(--dur, 8s) ease-in-out infinite alternate;
+        }
+
+        /* FRI: 불꽃 파티클 */
+        body.day-5 .ember-particle {
+            position: fixed; pointer-events: none; z-index: 0;
+            width: 3px; height: 3px; border-radius: 50%;
+            background: var(--da);
+            animation: emberRise var(--dur, 6s) ease-out infinite;
+            opacity: 0;
+        }
+        @keyframes emberRise {
+            0%   { opacity: 0.8; transform: translateY(0) translateX(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) translateX(var(--dx,20px)) scale(0.3); }
         }
 
         /* =====================================================
@@ -498,7 +751,7 @@
         }
 
         /* =====================================================
-           RESPONSIVE — keep original breakpoints
+           RESPONSIVE
         ===================================================== */
         @media (max-width: 1023px) {
             body { padding-top: 65px; padding-bottom: 90px; }
@@ -510,20 +763,28 @@
             aside { height: 100vh !important; position: sticky; top: 0; }
         }
 
-        /* Birthday dot */
         #mobile-birthday-dot.active { display: block !important; }
-
-        /* No scrollbar utility */
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 
 <body class="flex flex-col lg:flex-row min-h-screen">
 
+<!-- 앰비언트 글로우 오브 -->
+<div class="day-orb"></div>
+<div class="day-orb-2" style="background:radial-gradient(circle, var(--dg2) 0%, transparent 70%);"></div>
+
 <!-- =====================================================
      ASIDE / SIDEBAR
 ===================================================== -->
 <aside class="w-full lg:w-80 lg:h-screen border-b lg:border-b-0 backdrop-blur-2xl sticky top-0 z-[1000] flex-shrink-0">
+
+    <!-- 요일별 장식 요소 -->
+    <div class="deco-lines lg:block hidden">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="deco-corner lg:block hidden"></div>
+    <div class="deco-corner-tr lg:block hidden"></div>
 
     <!-- MOBILE HEADER -->
     <div id="mobileHeader" class="lg:hidden flex items-center justify-between w-full h-[65px] px-5 border-b border-white/5">
@@ -578,7 +839,7 @@
     </div>
 
     <!-- DESKTOP SIDEBAR -->
-    <div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden">
+    <div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden" style="position:relative;z-index:1;">
 
         <!-- Brand + Day Badge -->
         <div class="flex flex-col gap-4 mb-8">
@@ -596,21 +857,18 @@
                      class="cursor-pointer relative group inline-block btn-3d"
                      onclick="openProfileImagePicker()"></div>
                 <div class="flex flex-col">
-                    <!-- Weather -->
                     <div id="jakartaWeather" class="flex items-center gap-2 mb-1.5 px-2.5 py-1 rounded-lg border w-fit">
                         <span id="weatherIcon" class="text-sm">⏳</span>
                         <span id="weatherTemp" class="text-[11px] font-black">--°C</span>
                         <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
                     </div>
 
-                    <!-- Birthday list button -->
                     <button onclick="showAllStaffBirthdays()"
                             class="mt-2 ml-1 text-[9px] font-bold transition-colors uppercase tracking-widest flex items-center gap-1"
                             style="color:var(--da3)">
                         <img src="images/gif/staff.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
                     </button>
 
-                    <!-- Birthday Alert -->
                     <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
                         <span class="text-[10px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
                         <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
@@ -628,12 +886,29 @@
                 🖐️ Logout 🔓
             </button>
 
-<li class="px-6 py-2 text-center">
-    <div class="text-xs text-gray-400 font-mono bg-black/20 rounded py-1 inline-block px-3">
-        Up to automatic logout: <span id="logout-timer" class="text-amber-400 font-bold">10:00</span>
-    </div>
-</li>
+            <!-- 타이머 -->
+            <div class="timer-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--da);flex-shrink:0">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Auto logout:</span>
+                <span id="logout-timer">10:00</span>
+            </div>
 
+            <!-- ★ 온라인 스태프 패널 ★ -->
+            <div id="onlineUsersPanel">
+                <div class="online-panel-header">
+                    <div class="online-panel-title">
+                        <span class="online-live-dot"></span>
+                        <span>CONNECTED NOW</span>
+                    </div>
+                    <span class="online-count-badge" id="onlineCountBadge">0</span>
+                </div>
+                <div id="onlineUsersList">
+                    <div class="online-empty">SCANNING...</div>
+                </div>
+            </div>
         </div>
 
         <!-- Nav -->
@@ -715,10 +990,10 @@
 </div>
 
 <!-- =====================================================
-     SCRIPTS — all original logic preserved exactly
+     SCRIPTS
 ===================================================== -->
 <script>
-/* ── Day theme init ── */
+/* ── Day theme init + 요일별 특수 효과 ── */
 (function() {
     const day = new Date().getDay();
     document.body.classList.add('day-' + day);
@@ -729,6 +1004,49 @@
             const el = document.getElementById(id);
             if (el) el.textContent = lbl;
         });
+
+        /* THU: 별 파티클 생성 */
+        if (day === 4) {
+            for (let i = 0; i < 12; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.cssText = `
+                    left: ${Math.random()*100}%;
+                    top: ${Math.random()*100}%;
+                    --dur: ${6+Math.random()*8}s;
+                    opacity: ${0.3+Math.random()*0.5};
+                    width: ${1+Math.random()*2}px;
+                    height: ${1+Math.random()*2}px;
+                    animation: starFloat var(--dur) ease-in-out infinite alternate;
+                    animation-delay: ${Math.random()*5}s;
+                `;
+                document.body.appendChild(star);
+            }
+            const style = document.createElement('style');
+            style.textContent = `@keyframes starFloat {
+                0%   { transform: translate(0,0) scale(1); opacity:0.3; }
+                50%  { opacity: 0.8; }
+                100% { transform: translate(${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px,${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px) scale(1.5); opacity:0.2; }
+            }`;
+            document.head.appendChild(style);
+        }
+
+        /* FRI: 불꽃 파티클 생성 */
+        if (day === 5) {
+            for (let i = 0; i < 8; i++) {
+                const ember = document.createElement('div');
+                ember.className = 'ember-particle';
+                ember.style.cssText = `
+                    left: ${10+Math.random()*30}%;
+                    bottom: ${Math.random()*20}%;
+                    --dur: ${3+Math.random()*4}s;
+                    --dx: ${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*30)}px;
+                    animation-delay: ${Math.random()*3}s;
+                    background: ${Math.random()>0.5 ? '#f59e0b' : '#ef4444'};
+                `;
+                document.body.appendChild(ember);
+            }
+        }
     });
 })();
 
@@ -754,9 +1072,7 @@ let dynamicApiKey = "";
 let cachedUsers = null;
 
 function preloadUsersData() {
-    db.ref('users').once('value', snap => {
-        cachedUsers = snap.val();
-    }).catch(e => console.error("Pre-load error:", e));
+    db.ref('users').once('value', snap => { cachedUsers = snap.val(); }).catch(e => console.error("Pre-load error:", e));
 }
 preloadUsersData();
 
@@ -796,10 +1112,7 @@ window.openProfileImagePicker = function() {
     tempSelectedProfileImg = null;
     let gridHtml = `<div class="grid grid-cols-3 sm:grid-cols-4 gap-4">`;
     PROFILE_IMAGES.forEach(i => {
-        gridHtml += `
-            <div onclick="selectProfileTemp(this,'${i}')" class="profile-opt group relative aspect-square cursor-pointer">
-                <img src="images/profile/${i}" class="w-full h-full object-cover">
-            </div>`;
+        gridHtml += `<div onclick="selectProfileTemp(this,'${i}')" class="profile-opt group relative aspect-square cursor-pointer"><img src="images/profile/${i}" class="w-full h-full object-cover"></div>`;
     });
     gridHtml += `</div>`;
     document.getElementById('modalBody').innerHTML = gridHtml;
@@ -812,7 +1125,6 @@ window.openProfileImagePicker = function() {
     const existingFooter = document.querySelector('.modal-footer-btns');
     if (existingFooter) existingFooter.remove();
     document.getElementById('modalBody').insertAdjacentHTML('afterend', footerHtml);
-
     document.getElementById('modalTitle').innerText = 'Change Profile';
     document.getElementById('profileCustomModal').classList.remove('hidden');
 };
@@ -829,18 +1141,12 @@ window.confirmSaveProfile = function() {
     if (!tempSelectedProfileImg) return;
     const saveBtn = document.getElementById('btnConfirmProfile');
     const originalText = saveBtn.innerText;
-    saveBtn.innerText = "SAVING...";
-    saveBtn.disabled = true;
+    saveBtn.innerText = "SAVING..."; saveBtn.disabled = true;
     db.ref('users/' + loggedInUser).update({
         profileImg: tempSelectedProfileImg,
         profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        closeProfileModal();
-    }).catch(e => {
-        alert("Save failed: " + e.message);
-        saveBtn.innerText = originalText;
-        saveBtn.disabled = false;
-    });
+    }).then(() => closeProfileModal())
+    .catch(e => { alert("Save failed: " + e.message); saveBtn.innerText = originalText; saveBtn.disabled = false; });
 };
 
 window.saveStaffProfile = function(i) {
@@ -848,10 +1154,8 @@ window.saveStaffProfile = function(i) {
     db.ref('users/' + loggedInUser).update({
         profileImg: i,
         profileUpdatedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        closeProfileModal();
-        alert("Your profile has changed.");
-    }).catch(e => alert("Save failed: " + e.message));
+    }).then(() => { closeProfileModal(); alert("Your profile has changed."); })
+    .catch(e => alert("Save failed: " + e.message));
 };
 
 /* ── User profile sync ── */
@@ -865,22 +1169,16 @@ if (loggedInUser) {
         const displayName = ud.displayName || loggedInUser;
 
         const ec = document.getElementById('navEmojiContainer');
-        if (ec) {
-            ec.innerHTML = `<img src="images/profile/${pi}" class="nav-profile-img shadow-xl"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>`;
-        }
+        if (ec) ec.innerHTML = `<img src="images/profile/${pi}" class="nav-profile-img shadow-xl"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>`;
 
         const mpi = document.getElementById('mobileProfileImg');
         if (mpi) {
             mpi.style.position = 'relative';
-            mpi.innerHTML = `
-                <img src="images/profile/${pi}" class="w-full h-full object-cover">
-                <div style="position:absolute;bottom:0;right:0;width:14px;height:14px;background:var(--da);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #000;font-size:8px;">✏️</div>`;
+            mpi.innerHTML = `<img src="images/profile/${pi}" class="w-full h-full object-cover"><div style="position:absolute;bottom:0;right:0;width:14px;height:14px;background:var(--da);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #000;font-size:8px;">✏️</div>`;
         }
 
-        const du = document.getElementById('desktopUser');
-        if (du) du.innerText = displayName;
-        const mu = document.getElementById('mobileUserName');
-        if (mu) mu.innerText = displayName;
+        const du = document.getElementById('desktopUser'); if (du) du.innerText = displayName;
+        const mu = document.getElementById('mobileUserName'); if (mu) mu.innerText = displayName;
     });
 }
 
@@ -905,13 +1203,12 @@ async function checkTodayBirthdays() {
             if (isSolarMatch || isLunarMatch) birthdayMessages.push(`${id}: ${bDateFull}`);
         });
 
-        const alertBox    = document.getElementById('birthdayAlert');
-        const nameText    = document.getElementById('birthdayNames');
-        const mAlertBox   = document.getElementById('mobileBirthdayAlert');
-        const mNameText   = document.getElementById('mobileBirthdayNames');
-        const mobileDot   = document.getElementById('mobile-birthday-dot');
+        const alertBox   = document.getElementById('birthdayAlert');
+        const nameText   = document.getElementById('birthdayNames');
+        const mAlertBox  = document.getElementById('mobileBirthdayAlert');
+        const mNameText  = document.getElementById('mobileBirthdayNames');
+        const mobileDot  = document.getElementById('mobile-birthday-dot');
 
-        if (!alertBox && !mAlertBox) return;
         if (birthdayMessages.length > 0) {
             const namesHtml = birthdayMessages.join('<br>');
             if (alertBox)  alertBox.classList.remove('hidden');
@@ -919,24 +1216,11 @@ async function checkTodayBirthdays() {
             if (mAlertBox) mAlertBox.classList.remove('hidden');
             if (mNameText) mNameText.innerHTML = namesHtml;
             if (mobileDot) mobileDot.classList.remove('hidden');
-
-            const isMyBirthday = birthdayMessages.some(msg => msg.startsWith(loggedInUser + ":"));
-            if (isMyBirthday) {
-                const ub = document.getElementById('desktopUser');
-                if (ub) { ub.style.color = 'var(--da3)'; }
-                const mub = document.getElementById('mobileUserName');
-                if (mub) { mub.style.color = 'var(--da3)'; }
-            }
         }
     };
 
-    if (cachedUsers) { checkCache(); }
-    else {
-        db.ref('users').once('value', snap => {
-            cachedUsers = snap.val();
-            checkCache();
-        });
-    }
+    if (cachedUsers) checkCache();
+    else db.ref('users').once('value', snap => { cachedUsers = snap.val(); checkCache(); });
 }
 
 checkTodayBirthdays();
@@ -983,42 +1267,22 @@ window.loadHTML = async function(u) {
     try {
         const f = document.getElementById('contentFrame');
         if (!f) return;
-        
-        // 로딩 스피너 표시
         f.innerHTML = `<div class="flex items-center justify-center h-64"><div class="w-10 h-10 border-4 rounded-full animate-spin day-spin"></div></div>`;
-        
         const r = await fetch(u);
         const h = await r.text();
-        
-        // 1. 컨텐츠 삽입
         f.innerHTML = h;
-
-        // 2. [수정] setTimeout(..., 50)을 사용하여 브라우저가 
-        // 하위 HTML 태그들을 완벽하게 DOM 구조로 파싱하고 렌더링할 절대적 시간을 확보합니다.
         setTimeout(() => {
             const fc = document.getElementById('footerContainer');
             if (fc && !fc.innerHTML) {
-                fetch('staff_footer.html').then(fr => {
-                    if (fr.ok) return fr.text();
-                }).then(footerHtml => {
-                    if (footerHtml && fc) fc.innerHTML = footerHtml;
-                });
+                fetch('staff_footer.html').then(fr => { if (fr.ok) return fr.text(); })
+                .then(footerHtml => { if (footerHtml && fc) fc.innerHTML = footerHtml; });
             }
-
-            // 3. 요소들이 확실히 렌더링 완료되어 존재할 때 내부 스크립트 순차 실행
-            try {
-                executeScripts(f);
-            } catch (scriptError) {
-                console.error("서브 페이지 스크립트 실행 중 오류 발생:", scriptError);
-            }
-        }, 50); // 50ms의 안전 지연 시간을 부여하여 비동기 타이밍 문제를 해결합니다.
-
+            try { executeScripts(f); } catch (scriptError) { console.error("Script execution error:", scriptError); }
+        }, 50);
     } catch(e) {
-        console.error("페이지 로드 실패:", e);
+        console.error("Page load failed:", e);
         const f = document.getElementById('contentFrame');
-        if (f) {
-            f.innerHTML = `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
-        }
+        if (f) f.innerHTML = `<div class="p-10 glass-panel text-center font-black" style="color:var(--da)">PAGE NOT FOUND</div>`;
     }
 };
 
@@ -1026,18 +1290,9 @@ function executeScripts(con) {
     if (!con) return;
     con.querySelectorAll('script').forEach(os => {
         const ns = document.createElement('script');
-        // 기존 스크립트의 속성들을 안전하게 복사
         Array.from(os.attributes).forEach(at => ns.setAttribute(at.name, at.value));
-        
-        if (os.src) { 
-            ns.src = os.src; 
-            ns.async = false; 
-        } else { 
-            // [수정] 개별 스크립트 내에서도 실행 시 요소가 없을 때 
-            // 런타임 오류가 나서 멈추는 것을 방지하기 위해 Null Check 가드 코드를 전역 래핑할 수 있습니다.
-            ns.textContent = os.textContent; 
-        }
-        
+        if (os.src) { ns.src = os.src; ns.async = false; }
+        else { ns.textContent = os.textContent; }
         document.head.appendChild(ns).parentNode.removeChild(ns);
     });
 }
@@ -1055,8 +1310,8 @@ async function fetchJakartaWeather() {
         else if (code >= 45 && code <= 48) icon = '☁️';
         else if (code >= 51 && code <= 67) icon = '🌧️';
         else if (code >= 95) icon = '⛈️';
-        if (document.getElementById('weatherTemp'))      document.getElementById('weatherTemp').innerText = `${temp}°C`;
-        if (document.getElementById('weatherIcon'))      document.getElementById('weatherIcon').innerText = icon;
+        if (document.getElementById('weatherTemp'))       document.getElementById('weatherTemp').innerText = `${temp}°C`;
+        if (document.getElementById('weatherIcon'))       document.getElementById('weatherIcon').innerText = icon;
         if (document.getElementById('mobileWeatherTemp')) document.getElementById('mobileWeatherTemp').innerText = `${temp}°C`;
         if (document.getElementById('mobileWeatherIcon')) document.getElementById('mobileWeatherIcon').innerText = icon;
     } catch(e) { console.error("Weather load failed"); }
@@ -1065,16 +1320,10 @@ async function fetchJakartaWeather() {
 /* ── Show all staff birthdays ── */
 window.showAllStaffBirthdays = function() {
     const renderList = (users) => {
-        if (!users) {
-            openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-slate-500">No staff data available.</div>');
-            return;
-        }
+        if (!users) { openProfileModal('Staff Birthdays', '<div class="p-5 text-center text-slate-500">No staff data available.</div>'); return; }
         let html = `<div class="space-y-3">`;
         let hasBirthdayData = false;
-        const userList = Object.keys(users)
-            .map(key => ({ id: key, ...users[key] }))
-            .sort((a, b) => a.id.localeCompare(b.id));
-
+        const userList = Object.keys(users).map(key => ({ id: key, ...users[key] })).sort((a, b) => a.id.localeCompare(b.id));
         userList.forEach(u => {
             if (u && u.birthday) {
                 hasBirthdayData = true;
@@ -1082,13 +1331,9 @@ window.showAllStaffBirthdays = function() {
                 const bDate = u.birthday.replace(/-/g, '.');
                 const pImg = (typeof u.profileImg === 'string') ? u.profileImg : 'image-001.webp';
                 const imgSrc = pImg.includes('images/') ? pImg : `images/profile/${pImg}`;
-                html += `
-                <div class="flex items-center justify-between p-3 rounded-2xl border transition-colors hover:opacity-90"
-                     style="background:var(--dg2);border-color:var(--db)">
+                html += `<div class="flex items-center justify-between p-3 rounded-2xl border transition-colors hover:opacity-90" style="background:var(--dg2);border-color:var(--db)">
                     <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-10 h-10 rounded-full object-cover shadow-sm"
-                             style="border:1px solid var(--db)" loading="lazy"
-                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.id)}&background=0D8ABC&color=fff'">
+                        <img src="${imgSrc}" class="w-10 h-10 rounded-full object-cover shadow-sm" style="border:1px solid var(--db)" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.id)}&background=0D8ABC&color=fff'">
                         <div class="flex flex-col">
                             <span class="text-xs font-black text-white uppercase leading-tight">${u.displayName || u.id}</span>
                             <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">${u.role || 'Staff'}</span>
@@ -1106,17 +1351,11 @@ window.showAllStaffBirthdays = function() {
         openProfileModal('Staff Birthdays', html);
     };
 
-    if (cachedUsers) { renderList(cachedUsers); }
+    if (cachedUsers) renderList(cachedUsers);
     else {
-        openProfileModal('Staff Birthdays',
-            '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 day-spin"></div></div>');
-        db.ref('users').once('value', snap => {
-            cachedUsers = snap.val();
-            renderList(cachedUsers);
-        }).catch(() => {
-            openProfileModal('Staff Birthdays',
-                `<div class="p-5 text-center font-black" style="color:var(--da)">Failed to load data.</div>`);
-        });
+        openProfileModal('Staff Birthdays', '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 day-spin"></div></div>');
+        db.ref('users').once('value', snap => { cachedUsers = snap.val(); renderList(cachedUsers); })
+        .catch(() => openProfileModal('Staff Birthdays', `<div class="p-5 text-center font-black" style="color:var(--da)">Failed to load data.</div>`));
     }
 };
 
@@ -1124,167 +1363,180 @@ window.showAllStaffBirthdays = function() {
 function renderBirthdayModal() {
     const users = cachedUsers;
     let html = `<div class="space-y-3">`;
-    const userList = Object.keys(users)
-        .map(key => ({ id: key, ...users[key] }))
-        .sort((a, b) => a.id.localeCompare(b.id));
+    const userList = Object.keys(users).map(key => ({ id: key, ...users[key] })).sort((a, b) => a.id.localeCompare(b.id));
     userList.forEach(u => {
         if (u.birthday) {
             const pImg = u.profileImg || 'image-001.webp';
             const imgSrc = pImg.includes('/') ? pImg : `images/profile/${pImg}`;
-            html += `
-                <div class="flex items-center justify-between p-3 rounded-2xl border" style="background:var(--dg2);border-color:var(--db)">
-                    <div class="flex items-center gap-3">
-                        <img src="${imgSrc}" class="w-8 h-8 rounded-full object-cover" style="border:1px solid var(--db)"
-                             loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${u.id}'">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-black text-white uppercase">${u.displayName || u.id}</span>
-                            <span class="text-[10px] text-slate-400">${u.birthType || 'Solar'} ${u.birthday.replace(/-/g,'.')}</span>
-                        </div>
+            html += `<div class="flex items-center justify-between p-3 rounded-2xl border" style="background:var(--dg2);border-color:var(--db)">
+                <div class="flex items-center gap-3">
+                    <img src="${imgSrc}" class="w-8 h-8 rounded-full object-cover" style="border:1px solid var(--db)" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${u.id}'">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black text-white uppercase">${u.displayName || u.id}</span>
+                        <span class="text-[10px] text-slate-400">${u.birthType || 'Solar'} ${u.birthday.replace(/-/g,'.')}</span>
                     </div>
-                    <span class="text-[18px]">🎂</span>
-                </div>`;
+                </div>
+                <span class="text-[18px]">🎂</span>
+            </div>`;
         }
     });
     html += `</div>`;
     openProfileModal('Staff Birthdays', html);
 }
 
-/* ── [추가] 10분 미활동 자동 로그아웃 및 타이머 로직 ── */
+/* ── 온라인 스태프 패널 ── */
+(function initOnlineTracker() {
+    function formatElapsed(ms) {
+        const s = Math.floor(ms / 1000);
+        if (s < 60) return `${s}s ago`;
+        const m = Math.floor(s / 60);
+        if (m < 60) return `${m}m ago`;
+        return `${Math.floor(m/60)}h ago`;
+    }
+    function formatHHMM(ts) {
+        const d = new Date(ts);
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    function renderOnlinePanel(userList) {
+        const listEl = document.getElementById('onlineUsersList');
+        const countEl = document.getElementById('onlineCountBadge');
+        if (!listEl) return;
+
+        const now = Date.now();
+        // online_sts === 'ON' 인 유저 필터링 (5분 이내 lastSeen 또는 online_sts 기준)
+        const online = userList.filter(u => u.online_sts === 'ON').sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+
+        if (countEl) {
+            countEl.textContent = online.length;
+        }
+
+        if (online.length === 0) {
+            listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`;
+            return;
+        }
+
+        listEl.innerHTML = online.map((u, i) => {
+            const lastSeen = u.lastSeen || now;
+            const elapsed = now - lastSeen;
+            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
+            const loginStr = u.loginTime ? formatHHMM(u.loginTime) : '—';
+            const imgSrc = u.profileImg
+                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b&size=64`;
+            const isLive = elapsed < 120000;
+            return `<div class="online-user-item" style="animation-delay:${i*0.05}s">
+                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name || u.id}"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b'">
+                <div class="flex flex-col flex-1 min-w-0">
+                    <span class="online-user-name">${u.displayName || u.name || u.id}</span>
+                    <span style="font-size:0.46rem;color:#475569;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">${u.role || 'Staff'} · IN ${loginStr}</span>
+                </div>
+                <div class="flex flex-col items-end gap-0.5">
+                    <span class="online-user-time">${timeStr}</span>
+                    ${isLive ? '<span class="online-live-dot"></span>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function startOnlineListener() {
+        if (typeof db === 'undefined') { setTimeout(startOnlineListener, 500); return; }
+        db.ref('users').on('value', snap => {
+            const usersData = snap.val() || {};
+            const userList = Object.keys(usersData).map(uid => ({
+                id: uid, ...usersData[uid]
+            }));
+            renderOnlinePanel(userList);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(startOnlineListener, 800);
+    });
+})();
+
+/* ── 10분 미활동 자동 로그아웃 ── */
 (function() {
-    const INACTIVE_TIMEOUT = 10 * 60 * 1000; // 10분 (밀리초)
+    const INACTIVE_TIMEOUT = 10 * 60 * 1000;
     let remainingTime = INACTIVE_TIMEOUT;
     let timerInterval = null;
     let logoutTimeout = null;
 
-    // 타이머 UI 업데이트 함수
     function updateTimerUI() {
         const timerEl = document.getElementById('logout-timer');
         if (!timerEl) return;
-
         const minutes = Math.floor(remainingTime / 60000);
         const seconds = Math.floor((remainingTime % 60000) / 1000);
-        
-        // 00:00 포맷팅
-        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        timerEl.textContent = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        /* 1분 이하: 경고색 */
+        timerEl.style.color = remainingTime <= 60000 ? '#ef4444' : 'var(--da3)';
     }
 
-    // 타이머 리셋 함수 (사용자 활동 감지 시 호출)
     function resetInactivityTimer() {
         remainingTime = INACTIVE_TIMEOUT;
         updateTimerUI();
-
-        // 기존 타이머 클리어
         if (logoutTimeout) clearTimeout(logoutTimeout);
         if (timerInterval) clearInterval(timerInterval);
 
-        // 1초마다 남은 시간 감소 및 UI 갱신
         timerInterval = setInterval(() => {
             remainingTime -= 1000;
-            if (remainingTime <= 0) {
-                clearInterval(timerInterval);
-            }
+            if (remainingTime <= 0) clearInterval(timerInterval);
             updateTimerUI();
         }, 1000);
 
-// 10분 뒤 자동 로그아웃 실행 (수정본)
         logoutTimeout = setTimeout(() => {
             if (typeof window.logout === 'function') {
-                // [중요] 세션을 지우기 전에 유저명을 먼저 안전하게 변수에 확보합니다.
                 const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
-                
-                // 후속 처리를 담당할 로그아웃 공통 함수
                 const finalizeLogout = () => {
                     sessionStorage.clear();
                     localStorage.removeItem('loggedInUser');
-                    firebase.auth().signOut().finally(() => {
-                        window.location.replace("index.html");
-                    });
+                    firebase.auth().signOut().finally(() => { window.location.replace("index.html"); });
                 };
-                
-                const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
-                
-                // 유저 정보와 DB가 확인되면 상태를 먼저 'OFF'로 변경한 뒤 로그아웃을 진행합니다.
-                if (name && db) {
-                    db.ref('users/' + name).update({ online_sts: 'OFF' })
-                        .then(finalizeLogout)
-                        .catch((err) => {
-                            console.error("Auto logout status update failed:", err);
-                            finalizeLogout();
-                        });
-                } else {
-                    finalizeLogout();
-                }
+                const dbRef = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+                if (name && dbRef) {
+                    dbRef.ref('users/' + name).update({ online_sts: 'OFF' }).then(finalizeLogout).catch(finalizeLogout);
+                } else finalizeLogout();
             }
         }, INACTIVE_TIMEOUT);
     }
 
-    // 사용자 활동 이벤트 리스너 등록
-    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    activityEvents.forEach(event => {
+    ['mousedown','mousemove','keypress','scroll','touchstart'].forEach(event => {
         window.addEventListener(event, resetInactivityTimer, { passive: true });
     });
-
-    // 페이지 로드 시 타이머 최초 실행
-    document.addEventListener('DOMContentLoaded', () => {
-        resetInactivityTimer();
-    });
+    document.addEventListener('DOMContentLoaded', () => { resetInactivityTimer(); });
 })();
 
-/* ── [추가 추천] 브라우저 강제 종료 및 네트워크 단절 대응 ── */
+/* ── 브라우저 강제 종료 대응 ── */
 function setupDisconnectHook() {
     const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
-    const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
-
-    if (name && db) {
-        // Firebase 서버에 예약: "나와 연결이 끊어지면 이 유저의 online_sts를 OFF로 변경해라"
-        db.ref('users/' + name + '/online_sts').onDisconnect().set('OFF');
+    const dbRef = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+    if (name && dbRef) {
+        dbRef.ref('users/' + name + '/online_sts').onDisconnect().set('OFF');
     }
 }
-
-// 페이지 로드 시 예약 등록
-document.addEventListener('DOMContentLoaded', () => {
-    // DB 유동적 연결 대기를 위해 약간의 지연 후 실행하거나 기존 init 구조에 포함
-    setTimeout(setupDisconnectHook, 1000);
-});
+document.addEventListener('DOMContentLoaded', () => { setTimeout(setupDisconnectHook, 1000); });
 
 /* ── Logout ── */
 window.logout = function() {
     if (!confirm("Log out?")) return;
-
     const name = sessionStorage.getItem('loggedInUser');
-
-    // 로그아웃 공통 처리 함수
     const doLogout = () => {
         sessionStorage.clear();
         localStorage.removeItem('loggedInUser');
-        
-        // Firebase Auth 로그아웃 후 페이지 이동
-        firebase.auth().signOut().finally(() => {
-            window.location.replace("index.html");
-        });
+        firebase.auth().signOut().finally(() => { window.location.replace("index.html"); });
     };
-
-    // Firebase Realtime Database 인스턴스 확인 (기존 코드의 database 또는 db 변수명에 맞춰 사용하세요)
-    // 여기서는 표준적인 firebase.database()를 기준으로 작성했습니다.
-    const db = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
-
-    if (name && db) {
-        db.ref('users/' + name).update({ online_sts: 'OFF' })
-            .then(doLogout)
-            .catch((error) => {
-                console.error("Status update failed:", error);
-                doLogout(); // 에러가 발생해도 로그아웃은 진행
-            });
-    } else {
-        doLogout();
-    }
+    const dbRef = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
+    if (name && dbRef) {
+        dbRef.ref('users/' + name).update({ online_sts: 'OFF' }).then(doLogout).catch(doLogout);
+    } else doLogout();
 };
 
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams    = new URLSearchParams(window.location.search);
-    const tabParam     = urlParams.get('tab');
-    const initialPage  = sessionStorage.getItem('targetPage');
+    const urlParams   = new URLSearchParams(window.location.search);
+    const tabParam    = urlParams.get('tab');
+    const initialPage = sessionStorage.getItem('targetPage');
     sessionStorage.removeItem('targetPage');
     setTimeout(() => {
         if (tabParam) { switchTab(tabParam); }

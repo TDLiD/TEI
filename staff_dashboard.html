@@ -827,17 +827,22 @@ db.ref(`attendance/${todayStr}`).on('value', snap => {
     updateTodayStrip(snap.val());
 });
     /* ── Leave Status Alert ── */
-    function checkLeaveStatus(uid) {
-        db.ref(`leaves/${uid}/${new Date().getFullYear()}`).on('value', snap => {
-            const leaves = snap.val(); if (!leaves) return;
-            const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
-            const alertDiv = document.getElementById('leaveStatusAlert');
-            const content = document.getElementById('leaveAlertContent');
-            const icon = document.getElementById('leaveAlertIcon');
-            const title = document.getElementById('leaveAlertTitle');
-            const msg = document.getElementById('leaveAlertMsg');
-            if (target) {
-                alertDiv.classList.add('visible');
+// ✅ 수정
+function checkLeaveStatus(uid) {
+    db.ref(`leaves/${uid}/${new Date().getFullYear()}`).on('value', snap => {
+        const alertDiv = document.getElementById('leaveStatusAlert');
+        if (!alertDiv) {                                         // ← 추가
+            db.ref(`leaves/${uid}/${new Date().getFullYear()}`).off(); // ← 추가
+            return;                                              // ← 추가
+        }
+        const leaves = snap.val(); if (!leaves) return;
+        const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
+        const content = document.getElementById('leaveAlertContent');
+        const icon    = document.getElementById('leaveAlertIcon');
+        const title   = document.getElementById('leaveAlertTitle');
+        const msg     = document.getElementById('leaveAlertMsg');
+        if (target) {
+            alertDiv.classList.add('visible');
                 if (target.status === 'Pending') {
                     content.className = 'sm-leave-alert pending animate-pulse-slow';
                     icon.innerText = '⏳'; title.className = 'sm-leave-alert-title pending'; title.innerText = 'Leave Request Pending';
@@ -922,12 +927,32 @@ db.ref(`attendance/${todayStr}`).on('value', snap => {
 
     /* ── Config ── */
     let config = { LLMAPIkey:"", autoLeave:"18:00", stdAttendance:"08:00" };
-    db.ref('settings/config').on('value', snap => {
-        const data=snap.val(); if(data) { config={...config,...data}; const e=document.getElementById('displayStdTime'); if(e) e.innerText=config.stdAttendance; standardTime=config.stdAttendance; }
-    });
-    db.ref('settings/config/stdAttendance').on('value', snap => {
-        const v=snap.val(); if(v) { standardTime=v; const e=document.getElementById('displayStdTime'); if(e) e.innerText=v; if(btnIn) btnIn.disabled=false; }
-    });
+
+// ✅ 수정 — 핵심 DOM(manualTime)이 없으면 리스너 해제
+db.ref('settings/config').on('value', snap => {
+    if (!document.getElementById('manualTime')) {          // ← 추가
+        db.ref('settings/config').off(); return;           // ← 추가
+    }
+    const data = snap.val();
+    if(data) {
+        config = {...config, ...data};
+        const e = document.getElementById('displayStdTime');
+        if(e) e.innerText = config.stdAttendance;
+        standardTime = config.stdAttendance;
+    }
+});
+db.ref('settings/config/stdAttendance').on('value', snap => {
+    if (!document.getElementById('manualTime')) {          // ← 추가
+        db.ref('settings/config/stdAttendance').off(); return; // ← 추가
+    }
+    const v = snap.val();
+    if(v) {
+        standardTime = v;
+        const e = document.getElementById('displayStdTime');
+        if(e) e.innerText = v;
+        if(btnIn) btnIn.disabled = false;
+    }
+});
 
 
     /* ── Handle Attendance ── */
@@ -1029,10 +1054,15 @@ if(confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
         const mye=document.getElementById('currentMonthYear');
         if(mye) mye.innerText=viewDate.toLocaleString('en-US',{month:'long',year:'numeric'}).toUpperCase();
         db.ref('attendance').off();
-        db.ref('attendance').on('value', snap => {
-            const tbody=document.getElementById('calendarBody'); if(!tbody) return;
-            const data=snap.val()||{};
-            updateAttendanceStats(data);
+// ✅ 수정 — calendarBody 없으면 리스너까지 해제
+db.ref('attendance').on('value', snap => {
+    const tbody = document.getElementById('calendarBody');
+    if (!tbody) {
+        db.ref('attendance').off();   // ← 추가
+        return;
+    }
+    const data = snap.val()||{};
+    updateAttendanceStats(data);
 // renderCalendar 함수 안 updateAttendanceStats 호출 아래에 추가
 function updateMonthSummary(data) {
     const vy = viewDate.getFullYear(), vm = viewDate.getMonth();
@@ -1450,4 +1480,10 @@ window.deleteFutureLeave = function(dateStr) {
     document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); },800); });
     renderCalendar();
 })();
+
+// 스크립트 맨 아래에 임시로 추가하여 에러 방지
+window.setKpi = function(...args) {
+    console.log("외부 또는 시스템에서 setKpi를 호출했으나 정의되어 있지 않아 임시 함수가 실행되었습니다.", args);
+};
+
 </script>
