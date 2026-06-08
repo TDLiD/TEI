@@ -554,31 +554,35 @@
     const REP_COLORS   = { Completed:'#10b981', 'In Progress':'#3b82f6', Pending:'#f59e0b' };
 
     /* ════════════════════ DATE UTILS ════════════════════ */
-    function getPeriodRange() {
-        const now = new Date();
-        let start, end, label;
+function getPeriodRange() {
+    // ★ anchor 체크 — DOM이 사라졌으면 즉시 null 반환
+    const labelEl = document.getElementById('periodLabel');
+    if (!labelEl) return null;
 
-        if (currentPeriod === 'week') {
-            const base = new Date(now);
-            base.setDate(now.getDate() + viewOffset * 7);
-            const dow = base.getDay();
-            start = new Date(base); start.setDate(base.getDate() - dow);
-            end   = new Date(start); end.setDate(start.getDate() + 6);
-            label = `Week of ${fmt(start)} – ${fmt(end)}`;
-        } else if (currentPeriod === 'month') {
-            const d = new Date(now.getFullYear(), now.getMonth() + viewOffset, 1);
-            start = d;
-            end   = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-            label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-        } else {
-            const y = now.getFullYear() + viewOffset;
-            start = new Date(y, 0, 1);
-            end   = new Date(y, 11, 31);
-            label = `Year ${y}`;
-        }
-        document.getElementById('periodLabel').innerText = label;
-        return { start: fmtDate(start), end: fmtDate(end) };
+    const now = new Date();
+    let start, end, label;
+
+    if (currentPeriod === 'week') {
+        const base = new Date(now);
+        base.setDate(now.getDate() + viewOffset * 7);
+        const dow = base.getDay();
+        start = new Date(base); start.setDate(base.getDate() - dow);
+        end   = new Date(start); end.setDate(start.getDate() + 6);
+        label = `Week of ${fmt(start)} – ${fmt(end)}`;
+    } else if (currentPeriod === 'month') {
+        const d = new Date(now.getFullYear(), now.getMonth() + viewOffset, 1);
+        start = d;
+        end   = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+    } else {
+        const y = now.getFullYear() + viewOffset;
+        start = new Date(y, 0, 1);
+        end   = new Date(y, 11, 31);
+        label = `Year ${y}`;
     }
+    labelEl.innerText = label;
+    return { start: fmtDate(start), end: fmtDate(end) };
+}
 
     function fmtDate(d) { return d.toISOString().split('T')[0]; }
     function fmt(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
@@ -637,13 +641,18 @@
     const tickOpts = (cb) => ({ color: '#64748b', font: { size: 9 }, callback: cb });
 
     /* ════════════════════ MAIN RENDER ════════════════════ */
-    async function render() {
-        const range = getPeriodRange();
-        await loadAll();
-        if (currentTab === 'att') renderAtt(range);
-        if (currentTab === 'rep') renderRep(range);
-        if (currentTab === 'vac') renderVac(range);
-    }
+async function render() {
+    // ★ anchor 체크
+    if (!document.getElementById('stats-root') && !document.querySelector('.stats-root')) return;
+    
+    const range = getPeriodRange();
+    if (!range) return; // ★ getPeriodRange가 null 반환하면 중단
+
+    await loadAll();
+    if (currentTab === 'att') renderAtt(range);
+    if (currentTab === 'rep') renderRep(range);
+    if (currentTab === 'vac') renderVac(range);
+}
 
     async function loadAll() {
         if (Object.keys(cachedAtt).length === 0) {
@@ -664,6 +673,8 @@
        ATTENDANCE RENDER
     ══════════════════════════════════════════════ */
     function renderAtt({ start, end }) {
+    if (!document.getElementById('attBarChart')) return; // ★
+
         // Aggregate: { user: { ATT:n, LATE:n, ... } }
         const agg = {}, checkoutData = {};
 
@@ -827,6 +838,8 @@
        REPORT RENDER
     ══════════════════════════════════════════════ */
     function renderRep({ start, end }) {
+    if (!document.getElementById('repBarChart')) return; // ★
+
         const workdays = workdaysBetween(start, end);
         const today = fmtDate(new Date());
 
@@ -981,6 +994,8 @@
        VACATION RENDER
     ══════════════════════════════════════════════ */
     function renderVac({ start, end }) {
+    if (!document.getElementById('vacBarChart')) return; // ★
+
         // Flatten all leave records
         const allLeaves = [];
         Object.entries(cachedVac).forEach(([userId, yearsData]) => {
@@ -1141,16 +1156,19 @@
     }
 
     /* ════════════════════ HELPERS ════════════════════ */
-    function setKpi(a, aSub, b, bSub, c, cSub, d, dSub) {
-        document.getElementById('kpiA').innerText = a ?? '—';
-        document.getElementById('kpiASub').innerText = aSub;
-        document.getElementById('kpiB').innerText = b ?? '—';
-        document.getElementById('kpiBSub').innerText = bSub;
-        document.getElementById('kpiC').innerText = c ?? '—';
-        document.getElementById('kpiCSub').innerText = cSub;
-        document.getElementById('kpiD').innerText = d ?? '—';
-        document.getElementById('kpiDSub').innerText = dSub;
-    }
+function setKpi(a, aSub, b, bSub, c, cSub, d, dSub) {
+    const get = id => document.getElementById(id);
+    // ★ kpiA가 없으면 페이지가 사라진 것 — 전부 skip
+    if (!get('kpiA')) return;
+    get('kpiA').innerText    = a    ?? '—';
+    get('kpiASub').innerText = aSub ?? '';
+    get('kpiB').innerText    = b    ?? '—';
+    get('kpiBSub').innerText = bSub ?? '';
+    get('kpiC').innerText    = c    ?? '—';
+    get('kpiCSub').innerText = cSub ?? '';
+    get('kpiD').innerText    = d    ?? '—';
+    get('kpiDSub').innerText = dSub ?? '';
+}
 
     function renderRankList(elId, ranks, color) {
         document.getElementById(elId).innerHTML = ranks.slice(0, 8).map((r, i) => `
@@ -1168,11 +1186,14 @@
     window.refreshStatistics = render;
 
 // staff_statistic.html 내부 스크립트 예시
+// IIFE 맨 끝 — 기존 코드 교체
 window._leavePageCleanup = function() {
-    console.log("Cleaning up statistics page...");
-    // 통계 페이지 전용 Firebase 리스너 해제
-    db.ref('attendance').off(); 
-    // 차트 객체 파괴 등
+    db.ref('attendance').off();
+    db.ref('reports').off();
+    db.ref('leaves').off();
+    // refreshStatistics가 남아있으면 제거
+    window.refreshStatistics = null;
+    window.changeViewYear = null;
 };
 
 

@@ -777,6 +777,7 @@ function getJakartaDate() {
 (function () {
     const user = sessionStorage.getItem('loggedInUser');
     const db = firebase.database();
+    let leaveStatusRef = null; // ★ 추가
 
     /* Welcome */
 const welcomeMsg = document.getElementById('mainWelcomeMsg');
@@ -826,23 +827,28 @@ db.ref(`attendance/${todayStr}`).on('value', snap => {
     }
     updateTodayStrip(snap.val());
 });
-    /* ── Leave Status Alert ── */
-// ✅ 수정
+
+
 function checkLeaveStatus(uid) {
-    db.ref(`leaves/${uid}/${new Date().getFullYear()}`).on('value', snap => {
+    leaveStatusRef = db.ref(`leaves/${uid}/${new Date().getFullYear()}`); // ★
+    leaveStatusRef.on('value', snap => {
         const alertDiv = document.getElementById('leaveStatusAlert');
-        if (!alertDiv) {                                         // ← 추가
-            db.ref(`leaves/${uid}/${new Date().getFullYear()}`).off(); // ← 추가
-            return;                                              // ← 추가
+        if (!alertDiv) {
+            leaveStatusRef.off(); // ★
+            return;
         }
-        const leaves = snap.val(); if (!leaves) return;
-        const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
         const content = document.getElementById('leaveAlertContent');
         const icon    = document.getElementById('leaveAlertIcon');
         const title   = document.getElementById('leaveAlertTitle');
         const msg     = document.getElementById('leaveAlertMsg');
-        if (target) {
-            alertDiv.classList.add('visible');
+        if (!content || !icon || !title || !msg) {
+            leaveStatusRef.off(); // ★
+            return;
+        }
+            const leaves = snap.val(); if (!leaves) return;
+            const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
+            if (target) {
+                alertDiv.classList.add('visible');
                 if (target.status === 'Pending') {
                     content.className = 'sm-leave-alert pending animate-pulse-slow';
                     icon.innerText = '⏳'; title.className = 'sm-leave-alert-title pending'; title.innerText = 'Leave Request Pending';
@@ -876,20 +882,22 @@ function checkLeaveStatus(uid) {
         });
     }
 
-    /* ── Live Time ── */
-/* ── Live Time ── */
-    function updateLiveTime() {
-        if (document.activeElement === timeInput) return;
-        const n = getJakartaDate();
-        timeInput.value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-    }
-    setInterval(updateLiveTime, 1000);
-    updateLiveTime();
+function updateLiveTime() {
+    if (!document.getElementById('manualTime')) return; // ★
+    if (document.activeElement === timeInput) return;
+    const n = getJakartaDate();
+    timeInput.value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}
+
+const liveTimeTimer = setInterval(updateLiveTime, 1000);
+updateLiveTime();
 
     /* ── Late Warning ── */
-    function checkLateWarning() {
-        if (!standardTime) return;
-        const now = getJakartaDate();
+function checkLateWarning() {
+    if (!document.getElementById('btnIn')) return; // ★
+    if (!standardTime) return;
+    const now = getJakartaDate();
+
         const [sH, sM] = standardTime.split(':').map(Number);
         const stdMins = sH * 60 + sM;
         const nowMins = now.getHours() * 60 + now.getMinutes();
@@ -913,8 +921,8 @@ function checkLeaveStatus(uid) {
             }
         });
     }
-    setInterval(checkLateWarning, 30000);
-    checkLateWarning();
+const lateWarnTimer = setInterval(checkLateWarning, 30000);
+checkLateWarning();
 
     timeInput.addEventListener('input', e => {
         let v = e.target.value.replace(/[^0-9]/g, '');
@@ -1479,6 +1487,17 @@ window.deleteFutureLeave = function(dateStr) {
 
     document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); },800); });
     renderCalendar();
+    // ★ 페이지 이탈 시 정리 — switchTab()이 호출
+window._leavePageCleanup = function() {
+        clearInterval(liveTimeTimer);
+        clearInterval(lateWarnTimer);
+        db.ref(`attendance/${todayStr}`).off();
+        db.ref('attendance').off();
+        db.ref('settings/config').off();
+        db.ref('settings/config/stdAttendance').off();
+        if (leaveStatusRef) { leaveStatusRef.off(); leaveStatusRef = null; } // ★
+    };
+
 })();
 
 // 스크립트 맨 아래에 임시로 추가하여 에러 방지

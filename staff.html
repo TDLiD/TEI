@@ -1228,20 +1228,10 @@ fetchJakartaWeather();
 
 /* ── Tab switcher ── */
 window.switchTab = function(t) {
-    try {
-        const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        firebase.database().ref(`attendance/${todayStr}`).off();
-        firebase.database().ref('attendance').off();
-        firebase.database().ref('settings/config').off();
-        firebase.database().ref('settings/config/stdAttendance').off();
-    } catch(e) { console.warn('Listener cleanup error:', e); }
-
     if (typeof window._leavePageCleanup === 'function') {
         window._leavePageCleanup();
         window._leavePageCleanup = null;
     }
-
     const pB = document.querySelectorAll('.pc-tab-btn');
     const mB = document.querySelectorAll('.mobile-tab-btn');
     const tabMapping = {
@@ -1253,7 +1243,6 @@ window.switchTab = function(t) {
     const activeTab = tabMapping[t] ? t : 'dash';
     pB.forEach(b => b.classList.remove('tab-active'));
     mB.forEach(b => b.classList.remove('mobile-tab-active'));
-
     const navIndex = { dash:0, work:1, schedule:2, vacation:3, statistic:4, setting:5, photos:6 };
     const i = navIndex[activeTab];
     if (i !== undefined) {
