@@ -1,637 +1,841 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+
 <style>
-/* ══════════════════════════════════════════
-   STAFF DASHBOARD — 3D DARK COCKPIT THEME
-   Deep navy + electric accents
-   Pretendard / SF Mono
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   STAFF DASHBOARD — 7-DAY ADAPTIVE THEME SYSTEM
+   CSS Custom Properties injected by JS per day-of-week
+   All colours flow from --t-* tokens → zero per-day duplication
+══════════════════════════════════════════════════════════ */
 
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
-
+/* ── Day-neutral token defaults (Mon / Deep-Space baseline) ── */
 :root {
-    --bg:       #040810;
-    --surface:  #080f1e;
-    --surface2: #0d1628;
-    --surface3: #111e33;
-    --border:   rgba(255,255,255,0.06);
-    --border2:  rgba(255,255,255,0.12);
-    --text:     #f1f5f9;
-    --muted:    #475569;
-    --dim:      #1e293b;
-    --green:    #10b981;
-    --red:      #f43f5e;
-    --blue:     #3b82f6;
-    --amber:    #f59e0b;
-    --cyan:     #06b6d4;
-    --green-dim:  rgba(16,185,129,0.12);
-    --red-dim:    rgba(244,63,94,0.12);
-    --blue-dim:   rgba(59,130,246,0.12);
-    --amber-dim:  rgba(245,158,11,0.12);
+  /* Surface */
+  --t-bg:        #040810;
+  --t-surface:   #080f1e;
+  --t-surface2:  #0d1628;
+  --t-surface3:  #111e33;
+  --t-border:    rgba(255,255,255,0.06);
+  --t-border2:   rgba(255,255,255,0.12);
+  /* Text */
+  --t-text:      #f1f5f9;
+  --t-muted:     #475569;
+  --t-dim:       #1e293b;
+  /* Accent */
+  --t-accent:    #3b82f6;
+  --t-accent2:   #06b6d4;
+  --t-accent-glow: rgba(59,130,246,0.18);
+  --t-accent-gradient: linear-gradient(90deg,#3b82f6,#06b6d4);
+  /* Semantic */
+  --t-green:     #10b981;   --t-green-dim:  rgba(16,185,129,0.12);
+  --t-red:       #f43f5e;   --t-red-dim:    rgba(244,63,94,0.12);
+  --t-amber:     #f59e0b;   --t-amber-dim:  rgba(245,158,11,0.12);
+  --t-cyan:      #06b6d4;
+  /* Card 3-D */
+  --t-card-shine:  rgba(255,255,255,0.07);
+  --t-card-bevel:  linear-gradient(90deg,transparent,rgba(99,179,237,0.28),transparent);
+  --t-card-face:   linear-gradient(155deg,rgba(255,255,255,0.04) 0%,transparent 55%);
+  --t-card-radius: 18px;
+  --t-card-shadow-near: rgba(0,0,0,0.3);
+  --t-card-shadow-far:  rgba(0,0,0,0.45);
+  /* Typography */
+  --t-font-display: 'Pretendard', sans-serif;
+  --t-font-ui:      'Pretendard', sans-serif;
+  --t-font-mono:    'SF Mono','Fira Code',monospace;
 }
 
-/* ── Base ── */
+/* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── 3D Card Base ── */
-.card-3d {
-    position: relative;
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 18px;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        inset 0 -1px 0 rgba(0,0,0,0.3),
-        0 8px 24px rgba(0,0,0,0.45),
-        0 2px 8px rgba(0,0,0,0.3);
-    transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), box-shadow 0.3s ease;
-}
-.card-3d::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,179,237,0.3), transparent);
-    pointer-events: none;
-}
-.card-3d:hover {
-    transform: translateY(-4px) rotateX(3deg);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 20px 40px rgba(0,0,0,0.6),
-        0 6px 16px rgba(0,0,0,0.4);
-}
-
-/* ── Hero Card ── */
-.sm-hero {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 18px;
-    padding: 18px;
-    position: relative; overflow: hidden;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        0 8px 24px rgba(0,0,0,0.45),
-        0 2px 8px rgba(0,0,0,0.3);
-    transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), box-shadow 0.3s ease;
-}
-.sm-hero::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.35), transparent);
-}
-.sm-hero::after {
-    content: '';
-    position: absolute; top: -40px; right: -40px;
-    width: 120px; height: 120px;
-    background: radial-gradient(circle, rgba(59,130,246,0.18), transparent 70%);
-    border-radius: 50%;
-}
-.sm-hero:hover {
-    transform: translateY(-4px) rotateX(3deg);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 20px 40px rgba(0,0,0,0.6);
-}
-
-.sm-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.sm-hero-label {
-    font-size: 8px; font-weight: 900; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.14em;
-}
-.sm-hero-name {
-    font-size: 18px; font-weight: 900; color: var(--text);
-    letter-spacing: -0.02em; margin-top: 2px; line-height: 1;
-    text-shadow: 0 0 20px rgba(59,130,246,0.2);
-}
-.sm-live-date {
-    font-size: 9px; font-weight: 800; color: var(--blue);
-    background: var(--blue-dim);
-    border: 1px solid rgba(59,130,246,0.25);
-    padding: 3px 9px; border-radius: 7px; white-space: nowrap;
-    box-shadow: 0 0 10px rgba(59,130,246,0.15);
-}
-
-.sm-fortune {
-    margin-top: 10px; padding: 8px 10px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border); border-radius: 10px;
-    font-size: 10px; color: #64748b; font-weight: 700;
-}
-
-/* ── Leave Alert ── */
-#leaveStatusAlert { display: none; }
-#leaveStatusAlert.visible { display: block; }
-.sm-leave-alert {
-    border-radius: 14px; padding: 12px 14px;
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-}
-.sm-leave-alert.pending {
-    background: linear-gradient(135deg, var(--amber-dim), rgba(245,158,11,0.06));
-    border: 1px solid rgba(245,158,11,0.35);
-    border-top: 1px solid rgba(245,158,11,0.5);
-}
-.sm-leave-alert.rejected {
-    background: linear-gradient(135deg, var(--red-dim), rgba(244,63,94,0.06));
-    border: 1px solid rgba(244,63,94,0.35);
-    border-top: 1px solid rgba(244,63,94,0.5);
-}
-.sm-leave-alert-icon { font-size: 18px; flex-shrink: 0; }
-.sm-leave-alert-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
-.sm-leave-alert-title.pending { color: var(--amber); text-shadow: 0 0 10px rgba(245,158,11,0.4); }
-.sm-leave-alert-title.rejected { color: var(--red); text-shadow: 0 0 10px rgba(244,63,94,0.4); }
-.sm-leave-alert-msg { font-size: 10px; color: var(--text); font-weight: 600; margin-top: 2px; }
-.sm-leave-alert-close { margin-left: auto; color: #475569; cursor: pointer; font-size: 16px; flex-shrink: 0; transition: color 0.2s; }
-.sm-leave-alert-close:hover { color: var(--text); }
-
-/* ── Bar ── */
-.sm-bar {
-    width: 100%; height: 3px;
-    background: var(--dim); border-radius: 10px; overflow: hidden; margin-bottom: 8px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
-}
-.sm-bar-fill {
-    height: 100%; background: var(--blue); border-radius: 10px;
-    transition: width 1s ease;
-    box-shadow: 0 0 8px rgba(59,130,246,0.4);
-}
-.sm-bar-fill.warning { background: var(--red); box-shadow: 0 0 8px rgba(244,63,94,0.4); }
-#warningIcon { display: none; }
-#warningIcon.visible { display: inline; }
-
-/* ── Today Status Strip ── */
-.sm-today-strip {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 16px; padding: 14px 16px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    align-content: center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.sm-today-strip:hover {
-    transform: translateY(-3px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 28px rgba(0,0,0,0.5);
-}
-.sm-today-item { display: flex; flex-direction: column; gap: 3px; }
-.sm-today-lbl { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-.sm-today-val { font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
-.sm-today-val.in { color: var(--green); text-shadow: 0 0 12px rgba(16,185,129,0.4); }
-.sm-today-val.out { color: #60a5fa; text-shadow: 0 0 12px rgba(59,130,246,0.4); }
-.sm-today-val.empty { color: var(--dim); font-size: 13px; }
-
-/* ── Attendance Panel ── */
-.sm-panel {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 20px; padding: 18px; flex: 1;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.45);
-    position: relative;
-}
-.sm-panel::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(6,182,212,0.25), transparent);
-}
-.sm-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.sm-panel-title {
-    font-size: 8px; font-weight: 900; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.12em;
-}
-
-/* ── Time Input & Select ── */
-.sm-time-label { font-size: 8px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.sm-time-input {
-    width: 100%;
-    background: linear-gradient(145deg, #050a14, #070d1a);
-    color: var(--text); font-size: 24px; font-weight: 900; text-align: center;
-    letter-spacing: 0.05em; padding: 10px;
-    border-radius: 12px;
-    border: 1px solid var(--dim);
-    outline: none;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.sm-time-input:focus {
-    border-color: var(--blue);
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 0 0 3px rgba(59,130,246,0.12);
-}
-.sm-select {
-    width: 100%;
-    background: linear-gradient(145deg, #050a14, #070d1a);
-    color: var(--text); font-weight: 800;
-    padding: 10px 12px; border-radius: 12px;
-    border: 1px solid var(--dim); outline: none; cursor: pointer;
-    font-size: 11px; font-family: 'SF Mono', monospace; margin-bottom: 10px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-.sm-select:focus {
-    border-color: var(--blue);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 3px rgba(59,130,246,0.12);
-}
-/* 이 부분을 추가하세요 */
-.sm-select option {
-    background-color: #0d1628; /* 또는 var(--surface2) */
-    color: #f1f5f9;            /* 또는 var(--text) */
-}
-
-/* ── Buttons ── */
-.sm-btn {
-    padding: 12px 8px; border-radius: 12px; border: none; cursor: pointer;
-    font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
-    transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
-    font-family: 'Pretendard', sans-serif;
-    position: relative;
-}
-.sm-btn:active { transform: scale(0.96) translateY(1px); }
-.sm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.sm-btn.in {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(16,185,129,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.sm-btn.in:hover:not(:disabled) {
-    background: linear-gradient(135deg, #34d399, #10b981);
-    box-shadow: 0 6px 20px rgba(16,185,129,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
-    transform: translateY(-2px);
-}
-.sm-btn.out {
-    background: linear-gradient(135deg, #f43f5e, #e11d48);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(244,63,94,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.sm-btn.out:hover:not(:disabled) {
-    background: linear-gradient(135deg, #fb7185, #f43f5e);
-    box-shadow: 0 6px 20px rgba(244,63,94,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
-    transform: translateY(-2px);
-}
-.sm-btn.special {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: #fff; width: 100%;
-    box-shadow: 0 4px 14px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.sm-btn.special:hover {
-    background: linear-gradient(135deg, #60a5fa, #3b82f6);
-    box-shadow: 0 6px 20px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
-    transform: translateY(-2px);
-}
-
-/* All Staff button */
-.sm-all-staff-btn {
-    display: flex; align-items: center; gap: 10px;
-    background: linear-gradient(145deg, var(--surface2), var(--surface));
-    border: 1px solid var(--border); border-top: 1px solid var(--border2);
-    border-radius: 14px; padding: 10px 14px; cursor: pointer;
-    transition: all 0.25s ease; color: var(--text); width: 100%;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 10px rgba(0,0,0,0.3);
-}
-.sm-all-staff-btn:hover {
-    border-color: rgba(59,130,246,0.3);
-    background: linear-gradient(145deg, rgba(59,130,246,0.08), var(--surface));
-    box-shadow: 0 6px 18px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.07);
-    transform: translateY(-2px);
-}
-.sm-all-staff-btn img { width: 28px; height: 28px; object-fit: contain; }
-.sm-all-staff-btn span { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
-.sm-all-staff-btn .arrow { margin-left: auto; color: var(--muted); font-size: 11px; }
-
-/* ── Right Panel: Calendar ── */
-.sm-right { display: flex; flex-direction: column; gap: 10px; }
-.sm-cal-card {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 22px; padding: 18px; flex: 1;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 12px 32px rgba(0,0,0,0.5);
-    position: relative;
-}
-.sm-cal-card::before {
-    content: '';
-    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.25), rgba(6,182,212,0.2), transparent);
-}
-
-.sm-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
-.sm-cal-title {
-    font-size: 16px; font-weight: 900; color: var(--text);
-    letter-spacing: -0.01em; font-style: italic;
-    text-decoration: underline; text-decoration-color: var(--blue); text-underline-offset: 4px;
-    text-shadow: 0 0 20px rgba(59,130,246,0.2);
-}
-.sm-cal-nav {
-    display: flex;
-    background: linear-gradient(145deg, var(--surface3), var(--surface2));
-    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.3);
-}
-.sm-nav-btn {
-    padding: 5px 12px; font-size: 9px; font-weight: 900; color: var(--muted);
-    background: none; border: none; cursor: pointer;
-    font-family: 'SF Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
-    transition: all 0.15s;
-}
-.sm-nav-btn:hover {
-    color: var(--text);
-    background: rgba(59,130,246,0.1);
-    box-shadow: inset 0 0 8px rgba(59,130,246,0.1);
-}
-.sm-nav-btn.today-btn { color: var(--blue); text-shadow: 0 0 8px rgba(59,130,246,0.4); }
-
-/* ── Calendar Table ── */
-.sm-cal-table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
-.sm-cal-table th {
-    padding: 6px 2px; font-size: 8px; font-weight: 900;
-    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
-    text-align: center; border-bottom: 1px solid var(--border);
-}
-.sm-cal-table th.sun { color: rgba(244,63,94,0.8); text-shadow: 0 0 6px rgba(244,63,94,0.3); }
-.sm-cal-table th.sat { color: rgba(59,130,246,0.8); text-shadow: 0 0 6px rgba(59,130,246,0.3); }
-
-.sm-cal-table td {
-    height: 68px; vertical-align: top; padding: 4px;
-    border: 1px solid rgba(20,30,50,0.8);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.23,1,0.32,1);
-    position: relative;
-    background: linear-gradient(145deg, var(--surface3) 0%, var(--surface2) 100%);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.sm-cal-table td:hover {
-    background: linear-gradient(145deg, rgba(59,130,246,0.1) 0%, var(--surface2) 100%);
-    border-color: rgba(59,130,246,0.25);
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 6px 16px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
-    z-index: 2;
-}
-.sm-cal-table td.sun-cell { background: linear-gradient(145deg, rgba(244,63,94,0.05), var(--surface2)); }
-.sm-cal-table td.sat-cell { background: linear-gradient(145deg, rgba(59,130,246,0.05), var(--surface2)); }
-.sm-cal-table td.today-highlight {
-    background: linear-gradient(145deg, rgba(59,130,246,0.12), rgba(6,182,212,0.06)) !important;
-    border-color: rgba(59,130,246,0.4) !important;
-    box-shadow: 0 0 0 1px rgba(59,130,246,0.2), 0 4px 12px rgba(59,130,246,0.15) !important;
-}
-
-.sm-cal-date { font-size: 9px; font-weight: 900; color: var(--muted); margin-bottom: 2px; padding: 1px 2px; }
-.sm-cal-date.sun { color: rgba(244,63,94,0.65); }
-.sm-cal-date.sat { color: rgba(59,130,246,0.65); }
-.sm-cal-date.today { color: var(--blue); text-shadow: 0 0 8px rgba(59,130,246,0.5); }
-
-.time-label {
-    display: block; font-size: 8px; font-weight: 900;
-    padding: 1px 3px; margin-top: 1px; border-radius: 4px;
-    text-align: center; font-family: 'SF Mono', monospace;
-    letter-spacing: -0.03em; line-height: 1.4;
-}
-.att-color  { background: rgba(16,185,129,0.14); color: #10b981; border: 1px solid rgba(16,185,129,0.2); box-shadow: 0 0 6px rgba(16,185,129,0.15); }
-.late-color { background: rgba(244,63,94,0.14);  color: #f43f5e; border: 1px solid rgba(244,63,94,0.2);  box-shadow: 0 0 6px rgba(244,63,94,0.15); }
-.other-color{ background: rgba(245,158,11,0.14); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); box-shadow: 0 0 6px rgba(245,158,11,0.15); }
-.out-time   { background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,0.15); }
-
-/* ── Modals ── */
-.missing-modal-overlay, .edit-modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
-    display: flex; align-items: center; justify-content: center; z-index: 9999;
-}
-.edit-modal-overlay { z-index: 10000; }
-.missing-modal, .edit-modal {
-    background: linear-gradient(145deg, #0d1628, #080f1e);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-top: 1px solid rgba(255,255,255,0.14);
-    border-radius: 24px; width: 90%; max-width: 420px; padding: 2rem;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07);
-    animation: modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
-}
-@keyframes modalIn {
-    from { opacity:0; transform: scale(0.94) translateY(20px); }
-    to   { opacity:1; transform: none; }
-}
-.edit-modal input[readonly] { background: #1e293b; color: #64748b; cursor: not-allowed; }
-.edit-modal input[type="time"] { color-scheme: dark; }
-.modal-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 1.5rem; padding-top: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
-}
-.dont-show-btn { color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
-.dont-show-btn:hover { color: #94a3b8; }
-.close-modal-btn {
-    background: linear-gradient(135deg, #334155, #253047);
-    color: white; padding: 8px 18px; border-radius: 10px;
-    font-size: 11px; font-weight: 900;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
-    border: none; cursor: pointer; transition: all 0.2s;
-}
-.close-modal-btn:hover { background: linear-gradient(135deg, #475569, #334155); transform: translateY(-1px); }
-
-/* ── Animations ── */
-@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } 50% { box-shadow: 0 0 14px rgba(244,63,94,0.35); } 100% { box-shadow: 0 0 0 0 rgba(244,63,94,0); } }
-.warning-pulse { animation: pulse-red 2s infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-.animate-blink { animation: blink 1s infinite; }
-@keyframes pulse-border { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-.animate-pulse-slow { animation: pulse-border 2s infinite; }
-@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.sm-root > * { animation: fadeSlideIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
-.sm-left > *:nth-child(1) { animation-delay: 0s; }
-.sm-left > *:nth-child(2) { animation-delay: 0.07s; }
-.sm-left > *:nth-child(3) { animation-delay: 0.14s; }
-.sm-left > *:nth-child(4) { animation-delay: 0.2s; }
-.sm-left > *:nth-child(5) { animation-delay: 0.26s; }
-.sm-right { animation-delay: 0.1s; }
-
-.fortune-bubble {
-    display: block; margin-top: 8px; padding: 8px 12px;
-    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-    border-radius: 10px; font-size: 10px; color: #64748b; font-weight: 700;
-    animation: float 3s ease-in-out infinite;
-}
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-
-/* ── Scrollbar ── */
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--t-dim); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #334155; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
-    .sm-cal-table td { height: 52px; padding: 2px; }
-    .sm-cal-table th { font-size: 7px; }
-    .time-label { font-size: 7px; }
-    .sm-hero-name { font-size: 18px; }
-    .sm-top-layout { flex-direction: column; }
-}
-
-/* ── Root font ── */
+/* ══════════════════════════════════════════════════════════
+   ROOT ELEMENT
+══════════════════════════════════════════════════════════ */
 .sm-root {
-    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--t-font-ui);
+  color: var(--t-text);
+  /* Layout: two columns on tablet+, one column on mobile */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.65rem, 2vw, 1rem);
+  transition: color 0.4s ease;
 }
-.sm-fortune, .sm-leave-alert-msg, .fortune-bubble,
-.sm-time-input, .sm-select, .sm-btn, .sm-nav-btn, .time-label {
-    font-family: "Pretendard", sans-serif;
+@media (min-width: 640px) {
+  .sm-root {
+    grid-template-columns: minmax(0,1fr) minmax(0,1.55fr);
+    align-items: start;
+  }
 }
 
-/* ── Layout: Top Row ── */
-.sm-top-layout {
-    display: flex; gap: 10px; margin-bottom: 10px; align-items: stretch;
+/* ══════════════════════════════════════════════════════════
+   3-D CARD BASE — shared by all panel components
+══════════════════════════════════════════════════════════ */
+.card-3d {
+  position: relative;
+  background: linear-gradient(145deg, var(--t-surface2) 0%, var(--t-surface) 100%);
+  border: 1px solid var(--t-border);
+  border-top: 1px solid var(--t-border2);
+  border-radius: var(--t-card-radius);
+  /* Multi-layer shadow → floating 3-D depth */
+  box-shadow:
+    inset 0 1px 0 var(--t-card-shine),
+    inset 0 -1px 0 rgba(0,0,0,0.25),
+    0 2px 6px var(--t-card-shadow-near),
+    0 8px 24px var(--t-card-shadow-far);
+  will-change: transform;
+  transition: transform 0.32s cubic-bezier(0.23,1,0.32,1),
+              box-shadow  0.32s ease,
+              border-color 0.32s ease;
 }
-.sm-top-layout > div { flex: 1; }
+/* Top-edge bevel line (3-D illusion) */
+.card-3d::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: var(--t-card-bevel);
+  pointer-events: none;
+  border-radius: inherit;
+}
+/* Face gloss */
+.card-3d::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--t-card-face);
+  pointer-events: none;
+  border-radius: inherit;
+}
+@media (hover:hover) {
+  .card-3d:hover {
+    transform: translateY(-5px) perspective(900px) rotateX(2.5deg);
+    border-color: var(--t-accent);
+    box-shadow:
+      inset 0 1px 0 var(--t-card-shine),
+      0 4px 10px var(--t-card-shadow-near),
+      0 18px 40px var(--t-card-shadow-far),
+      0 0 0 1px var(--t-accent-glow),
+      0 0 28px var(--t-accent-glow);
+  }
+}
 
-/* ── Weekend col width ── */
-.sm-cal-table col.weekend { width: 5%; }
-.sm-cal-table col.weekday { width: calc((100% - 10%) / 5); }
-.sm-cal-table td.sun-cell,
-.sm-cal-table td.sat-cell { width: 5%; padding: 2px 1px; }
-.sm-cal-table td.sun-cell .sm-cal-date,
-.sm-cal-table td.sat-cell .sm-cal-date { font-size: 7px; }
+/* ══════════════════════════════════════════════════════════
+   HERO CARD (Name + Date)
+══════════════════════════════════════════════════════════ */
+.sm-hero {
+  padding: clamp(14px,4vw,20px);
+  position: relative; overflow: hidden;
+}
+.sm-hero::after { background: none; } /* override card-3d gloss here */
+.sm-hero-glow {
+  /* decorative radial behind hero */
+  position: absolute; top: -40px; right: -40px;
+  width: 130px; height: 130px;
+  background: radial-gradient(circle, var(--t-accent-glow), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
 
-/* ── Month Summary Card ── */
-#monthSummaryCard {
-    position: relative;
+.sm-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.sm-hero-label {
+  font-size: clamp(7px,2vw,9px); font-weight: 900;
+  color: var(--t-muted); text-transform: uppercase; letter-spacing: 0.14em;
+  font-family: var(--t-font-ui);
 }
-#monthSummaryCard::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
+.sm-hero-name {
+  font-size: clamp(16px,5vw,22px); font-weight: 900;
+  color: var(--t-text); letter-spacing: -0.02em; line-height: 1;
+  margin-top: 3px;
+  font-family: var(--t-font-display);
+  text-shadow: 0 0 20px var(--t-accent-glow);
 }
-#allStaffTodayCard:hover {
+.sm-live-date {
+  font-size: clamp(8px,2.2vw,10px); font-weight: 800;
+  color: var(--t-accent);
+  background: var(--t-accent-glow);
+  border: 1px solid color-mix(in srgb, var(--t-accent) 35%, transparent);
+  padding: 3px 10px; border-radius: 8px; white-space: nowrap;
+  box-shadow: 0 0 10px var(--t-accent-glow);
+  font-family: var(--t-font-ui);
+}
+
+/* ── Fortune bubble ── */
+.fortune-bubble {
+  display: block; margin-top: 10px; padding: 8px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--t-border);
+  border-radius: 10px;
+  font-size: clamp(9px,2.5vw,11px); color: var(--t-muted); font-weight: 700;
+  font-family: var(--t-font-ui);
+  animation: floatBubble 4s ease-in-out infinite;
+}
+@keyframes floatBubble { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+/* ══════════════════════════════════════════════════════════
+   LEAVE ALERT
+══════════════════════════════════════════════════════════ */
+#leaveStatusAlert { display: none; }
+#leaveStatusAlert.visible { display: block; }
+.sm-leave-alert {
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.sm-leave-alert.pending {
+  background: linear-gradient(135deg,var(--t-amber-dim),rgba(245,158,11,0.04));
+  border: 1px solid rgba(245,158,11,0.35); border-top-color: rgba(245,158,11,0.5);
+}
+.sm-leave-alert.rejected {
+  background: linear-gradient(135deg,var(--t-red-dim),rgba(244,63,94,0.04));
+  border: 1px solid rgba(244,63,94,0.35); border-top-color: rgba(244,63,94,0.5);
+}
+.sm-leave-alert-icon { font-size: 18px; flex-shrink: 0; }
+.sm-leave-alert-title { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--t-font-ui); }
+.sm-leave-alert-title.pending { color: var(--t-amber); text-shadow: 0 0 10px rgba(245,158,11,0.4); }
+.sm-leave-alert-title.rejected { color: var(--t-red);  text-shadow: 0 0 10px rgba(244,63,94,0.4); }
+.sm-leave-alert-msg { font-size: 10px; color: var(--t-text); font-weight: 600; margin-top: 2px; font-family: var(--t-font-ui); }
+.sm-leave-alert-close { margin-left: auto; color: var(--t-muted); cursor: pointer; font-size: 18px; flex-shrink: 0; transition: color 0.2s; }
+.sm-leave-alert-close:hover { color: var(--t-text); }
+
+/* ══════════════════════════════════════════════════════════
+   TODAY STRIP (In / Out)
+══════════════════════════════════════════════════════════ */
+.sm-today-strip {
+  border-radius: var(--t-card-radius);
+  padding: clamp(12px,3vw,16px) clamp(14px,4vw,18px);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  background: linear-gradient(145deg, var(--t-surface2) 0%, var(--t-surface) 100%);
+  border: 1px solid var(--t-border); border-top-color: var(--t-border2);
+  box-shadow: inset 0 1px 0 var(--t-card-shine), 0 4px 16px rgba(0,0,0,0.3);
+  will-change: transform;
+  transition: transform 0.28s cubic-bezier(0.23,1,0.32,1), box-shadow 0.28s;
+}
+@media (hover:hover) {
+  .sm-today-strip:hover {
+    transform: translateY(-3px);
+    box-shadow: inset 0 1px 0 var(--t-card-shine), 0 12px 28px rgba(0,0,0,0.45);
+  }
+}
+.sm-today-item { display: flex; flex-direction: column; gap: 3px; }
+.sm-today-lbl { font-size: clamp(7px,2vw,9px); font-weight: 900; color: var(--t-muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--t-font-ui); }
+.sm-today-val { font-size: clamp(14px,4.5vw,18px); font-weight: 900; letter-spacing: -0.01em; font-family: var(--t-font-display); }
+.sm-today-val.in  { color: var(--t-green);  text-shadow: 0 0 12px rgba(16,185,129,0.4); }
+.sm-today-val.out { color: var(--t-accent); text-shadow: 0 0 12px var(--t-accent-glow); }
+.sm-today-val.empty { color: var(--t-dim); font-size: clamp(12px,3.5vw,14px); }
+
+/* ══════════════════════════════════════════════════════════
+   ALL-STAFF TODAY CARD
+══════════════════════════════════════════════════════════ */
+.sm-all-staff-card {
+  background: linear-gradient(145deg, var(--t-surface2), var(--t-surface));
+  border: 1px solid var(--t-border); border-top-color: var(--t-border2);
+  border-radius: var(--t-card-radius);
+  padding: 12px 14px;
+  box-shadow: inset 0 1px 0 var(--t-card-shine), 0 4px 14px rgba(0,0,0,0.28);
+  transition: transform 0.28s ease, box-shadow 0.28s;
+}
+@media (hover:hover) {
+  .sm-all-staff-card:hover {
     transform: translateY(-2px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 20px rgba(59,130,246,0.1);
-    transition: all 0.25s ease;
+    box-shadow: inset 0 1px 0 var(--t-card-shine), 0 8px 22px rgba(0,0,0,0.38);
+  }
 }
-.staff-badge {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 6px;
-    text-align: center;
-    font-size: 7px;
-    font-weight: 900;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-.staff-badge:hover { 
-    border-color: var(--blue); 
-    background: rgba(59,130,246,0.1);
-    transform: scale(1.05);
-}
-.staff-badge.present { color: var(--green); border-color: rgba(16,185,129,0.3); }
-.staff-badge.late { color: var(--red); border-color: rgba(244,63,94,0.3); }
-.staff-badge.absent { color: var(--muted); border-color: var(--border); opacity: 0.5; }
+.sm-all-staff-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.sm-all-staff-lbl { font-size: clamp(7px,2vw,9px); font-weight: 900; color: var(--t-muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--t-font-ui); }
+.sm-all-staff-count { font-size: 10px; font-weight: 800; color: var(--t-accent); font-family: var(--t-font-display); }
+
+/* ── Staff rows inside the card ── */
 .staff-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 10px;
-    transition: all 0.2s;
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--t-surface3);
+  border: 1px solid var(--t-border); border-radius: 8px;
+  padding: 5px 10px;
+  transition: all 0.18s ease;
 }
-.staff-row:hover {
-    border-color: var(--blue);
-    background: rgba(59,130,246,0.08);
-    transform: translateX(2px);
+@media (hover:hover) {
+  .staff-row:hover { border-color: var(--t-accent); background: color-mix(in srgb, var(--t-accent) 8%, transparent); transform: translateX(2px); }
 }
-.staff-name {
-    font-size: 9px;
-    font-weight: 900;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+.staff-name { font-size: clamp(8px,2.2vw,10px); font-weight: 900; color: var(--t-text); text-transform: uppercase; letter-spacing: 0.03em; font-family: var(--t-font-ui); }
+.staff-time { font-size: clamp(7px,2vw,9px); font-weight: 800; font-family: var(--t-font-mono); padding: 2px 7px; border-radius: 5px; }
+.staff-time.present { color: var(--t-green); background: var(--t-green-dim); border: 1px solid rgba(16,185,129,0.22); }
+.staff-time.late    { color: var(--t-red);   background: var(--t-red-dim);   border: 1px solid rgba(244,63,94,0.22); }
+
+/* ══════════════════════════════════════════════════════════
+   ATTENDANCE PANEL
+══════════════════════════════════════════════════════════ */
+.sm-panel {
+  background: linear-gradient(145deg, var(--t-surface2) 0%, var(--t-surface) 100%);
+  border: 1px solid var(--t-border); border-top-color: var(--t-border2);
+  border-radius: var(--t-card-radius);
+  padding: clamp(14px,4vw,20px);
+  position: relative;
+  box-shadow: inset 0 1px 0 var(--t-card-shine), 0 8px 24px rgba(0,0,0,0.4);
 }
-.staff-time {
-    font-size: 8px;
-    font-weight: 800;
-    font-family: 'SF Mono', monospace;
-    padding: 2px 6px;
-    border-radius: 5px;
+.sm-panel::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: var(--t-card-bevel);
+  pointer-events: none;
 }
-.staff-time.present {
-    color: var(--green);
-    background: var(--green-dim);
-    border: 1px solid rgba(16,185,129,0.2);
+.sm-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(10px,3vw,16px); }
+.sm-panel-title  { font-size: clamp(7px,2vw,9px); font-weight: 900; color: var(--t-muted); text-transform: uppercase; letter-spacing: 0.12em; font-family: var(--t-font-ui); }
+
+/* ── Bar ── */
+.sm-bar { width:100%; height:3px; background:var(--t-dim); border-radius:10px; overflow:hidden; margin-bottom:8px; box-shadow:inset 0 1px 2px rgba(0,0,0,0.4); }
+.sm-bar-fill { height:100%; background:var(--t-accent); border-radius:10px; transition:width 1s ease; box-shadow: 0 0 8px var(--t-accent-glow); }
+.sm-bar-fill.warning { background:var(--t-red); box-shadow:0 0 8px rgba(244,63,94,0.4); }
+#warningIcon { display:none; }
+#warningIcon.visible { display:inline; }
+
+/* ── Time input ── */
+.sm-time-label { font-size: clamp(7px,2vw,9px); font-weight:900; color:var(--t-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; font-family:var(--t-font-ui); }
+.sm-time-input {
+  width:100%;
+  background: linear-gradient(145deg,#050a14,#070d1a);
+  color:var(--t-text); font-size:clamp(18px,5vw,24px); font-weight:900; text-align:center;
+  letter-spacing:0.05em; padding:10px;
+  border-radius: calc(var(--t-card-radius) * 0.7);
+  border:1px solid var(--t-dim); outline:none;
+  font-family:var(--t-font-mono);
+  transition:border-color 0.2s, box-shadow 0.2s;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.025);
 }
-.staff-time.late {
-    color: var(--red);
-    background: var(--red-dim);
-    border: 1px solid rgba(244,63,94,0.2);
+.sm-time-input:focus { border-color:var(--t-accent); box-shadow:inset 0 2px 6px rgba(0,0,0,0.4), 0 0 0 3px var(--t-accent-glow); }
+
+/* ── Select ── */
+.sm-select {
+  width:100%;
+  background: linear-gradient(145deg,#050a14,#070d1a);
+  color:var(--t-text); font-weight:800;
+  padding:10px 12px;
+  border-radius: calc(var(--t-card-radius) * 0.7);
+  border:1px solid var(--t-dim); outline:none; cursor:pointer;
+  font-size:clamp(10px,2.5vw,12px); font-family:var(--t-font-mono); margin-bottom:10px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.3);
 }
+.sm-select:focus { border-color:var(--t-accent); box-shadow:inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 3px var(--t-accent-glow); }
+.sm-select option { background-color:#0d1628; color:#f1f5f9; }
+
+/* ── Buttons ── */
+.sm-btn {
+  padding: clamp(10px,3vw,13px) 8px;
+  border-radius: calc(var(--t-card-radius) * 0.7);
+  border:none; cursor:pointer;
+  font-size:clamp(9px,2.5vw,12px); font-weight:900; text-transform:uppercase; letter-spacing:0.06em;
+  transition: transform 0.2s cubic-bezier(0.23,1,0.32,1), box-shadow 0.2s, opacity 0.2s;
+  font-family:var(--t-font-ui);
+  position:relative;
+}
+.sm-btn:active { transform:scale(0.95) translateY(1px) !important; }
+.sm-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.sm-btn.in {
+  background: linear-gradient(135deg,#10b981,#059669); color:#fff;
+  box-shadow: 0 4px 14px rgba(16,185,129,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+@media (hover:hover) {
+  .sm-btn.in:hover:not(:disabled) { background:linear-gradient(135deg,#34d399,#10b981); box-shadow:0 6px 20px rgba(16,185,129,0.5); transform:translateY(-2px); }
+}
+.sm-btn.out {
+  background: linear-gradient(135deg,#f43f5e,#e11d48); color:#fff;
+  box-shadow: 0 4px 14px rgba(244,63,94,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+@media (hover:hover) {
+  .sm-btn.out:hover:not(:disabled) { background:linear-gradient(135deg,#fb7185,#f43f5e); box-shadow:0 6px 20px rgba(244,63,94,0.5); transform:translateY(-2px); }
+}
+.sm-btn.special {
+  background: linear-gradient(135deg, var(--t-accent), color-mix(in srgb,var(--t-accent) 75%,#000));
+  color:#fff; width:100%;
+  box-shadow: 0 4px 14px var(--t-accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+@media (hover:hover) {
+  .sm-btn.special:hover { box-shadow:0 6px 20px var(--t-accent-glow); transform:translateY(-2px); }
+}
+
+/* ── All Staff nav button ── */
+.sm-all-nav-btn {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  background: linear-gradient(145deg,var(--t-surface2),var(--t-surface));
+  border:1px solid var(--t-border); border-top-color:var(--t-border2);
+  border-radius: calc(var(--t-card-radius) * 0.8);
+  padding:8px 10px; cursor:pointer; color:var(--t-text);
+  box-shadow:inset 0 1px 0 var(--t-card-shine), 0 3px 10px rgba(0,0,0,0.3);
+  transition:all 0.22s ease; flex-shrink:0;
+}
+@media (hover:hover) {
+  .sm-all-nav-btn:hover {
+    border-color:var(--t-accent);
+    background: linear-gradient(145deg,color-mix(in srgb,var(--t-accent) 10%,var(--t-surface2)),var(--t-surface));
+    box-shadow:0 6px 18px var(--t-accent-glow);
+    transform:translateY(-2px);
+  }
+}
+.sm-all-nav-btn img { width:18px; height:18px; object-fit:contain; flex-shrink:0; }
+.sm-all-nav-btn span { font-size:clamp(8px,2.2vw,10px); font-weight:900; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; font-family:var(--t-font-ui); }
+
+/* ══════════════════════════════════════════════════════════
+   MONTH SUMMARY CARD
+══════════════════════════════════════════════════════════ */
+#monthSummaryCard {
+  /* inherits .sm-panel */
+  padding: clamp(12px,3.5vw,16px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   CALENDAR CARD
+══════════════════════════════════════════════════════════ */
+.sm-cal-card {
+  background: linear-gradient(145deg, var(--t-surface2) 0%, var(--t-surface) 100%);
+  border: 1px solid var(--t-border); border-top-color: var(--t-border2);
+  border-radius: var(--t-card-radius);
+  padding: clamp(14px,4vw,20px);
+  position: relative;
+  box-shadow: inset 0 1px 0 var(--t-card-shine), 0 12px 32px rgba(0,0,0,0.45);
+}
+.sm-cal-card::before {
+  content:'';
+  position:absolute; top:0; left:10%; right:10%; height:1px;
+  background: var(--t-card-bevel);
+  pointer-events:none;
+}
+.sm-cal-card::after { background:none; } /* no face gloss on cal */
+
+.sm-cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:clamp(12px,3vw,18px); gap:10px; flex-wrap:wrap; }
+.sm-cal-title {
+  font-size:clamp(14px,4vw,18px); font-weight:900;
+  color:var(--t-text); letter-spacing:-0.01em; font-style:italic;
+  text-decoration:underline; text-decoration-color:var(--t-accent); text-underline-offset:4px;
+  text-shadow:0 0 20px var(--t-accent-glow);
+  font-family:var(--t-font-display);
+}
+
+.sm-cal-nav {
+  display:flex;
+  background: linear-gradient(145deg,var(--t-surface3),var(--t-surface2));
+  border:1px solid var(--t-border); border-radius:10px; overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.3);
+}
+.sm-nav-btn {
+  padding: clamp(4px,1.5vw,6px) clamp(8px,3vw,13px);
+  font-size:clamp(7px,2vw,10px); font-weight:900; color:var(--t-muted);
+  background:none; border:none; cursor:pointer;
+  font-family:var(--t-font-mono); text-transform:uppercase; letter-spacing:0.05em;
+  transition:color 0.15s, background 0.15s;
+}
+@media (hover:hover) {
+  .sm-nav-btn:hover { color:var(--t-text); background:color-mix(in srgb,var(--t-accent) 12%,transparent); }
+}
+.sm-nav-btn.today-btn { color:var(--t-accent); text-shadow:0 0 8px var(--t-accent-glow); }
+
+/* ── Calendar Table ── */
+.sm-cal-table { width:100%; border-collapse:separate; border-spacing:2px; table-layout:fixed; }
+.sm-cal-table th {
+  padding:clamp(4px,1.5vw,7px) 2px;
+  font-size:clamp(7px,2vw,9px); font-weight:900; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--t-muted); text-align:center; border-bottom:1px solid var(--t-border);
+  font-family:var(--t-font-ui);
+}
+.sm-cal-table th.sun { color:rgba(244,63,94,0.8); text-shadow:0 0 6px rgba(244,63,94,0.3); }
+.sm-cal-table th.sat { color:color-mix(in srgb,var(--t-accent) 80%,white); text-shadow:0 0 6px var(--t-accent-glow); }
+
+.sm-cal-table td {
+  height: clamp(52px,13vw,72px);
+  vertical-align:top; padding:4px;
+  border:1px solid rgba(20,30,50,0.8); border-radius:8px;
+  cursor:pointer;
+  will-change:transform;
+  transition:all 0.18s cubic-bezier(0.23,1,0.32,1);
+  position:relative;
+  background: linear-gradient(145deg,var(--t-surface3) 0%,var(--t-surface2) 100%);
+  box-shadow:0 1px 4px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.025);
+}
+@media (hover:hover) {
+  .sm-cal-table td:hover {
+    background: linear-gradient(145deg,color-mix(in srgb,var(--t-accent) 12%,var(--t-surface3)) 0%,var(--t-surface2) 100%);
+    border-color: color-mix(in srgb,var(--t-accent) 35%,transparent);
+    transform:translateY(-2px) scale(1.035);
+    box-shadow:0 6px 16px var(--t-accent-glow), inset 0 1px 0 rgba(255,255,255,0.05);
+    z-index:2;
+  }
+}
+.sm-cal-table td.sun-cell { background: linear-gradient(145deg,rgba(244,63,94,0.05),var(--t-surface2)); }
+.sm-cal-table td.sat-cell { background: linear-gradient(145deg,color-mix(in srgb,var(--t-accent) 7%,transparent),var(--t-surface2)); }
+.sm-cal-table td.today-highlight {
+  background: linear-gradient(145deg,color-mix(in srgb,var(--t-accent) 14%,transparent),color-mix(in srgb,var(--t-accent2) 7%,transparent)) !important;
+  border-color: color-mix(in srgb,var(--t-accent) 45%,transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb,var(--t-accent) 22%,transparent), 0 4px 14px var(--t-accent-glow) !important;
+}
+
+.sm-cal-date { font-size:clamp(7px,2vw,10px); font-weight:900; color:var(--t-muted); margin-bottom:2px; padding:1px 2px; font-family:var(--t-font-ui); }
+.sm-cal-date.sun   { color:rgba(244,63,94,0.65); }
+.sm-cal-date.sat   { color:color-mix(in srgb,var(--t-accent) 65%,white); }
+.sm-cal-date.today { color:var(--t-accent); text-shadow:0 0 8px var(--t-accent-glow); }
+
+.time-label {
+  display:block; font-size:clamp(6px,1.8vw,9px); font-weight:900;
+  padding:1px 3px; margin-top:1px; border-radius:4px;
+  text-align:center; font-family:var(--t-font-mono);
+  letter-spacing:-0.03em; line-height:1.4;
+}
+.att-color   { background:rgba(16,185,129,0.14); color:#10b981; border:1px solid rgba(16,185,129,0.22); box-shadow:0 0 6px rgba(16,185,129,0.15); }
+.late-color  { background:rgba(244,63,94,0.14);  color:#f43f5e; border:1px solid rgba(244,63,94,0.22);  box-shadow:0 0 6px rgba(244,63,94,0.15); }
+.other-color { background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.22); box-shadow:0 0 6px rgba(245,158,11,0.15); }
+.out-time    { background:rgba(100,116,139,0.1);  color:#64748b; border:1px solid rgba(100,116,139,0.15); }
+
+/* ── Colgroup widths ── */
+.sm-cal-table col.weekend { width: 8%; }
+.sm-cal-table col.weekday { width: calc((100% - 16%) / 5); }
+.sm-cal-table td.sun-cell, .sm-cal-table td.sat-cell { width:8%; }
+
+/* ══════════════════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════════════════ */
+.missing-modal-overlay, .edit-modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.88); backdrop-filter:blur(12px);
+  display:flex; align-items:center; justify-content:center; z-index:9999;
+}
+.edit-modal-overlay { z-index:10000; }
+.missing-modal, .edit-modal {
+  background: linear-gradient(145deg,var(--t-surface2),var(--t-surface));
+  border:1px solid var(--t-border); border-top-color:var(--t-border2);
+  border-radius:24px; width:90%; max-width:420px; padding:2rem;
+  box-shadow:0 40px 80px rgba(0,0,0,0.7), inset 0 1px 0 var(--t-card-shine);
+  animation:modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.93) translateY(18px)} to{opacity:1;transform:none} }
+.edit-modal input[readonly] { background:#1e293b; color:#64748b; cursor:not-allowed; }
+.edit-modal input[type="time"] { color-scheme:dark; }
+.modal-footer { display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--t-border); }
+.dont-show-btn { color:var(--t-muted); font-size:11px; font-weight:800; text-transform:uppercase; cursor:pointer; transition:color 0.2s; }
+.dont-show-btn:hover { color:#94a3b8; }
+.close-modal-btn {
+  background:linear-gradient(135deg,#334155,#253047); color:white;
+  padding:8px 18px; border-radius:10px; font-size:11px; font-weight:900;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  border:none; cursor:pointer; transition:all 0.2s;
+}
+.close-modal-btn:hover { background:linear-gradient(135deg,#475569,#334155); transform:translateY(-1px); }
+
+/* ══════════════════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════════════════ */
+@keyframes pulse-red { 0%{box-shadow:0 0 0 0 rgba(244,63,94,0)} 50%{box-shadow:0 0 14px rgba(244,63,94,0.35)} 100%{box-shadow:0 0 0 0 rgba(244,63,94,0)} }
+.warning-pulse { animation:pulse-red 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.animate-blink { animation:blink 1s infinite; }
+@keyframes pulse-border { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.animate-pulse-slow { animation:pulse-border 2s infinite; }
+
+/* Entry animations */
+@keyframes fadeSlideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.sm-left > * { animation:fadeSlideIn 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.sm-left > *:nth-child(1) { animation-delay:0s; }
+.sm-left > *:nth-child(2) { animation-delay:0.06s; }
+.sm-left > *:nth-child(3) { animation-delay:0.12s; }
+.sm-left > *:nth-child(4) { animation-delay:0.18s; }
+.sm-left > *:nth-child(5) { animation-delay:0.24s; }
+.sm-right { animation:fadeSlideIn 0.45s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── Reduce motion ── */
+@media (prefers-reduced-motion:reduce) {
+  .card-3d, .sm-today-strip, .sm-cal-table td, .sm-btn, .staff-row { transition:none !important; }
+  .fortune-bubble { animation:none; }
+  .animate-blink, .animate-pulse-slow, .warning-pulse { animation:none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE EXTRAS
+══════════════════════════════════════════════════════════ */
+/* Stack the hero + strip + all-staff on mobile */
+.sm-top-layout {
+  display:flex; gap:10px; align-items:stretch; flex-wrap:wrap;
+}
+.sm-top-layout > * { flex:1; min-width: clamp(140px,40%,200px); }
+
+/* On very narrow screens, stack top-layout children */
+@media (max-width:480px) {
+  .sm-top-layout { flex-direction:column; }
+  .sm-top-layout > * { min-width:0; }
+  .sm-cal-table td { height:44px; padding:2px; }
+  .sm-cal-table th { font-size:7px; }
+  .time-label { font-size:6px; }
+}
+
+/* Left / right stacking on sm-root mobile */
+.sm-left  { display:flex; flex-direction:column; gap:clamp(0.6rem,2vw,1rem); }
+.sm-right { display:flex; flex-direction:column; gap:clamp(0.6rem,2vw,1rem); }
+
+/* Stats mini badge colours (use semantic vars) */
+.badge-green  { background:var(--t-green-dim);  border:1px solid rgba(16,185,129,0.22); border-radius:10px; padding:6px; text-align:center; }
+.badge-red    { background:var(--t-red-dim);    border:1px solid rgba(244,63,94,0.22);  border-radius:10px; padding:6px; text-align:center; }
+.badge-amber  { background:var(--t-amber-dim);  border:1px solid rgba(245,158,11,0.22); border-radius:10px; padding:6px; text-align:center; }
 
 </style>
 
-<div class="sm-root">
-    <!-- ══ LEFT PANEL ══ -->
-    <div class="sm-left">
+<!-- ══════════════════════════════════════════════════════════
+     7-DAY THEME INJECTION SCRIPT
+     Runs immediately to avoid FOUC
+══════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  /* Token sets for each day (0=Sun … 6=Sat) */
+  const THEMES = {
+    0: { /* SUN — Sunset Ember */
+      '--t-bg':        '#160403',
+      '--t-surface':   '#220605',
+      '--t-surface2':  '#2e0907',
+      '--t-surface3':  '#3a0d09',
+      '--t-border':    'rgba(249,115,22,0.1)',
+      '--t-border2':   'rgba(249,115,22,0.22)',
+      '--t-text':      '#fdf0e8',
+      '--t-muted':     '#7c4a30',
+      '--t-dim':       '#3a1a0e',
+      '--t-accent':    '#f97316',
+      '--t-accent2':   '#fbbf24',
+      '--t-accent-glow':     'rgba(249,115,22,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#be185d,#f97316,#fbbf24)',
+      '--t-card-shine':  'rgba(249,115,22,0.07)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(249,115,22,0.28),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(249,115,22,0.05) 0%,transparent 55%)',
+      '--t-card-radius': '10px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.35)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.55)',
+      '--t-font-display': "'DM Serif Display', serif",
+      '--t-font-ui':      "'Pretendard', sans-serif",
+    },
+    1: { /* MON — Deep Space */
+      '--t-bg':        '#040810',
+      '--t-surface':   '#080f1e',
+      '--t-surface2':  '#0d1628',
+      '--t-surface3':  '#111e33',
+      '--t-border':    'rgba(56,189,248,0.09)',
+      '--t-border2':   'rgba(56,189,248,0.18)',
+      '--t-text':      '#e2e8f0',
+      '--t-muted':     '#475569',
+      '--t-dim':       '#1e293b',
+      '--t-accent':    '#38bdf8',
+      '--t-accent2':   '#818cf8',
+      '--t-accent-glow':     'rgba(56,189,248,0.18)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#38bdf8,#818cf8,#c084fc)',
+      '--t-card-shine':  'rgba(56,189,248,0.07)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(56,189,248,0.28),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(56,189,248,0.04) 0%,transparent 55%)',
+      '--t-card-radius': '18px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.3)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.5)',
+      '--t-font-display': "'Orbitron', sans-serif",
+      '--t-font-ui':      "'Pretendard', sans-serif",
+    },
+    2: { /* TUE — Wabi-Sabi */
+      '--t-bg':        '#160403',
+      '--t-surface':   '#220605',
+      '--t-surface2':  '#2e0907',
+      '--t-surface3':  '#3a0d09',
+      '--t-border':    'rgba(249,115,22,0.1)',
+      '--t-border2':   'rgba(249,115,22,0.22)',
+      '--t-text':      '#fdf0e8',
+      '--t-muted':     '#7c4a30',
+      '--t-dim':       '#3a1a0e',
+      '--t-accent':    '#f97316',
+      '--t-accent2':   '#fbbf24',
+      '--t-accent-glow':     'rgba(249,115,22,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#be185d,#f97316,#fbbf24)',
+      '--t-card-shine':  'rgba(249,115,22,0.07)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(249,115,22,0.28),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(249,115,22,0.05) 0%,transparent 55%)',
+      '--t-card-radius': '10px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.35)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.55)',
+      '--t-font-display': "'DM Serif Display', serif",
+      '--t-font-ui':      "'Pretendard', sans-serif",
+    },
+    3: { /* WED — Art Deco */
+      '--t-bg':        '#080e09',
+      '--t-surface':   '#0d1a0f',
+      '--t-surface2':  '#122014',
+      '--t-surface3':  '#172618',
+      '--t-border':    'rgba(200,168,75,0.1)',
+      '--t-border2':   'rgba(200,168,75,0.22)',
+      '--t-text':      '#f0e8d0',
+      '--t-muted':     '#5a5040',
+      '--t-dim':       '#253020',
+      '--t-accent':    '#c8a84b',
+      '--t-accent2':   '#e8d48a',
+      '--t-accent-glow':     'rgba(200,168,75,0.18)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#a07830,#e8d48a,#a07830)',
+      '--t-card-shine':  'rgba(200,168,75,0.09)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(200,168,75,0.3),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(200,168,75,0.05) 0%,transparent 55%)',
+      '--t-card-radius': '0px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.35)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.55)',
+      '--t-font-display': "'Cormorant Garamond', serif",
+      '--t-font-ui':      "'Cormorant Garamond', serif",
+    },
+    4: { /* THU — Terra Verde */
+      '--t-bg':        '#08122a',
+      '--t-surface':   '#0c1a38',
+      '--t-surface2':  '#102044',
+      '--t-surface3':  '#142650',
+      '--t-border':    'rgba(96,165,250,0.12)',
+      '--t-border2':   'rgba(96,165,250,0.24)',
+      '--t-text':      '#e8f0fe',
+      '--t-muted':     '#4a6090',
+      '--t-dim':       '#1e3060',
+      '--t-accent':    '#60a5fa',
+      '--t-accent2':   '#a5c8ff',
+      '--t-accent-glow':     'rgba(96,165,250,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#60a5fa,#a5c8ff,#c7d7f0)',
+      '--t-card-shine':  'rgba(188,213,250,0.12)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(188,213,250,0.32),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(188,213,250,0.1) 0%,transparent 55%)',
+      '--t-card-radius': '16px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.28)',
+      '--t-card-shadow-far':  'rgba(10,30,80,0.38)',
+      '--t-font-display': "'Inter', sans-serif",
+      '--t-font-ui':      "'Inter', sans-serif",
+    },
+    5: { /* FRI — Synthwave */
+      '--t-bg':        '#06021a',
+      '--t-surface':   '#0d0428',
+      '--t-surface2':  '#130635',
+      '--t-surface3':  '#190842',
+      '--t-border':    'rgba(255,0,204,0.12)',
+      '--t-border2':   'rgba(255,0,204,0.25)',
+      '--t-text':      '#ffffff',
+      '--t-muted':     '#5c4080',
+      '--t-dim':       '#2a1050',
+      '--t-accent':    '#ff00cc',
+      '--t-accent2':   '#00eeff',
+      '--t-accent-glow':     'rgba(255,0,204,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#ff00cc,#ffee00,#00eeff)',
+      '--t-card-shine':  'rgba(255,0,204,0.07)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(255,0,204,0.28),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(255,0,204,0.04) 0%,transparent 55%)',
+      '--t-card-radius': '0px',
+      '--t-card-shadow-near': 'rgba(255,0,204,0.12)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.6)',
+      '--t-font-display': "'Bungee', cursive",
+      '--t-font-ui':      "'Pretendard', sans-serif",
+    },
+    6: { /* SAT — Arctic Glass */
+      '--t-bg':        '#08122a',
+      '--t-surface':   '#0c1a38',
+      '--t-surface2':  '#102044',
+      '--t-surface3':  '#142650',
+      '--t-border':    'rgba(96,165,250,0.12)',
+      '--t-border2':   'rgba(96,165,250,0.24)',
+      '--t-text':      '#e8f0fe',
+      '--t-muted':     '#4a6090',
+      '--t-dim':       '#1e3060',
+      '--t-accent':    '#60a5fa',
+      '--t-accent2':   '#a5c8ff',
+      '--t-accent-glow':     'rgba(96,165,250,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#60a5fa,#a5c8ff,#c7d7f0)',
+      '--t-card-shine':  'rgba(188,213,250,0.12)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(188,213,250,0.32),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(188,213,250,0.1) 0%,transparent 55%)',
+      '--t-card-radius': '16px',
+      '--t-card-shadow-near': 'rgba(0,0,0,0.28)',
+      '--t-card-shadow-far':  'rgba(10,30,80,0.38)',
+      '--t-font-display': "'Inter', sans-serif",
+      '--t-font-ui':      "'Inter', sans-serif",
+    },
+  };
 
-        <!-- Hero: Name + Date -->
-<div class="sm-top-layout">
-    <div class="sm-hero">
+  const idx = new Date().getDay();
+
+  const tokens = THEMES[idx] || THEMES[1];
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(tokens)) root.style.setProperty(k, v);
+
+  /* Expose day index for JS below */
+  window._dashDayIdx = idx;
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     HTML
+══════════════════════════════════════════════════════════ -->
+<div class="sm-root">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="sm-left">
+
+    <!-- Top row: Hero + Today Strip + All-Staff -->
+    <div class="sm-top-layout">
+
+      <!-- Hero: Name + Date -->
+      <div class="sm-hero card-3d">
+        <div class="sm-hero-glow"></div>
         <div class="sm-hero-top">
-            <div>
-                <div class="sm-hero-label">Authenticated as</div>
-                <div id="mainWelcomeMsg" class="sm-hero-name"></div>
-            </div>
-            <div id="liveDate" class="sm-live-date"></div>
+          <div>
+            <div class="sm-hero-label">Authenticated as</div>
+            <div id="mainWelcomeMsg" class="sm-hero-name"></div>
+          </div>
+          <div id="liveDate" class="sm-live-date"></div>
         </div>
         <div id="fortuneArea"></div>
-    </div>
+      </div>
 
-    <div class="sm-today-strip" id="todayStrip">
+      <!-- Today In/Out strip -->
+      <div class="sm-today-strip">
         <div class="sm-today-item">
-            <div class="sm-today-lbl">☀ In Time</div>
-            <div id="todayInDisplay" class="sm-today-val in">—</div>
+          <div class="sm-today-lbl">☀ In Time</div>
+          <div id="todayInDisplay" class="sm-today-val in">—</div>
         </div>
         <div class="sm-today-item">
-            <div class="sm-today-lbl">🌙 Out Time</div>
-            <div id="todayOutDisplay" class="sm-today-val out">—</div>
+          <div class="sm-today-lbl">🌙 Out Time</div>
+          <div id="todayOutDisplay" class="sm-today-val out">—</div>
         </div>
+      </div>
+
+    </div><!-- /sm-top-layout -->
+
+    <!-- All-Staff Today -->
+    <div class="sm-all-staff-card">
+      <div class="sm-all-staff-header">
+        <div class="sm-all-staff-lbl">👥 Today's Attendance</div>
+        <div id="allStaffCount" class="sm-all-staff-count">0</div>
+      </div>
+      <div id="allStaffList" style="display:flex;flex-direction:column;gap:3px;max-height:120px;overflow-y:auto;" class="no-scrollbar"></div>
     </div>
 
-<div id="allStaffTodayCard" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:8px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">👥 Today's Attendance</div>
-        <div id="allStaffCount" style="font-size:9px;font-weight:800;color:var(--blue);">0</div>
-    </div>
-    <div id="allStaffList" style="display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto;" class="no-scrollbar"></div>
-</div>
-
-</div>
-
-<div id="leaveStatusAlert">
-    <div id="leaveAlertContent" class="sm-leave-alert">
+    <!-- Leave Status Alert -->
+    <div id="leaveStatusAlert">
+      <div id="leaveAlertContent" class="sm-leave-alert">
         <span id="leaveAlertIcon" class="sm-leave-alert-icon"></span>
         <div>
-            <div id="leaveAlertTitle" class="sm-leave-alert-title"></div>
-            <div id="leaveAlertMsg" class="sm-leave-alert-msg"></div>
+          <div id="leaveAlertTitle" class="sm-leave-alert-title"></div>
+          <div id="leaveAlertMsg"   class="sm-leave-alert-msg"></div>
         </div>
-        <span class="sm-leave-alert-close" onclick="document.getElementById('leaveStatusAlert').classList.remove('visible')">&times;</span>
+        <span class="sm-leave-alert-close"
+              onclick="document.getElementById('leaveStatusAlert').classList.remove('visible')">&times;</span>
+      </div>
     </div>
-</div>
 
-        <!-- Attendance Panel -->
-        <div class="sm-panel">
-            <div class="sm-panel-header">
-                <div class="sm-panel-title">Attendance Panel</div>
-            </div>
+    <!-- Attendance Panel -->
+    <div class="sm-panel">
+      <div class="sm-panel-header">
+        <div class="sm-panel-title">Attendance Panel</div>
+      </div>
 
-<div style="display:flex;gap:8px;margin-bottom:10px;align-items:stretch;">
-    <div style="flex:1;">
-        <div class="sm-time-label">Time (24H)</div>
-        <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8"
-               class="sm-time-input" style="height:44px;font-size:18px;padding:8px;">
-    </div>
-    <div style="flex:1;">
-        <div class="sm-time-label">Status</div>
-        <select id="specialStatus" onchange="toggleInputMode()"
-                class="sm-select" style="margin-bottom:0;height:44px;">
+      <!-- Time + Status row -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:stretch;">
+        <div style="flex:1;" id="timeInputWrapper">
+          <div class="sm-time-label">Time (24H)</div>
+          <input type="text" id="manualTime" placeholder="00:00:00" maxlength="8"
+                 class="sm-time-input" style="height:44px;font-size:clamp(16px,4.5vw,22px);padding:8px;">
+        </div>
+        <div style="flex:1;">
+          <div class="sm-time-label">Status</div>
+          <select id="specialStatus" onchange="toggleInputMode()" class="sm-select" style="margin-bottom:0;height:44px;">
             <option value="">--- REGULAR ---</option>
             <option value="WO">WO — Work Out</option>
             <option value="PEL">PEL — Personal Leave</option>
@@ -639,870 +843,626 @@
             <option value="HAL">HAL — Half Day Leave</option>
             <option value="SIL">SIL — Sick Leave</option>
             <option value="SPL">SPL — Special Leave</option>
-        </select>
-    </div>
-</div>
+          </select>
+        </div>
+      </div>
 
-<div style="display:flex;gap:8px;align-items:stretch;">
-    <div id="buttonArea" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1.5;">
-        <button id="btnIn" onclick="handleAttendance('attend')" class="sm-btn in">SET IN</button>
-        <button id="btnOut" onclick="handleAttendance('leave')" class="sm-btn out">SET OUT</button>
-    </div>
-    <div id="specialButtonArea" style="display:none;flex:1.5;">
-        <button onclick="handleSpecialStatus()" class="sm-btn special" style="height:100%;">SAVE STATUS</button>
-    </div>
-<button onclick="window.switchTab && window.switchTab('all')"
-        style="flex:1;display:flex;flex-direction:row;align-items:center;justify-content:center;
-               gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;
-               padding:8px 10px;cursor:pointer;transition:all 0.2s;color:var(--text);">
-    <img src="images/gif/click.gif" alt="click" style="width:18px;height:18px;object-fit:contain;flex-shrink:0;">
-    <span style="font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">All Staff</span>
-</button>
-</div>
-</div><!-- sm-panel 닫기 -->
+      <!-- Buttons row -->
+      <div style="display:flex;gap:8px;align-items:stretch;">
+        <div id="buttonArea" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1.5;">
+          <button id="btnIn"  onclick="handleAttendance('attend')" class="sm-btn in">SET IN</button>
+          <button id="btnOut" onclick="handleAttendance('leave')"  class="sm-btn out">SET OUT</button>
+        </div>
+        <div id="specialButtonArea" style="display:none;flex:1.5;">
+          <button onclick="handleSpecialStatus()" class="sm-btn special" style="height:100%;">SAVE STATUS</button>
+        </div>
+        <button onclick="window.switchTab && window.switchTab('all')" class="sm-all-nav-btn" style="flex:1;">
+          <img src="images/gif/click.gif" alt="">
+          <span>All Staff</span>
+        </button>
+      </div>
+    </div><!-- /sm-panel -->
 
-<!-- sm-all-staff-btn 바로 위에 추가 -->
-<div id="monthSummaryCard" class="sm-panel" style="padding: 14px 16px;">
-    <div class="sm-panel-header" style="margin-bottom: 10px;">
+    <!-- Month Summary Card -->
+    <div id="monthSummaryCard" class="sm-panel">
+      <div class="sm-panel-header" style="margin-bottom:10px;">
         <div class="sm-panel-title">📊 This Month Summary</div>
-        <div id="summaryMonthLabel" style="font-size:9px;font-weight:900;color:var(--blue);"></div>
-    </div>
+        <div id="summaryMonthLabel" style="font-size:9px;font-weight:900;color:var(--t-accent);font-family:var(--t-font-ui);"></div>
+      </div>
 
-    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
 
-        <!-- 좌: 3개 카운터 -->
+        <!-- 3 counters -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;">
-            <div style="background:var(--green-dim);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:6px;text-align:center;">
-                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Present</div>
-                <div id="sumPresent" style="font-size:16px;font-weight:900;color:var(--green);">—</div>
-            </div>
-            <div style="background:var(--red-dim);border:1px solid rgba(244,63,94,0.2);border-radius:10px;padding:6px;text-align:center;">
-                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Late</div>
-                <div id="sumLate" style="font-size:16px;font-weight:900;color:var(--red);">—</div>
-            </div>
-            <div style="background:var(--amber-dim);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:6px;text-align:center;">
-                <div style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Leave</div>
-                <div id="sumLeave" style="font-size:16px;font-weight:900;color:var(--amber);">—</div>
-            </div>
+          <div class="badge-green">
+            <div style="font-size:7px;font-weight:900;color:var(--t-muted);text-transform:uppercase;margin-bottom:2px;font-family:var(--t-font-ui);">Present</div>
+            <div id="sumPresent" style="font-size:clamp(14px,4vw,18px);font-weight:900;color:var(--t-green);">—</div>
+          </div>
+          <div class="badge-red">
+            <div style="font-size:7px;font-weight:900;color:var(--t-muted);text-transform:uppercase;margin-bottom:2px;font-family:var(--t-font-ui);">Late</div>
+            <div id="sumLate" style="font-size:clamp(14px,4vw,18px);font-weight:900;color:var(--t-red);">—</div>
+          </div>
+          <div class="badge-amber">
+            <div style="font-size:7px;font-weight:900;color:var(--t-muted);text-transform:uppercase;margin-bottom:2px;font-family:var(--t-font-ui);">Leave</div>
+            <div id="sumLeave" style="font-size:clamp(14px,4vw,18px);font-weight:900;color:var(--t-amber);">—</div>
+          </div>
         </div>
 
-        <!-- 우: Attendance Rate 바 -->
+        <!-- Rate bar -->
         <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:7px;font-weight:900;color:var(--muted);text-transform:uppercase;">Rate</span>
-                <span id="sumRatePct" style="font-size:9px;font-weight:900;color:var(--blue);">--%</span>
-            </div>
-            <div class="sm-bar" style="margin-bottom:4px;">
-                <div id="sumRateBar" class="sm-bar-fill" style="width:0%;background:var(--green);"></div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:2px;">
-                <span id="sumAvgIn"  style="font-size:8px;font-weight:700;color:var(--muted);">Avg In: --:--</span>
-                <span id="sumAvgOut" style="font-size:8px;font-weight:700;color:var(--muted);">Avg Out: --:--</span>
-            </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:7px;font-weight:900;color:var(--t-muted);text-transform:uppercase;font-family:var(--t-font-ui);">Rate</span>
+            <span id="sumRatePct" style="font-size:9px;font-weight:900;color:var(--t-accent);font-family:var(--t-font-ui);">--%</span>
+          </div>
+          <div class="sm-bar" style="margin-bottom:4px;">
+            <div id="sumRateBar" class="sm-bar-fill" style="width:0%;background:var(--t-green);"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <span id="sumAvgIn"  style="font-size:8px;font-weight:700;color:var(--t-muted);font-family:var(--t-font-ui);">Avg In: --:--</span>
+            <span id="sumAvgOut" style="font-size:8px;font-weight:700;color:var(--t-muted);font-family:var(--t-font-ui);">Avg Out: --:--</span>
+          </div>
         </div>
 
+      </div>
     </div>
-</div>
 
-    <!-- ══ RIGHT PANEL: Calendar ══ -->
-    <div class="sm-right">
-        <div class="sm-cal-card">
-            <div class="sm-cal-header">
-                <div id="currentMonthYear" class="sm-cal-title"></div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <div class="sm-cal-nav">
-                        <button onclick="changeMonth(-1)" class="sm-nav-btn">PREV</button>
-                        <button onclick="goToday()" class="sm-nav-btn today-btn">TODAY</button>
-                        <button onclick="changeMonth(1)" class="sm-nav-btn">NEXT</button>
-                    </div>
-                </div>
-            </div>
+  </div><!-- /sm-left -->
 
-            <div class="overflow-x-auto no-scrollbar">
-<table class="sm-cal-table">
-    <colgroup>
-        <col class="weekend">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekend">
-    </colgroup>
-    <thead>
-        <tr>
-            <th class="sun">Sun</th>
-                            <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
-                            <th class="sat">Sat</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendarBody"></tbody>
-                </table>
-            </div>
+  <!-- ══ RIGHT PANEL: Calendar ══ -->
+  <div class="sm-right">
+    <div class="sm-cal-card">
+      <div class="sm-cal-header">
+        <div id="currentMonthYear" class="sm-cal-title"></div>
+        <div class="sm-cal-nav">
+          <button onclick="changeMonth(-1)" class="sm-nav-btn">PREV</button>
+          <button onclick="goToday()"       class="sm-nav-btn today-btn">TODAY</button>
+          <button onclick="changeMonth(1)"  class="sm-nav-btn">NEXT</button>
         </div>
-    </div>
-</div>
+      </div>
 
+      <div class="overflow-x-auto no-scrollbar">
+        <table class="sm-cal-table">
+          <colgroup>
+            <col class="weekend">
+            <col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday">
+            <col class="weekend">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="sun">Sun</th>
+              <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+              <th class="sat">Sat</th>
+            </tr>
+          </thead>
+          <tbody id="calendarBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sm-root -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — All original logic, zero changes to behaviour
+══════════════════════════════════════════════════════════ -->
 <script>
 /* ── Fortune ── */
 function showFortune() {
-    const fortunes = [
-        "Waktunya istirahat kopi sejenak! ☕","Item Keberuntungan: Pulpen biru 🖋️","Fokus Anda luar biasa hari ini! 🔥",
-        "Sapa rekan kerja Anda hari ini! 😊","Manjakan diri dengan makan siang yang enak! 🍱","Bagaimana kalau peregangan sejenak? 🧘",
-        "Senyum Anda mencerahkan tim ini! ✨","Rencanakan sesuatu yang seru setelah kerja! 🎈","Kesuksesan sedang menuju ke arah Anda! 🚀",
-        "Dengarkan lagu favorit Anda sekarang 🎵","Anda melakukan pekerjaan yang luar biasa! 👍","Jangan lupa minum air putih 💧",
-        "Ada kejutan kecil menanti Anda 🎁","Percayalah pada potensi Anda! 🌟","Tarik napas dalam-dalam santai sejenak 🌬️",
-        "Warna Keberuntungan: Hijau Zamrud 🟢","Kerja keras Anda akan membuahkan hasil! 💰","Tetap positif, kerja keras! ✨",
-        "Efisiensi adalah nama tengah Anda hari ini ⏱️","Seseorang berterima kasih atas bantuan Anda! ❤️",
-        "Hari ini hari yang sempurna untuk awal yang baru 🌅","Yang terbaik masih akan datang! 🌈",
-        "Jangan lupa berkedip! Istirahatkan mata Anda 👀","Kreativitas Anda tidak ada batasnya 🎨",
-        "Teruslah melangkah, Anda hampir sampai! 🏁","Kata-kata baik sangat berarti bagi orang lain 🗣️",
-        "Keberuntungan memihak mereka yang berani! 💪","Keajaiban terjadi di luar zona nyaman Anda ✨",
-        "Anda lebih mampu dari yang Anda kira 🧠","JACKPOT! Keberuntungan super langka! 🎰"
-    ];
-    const area = document.getElementById('fortuneArea');
-    if (!area) return;
-    const div = document.createElement('div');
-    div.className = 'fortune-bubble';
-    div.textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
-    area.innerHTML = '';
-    area.appendChild(div);
+  const fortunes = [
+    "Waktunya istirahat kopi sejenak! ☕","Item Keberuntungan: Pulpen biru 🖋️","Fokus Anda luar biasa hari ini! 🔥",
+    "Sapa rekan kerja Anda hari ini! 😊","Manjakan diri dengan makan siang yang enak! 🍱","Bagaimana kalau peregangan sejenak? 🧘",
+    "Senyum Anda mencerahkan tim ini! ✨","Rencanakan sesuatu yang seru setelah kerja! 🎈","Kesuksesan sedang menuju ke arah Anda! 🚀",
+    "Dengarkan lagu favorit Anda sekarang 🎵","Anda melakukan pekerjaan yang luar biasa! 👍","Jangan lupa minum air putih 💧",
+    "Ada kejutan kecil menanti Anda 🎁","Percayalah pada potensi Anda! 🌟","Tarik napas dalam-dalam santai sejenak 🌬️",
+    "Warna Keberuntungan: Hijau Zamrud 🟢","Kerja keras Anda akan membuahkan hasil! 💰","Tetap positif, kerja keras! ✨",
+    "Efisiensi adalah nama tengah Anda hari ini ⏱️","Seseorang berterima kasih atas bantuan Anda! ❤️",
+    "Hari ini hari yang sempurna untuk awal yang baru 🌅","Yang terbaik masih akan datang! 🌈",
+    "Jangan lupa berkedip! Istirahatkan mata Anda 👀","Kreativitas Anda tidak ada batasnya 🎨",
+    "Teruslah melangkah, Anda hampir sampai! 🏁","Kata-kata baik sangat berarti bagi orang lain 🗣️",
+    "Keberuntungan memihak mereka yang berani! 💪","Keajaiban terjadi di luar zona nyaman Anda ✨",
+    "Anda lebih mampu dari yang Anda kira 🧠","JACKPOT! Keberuntungan super langka! 🎰"
+  ];
+  const area = document.getElementById('fortuneArea');
+  if (!area) return;
+  const div = document.createElement('div');
+  div.className = 'fortune-bubble';
+  div.textContent = fortunes[Math.floor(Math.random() * fortunes.length)];
+  area.innerHTML = '';
+  area.appendChild(div);
 }
 setTimeout(showFortune, 1000);
 
 function getJakartaDate() {
-    return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 }
 
 (function () {
-    const user = sessionStorage.getItem('loggedInUser');
-    const db = firebase.database();
-    let leaveStatusRef = null; // ★ 추가
+  const user = sessionStorage.getItem('loggedInUser');
+  const db = firebase.database();
+  let leaveStatusRef = null;
 
-    /* Welcome */
-const welcomeMsg = document.getElementById('mainWelcomeMsg');
-if (welcomeMsg) {
-    welcomeMsg.innerText = user || '—'; // 로딩 전 fallback
-    firebase.database().ref(`users/${user}/displayName`).once('value', snap => {
-        welcomeMsg.innerText = snap.val() || user || '—';
+  /* Welcome */
+  const welcomeMsg = document.getElementById('mainWelcomeMsg');
+  if (welcomeMsg) {
+    welcomeMsg.innerText = user || '—';
+    db.ref(`users/${user}/displayName`).once('value', snap => {
+      welcomeMsg.innerText = snap.val() || user || '—';
     });
-}
+  }
 
-    if (user) { checkLeaveStatus(user); autoFillYesterdayLeave(user); }
+  if (user) { checkLeaveStatus(user); autoFillYesterdayLeave(user); }
 
-    let now = getJakartaDate();
-    let viewDate = new Date(now);
-    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-    const todayStr = `${y}-${m}-${d}`;
-    let standardTime = "", hasCheckedMissing = false;
-    const btnIn = document.getElementById('btnIn');
-    const timeInput = document.getElementById('manualTime');
+  let now = getJakartaDate();
+  let viewDate = new Date(now);
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
+  const todayStr = `${y}-${m}-${d}`;
+  let standardTime = "", hasCheckedMissing = false;
+  const btnIn = document.getElementById('btnIn');
+  const timeInput = document.getElementById('manualTime');
 
-    /* Live date label */
-    document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'Asia/Jakarta'}).toUpperCase();
+  /* Live date label */
+  const liveDate = document.getElementById('liveDate');
+  if (liveDate) liveDate.innerText = now.toLocaleDateString('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'Asia/Jakarta'}).toUpperCase();
 
-    /* ── Today's In/Out display ── */
-function updateTodayStrip(data) {
-    const inEl = document.getElementById('todayInDisplay');
+  /* ── Today In/Out ── */
+  function updateTodayStrip(data) {
+    const inEl  = document.getElementById('todayInDisplay');
     const outEl = document.getElementById('todayOutDisplay');
-    if (!inEl || !outEl) return; // ← DOM 없으면 즉시 종료
+    if (!inEl || !outEl) return;
     const rec = data && data[user] ? data[user] : null;
     if (!rec) { inEl.textContent = '—'; outEl.textContent = '—'; return; }
-        if (typeof rec === 'string') { inEl.textContent = rec; outEl.textContent = '—'; return; }
-        if (rec.attend) {
-            const m = rec.attend.match(/\d{1,2}:\d{2}/);
-            const prefix = rec.attend.includes('LATE') ? '⚠ ' : '';
-            inEl.textContent = prefix + (m ? m[0] : rec.attend);
-            inEl.style.color = rec.attend.includes('LATE') ? 'var(--red)' : 'var(--green)';
-        } else { inEl.textContent = '—'; }
-        if (rec.leave) {
-            const m = rec.leave.match(/\d{1,2}:\d{2}/);
-            outEl.textContent = m ? m[0] : rec.leave;
-        } else { outEl.textContent = '—'; }
-    }
-db.ref(`attendance/${todayStr}`).on('value', snap => {
-    if (!document.getElementById('todayInDisplay')) {
-        db.ref(`attendance/${todayStr}`).off();
-        return;
-    }
+    if (typeof rec === 'string') { inEl.textContent = rec; outEl.textContent = '—'; return; }
+    if (rec.attend) {
+      const mt = rec.attend.match(/\d{1,2}:\d{2}/);
+      const prefix = rec.attend.includes('LATE') ? '⚠ ' : '';
+      inEl.textContent = prefix + (mt ? mt[0] : rec.attend);
+      inEl.style.color = rec.attend.includes('LATE') ? 'var(--t-red)' : 'var(--t-green)';
+    } else { inEl.textContent = '—'; }
+    if (rec.leave) {
+      const ml = rec.leave.match(/\d{1,2}:\d{2}/);
+      outEl.textContent = ml ? ml[0] : rec.leave;
+    } else { outEl.textContent = '—'; }
+  }
+
+  db.ref(`attendance/${todayStr}`).on('value', snap => {
+    if (!document.getElementById('todayInDisplay')) { db.ref(`attendance/${todayStr}`).off(); return; }
     updateTodayStrip(snap.val());
-});
+  });
 
-
-function checkLeaveStatus(uid) {
-    leaveStatusRef = db.ref(`leaves/${uid}/${new Date().getFullYear()}`); // ★
+  /* ── Leave status ── */
+  function checkLeaveStatus(uid) {
+    leaveStatusRef = db.ref(`leaves/${uid}/${new Date().getFullYear()}`);
     leaveStatusRef.on('value', snap => {
-        const alertDiv = document.getElementById('leaveStatusAlert');
-        if (!alertDiv) {
-            leaveStatusRef.off(); // ★
-            return;
+      const alertDiv = document.getElementById('leaveStatusAlert');
+      if (!alertDiv) { leaveStatusRef.off(); return; }
+      const content = document.getElementById('leaveAlertContent');
+      const icon    = document.getElementById('leaveAlertIcon');
+      const title   = document.getElementById('leaveAlertTitle');
+      const msg     = document.getElementById('leaveAlertMsg');
+      if (!content || !icon || !title || !msg) { leaveStatusRef.off(); return; }
+      const leaves = snap.val(); if (!leaves) return;
+      const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
+      if (target) {
+        alertDiv.classList.add('visible');
+        if (target.status === 'Pending') {
+          content.className = 'sm-leave-alert pending animate-pulse-slow';
+          icon.innerText = '⏳'; title.className = 'sm-leave-alert-title pending'; title.innerText = 'Leave Request Pending';
+          msg.innerText = `${target.type} (${target.startDate}) awaiting approval.`;
+        } else {
+          content.className = 'sm-leave-alert rejected';
+          icon.innerText = '🚫'; title.className = 'sm-leave-alert-title rejected'; title.innerText = 'Leave Request Rejected';
+          msg.innerText = `${target.type} was rejected. Check admin memo.`;
         }
-        const content = document.getElementById('leaveAlertContent');
-        const icon    = document.getElementById('leaveAlertIcon');
-        const title   = document.getElementById('leaveAlertTitle');
-        const msg     = document.getElementById('leaveAlertMsg');
-        if (!content || !icon || !title || !msg) {
-            leaveStatusRef.off(); // ★
-            return;
+      } else { alertDiv.classList.remove('visible'); }
+    });
+  }
+
+  /* ── Auto-fill yesterday leave ── */
+  function autoFillYesterdayLeave(uid) {
+    const now = getJakartaDate(), dow = now.getDay();
+    const target = getJakartaDate();
+    if (dow === 1) target.setDate(now.getDate()-3); else target.setDate(now.getDate()-1);
+    const ty=target.getFullYear(), tm=String(target.getMonth()+1).padStart(2,'0'), td=String(target.getDate()).padStart(2,'0');
+    const tStr=`${ty}-${tm}-${td}`, tdow=target.getDay();
+    if (tdow===0||tdow===6) return;
+    db.ref('settings/config/autoLeave').once('value', cs => {
+      const autoLeaveTime = cs.val()||"18:00";
+      db.ref('attendance/'+tStr).once('value', snap => {
+        const all=snap.val(); if (!all) return;
+        const my=all[uid];
+        if (my&&typeof my==='object'&&my.attend&&!my.leave) {
+          db.ref(`attendance/${tStr}/${uid}`).update({leave:autoLeaveTime}).then(()=>{ if(typeof renderCalendar==='function') renderCalendar(); });
         }
-            const leaves = snap.val(); if (!leaves) return;
-            const target = Object.values(leaves).find(l => l.status === 'Pending' || l.status === 'Rejected');
-            if (target) {
-                alertDiv.classList.add('visible');
-                if (target.status === 'Pending') {
-                    content.className = 'sm-leave-alert pending animate-pulse-slow';
-                    icon.innerText = '⏳'; title.className = 'sm-leave-alert-title pending'; title.innerText = 'Leave Request Pending';
-                    msg.innerText = `${target.type} (${target.startDate}) awaiting approval.`;
-                } else {
-                    content.className = 'sm-leave-alert rejected';
-                    icon.innerText = '🚫'; title.className = 'sm-leave-alert-title rejected'; title.innerText = 'Leave Request Rejected';
-                    msg.innerText = `${target.type} was rejected. Check admin memo.`;
-                }
-            } else { alertDiv.classList.remove('visible'); }
-        });
-    }
+      });
+    });
+  }
 
-    /* ── Auto Fill Yesterday Leave ── */
-    function autoFillYesterdayLeave(uid) {
-        const now = getJakartaDate(), dow = now.getDay();
-        const target = getJakartaDate();
-        if (dow === 1) target.setDate(now.getDate()-3); else target.setDate(now.getDate()-1);
-        const ty=target.getFullYear(), tm=String(target.getMonth()+1).padStart(2,'0'), td=String(target.getDate()).padStart(2,'0');
-        const tStr=`${ty}-${tm}-${td}`, tdow=target.getDay();
-        if (tdow===0||tdow===6) return;
-        db.ref('settings/config/autoLeave').once('value', cs => {
-            const autoLeaveTime = cs.val()||"18:00";
-            db.ref('attendance/'+tStr).once('value', snap => {
-                const all=snap.val(); if (!all) return;
-                const my=all[uid];
-                if (my&&typeof my==='object'&&my.attend&&!my.leave) {
-                    db.ref(`attendance/${tStr}/${uid}`).update({leave:autoLeaveTime}).then(()=>{ if(typeof renderCalendar==='function') renderCalendar(); });
-                }
-            });
-        });
-    }
-
-function updateLiveTime() {
-    if (!document.getElementById('manualTime')) return; // ★
+  /* ── Live clock ── */
+  function updateLiveTime() {
+    if (!document.getElementById('manualTime')) return;
     if (document.activeElement === timeInput) return;
     const n = getJakartaDate();
     timeInput.value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-}
+  }
+  const liveTimeTimer = setInterval(updateLiveTime, 1000);
+  updateLiveTime();
 
-const liveTimeTimer = setInterval(updateLiveTime, 1000);
-updateLiveTime();
-
-    /* ── Late Warning ── */
-function checkLateWarning() {
-    if (!document.getElementById('btnIn')) return; // ★
+  /* ── Late Warning ── */
+  function checkLateWarning() {
+    if (!document.getElementById('btnIn')) return;
     if (!standardTime) return;
     const now = getJakartaDate();
-
-        const [sH, sM] = standardTime.split(':').map(Number);
-        const stdMins = sH * 60 + sM;
-        const nowMins = now.getHours() * 60 + now.getMinutes();
-        const btn = document.getElementById('btnIn');
-        if (!btn) return;
-        db.ref(`attendance/${todayStr}/${user}/attend`).once('value', snap => {
-            if (snap.val()) {
-                btn.style.background = 'var(--green)';
-                btn.innerHTML = 'SET IN';
-                return;
-            }
-            if (nowMins > stdMins + 5) {
-                btn.style.background = 'linear-gradient(135deg,#f43f5e,#dc2626)';
-                btn.innerHTML = `⚠ SET IN (LATE +${nowMins - stdMins}m)`;
-            } else if (nowMins > stdMins - 10) {
-                btn.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
-                btn.innerHTML = `⏰ SET IN (Hurry!)`;
-            } else {
-                btn.style.background = 'var(--green)';
-                btn.innerHTML = 'SET IN';
-            }
-        });
-    }
-const lateWarnTimer = setInterval(checkLateWarning, 30000);
-checkLateWarning();
-
-    timeInput.addEventListener('input', e => {
-        let v = e.target.value.replace(/[^0-9]/g, '');
-        if (v.length >= 5) v = v.substring(0,2) + ':' + v.substring(2,4) + ':' + v.substring(4,6);
-        else if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
-        e.target.value = v;
+    const [sH, sM] = standardTime.split(':').map(Number);
+    const stdMins = sH*60+sM, nowMins = now.getHours()*60+now.getMinutes();
+    const btn = document.getElementById('btnIn'); if (!btn) return;
+    db.ref(`attendance/${todayStr}/${user}/attend`).once('value', snap => {
+      if (snap.val()) { btn.style.background='var(--t-green)'; btn.innerHTML='SET IN'; return; }
+      if (nowMins > stdMins+5) {
+        btn.style.background='linear-gradient(135deg,#f43f5e,#dc2626)';
+        btn.innerHTML=`⚠ SET IN (LATE +${nowMins-stdMins}m)`;
+      } else if (nowMins > stdMins-10) {
+        btn.style.background='linear-gradient(135deg,#f59e0b,#d97706)';
+        btn.innerHTML=`⏰ SET IN (Hurry!)`;
+      } else { btn.style.background='linear-gradient(135deg,#10b981,#059669)'; btn.innerHTML='SET IN'; }
     });
+  }
+  const lateWarnTimer = setInterval(checkLateWarning, 30000);
+  checkLateWarning();
 
-    function isValidTime(t) { return t && /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t); }
+  /* Time input formatter */
+  timeInput.addEventListener('input', e => {
+    let v = e.target.value.replace(/[^0-9]/g,'');
+    if (v.length>=5) v=v.substring(0,2)+':'+v.substring(2,4)+':'+v.substring(4,6);
+    else if (v.length>=3) v=v.substring(0,2)+':'+v.substring(2,4);
+    e.target.value=v;
+  });
 
-    /* ── Config ── */
-    let config = { LLMAPIkey:"", autoLeave:"18:00", stdAttendance:"08:00" };
+  function isValidTime(t) { return t && /^([01][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9]))?$/.test(t); }
 
-// ✅ 수정 — 핵심 DOM(manualTime)이 없으면 리스너 해제
-db.ref('settings/config').on('value', snap => {
-    if (!document.getElementById('manualTime')) {          // ← 추가
-        db.ref('settings/config').off(); return;           // ← 추가
-    }
-    const data = snap.val();
-    if(data) {
-        config = {...config, ...data};
-        const e = document.getElementById('displayStdTime');
-        if(e) e.innerText = config.stdAttendance;
-        standardTime = config.stdAttendance;
-    }
-});
-db.ref('settings/config/stdAttendance').on('value', snap => {
-    if (!document.getElementById('manualTime')) {          // ← 추가
-        db.ref('settings/config/stdAttendance').off(); return; // ← 추가
-    }
-    const v = snap.val();
-    if(v) {
-        standardTime = v;
-        const e = document.getElementById('displayStdTime');
-        if(e) e.innerText = v;
-        if(btnIn) btnIn.disabled = false;
-    }
-});
+  /* ── Config ── */
+  let config = { LLMAPIkey:"", autoLeave:"18:00", stdAttendance:"08:00" };
 
+  db.ref('settings/config').on('value', snap => {
+    if (!document.getElementById('manualTime')) { db.ref('settings/config').off(); return; }
+    const data=snap.val(); if (data) { config={...config,...data}; const e=document.getElementById('displayStdTime'); if(e) e.innerText=config.stdAttendance; standardTime=config.stdAttendance; }
+  });
+  db.ref('settings/config/stdAttendance').on('value', snap => {
+    if (!document.getElementById('manualTime')) { db.ref('settings/config/stdAttendance').off(); return; }
+    const v=snap.val(); if (v) { standardTime=v; const e=document.getElementById('displayStdTime'); if(e) e.innerText=v; if(btnIn) btnIn.disabled=false; }
+  });
 
-    /* ── Handle Attendance ── */
-    window.handleAttendance = function(type) {
-        if(!type||typeof type!=='string') return;
-        const btn=type==='attend'?document.getElementById('btnIn'):document.getElementById('btnOut');
-        if(btn.disabled) return;
-        const rawTime=timeInput.value;
-        if(!isValidTime(rawTime)) { alert("Please enter a valid time (HH:mm:ss)."); return; }
-        btn.disabled=true; btn.style.opacity="0.5";
-        const parts=rawTime.split(':'), storageTime=`${parts[0]}:${parts[1]}`;
-        db.ref('users/'+user+'/WarnFlag').once('value', wSnap => {
-            const warnFlag=wSnap.val();
-            db.ref('attendance/'+todayStr+'/'+user).once('value', snap => {
-                const cur=snap.val()||{};
-                if(type==='attend'&&cur.attend) { alert("Attendance time has already been set."); btn.disabled=false; btn.style.opacity="1"; return; }
-                let finalVal=storageTime;
-                if(type==='attend') {
-                    if(!standardTime) { alert("Standard time is loading..."); btn.disabled=false; btn.style.opacity="1"; return; }
-                    if(warnFlag==="off") { finalVal=`ATT(${storageTime})`; }
-                    else { const [iH,iM]=storageTime.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number); finalVal=(iH*60+iM<=sH*60+sM)?`ATT(${storageTime})`:`LATE(${storageTime})`; }
-                }
-if(confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
-    db.ref('attendance/'+todayStr+'/'+user).update({[type]:finalVal})
-    .then(()=>{ alert("Success!"); })
-    .finally(()=>{ btn.disabled=false; btn.style.opacity="1"; });
-} else { btn.disabled=false; btn.style.opacity="1"; }
-            });
-        });
-    };
-
-    /* ── Stats ── */
-    function updateAttendanceStats(data) {
-        const vy=viewDate.getFullYear(), vm=viewDate.getMonth()+1;
-        let total=0,late=0,att=0,totalLeaveMins=0,leaveCnt=0;
-        Object.keys(data).forEach(ds=>{
-            const [yr,mo]=ds.split('-').map(Number);
-            if(yr===vy&&mo===vm) {
-                const rec=data[ds][user];
-                if(rec&&typeof rec==='object'&&rec.attend) {
-                    total++; if(rec.attend.includes("LATE")) late++; else if(rec.attend.includes("ATT")) att++;
-                    if(rec.leave){const tm=rec.leave.match(/(\d{2}):(\d{2})/);if(tm){totalLeaveMins+=(parseInt(tm[1])*60+parseInt(tm[2]));leaveCnt++;}}
-                }
-            }
-        });
-        const ratio=total>0?Math.round((late/total)*100):0;
-        const pct=document.getElementById('lateRatioPercent');
-        const bar=document.getElementById('lateRatioBar');
-        const card=document.getElementById('weeklySummaryCard');
-        const status=document.getElementById('lateRatioStatus');
-        const warnIcon=document.getElementById('warningIcon');
-        if(pct) pct.innerText=`${ratio}%`;
-        if(bar&&card&&status&&warnIcon) {
-            bar.style.width=`${ratio}%`;
-            if(ratio>=50) {
-                bar.className="sm-bar-fill warning"; card.classList.add('warning-pulse');
-                status.innerText="Aku terlambat!"; status.className="sm-stats-status warning animate-blink";
-                if(pct){pct.classList.add('animate-blink','warning');}
-                warnIcon.classList.add('visible');
-            } else {
-                bar.className="sm-bar-fill"; card.classList.remove('warning-pulse');
-                status.innerText="GOOD STANDING"; status.className="sm-stats-status";
-                if(pct){pct.classList.remove('animate-blink','warning');}
-                warnIcon.classList.remove('visible');
-            }
+  /* ── Handle Attendance ── */
+  window.handleAttendance = function(type) {
+    if (!type||typeof type!=='string') return;
+    const btn=type==='attend'?document.getElementById('btnIn'):document.getElementById('btnOut');
+    if (btn.disabled) return;
+    const rawTime=timeInput.value;
+    if (!isValidTime(rawTime)) { alert("Please enter a valid time (HH:mm:ss)."); return; }
+    btn.disabled=true; btn.style.opacity="0.5";
+    const parts=rawTime.split(':'), storageTime=`${parts[0]}:${parts[1]}`;
+    db.ref('users/'+user+'/WarnFlag').once('value', wSnap => {
+      const warnFlag=wSnap.val();
+      db.ref('attendance/'+todayStr+'/'+user).once('value', snap => {
+        const cur=snap.val()||{};
+        if (type==='attend'&&cur.attend) { alert("Attendance time has already been set."); btn.disabled=false; btn.style.opacity="1"; return; }
+        let finalVal=storageTime;
+        if (type==='attend') {
+          if (!standardTime) { alert("Standard time is loading..."); btn.disabled=false; btn.style.opacity="1"; return; }
+          if (warnFlag==="off") { finalVal=`ATT(${storageTime})`; }
+          else { const [iH,iM]=storageTime.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number); finalVal=(iH*60+iM<=sH*60+sM)?`ATT(${storageTime})`:`LATE(${storageTime})`; }
         }
-        const sc=document.getElementById('statCounts'); if(sc) sc.innerText=`T:${total} | A:${att} | L:${late}`;
-        const avg=document.getElementById('avgLeaveTime');
-        if(avg) {
-            if(leaveCnt>0){const a=Math.round(totalLeaveMins/leaveCnt);avg.innerText=`Avg Out: ${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}`;}
-            else avg.innerText="Avg Out: --:--";
-        }
-    }
-
-    /* ── Toggle Input Mode ── */
-    window.toggleInputMode = function() {
-        const status=document.getElementById('specialStatus').value;
-        const tw=document.getElementById('timeInputWrapper');
-        const ba=document.getElementById('buttonArea');
-        const sba=document.getElementById('specialButtonArea');
-        if(status!=="") { tw.style.opacity="0.3"; tw.style.pointerEvents="none"; ba.style.display="none"; sba.style.display="block"; }
-        else { tw.style.opacity="1"; tw.style.pointerEvents=""; ba.style.display=""; sba.style.display="none"; }
-    };
-
-    window.handleSpecialStatus = function() {
-        const status=document.getElementById('specialStatus').value; if(!status) return;
-        if(confirm(`Set status to ${status}?`)) {
-            db.ref('attendance/'+todayStr+'/'+user).set(status).then(()=>{ alert("Success."); document.getElementById('specialStatus').value=""; toggleInputMode(); });
-        }
-    };
-
-    /* ── Calendar ── */
-    window.goToday = function() { viewDate=getJakartaDate(); renderCalendar(); };
-    window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth()+offset); renderCalendar(); };
-
-    function renderCalendar() {
-        const year=viewDate.getFullYear(), month=viewDate.getMonth();
-        const firstDay=new Date(year,month,1).getDay(), lastDate=new Date(year,month+1,0).getDate();
-        const mye=document.getElementById('currentMonthYear');
-        if(mye) mye.innerText=viewDate.toLocaleString('en-US',{month:'long',year:'numeric'}).toUpperCase();
-        db.ref('attendance').off();
-// ✅ 수정 — calendarBody 없으면 리스너까지 해제
-db.ref('attendance').on('value', snap => {
-    const tbody = document.getElementById('calendarBody');
-    if (!tbody) {
-        db.ref('attendance').off();   // ← 추가
-        return;
-    }
-    const data = snap.val()||{};
-    updateAttendanceStats(data);
-// renderCalendar 함수 안 updateAttendanceStats 호출 아래에 추가
-function updateMonthSummary(data) {
-    const vy = viewDate.getFullYear(), vm = viewDate.getMonth();
-    const monthStr = `${vy}-${String(vm+1).padStart(2,'0')}`;
-    const leaveTypes = ['PEL','ANL','HAL','SIL','SPL','WO'];
-
-    let present = 0, late = 0, leave = 0, workdays = 0;
-    let totalInMins = 0, inCount = 0, totalOutMins = 0, outCount = 0;
-
-    // 이번 달 평일만 순회
-    const lastDay = new Date(vy, vm+1, 0).getDate();
-    for (let d = 1; d <= lastDay; d++) {
-        const dow = new Date(vy, vm, d).getDay();
-        if (dow === 0 || dow === 6) continue;
-        const dStr = `${monthStr}-${String(d).padStart(2,'0')}`;
-        const today = getJakartaDate().toISOString().split('T')[0];
-        if (dStr > today) continue; // 미래 날짜 제외
-        workdays++;
-
-        const rec = data[dStr]?.[user];
-        if (!rec) continue;
-
-        if (typeof rec === 'string') {
-            if (leaveTypes.includes(rec)) leave++;
-        } else if (rec.attend) {
-            if (leaveTypes.includes(rec.attend)) { leave++; continue; }
-            present++;
-            if (rec.attend.includes('LATE')) late++;
-
-            // 평균 IN 계산
-            const inMatch = rec.attend.match(/(\d{1,2}):(\d{2})/);
-            if (inMatch) { totalInMins += parseInt(inMatch[1])*60 + parseInt(inMatch[2]); inCount++; }
-
-            // 평균 OUT 계산
-            if (rec.leave) {
-                const outMatch = rec.leave.match(/(\d{1,2}):(\d{2})/);
-                if (outMatch) { totalOutMins += parseInt(outMatch[1])*60 + parseInt(outMatch[2]); outCount++; }
-            }
-        }
-    }
-
-    const rate = workdays > 0 ? Math.round((present / workdays) * 100) : 0;
-    const toTime = mins => `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-    const barColor = rate >= 90 ? 'var(--green)' : rate >= 70 ? 'var(--amber)' : 'var(--red)';
-
-    const el = id => document.getElementById(id);
-    if (el('sumPresent'))   el('sumPresent').innerText   = present;
-    if (el('sumLate'))      el('sumLate').innerText      = late;
-    if (el('sumLeave'))     el('sumLeave').innerText     = leave;
-    if (el('sumRatePct'))   el('sumRatePct').innerText   = rate + '%';
-    if (el('sumRateBar'))   { el('sumRateBar').style.width = rate + '%'; el('sumRateBar').style.background = barColor; }
-    if (el('sumAvgIn'))     el('sumAvgIn').innerText     = inCount  > 0 ? `Avg In: ${toTime(Math.round(totalInMins/inCount))}`   : 'Avg In: --:--';
-    if (el('sumAvgOut'))    el('sumAvgOut').innerText    = outCount > 0 ? `Avg Out: ${toTime(Math.round(totalOutMins/outCount))}` : 'Avg Out: --:--';
-
-    const lbl = el('summaryMonthLabel');
-    if (lbl) lbl.innerText = viewDate.toLocaleString('en-US',{month:'short',year:'numeric'}).toUpperCase();
-}
-
-// renderCalendar 안 updateAttendanceStats(data); 호출 바로 아래에 추가
-updateMonthSummary(data);
-
-// updateAllStaffToday 함수 전체 교체
-// updateAllStaffToday 함수 전체 교체
-async function updateAllStaffToday() {
-    const todayStr = getJakartaDate().toISOString().split('T')[0];
-    
-    // 모든 직원 목록 가져오기
-    const usersSnap = await db.ref('users').once('value');
-    const allUsers = usersSnap.val() || {};
-    const userList = Object.keys(allUsers).filter(uid => allUsers[uid].role !== 'admin');
-    
-    // 오늘 출석 데이터 가져오기
-    const attSnap = await db.ref(`attendance/${todayStr}`).once('value');
-    const attData = attSnap.val() || {};
-    
-    const attendedStaff = [];
-    
-    userList.forEach(uid => {
-        const displayName = allUsers[uid].displayName || uid;
-        const rec = attData[uid];
-        
-        if (rec) {
-            if (typeof rec === 'object' && rec.attend) {
-                const timeMatch = rec.attend.match(/(\d{1,2}:\d{2})/);
-                const inTime = timeMatch ? timeMatch[1] : '--:--';
-                const isLate = rec.attend.includes('LATE');
-                
-                // Checkout 시간 추출
-                let outTime = '--:--';
-                if (rec.leave) {
-                    const outMatch = rec.leave.match(/(\d{1,2}:\d{2})/);
-                    outTime = outMatch ? outMatch[1] : rec.leave;
-                }
-                
-                attendedStaff.push({
-                    name: displayName,
-                    inTime: inTime,
-                    outTime: outTime,
-                    isLate: isLate
-                });
-            }
-        }
+        if (confirm(`Update ${type.toUpperCase()} to ${finalVal}?`)) {
+          db.ref('attendance/'+todayStr+'/'+user).update({[type]:finalVal})
+          .then(()=>{ alert("Success!"); })
+          .finally(()=>{ btn.disabled=false; btn.style.opacity="1"; });
+        } else { btn.disabled=false; btn.style.opacity="1"; }
+      });
     });
-    
-    // 시간순 정렬 (빠른 시간부터)
-    attendedStaff.sort((a, b) => a.inTime.localeCompare(b.inTime));
-    
-    const rows = attendedStaff.map(staff => 
-        `<div class="staff-row">
-            <span class="staff-name">${staff.name}</span>
-            <div style="display:flex;gap:4px;align-items:center;">
-                <span class="staff-time ${staff.isLate ? 'late' : 'present'}">${staff.inTime}</span>
-                <span style="font-size:8px;color:var(--muted);">→</span>
-                <span class="staff-time" style="color:${staff.outTime === '--:--' ? 'var(--muted)' : '#60a5fa'};background:${staff.outTime === '--:--' ? 'rgba(100,116,139,0.1)' : 'rgba(59,130,246,0.12)'};border:1px solid ${staff.outTime === '--:--' ? 'rgba(100,116,139,0.15)' : 'rgba(59,130,246,0.2)'};">${staff.outTime}</span>
-            </div>
-        </div>`
-    );
-    
-    const listEl = document.getElementById('allStaffList');
-    const countEl = document.getElementById('allStaffCount');
-    
-    if (listEl) listEl.innerHTML = rows.length > 0 ? rows.join('') : '<div style="font-size:9px;color:var(--muted);text-align:center;padding:10px;">No attendance yet</div>';
-    if (countEl) countEl.innerText = `${attendedStaff.length}`;
-}
+  };
 
-// 4. updateAllStaffToday 함수 호출 추가
-updateAllStaffToday();
-
-            if(!hasCheckedMissing){checkMissingRecords(data);hasCheckedMissing=true;}
-            tbody.innerHTML=''; let dc=1;
-            for(let i=0;i<6;i++){
-                let row=document.createElement('tr');
-                for(let j=0;j<7;j++){
-                    let cell=document.createElement('td');
-                    if(i===0&&j<firstDay||dc>lastDate){row.appendChild(cell);continue;}
-                    const dStr=`${year}-${String(month+1).padStart(2,'0')}-${String(dc).padStart(2,'0')}`;
-                    const rec=data[dStr]?data[dStr][user]:null;
-                    if(j===0) cell.classList.add('sun-cell');
-                    else if(j===6) cell.classList.add('sat-cell');
-                    if(dStr===todayStr) cell.classList.add('today-highlight');
-                    cell.style.cursor='pointer';
-                    cell.onclick=()=>openEditPopup(dStr,rec);
-                    const numCls=j===0?'sun':j===6?'sat':dStr===todayStr?'today':'';
-                    let content=`<div class="sm-cal-date ${numCls}">${dc}</div>`;
-                    if(rec){
-                        if(typeof rec==='string'){
-                            content+=`<span class="time-label other-color">${rec}</span>`;
-                        } else {
-                            let at=rec.attend||"";
-                            if(at){const am=at.match(/(\d{1,2}:\d{2})/),px=at.includes("LATE")?"LATE":"ATT",cl=at.includes("ATT")?"att-color":"late-color";content+=`<span class="time-label ${cl}">☀${am?px+'('+am[1]+')':at}</span>`;}
-                            if(rec.leave){const lm=rec.leave.match(/(\d{1,2}:\d{2})/);content+=`<span class="time-label out-time">🌙${lm?lm[1]:rec.leave}</span>`;}
-                        }
-                    }
-                    cell.innerHTML=content; row.appendChild(cell); dc++;
-                }
-                tbody.appendChild(row); if(dc>lastDate) break;
-            }
-        });
+  /* ── Attendance Stats ── */
+  function updateAttendanceStats(data) {
+    const vy=viewDate.getFullYear(), vm=viewDate.getMonth()+1;
+    let total=0,late=0,att=0,totalLeaveMins=0,leaveCnt=0;
+    Object.keys(data).forEach(ds=>{
+      const [yr,mo]=ds.split('-').map(Number);
+      if (yr===vy&&mo===vm) {
+        const rec=data[ds][user];
+        if (rec&&typeof rec==='object'&&rec.attend) {
+          total++; if(rec.attend.includes("LATE")) late++; else if(rec.attend.includes("ATT")) att++;
+          if(rec.leave){const tm=rec.leave.match(/(\d{2}):(\d{2})/);if(tm){totalLeaveMins+=(parseInt(tm[1])*60+parseInt(tm[2]));leaveCnt++;}}
+        }
+      }
+    });
+    const ratio=total>0?Math.round((late/total)*100):0;
+    const pct=document.getElementById('lateRatioPercent'),bar=document.getElementById('lateRatioBar'),card=document.getElementById('weeklySummaryCard'),status=document.getElementById('lateRatioStatus'),warnIcon=document.getElementById('warningIcon');
+    if (pct) pct.innerText=`${ratio}%`;
+    if (bar&&card&&status&&warnIcon) {
+      bar.style.width=`${ratio}%`;
+      if (ratio>=50) { bar.className="sm-bar-fill warning"; card.classList.add('warning-pulse'); status.innerText="Aku terlambat!"; status.className="sm-stats-status warning animate-blink"; if(pct){pct.classList.add('animate-blink','warning');} warnIcon.classList.add('visible'); }
+      else { bar.className="sm-bar-fill"; card.classList.remove('warning-pulse'); status.innerText="GOOD STANDING"; status.className="sm-stats-status"; if(pct){pct.classList.remove('animate-blink','warning');} warnIcon.classList.remove('visible'); }
     }
+    const sc=document.getElementById('statCounts'); if(sc) sc.innerText=`T:${total} | A:${att} | L:${late}`;
+    const avg=document.getElementById('avgLeaveTime');
+    if (avg) { if(leaveCnt>0){const a=Math.round(totalLeaveMins/leaveCnt);avg.innerText=`Avg Out: ${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}`;}else avg.innerText="Avg Out: --:--"; }
+  }
 
-    /* ── Edit Popup ── */
-window.openEditPopup = function(dateStr, currentRec) {
-    if(document.getElementById('editPopup')) return;
-    
-    // 미래 날짜 체크
-    const clickedDate = new Date(dateStr);
-    const today = new Date(todayStr);
-    const isFutureDate = clickedDate > today;
-    
+  /* ── Toggle Input Mode ── */
+  window.toggleInputMode = function() {
+    const status=document.getElementById('specialStatus').value;
+    const tw=document.getElementById('timeInputWrapper');
+    const ba=document.getElementById('buttonArea');
+    const sba=document.getElementById('specialButtonArea');
+    if (status!=="") { tw.style.opacity="0.3"; tw.style.pointerEvents="none"; ba.style.display="none"; sba.style.display="block"; }
+    else { tw.style.opacity="1"; tw.style.pointerEvents=""; ba.style.display=""; sba.style.display="none"; }
+  };
+
+  window.handleSpecialStatus = function() {
+    const status=document.getElementById('specialStatus').value; if (!status) return;
+    if (confirm(`Set status to ${status}?`)) {
+      db.ref('attendance/'+todayStr+'/'+user).set(status).then(()=>{ alert("Success."); document.getElementById('specialStatus').value=""; toggleInputMode(); });
+    }
+  };
+
+  /* ── Calendar navigation ── */
+  window.goToday    = function() { viewDate=getJakartaDate(); renderCalendar(); };
+  window.changeMonth = function(offset) { viewDate.setMonth(viewDate.getMonth()+offset); renderCalendar(); };
+
+  /* ── Render Calendar ── */
+  function renderCalendar() {
+    const year=viewDate.getFullYear(), month=viewDate.getMonth();
+    const firstDay=new Date(year,month,1).getDay(), lastDate=new Date(year,month+1,0).getDate();
+    const mye=document.getElementById('currentMonthYear');
+    if (mye) mye.innerText=viewDate.toLocaleString('en-US',{month:'long',year:'numeric'}).toUpperCase();
+    db.ref('attendance').off();
+
+    db.ref('attendance').on('value', snap => {
+      const tbody=document.getElementById('calendarBody');
+      if (!tbody) { db.ref('attendance').off(); return; }
+      const data=snap.val()||{};
+      updateAttendanceStats(data);
+      updateMonthSummary(data);
+      updateAllStaffToday();
+      if (!hasCheckedMissing) { checkMissingRecords(data); hasCheckedMissing=true; }
+
+      tbody.innerHTML=''; let dc=1;
+      for (let i=0;i<6;i++) {
+        let row=document.createElement('tr');
+        for (let j=0;j<7;j++) {
+          let cell=document.createElement('td');
+          if (i===0&&j<firstDay||dc>lastDate) { row.appendChild(cell); continue; }
+          const dStr=`${year}-${String(month+1).padStart(2,'0')}-${String(dc).padStart(2,'0')}`;
+          const rec=data[dStr]?data[dStr][user]:null;
+          if (j===0) cell.classList.add('sun-cell'); else if (j===6) cell.classList.add('sat-cell');
+          if (dStr===todayStr) cell.classList.add('today-highlight');
+          cell.style.cursor='pointer';
+          cell.onclick=()=>openEditPopup(dStr,rec);
+          const numCls=j===0?'sun':j===6?'sat':dStr===todayStr?'today':'';
+          let content=`<div class="sm-cal-date ${numCls}">${dc}</div>`;
+          if (rec) {
+            if (typeof rec==='string') { content+=`<span class="time-label other-color">${rec}</span>`; }
+            else {
+              let at=rec.attend||"";
+              if (at) { const am=at.match(/(\d{1,2}:\d{2})/),px=at.includes("LATE")?"LATE":"ATT",cl=at.includes("ATT")?"att-color":"late-color"; content+=`<span class="time-label ${cl}">☀${am?px+'('+am[1]+')':at}</span>`; }
+              if (rec.leave) { const lm=rec.leave.match(/(\d{1,2}:\d{2})/); content+=`<span class="time-label out-time">🌙${lm?lm[1]:rec.leave}</span>`; }
+            }
+          }
+          cell.innerHTML=content; row.appendChild(cell); dc++;
+        }
+        tbody.appendChild(row); if (dc>lastDate) break;
+      }
+    });
+  }
+
+  /* ── Month Summary ── */
+  function updateMonthSummary(data) {
+    const vy=viewDate.getFullYear(), vm=viewDate.getMonth();
+    const monthStr=`${vy}-${String(vm+1).padStart(2,'0')}`;
+    const leaveTypes=['PEL','ANL','HAL','SIL','SPL','WO'];
+    let present=0,late=0,leave=0,workdays=0,totalInMins=0,inCount=0,totalOutMins=0,outCount=0;
+    const lastDay=new Date(vy,vm+1,0).getDate();
+    for (let d=1;d<=lastDay;d++) {
+      const dow=new Date(vy,vm,d).getDay(); if (dow===0||dow===6) continue;
+      const dStr=`${monthStr}-${String(d).padStart(2,'0')}`;
+      const today=getJakartaDate().toISOString().split('T')[0]; if (dStr>today) continue;
+      workdays++;
+      const rec=data[dStr]?.[user]; if (!rec) continue;
+      if (typeof rec==='string') { if(leaveTypes.includes(rec)) leave++; }
+      else if (rec.attend) {
+        if (leaveTypes.includes(rec.attend)) { leave++; continue; }
+        present++; if (rec.attend.includes('LATE')) late++;
+        const inMatch=rec.attend.match(/(\d{1,2}):(\d{2})/);
+        if (inMatch) { totalInMins+=parseInt(inMatch[1])*60+parseInt(inMatch[2]); inCount++; }
+        if (rec.leave) { const outMatch=rec.leave.match(/(\d{1,2}):(\d{2})/); if(outMatch){totalOutMins+=parseInt(outMatch[1])*60+parseInt(outMatch[2]);outCount++;} }
+      }
+    }
+    const rate=workdays>0?Math.round((present/workdays)*100):0;
+    const toTime=mins=>`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+    const barColor=rate>=90?'var(--t-green)':rate>=70?'var(--t-amber)':'var(--t-red)';
+    const el=id=>document.getElementById(id);
+    if(el('sumPresent'))  el('sumPresent').innerText=present;
+    if(el('sumLate'))     el('sumLate').innerText=late;
+    if(el('sumLeave'))    el('sumLeave').innerText=leave;
+    if(el('sumRatePct'))  el('sumRatePct').innerText=rate+'%';
+    if(el('sumRateBar'))  { el('sumRateBar').style.width=rate+'%'; el('sumRateBar').style.background=barColor; }
+    if(el('sumAvgIn'))    el('sumAvgIn').innerText=inCount>0?`Avg In: ${toTime(Math.round(totalInMins/inCount))}`:'Avg In: --:--';
+    if(el('sumAvgOut'))   el('sumAvgOut').innerText=outCount>0?`Avg Out: ${toTime(Math.round(totalOutMins/outCount))}`:'Avg Out: --:--';
+    const lbl=el('summaryMonthLabel'); if(lbl) lbl.innerText=viewDate.toLocaleString('en-US',{month:'short',year:'numeric'}).toUpperCase();
+  }
+
+  /* ── All-Staff Today ── */
+  async function updateAllStaffToday() {
+    const todayStr=getJakartaDate().toISOString().split('T')[0];
+    const usersSnap=await db.ref('users').once('value');
+    const allUsers=usersSnap.val()||{};
+    const userList=Object.keys(allUsers).filter(uid=>allUsers[uid].role!=='admin');
+    const attSnap=await db.ref(`attendance/${todayStr}`).once('value');
+    const attData=attSnap.val()||{};
+    const attendedStaff=[];
+    userList.forEach(uid=>{
+      const displayName=allUsers[uid].displayName||uid;
+      const rec=attData[uid];
+      if (rec&&typeof rec==='object'&&rec.attend) {
+        const timeMatch=rec.attend.match(/(\d{1,2}:\d{2})/);
+        const inTime=timeMatch?timeMatch[1]:'--:--';
+        const isLate=rec.attend.includes('LATE');
+        let outTime='--:--';
+        if (rec.leave) { const outMatch=rec.leave.match(/(\d{1,2}:\d{2})/); outTime=outMatch?outMatch[1]:rec.leave; }
+        attendedStaff.push({name:displayName,inTime,outTime,isLate});
+      }
+    });
+    attendedStaff.sort((a,b)=>a.inTime.localeCompare(b.inTime));
+    const rows=attendedStaff.map(s=>`<div class="staff-row">
+      <span class="staff-name">${s.name}</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <span class="staff-time ${s.isLate?'late':'present'}">${s.inTime}</span>
+        <span style="font-size:7px;color:var(--t-muted);">→</span>
+        <span class="staff-time" style="color:${s.outTime==='--:--'?'var(--t-muted)':'var(--t-accent)'};background:${s.outTime==='--:--'?'rgba(100,116,139,0.1)':'color-mix(in srgb,var(--t-accent) 14%,transparent)'};border:1px solid ${s.outTime==='--:--'?'rgba(100,116,139,0.15)':'color-mix(in srgb,var(--t-accent) 28%,transparent)'};">${s.outTime}</span>
+      </div>
+    </div>`);
+    const listEl=document.getElementById('allStaffList'),countEl=document.getElementById('allStaffCount');
+    if(listEl) listEl.innerHTML=rows.length>0?rows.join(''):'<div style="font-size:9px;color:var(--t-muted);text-align:center;padding:10px;">No attendance yet</div>';
+    if(countEl) countEl.innerText=`${attendedStaff.length}`;
+  }
+
+  /* ── Edit Popup ── */
+  window.openEditPopup = function(dateStr, currentRec) {
+    if (document.getElementById('editPopup')) return;
+    const clickedDate=new Date(dateStr), today=new Date(todayStr);
+    const isFutureDate=clickedDate>today;
     let attVal="",leaveVal="",isAttReadOnly=false,isLeaveInfo=false,leaveTypeText="";
     const leaveCodes=["PEL","ANL","HAL","SIL","SPL","WO"];
-    
-    // 미래 날짜인 경우: 휴가 타입만 선택 가능
-    if(isFutureDate) {
-        const overlay=document.createElement('div'); 
-        overlay.id='editPopup'; 
-        overlay.className='edit-modal-overlay';
-        
-        overlay.innerHTML=`
-        <div class="edit-modal">
-            <div class="mb-4 text-center">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">📅 Future Date Leave</p>
-                <h3 class="text-white font-black text-lg">${dateStr}</h3>
-                <p class="text-[9px] text-slate-500 mt-2">You can only set leave type for future dates</p>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2">Select Leave Type</label>
-                    <select id="futureLeaveType" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-sm">
-                        <option value="">--- Select Leave Type ---</option>
-                        <option value="WO">WO — Work Out</option>
-                        <option value="PEL">PEL — Personal Leave</option>
-                        <option value="ANL">ANL — Annual Leave</option>
-                        <option value="HAL">HAL — Half Day Leave</option>
-                        <option value="SIL">SIL — Sick Leave</option>
-                        <option value="SPL">SPL — Special Leave</option>
-                    </select>
-                </div>
-<div class="grid grid-cols-3 gap-2 mt-6">
-    <button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">
-        Cancel
-    </button>
-    <button onclick="deleteFutureLeave('${dateStr}')" class="bg-rose-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-rose-500/20">
-        Delete
-    </button>
-    <button onclick="saveFutureLeave('${dateStr}')" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">
-        Save
-    </button>
-</div>
-                </div>
-            </div>
-        </div>`;
-        
-        document.body.appendChild(overlay);
-        return;
+    if (isFutureDate) {
+      const overlay=document.createElement('div'); overlay.id='editPopup'; overlay.className='edit-modal-overlay';
+      overlay.innerHTML=`<div class="edit-modal"><div class="mb-4 text-center"><p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">📅 Future Date Leave</p><h3 class="text-white font-black text-lg">${dateStr}</h3><p class="text-[9px] text-slate-500 mt-2">You can only set leave type for future dates</p></div><div class="space-y-4"><div><label class="block text-[9px] font-black text-slate-400 uppercase mb-2">Select Leave Type</label><select id="futureLeaveType" class="w-full bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-sm"><option value="">--- Select Leave Type ---</option><option value="WO">WO — Work Out</option><option value="PEL">PEL — Personal Leave</option><option value="ANL">ANL — Annual Leave</option><option value="HAL">HAL — Half Day Leave</option><option value="SIL">SIL — Sick Leave</option><option value="SPL">SPL — Special Leave</option></select></div><div class="grid grid-cols-3 gap-2 mt-6"><button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button><button onclick="deleteFutureLeave('${dateStr}')" class="bg-rose-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-rose-500/20">Delete</button><button onclick="saveFutureLeave('${dateStr}')" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save</button></div></div></div>`;
+      document.body.appendChild(overlay); return;
     }
-    
-    // 기존 코드 (과거/오늘 날짜 처리) - 변경 없음
-    if(currentRec){
-        if(typeof currentRec==='string'){
-            if(leaveCodes.includes(currentRec)){
-                isLeaveInfo=true;
-                leaveTypeText=currentRec;
-            }
-            attVal=currentRec;
-            isAttReadOnly=true;
+    if (currentRec) {
+      if (typeof currentRec==='string') { if(leaveCodes.includes(currentRec)){isLeaveInfo=true;leaveTypeText=currentRec;} attVal=currentRec; isAttReadOnly=true; }
+      else {
+        if (currentRec.attend) {
+          const tm=currentRec.attend.match(/(\d{1,2}:\d{2})/);
+          if (tm) { const[h,mn]=tm[1].split(':'); attVal=`${h.padStart(2,'0')}:${mn}`; }
+          else { if(leaveCodes.includes(currentRec.attend)){isLeaveInfo=true;leaveTypeText=currentRec.attend;} attVal=currentRec.attend; }
+          isAttReadOnly=true;
         }
-        else{
-            if(currentRec.attend){
-                const tm=currentRec.attend.match(/(\d{1,2}:\d{2})/);
-                if(tm){
-                    const[h,mn]=tm[1].split(':');
-                    attVal=`${h.padStart(2,'0')}:${mn}`;
-                }else{
-                    if(leaveCodes.includes(currentRec.attend)){
-                        isLeaveInfo=true;
-                        leaveTypeText=currentRec.attend;
-                    }
-                    attVal=currentRec.attend;
-                }
-                isAttReadOnly=true;
-            }
-            if(currentRec.leave){
-                const lm=currentRec.leave.match(/(\d{1,2}:\d{2})/);
-                if(lm){
-                    const[h,mn]=lm[1].split(':');
-                    leaveVal=`${h.padStart(2,'0')}:${mn}`;
-                }else leaveVal=currentRec.leave;
-            }
-        }
+        if (currentRec.leave) { const lm=currentRec.leave.match(/(\d{1,2}:\d{2})/); if(lm){const[h,mn]=lm[1].split(':');leaveVal=`${h.padStart(2,'0')}:${mn}`;}else leaveVal=currentRec.leave; }
+      }
     }
-    
-    const overlay=document.createElement('div'); 
-    overlay.id='editPopup'; 
-    overlay.className='edit-modal-overlay';
-    
+    const overlay=document.createElement('div'); overlay.id='editPopup'; overlay.className='edit-modal-overlay';
     let footerButtons=isLeaveInfo?
-        `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>`
-        :
-        `<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button>
-        <button onclick="saveEditRecord('${dateStr}',${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
-    
-    overlay.innerHTML=`
-    <div class="edit-modal">
-        <div class="mb-4 text-center">
-            <p class="text-[10px] font-black ${isLeaveInfo?'text-amber-500':(isAttReadOnly?'text-rose-500':'text-emerald-500')} uppercase tracking-widest mb-1">
-                ${isLeaveInfo?'📅 Leave Information':(isAttReadOnly?'⚠️ Attendance Locked':'✍️ Attendance Missing')}
-            </p>
-            <h3 class="text-white font-black text-lg">${dateStr}</h3>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>
-                ${isLeaveInfo?
-                    `<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>`
-                    :
-                    `<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly?'readonly':''} class="w-full ${isAttReadOnly?'bg-slate-800 text-slate-400 border-slate-700':'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`
-                }
-            </div>
-            ${!isLeaveInfo?
-                `<div>
-                    <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label>
-                    <div class="flex gap-2">
-                        <input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl">
-                        <button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete">🗑️</button>
-                    </div>
-                </div>`
-                :
-                '<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'
-            }
-            <div class="${isLeaveInfo?'':'grid grid-cols-2'} gap-3 mt-6">
-                ${footerButtons}
-            </div>
-        </div>
-    </div>`;
-    
+      `<button onclick="document.getElementById('editPopup').remove()" class="w-full bg-slate-700 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Close (Read Only)</button>`
+      :`<button onclick="document.getElementById('editPopup').remove()" class="bg-slate-800 text-slate-400 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95">Cancel</button><button onclick="saveEditRecord('${dateStr}',${isAttReadOnly})" class="bg-blue-600 text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-500/20">Save Change</button>`;
+    overlay.innerHTML=`<div class="edit-modal"><div class="mb-4 text-center"><p class="text-[10px] font-black ${isLeaveInfo?'text-amber-500':(isAttReadOnly?'text-rose-500':'text-emerald-500')} uppercase tracking-widest mb-1">${isLeaveInfo?'📅 Leave Information':(isAttReadOnly?'⚠️ Attendance Locked':'✍️ Attendance Missing')}</p><h3 class="text-white font-black text-lg">${dateStr}</h3></div><div class="space-y-4"><div><label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Attendance / Status</label>${isLeaveInfo?`<div class="w-full bg-slate-800 text-amber-500 p-3 rounded-xl border border-amber-500/30 font-black text-xl text-center">${leaveTypeText}</div>`:`<input type="time" id="editAttTime" value="${attVal}" ${isAttReadOnly?'readonly':''} class="w-full ${isAttReadOnly?'bg-slate-800 text-slate-400 border-slate-700':'bg-slate-800 text-white border-emerald-500/50'} p-3 rounded-xl border outline-none font-black text-xl">`}</div>${!isLeaveInfo?`<div><label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Leave Time</label><div class="flex gap-2"><input type="time" id="editLeaveTime" value="${leaveVal}" class="flex-1 bg-slate-800 text-white p-3 rounded-xl border border-blue-500/50 outline-none font-black text-xl"><button onclick="deleteLeaveTime('${dateStr}')" class="bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white px-4 rounded-xl border border-rose-600/30 transition-all active:scale-95" title="Delete">🗑️</button></div></div>`:'<p class="text-[10px] text-slate-500 text-center italic">This record is a registered leave and cannot be modified.</p>'}<div class="${isLeaveInfo?'':'grid grid-cols-2'} gap-3 mt-6">${footerButtons}</div></div></div>`;
     document.body.appendChild(overlay);
-};
+  };
 
-window.saveFutureLeave = function(dateStr) {
-    const leaveType = document.getElementById('futureLeaveType').value;
-    
-    if(!leaveType) {
-        alert("Please select a leave type.");
-        return;
-    }
-    
-    // 기존 데이터 확인
+  window.saveFutureLeave = function(dateStr) {
+    const leaveType=document.getElementById('futureLeaveType').value;
+    if (!leaveType) { alert("Please select a leave type."); return; }
     db.ref(`attendance/${dateStr}/${user}`).once('value', snapshot => {
-        const existingData = snapshot.val();
-        
-        // 동일한 휴가 타입이 이미 저장되어 있는지 확인
-        if(existingData === leaveType) {
-            alert("You have already applied for the same leave type!");
-            return;
-        }
-        
-        // 다른 휴가 타입이거나 데이터가 없으면 저장 진행
-        if(confirm(`Set ${leaveType} for ${dateStr}?`)) {
-            db.ref(`attendance/${dateStr}/${user}`).set(leaveType)
-            .then(() => {
-                alert("Future leave has been saved successfully.");
-                document.getElementById('editPopup').remove();
-                if(typeof renderCalendar === 'function') renderCalendar();
-            })
-            .catch(e => {
-                console.error(e);
-                alert("Failed to save: " + e.message);
-            });
-        }
+      if (snapshot.val()===leaveType) { alert("You have already applied for the same leave type!"); return; }
+      if (confirm(`Set ${leaveType} for ${dateStr}?`)) {
+        db.ref(`attendance/${dateStr}/${user}`).set(leaveType)
+        .then(()=>{ alert("Future leave has been saved successfully."); document.getElementById('editPopup').remove(); if(typeof renderCalendar==='function') renderCalendar(); })
+        .catch(e=>{ console.error(e); alert("Failed to save: "+e.message); });
+      }
     });
-};
+  };
 
-window.deleteFutureLeave = function(dateStr) {
-    if(!confirm(`Delete leave record for ${dateStr}?`)) {
-        return;
-    }
-    
+  window.deleteFutureLeave = function(dateStr) {
+    if (!confirm(`Delete leave record for ${dateStr}?`)) return;
     db.ref(`attendance/${dateStr}/${user}`).remove()
-    .then(() => {
-        alert("Leave record has been deleted successfully.");
-        document.getElementById('editPopup').remove();
-        if(typeof renderCalendar === 'function') renderCalendar();
-    })
-    .catch(e => {
-        console.error(e);
-        alert("Failed to delete: " + e.message);
-    });
-};
+    .then(()=>{ alert("Leave record has been deleted successfully."); document.getElementById('editPopup').remove(); if(typeof renderCalendar==='function') renderCalendar(); })
+    .catch(e=>{ console.error(e); alert("Failed to delete: "+e.message); });
+  };
 
-    window.deleteLeaveTime = function(dateStr) {
-        if(!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
-        db.ref(`attendance/${dateStr}/${user}/leave`).remove()
-        .then(()=>{alert("Leave time has been deleted.");const p=document.getElementById('editPopup');if(p)p.remove();if(typeof renderCalendar==='function')renderCalendar();})
-        .catch(e=>{console.error(e);alert("Failed to delete record.");});
-    };
+  window.deleteLeaveTime = function(dateStr) {
+    if (!confirm(`${dateStr}의 Leave Time 기록을 삭제하시겠습니까?`)) return;
+    db.ref(`attendance/${dateStr}/${user}/leave`).remove()
+    .then(()=>{ alert("Leave time has been deleted."); const p=document.getElementById('editPopup'); if(p) p.remove(); if(typeof renderCalendar==='function') renderCalendar(); })
+    .catch(e=>{ console.error(e); alert("Failed to delete record."); });
+  };
 
-    window.saveEditRecord = function(dateStr, isAttReadOnly) {
-        const newAtt=document.getElementById('editAttTime').value;
-        const newLeave=document.getElementById('editLeaveTime').value;
-        const updateData={};
-        if(!isAttReadOnly&&newAtt){
-            if(typeof standardTime==='undefined'){alert("Standard time loading...");return;}
-            const[iH,iM]=newAtt.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number);
-            updateData.attend=(iH*60+iM<=sH*60+sM)?`ATT(${newAtt})`:`LATE(${newAtt})`;
-        }
-        if(newLeave) updateData.leave=newLeave;
-        if(Object.keys(updateData).length===0){alert("No changes to save.");return;}
-        if(confirm(`Save changes for ${dateStr}?`)){
-            firebase.database().ref('attendance/'+dateStr+'/'+user).update(updateData)
-            .then(()=>{alert("Record updated successfully.");document.getElementById('editPopup').remove();if(typeof renderCalendar==='function')renderCalendar();})
-            .catch(e=>alert("Error: "+e.message));
-        }
-    };
-
-    /* ── Missing Records Check ── */
-    async function checkMissingRecords() {
-        if(!user) return;
-        try {
-            const uSnap=await db.ref(`users/${user}/WarnFlag`).once('value');
-            if(uSnap.val()==="off") return;
-            const ts=getJakartaDate().toISOString().split('T')[0];
-            if(localStorage.getItem('hideReportPopup')===ts) return;
-            const attSnap=await db.ref('attendance').once('value');
-            const attData=attSnap.val()||{};
-            const missing=[]; const today=getJakartaDate();
-            for(let i=1;i<=6;i++){
-                const cd=new Date(today); cd.setDate(today.getDate()-i);
-                const dw=cd.getDay(); if(dw===0||dw===6) continue;
-                const cy=cd.getFullYear(),cm=String(cd.getMonth()+1).padStart(2,'0'),cdd=String(cd.getDate()).padStart(2,'0');
-                const dStr=`${cy}-${cm}-${cdd}`;
-                const attStatus=(attData[dStr]&&attData[dStr][user])?attData[dStr][user]:null;
-                const leaveCodes=["ANL","PEL","HAL","SIL","SPL"];
-                if(leaveCodes.includes(attStatus)) continue;
-                const snap=await db.ref(`reports/${dStr}/${user}`).once('value');
-                if(!snap.exists()) missing.push({date:`${dStr} (${cd.toLocaleDateString('en-US',{weekday:'short'})})`,status:"Work Report"});
-            }
-            if(missing.length>0) showMissingPopup(missing);
-        } catch(e){console.error(e);}
+  window.saveEditRecord = function(dateStr, isAttReadOnly) {
+    const newAtt=document.getElementById('editAttTime').value;
+    const newLeave=document.getElementById('editLeaveTime').value;
+    const updateData={};
+    if (!isAttReadOnly&&newAtt) {
+      if (typeof standardTime==='undefined') { alert("Standard time loading..."); return; }
+      const[iH,iM]=newAtt.split(':').map(Number),[sH,sM]=standardTime.split(':').map(Number);
+      updateData.attend=(iH*60+iM<=sH*60+sM)?`ATT(${newAtt})`:`LATE(${newAtt})`;
     }
-
-    function showMissingPopup(missingInfo) {
-        if(document.getElementById('missingPopup')) return;
-        const overlay=document.createElement('div'); overlay.id='missingPopup'; overlay.className='missing-modal-overlay';
-        let listHtml=missingInfo.map(i=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center"><div class="text-left"><p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${i.date}</p><p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${i.status}</span></p></div><div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div></div>`).join('');
-        overlay.innerHTML=`<div class="missing-modal text-center"><div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20"><span class="text-2xl">✍️</span></div><h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3><p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p><div class="flex items-center gap-2 mb-6"><span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span><span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span></div><div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div><div class="space-y-3"><button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button><button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button></div></div>`;
-        document.body.appendChild(overlay);
+    if (newLeave) updateData.leave=newLeave;
+    if (Object.keys(updateData).length===0) { alert("No changes to save."); return; }
+    if (confirm(`Save changes for ${dateStr}?`)) {
+      firebase.database().ref('attendance/'+dateStr+'/'+user).update(updateData)
+      .then(()=>{ alert("Record updated successfully."); document.getElementById('editPopup').remove(); if(typeof renderCalendar==='function') renderCalendar(); })
+      .catch(e=>alert("Error: "+e.message));
     }
+  };
 
-    window.hidePopupToday = function() {
-        localStorage.setItem('hideReportPopup', getJakartaDate().toISOString().split('T')[0]);
-        const p=document.getElementById('missingPopup'); if(p) p.remove();
-    };
+  /* ── Missing Records ── */
+  async function checkMissingRecords() {
+    if (!user) return;
+    try {
+      const uSnap=await db.ref(`users/${user}/WarnFlag`).once('value');
+      if (uSnap.val()==="off") return;
+      const ts=getJakartaDate().toISOString().split('T')[0];
+      if (localStorage.getItem('hideReportPopup')===ts) return;
+      const attSnap=await db.ref('attendance').once('value');
+      const attData=attSnap.val()||{};
+      const missing=[]; const today=getJakartaDate();
+      for (let i=1;i<=6;i++) {
+        const cd=new Date(today); cd.setDate(today.getDate()-i);
+        const dw=cd.getDay(); if(dw===0||dw===6) continue;
+        const cy=cd.getFullYear(),cm=String(cd.getMonth()+1).padStart(2,'0'),cdd=String(cd.getDate()).padStart(2,'0');
+        const dStr=`${cy}-${cm}-${cdd}`;
+        const attStatus=(attData[dStr]&&attData[dStr][user])?attData[dStr][user]:null;
+        const leaveCodes=["ANL","PEL","HAL","SIL","SPL"];
+        if (leaveCodes.includes(attStatus)) continue;
+        const snap=await db.ref(`reports/${dStr}/${user}`).once('value');
+        if (!snap.exists()) missing.push({date:`${dStr} (${cd.toLocaleDateString('en-US',{weekday:'short'})})`,status:"Work Report"});
+      }
+      if (missing.length>0) showMissingPopup(missing);
+    } catch(e) { console.error(e); }
+  }
 
-    document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); },800); });
-    renderCalendar();
-    // ★ 페이지 이탈 시 정리 — switchTab()이 호출
-window._leavePageCleanup = function() {
-        clearInterval(liveTimeTimer);
-        clearInterval(lateWarnTimer);
-        db.ref(`attendance/${todayStr}`).off();
-        db.ref('attendance').off();
-        db.ref('settings/config').off();
-        db.ref('settings/config/stdAttendance').off();
-        if (leaveStatusRef) { leaveStatusRef.off(); leaveStatusRef = null; } // ★
-    };
+  function showMissingPopup(missingInfo) {
+    if (document.getElementById('missingPopup')) return;
+    const overlay=document.createElement('div'); overlay.id='missingPopup'; overlay.className='missing-modal-overlay';
+    let listHtml=missingInfo.map(i=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 mb-2 flex justify-between items-center"><div class="text-left"><p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">${i.date}</p><p class="text-rose-400 font-mono text-xs font-black uppercase">Missing: <span class="text-white">${i.status}</span></p></div><div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div></div>`).join('');
+    overlay.innerHTML=`<div class="missing-modal text-center"><div class="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20"><span class="text-2xl">✍️</span></div><h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight italic">Missing Report</h3><p class="text-slate-400 text-[10px] mb-2 font-bold leading-tight uppercase">Daily Work Report is not submitted:</p><div class="flex items-center gap-2 mb-6"><span class="bg-rose-500 text-white text-[9px] px-2 py-0.5 rounded font-black animate-blink shrink-0">REQUIRED</span><span class="text-[10px] text-slate-500 font-bold tracking-tight flex-grow text-left">Please complete your work reports for the dates below</span></div><div class="max-h-[200px] overflow-y-auto no-scrollbar mb-6 px-1">${listHtml}</div><div class="space-y-3"><button onclick="document.getElementById('missingPopup').remove()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-rose-900/20 uppercase tracking-widest text-xs">I will write it now</button><button onclick="hidePopupToday()" class="w-full text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-widest transition-colors">Don't show this again today</button></div></div>`;
+    document.body.appendChild(overlay);
+  }
+
+  window.hidePopupToday = function() {
+    localStorage.setItem('hideReportPopup', getJakartaDate().toISOString().split('T')[0]);
+    const p=document.getElementById('missingPopup'); if(p) p.remove();
+  };
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    setTimeout(()=>{ if(typeof showFortune==='function') showFortune(); checkMissingRecords(); }, 800);
+  });
+
+  renderCalendar();
+
+  /* ── Page Cleanup ── */
+  window._leavePageCleanup = function() {
+    clearInterval(liveTimeTimer);
+    clearInterval(lateWarnTimer);
+    db.ref(`attendance/${todayStr}`).off();
+    db.ref('attendance').off();
+    db.ref('settings/config').off();
+    db.ref('settings/config/stdAttendance').off();
+    if (leaveStatusRef) { leaveStatusRef.off(); leaveStatusRef=null; }
+  };
 
 })();
 
-// 스크립트 맨 아래에 임시로 추가하여 에러 방지
-window.setKpi = function(...args) {
-    console.log("외부 또는 시스템에서 setKpi를 호출했으나 정의되어 있지 않아 임시 함수가 실행되었습니다.", args);
+/* Safety stub */
+window.setKpi = window.setKpi || function(...args) {
+  console.log("setKpi stub called", args);
 };
-
 </script>
