@@ -1,1589 +1,1378 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
-<style>
-/* ══════════════════════════════════════════
-   STAFF REPORT — 3D DARK COCKPIT THEME
-   Deep navy + electric cyan + amber accents
-   SF Mono / system mono for data readability
-══════════════════════════════════════════ */
+<!-- ══════════════════════════════════════════════════════════
+     7-DAY THEME INJECTION — runs before paint to avoid FOUC
+══════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  /* Dark-only token sets — 0=Sun … 6=Sat */
+  const THEMES = {
+    0: { /* SUN — Sunset Ember */
+      '--r-bg':'#160403','--r-surface':'#220605','--r-surface2':'#2e0907','--r-surface3':'#3a0d09',
+      '--r-border':'rgba(249,115,22,0.1)','--r-border2':'rgba(249,115,22,0.22)',
+      '--r-text':'#fdf0e8','--r-muted':'#7c4a30','--r-dim':'#3a1a0e',
+      '--r-accent':'#f97316','--r-accent2':'#fbbf24',
+      '--r-accent-glow':'rgba(249,115,22,0.2)',
+      '--r-accent-gradient':'linear-gradient(90deg,#be185d,#f97316,#fbbf24)',
+      '--r-card-shine':'rgba(249,115,22,0.07)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(249,115,22,0.28),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(249,115,22,0.05) 0%,transparent 55%)',
+      '--r-card-radius':'10px',
+      '--r-card-near':'rgba(0,0,0,0.35)','--r-card-far':'rgba(0,0,0,0.55)',
+      '--r-font-display':"'DM Serif Display',serif",'--r-font-ui':"'Pretendard',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    1: { /* MON — Deep Space */
+      '--r-bg':'#040810','--r-surface':'#080f1e','--r-surface2':'#0d1628','--r-surface3':'#111e33',
+      '--r-border':'rgba(56,189,248,0.09)','--r-border2':'rgba(56,189,248,0.18)',
+      '--r-text':'#e2e8f0','--r-muted':'#475569','--r-dim':'#1e293b',
+      '--r-accent':'#38bdf8','--r-accent2':'#818cf8',
+      '--r-accent-glow':'rgba(56,189,248,0.18)',
+      '--r-accent-gradient':'linear-gradient(90deg,#38bdf8,#818cf8,#c084fc)',
+      '--r-card-shine':'rgba(56,189,248,0.07)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(56,189,248,0.28),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(56,189,248,0.04) 0%,transparent 55%)',
+      '--r-card-radius':'18px',
+      '--r-card-near':'rgba(0,0,0,0.3)','--r-card-far':'rgba(0,0,0,0.5)',
+      '--r-font-display':"'Orbitron',sans-serif",'--r-font-ui':"'Pretendard',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    2: { /* TUE — Dark Ink (dark Wabi-Sabi) */
+      '--r-bg':'#100c08','--r-surface':'#18120d','--r-surface2':'#201810','--r-surface3':'#281e15',
+      '--r-border':'rgba(180,145,100,0.12)','--r-border2':'rgba(180,145,100,0.24)',
+      '--r-text':'#e8ddd0','--r-muted':'#7a6550','--r-dim':'#302418',
+      '--r-accent':'#c8a060','--r-accent2':'#e0c080',
+      '--r-accent-glow':'rgba(200,160,96,0.18)',
+      '--r-accent-gradient':'linear-gradient(90deg,#8c6030,#c8a060,#e8d090)',
+      '--r-card-shine':'rgba(200,160,96,0.07)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(200,160,96,0.25),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(200,160,96,0.04) 0%,transparent 55%)',
+      '--r-card-radius':'6px',
+      '--r-card-near':'rgba(0,0,0,0.35)','--r-card-far':'rgba(0,0,0,0.5)',
+      '--r-font-display':"'Noto Serif JP',serif",'--r-font-ui':"'Pretendard',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    3: { /* WED — Art Deco Vault */
+      '--r-bg':'#080e09','--r-surface':'#0d1a0f','--r-surface2':'#122014','--r-surface3':'#172618',
+      '--r-border':'rgba(200,168,75,0.1)','--r-border2':'rgba(200,168,75,0.22)',
+      '--r-text':'#f0e8d0','--r-muted':'#5a5040','--r-dim':'#253020',
+      '--r-accent':'#c8a84b','--r-accent2':'#e8d48a',
+      '--r-accent-glow':'rgba(200,168,75,0.18)',
+      '--r-accent-gradient':'linear-gradient(90deg,#a07830,#e8d48a,#a07830)',
+      '--r-card-shine':'rgba(200,168,75,0.09)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(200,168,75,0.3),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(200,168,75,0.05) 0%,transparent 55%)',
+      '--r-card-radius':'0px',
+      '--r-card-near':'rgba(0,0,0,0.35)','--r-card-far':'rgba(0,0,0,0.55)',
+      '--r-font-display':"'Cormorant Garamond',serif",'--r-font-ui':"'Cormorant Garamond',serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    4: { /* THU — Dark Terra */
+      '--r-bg':'#0a0e06','--r-surface':'#101508','--r-surface2':'#161c0c','--r-surface3':'#1c2410',
+      '--r-border':'rgba(100,140,70,0.12)','--r-border2':'rgba(100,140,70,0.24)',
+      '--r-text':'#dde8cc','--r-muted':'#5a6a40','--r-dim':'#202c10',
+      '--r-accent':'#6aaa40','--r-accent2':'#a8c060',
+      '--r-accent-glow':'rgba(106,170,64,0.18)',
+      '--r-accent-gradient':'linear-gradient(90deg,#3a6820,#6aaa40,#a8c060)',
+      '--r-card-shine':'rgba(106,170,64,0.07)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(106,170,64,0.25),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(106,170,64,0.04) 0%,transparent 55%)',
+      '--r-card-radius':'18px 4px 18px 4px',
+      '--r-card-near':'rgba(0,0,0,0.3)','--r-card-far':'rgba(0,0,0,0.48)',
+      '--r-font-display':"'DM Serif Display',serif",'--r-font-ui':"'Pretendard',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    5: { /* FRI — Synthwave */
+      '--r-bg':'#06021a','--r-surface':'#0d0428','--r-surface2':'#130635','--r-surface3':'#190842',
+      '--r-border':'rgba(255,0,204,0.12)','--r-border2':'rgba(255,0,204,0.25)',
+      '--r-text':'#ffffff','--r-muted':'#5c4080','--r-dim':'#2a1050',
+      '--r-accent':'#ff00cc','--r-accent2':'#00eeff',
+      '--r-accent-glow':'rgba(255,0,204,0.2)',
+      '--r-accent-gradient':'linear-gradient(90deg,#ff00cc,#ffee00,#00eeff)',
+      '--r-card-shine':'rgba(255,0,204,0.07)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(255,0,204,0.28),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(255,0,204,0.04) 0%,transparent 55%)',
+      '--r-card-radius':'0px',
+      '--r-card-near':'rgba(255,0,204,0.12)','--r-card-far':'rgba(0,0,0,0.6)',
+      '--r-font-display':"'Bungee',cursive",'--r-font-ui':"'Pretendard',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+    6: { /* SAT — Arctic Dark */
+      '--r-bg':'#08122a','--r-surface':'#0c1a38','--r-surface2':'#102044','--r-surface3':'#142650',
+      '--r-border':'rgba(96,165,250,0.12)','--r-border2':'rgba(96,165,250,0.24)',
+      '--r-text':'#e8f0fe','--r-muted':'#4a6090','--r-dim':'#1e3060',
+      '--r-accent':'#60a5fa','--r-accent2':'#a5c8ff',
+      '--r-accent-glow':'rgba(96,165,250,0.2)',
+      '--r-accent-gradient':'linear-gradient(90deg,#60a5fa,#a5c8ff,#c7d7f0)',
+      '--r-card-shine':'rgba(188,213,250,0.12)',
+      '--r-card-bevel':'linear-gradient(90deg,transparent,rgba(188,213,250,0.32),transparent)',
+      '--r-card-face':'linear-gradient(155deg,rgba(188,213,250,0.1) 0%,transparent 55%)',
+      '--r-card-radius':'16px',
+      '--r-card-near':'rgba(0,0,0,0.28)','--r-card-far':'rgba(10,30,80,0.38)',
+      '--r-font-display':"'Inter',sans-serif",'--r-font-ui':"'Inter',sans-serif",
+      '--r-font-mono':"'SF Mono','Fira Code',monospace",
+    },
+  };
+  const idx = new Date().getDay();
+  const t = THEMES[idx] || THEMES[1];
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(t)) root.style.setProperty(k, v);
+  window._reportDayIdx = idx;
+})();
+</script>
 
+<style>
+/* ══════════════════════════════════════════════════════════
+   STAFF REPORT — 7-DAY ADAPTIVE DARK THEME
+   All colours flow from --r-* tokens. No white backgrounds.
+══════════════════════════════════════════════════════════ */
+
+/* ── Semantic aliases (keep original var names working) ── */
 :root {
-    --bg:        #040810;
-    --surface:   #080f1e;
-    --surface2:  #0d1628;
-    --surface3:  #111e33;
-    --border:    rgba(255,255,255,0.06);
-    --border2:   rgba(255,255,255,0.11);
-    --cyan:      #06b6d4;
-    --blue:      #3b82f6;
-    --emerald:   #10b981;
-    --amber:     #f59e0b;
-    --rose:      #f43f5e;
-    --violet:    #818cf8;
-    --text:      #e2e8f0;
-    --muted:     #475569;
-    --dim:       #1e293b;
-    --glow-blue: rgba(59,130,246,0.25);
-    --glow-cyan: rgba(6,182,212,0.2);
+  --bg:        var(--r-bg);
+  --surface:   var(--r-surface);
+  --surface2:  var(--r-surface2);
+  --surface3:  var(--r-surface3);
+  --border:    var(--r-border);
+  --border2:   var(--r-border2);
+  --text:      var(--r-text);
+  --muted:     var(--r-muted);
+  --dim:       var(--r-dim);
+  /* fixed semantic colours */
+  --cyan:      #06b6d4;
+  --blue:      #3b82f6;
+  --emerald:   #10b981;
+  --amber:     #f59e0b;
+  --rose:      #f43f5e;
+  --violet:    #818cf8;
+  --glow-blue: rgba(59,130,246,0.25);
+  --glow-cyan: rgba(6,182,212,0.2);
 }
 
-/* ── Base ── */
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
 
-/* ── 3D Card Mixin ── */
+/* ══════════════════════════════════════════════════════════
+   3-D CARD BASE
+══════════════════════════════════════════════════════════ */
 .card-3d {
-    position: relative;
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 20px;
-    box-shadow:
-        0 2px 0 rgba(255,255,255,0.04) inset,
-        0 -1px 0 rgba(0,0,0,0.4) inset,
-        0 12px 32px rgba(0,0,0,0.5),
-        0 4px 12px rgba(0,0,0,0.3);
-    transform-style: preserve-3d;
-    transition: transform 0.35s cubic-bezier(0.23,1,0.32,1),
-                box-shadow 0.35s ease;
+  position: relative;
+  background: linear-gradient(145deg, var(--r-surface2) 0%, var(--r-surface) 100%);
+  border: 1px solid var(--r-border);
+  border-top: 1px solid var(--r-border2);
+  border-radius: var(--r-card-radius);
+  box-shadow:
+    inset 0 1px 0 var(--r-card-shine),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 4px 12px var(--r-card-near),
+    0 12px 32px var(--r-card-far);
+  will-change: transform;
+  transition: transform 0.32s cubic-bezier(0.23,1,0.32,1),
+              box-shadow 0.32s ease,
+              border-color 0.32s ease;
 }
 .card-3d::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,179,237,0.35), transparent);
-    border-radius: 50%;
-    pointer-events: none;
+  content:'';
+  position:absolute; top:0; left:15%; right:15%; height:1px;
+  background: var(--r-card-bevel);
+  pointer-events:none;
 }
-.card-3d:hover {
-    transform: translateY(-5px) rotateX(3deg);
+.card-3d::after {
+  content:'';
+  position:absolute; inset:0;
+  background: var(--r-card-face);
+  pointer-events:none;
+  border-radius:inherit;
+}
+@media (hover:hover) {
+  .card-3d:hover {
+    transform: translateY(-5px) perspective(900px) rotateX(2.5deg);
+    border-color: var(--r-accent);
     box-shadow:
-        0 2px 0 rgba(255,255,255,0.06) inset,
-        0 -1px 0 rgba(0,0,0,0.5) inset,
-        0 24px 48px rgba(0,0,0,0.65),
-        0 8px 20px rgba(0,0,0,0.4);
+      inset 0 1px 0 var(--r-card-shine),
+      0 6px 14px var(--r-card-near),
+      0 22px 45px var(--r-card-far),
+      0 0 0 1px var(--r-accent-glow),
+      0 0 28px var(--r-accent-glow);
+  }
 }
 
-/* ── Layout ── */
-.animate-fadeIn { animation: fadeIn 0.45s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
-
-/* ── Mini Calendar ── */
-.mini-cal {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 2px;
+/* ══════════════════════════════════════════════════════════
+   ROOT LAYOUT — Responsive two-column
+══════════════════════════════════════════════════════════ */
+.sr-root {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.75rem, 2.5vw, 1.25rem);
+  font-family: var(--r-font-ui);
+  color: var(--r-text);
 }
-.mini-cal th {
-    padding: 10px 0;
-    color: var(--muted);
-    font-size: 9px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-}
-.mini-cal td {
-    height: 68px;
-    width: 14.28%;
-    background: linear-gradient(145deg, var(--surface3) 0%, var(--surface2) 100%);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    vertical-align: top;
-    padding: 6px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
-    position: relative;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-}
-.mini-cal td:hover,
-.mini-cal td.has-report:hover {
-    background: linear-gradient(145deg, rgba(59,130,246,0.12) 0%, var(--surface2) 100%);
-    border-color: rgba(59,130,246,0.3);
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 8px 20px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.07);
-    z-index: 2;
+@media (min-width: 1024px) {
+  .sr-root {
+    grid-template-columns: clamp(300px, 30%, 420px) 1fr;
+    align-items: start;
+  }
 }
 
-.selected-date {
-    background: linear-gradient(145deg, rgba(59,130,246,0.2) 0%, rgba(6,182,212,0.1) 100%) !important;
-    border: 1px solid rgba(59,130,246,0.55) !important;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.2), 0 8px 24px rgba(59,130,246,0.25) !important;
-    transform: translateY(-2px) !important;
-}
-.selected-date .date-num {
-    color: #60a5fa !important;
-    font-weight: 900;
-    text-shadow: 0 0 10px rgba(59,130,246,0.6);
+/* ══════════════════════════════════════════════════════════
+   LEFT PANEL (Report detail + editor)
+══════════════════════════════════════════════════════════ */
+.sr-left {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.65rem, 2vw, 1rem);
 }
 
-/* ── Date Number ── */
-.date-num {
-    font-size: 11px;
-    font-weight: 900;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--muted);
-    letter-spacing: -0.02em;
+/* Panel wrapper */
+.sr-panel {
+  background: linear-gradient(145deg, var(--r-surface2) 0%, var(--r-surface) 100%);
+  border: 1px solid var(--r-border);
+  border-top: 1px solid var(--r-border2);
+  border-radius: var(--r-card-radius);
+  padding: clamp(14px,4vw,22px);
+  position: relative;
+  box-shadow: inset 0 1px 0 var(--r-card-shine), 0 8px 28px var(--r-card-far);
 }
-.text-sun { color: #f87171 !important; text-shadow: 0 0 8px rgba(248,113,113,0.3); }
-.text-sat { color: #60a5fa !important; text-shadow: 0 0 8px rgba(96,165,250,0.3); }
+.sr-panel::before {
+  content:'';
+  position:absolute; top:0; left:15%; right:15%; height:1px;
+  background: var(--r-card-bevel);
+  pointer-events:none;
+}
+.sr-panel::after { background:none; }
 
-/* ── Status Tags ── */
-.status-tag {
-    position: absolute;
-    bottom: 5px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 7px; font-weight: 900;
-    padding: 2px 6px; border-radius: 5px;
-    white-space: nowrap; pointer-events: none;
-    letter-spacing: 0.06em;
-    backdrop-filter: blur(4px);
+/* Panel header */
+.sr-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(14px,3.5vw,22px);
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.status-progress {
-    background: rgba(59,130,246,0.18);
-    color: #93c5fd;
-    border: 1px solid rgba(59,130,246,0.35);
-    box-shadow: 0 0 8px rgba(59,130,246,0.2);
-}
-.status-completed {
-    background: rgba(16,185,129,0.18);
-    color: #6ee7b7;
-    border: 1px solid rgba(16,185,129,0.35);
-    box-shadow: 0 0 8px rgba(16,185,129,0.2);
-}
-.status-pending {
-    background: rgba(245,158,11,0.18);
-    color: #fcd34d;
-    border: 1px solid rgba(245,158,11,0.35);
-    box-shadow: 0 0 8px rgba(245,158,11,0.2);
+.sr-panel-title {
+  font-size: clamp(14px,4.5vw,20px);
+  font-weight: 900;
+  color: var(--r-text);
+  font-family: var(--r-font-display);
+  letter-spacing: -0.02em;
 }
 
-/* ── Admin dot ── */
-.admin-dot {
-    position: absolute; top: 6px; right: 6px;
-    width: 6px; height: 6px;
-    background: #ef4444; border-radius: 50%;
-    box-shadow: 0 0 8px rgba(239,68,68,0.8);
-    z-index: 10;
-    animation: dotPulse 2s ease-in-out infinite;
+/* Action buttons area */
+#actionButtons button {
+  font-family: var(--r-font-ui) !important;
+  font-size: clamp(8px,2.2vw,10px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  border-radius: 8px !important;
+  padding: 5px 11px !important;
+  transition: all 0.2s !important;
 }
-@keyframes dotPulse {
-    0%,100% { box-shadow: 0 0 6px rgba(239,68,68,0.8); }
-    50% { box-shadow: 0 0 14px rgba(239,68,68,0.4); }
+#actionButtons .text-indigo-400 {
+  background: rgba(99,102,241,0.09) !important;
+  border: 1px solid rgba(99,102,241,0.22) !important;
+}
+#actionButtons .text-indigo-400:hover { background:rgba(99,102,241,0.22) !important; color:#a5b4fc !important; }
+#actionButtons .text-rose-500 {
+  background: rgba(244,63,94,0.09) !important;
+  border: 1px solid rgba(244,63,94,0.22) !important;
+}
+#actionButtons .text-rose-500:hover { background:rgba(244,63,94,0.2) !important; color:#fb7185 !important; }
+#actionButtons .bg-slate-700 {
+  background: linear-gradient(135deg,var(--r-surface2),var(--r-surface3)) !important;
+  border: 1px solid var(--r-border2) !important;
+  color: var(--r-text) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 var(--r-card-shine) !important;
+}
+@media (hover:hover) {
+  #actionButtons .bg-slate-700:hover { transform:translateY(-1px) !important; }
 }
 
-/* ── Report Card Fixed (left panel) ── */
-.report-card-fixed {
-    max-width: 400px;
-    width: 100%;
+/* Work card container */
+#workCardContainer {
+  min-height: 120px;
 }
-
-/* ── Work Card Container ── */
-#workCardContainer .bg-slate-900 {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%) !important;
-    border: 1px solid var(--border) !important;
-    border-top: 1px solid var(--border2) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05) !important;
-    transition: box-shadow 0.3s ease !important;
-    position: relative;
-    overflow: hidden;
+#workCardContainer .bg-slate-900,
+#workCardContainer > div {
+  background: linear-gradient(145deg, var(--r-surface2) 0%, var(--r-surface) 100%) !important;
+  border: 1px solid var(--r-border) !important;
+  border-top: 1px solid var(--r-border2) !important;
+  border-radius: var(--r-card-radius) !important;
+  box-shadow: 0 8px 24px var(--r-card-far), inset 0 1px 0 var(--r-card-shine) !important;
+  color: var(--r-text) !important;
+  position: relative;
+  overflow: hidden;
 }
 #workCardContainer .bg-slate-900::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(6,182,212,0.3), transparent);
+  content:'';
+  position:absolute; top:0; left:15%; right:15%; height:1px;
+  background: var(--r-card-bevel);
+  pointer-events:none;
 }
-
-/* Editor container */
+/* Editor border accent */
 #workCardContainer .bg-slate-900.border-blue-500\/50 {
-    border-color: rgba(59,130,246,0.4) !important;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.1), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  border-color: color-mix(in srgb,var(--r-accent) 45%,transparent) !important;
+  box-shadow: 0 8px 24px var(--r-card-far), 0 0 0 1px var(--r-accent-glow), inset 0 1px 0 var(--r-card-shine) !important;
 }
-
-/* Textarea & Select in editor */
+/* Textarea / select */
 #workCardContainer textarea,
 #workCardContainer select {
-    background: rgba(4,8,16,0.8) !important;
-    border: 1px solid var(--dim) !important;
-    border-radius: 12px !important;
-    color: var(--text) !important;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace !important;
-    font-size: 12px !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
+  background: rgba(0,0,0,0.35) !important;
+  border: 1px solid var(--r-dim) !important;
+  border-radius: calc(var(--r-card-radius) * 0.65) !important;
+  color: var(--r-text) !important;
+  font-family: var(--r-font-mono) !important;
+  font-size: clamp(11px,2.8vw,13px) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
 }
 #workCardContainer textarea:focus,
 #workCardContainer select:focus {
-    border-color: var(--blue) !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.12) !important;
-    outline: none !important;
+  border-color: var(--r-accent) !important;
+  box-shadow: 0 0 0 3px var(--r-accent-glow) !important;
+  outline: none !important;
 }
-
 /* Save button */
 #workCardContainer button.bg-blue-600 {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-    border-radius: 14px !important;
-    font-family: 'SF Mono', monospace !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.1em !important;
-    box-shadow: 0 6px 20px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.15) !important;
-    transition: all 0.2s ease !important;
-    border: none !important;
+  background: linear-gradient(135deg, var(--r-accent), color-mix(in srgb,var(--r-accent) 70%,#000)) !important;
+  border-radius: calc(var(--r-card-radius) * 0.75) !important;
+  font-family: var(--r-font-ui) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.1em !important;
+  box-shadow: 0 6px 20px var(--r-accent-glow), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  color: #fff !important;
 }
-#workCardContainer button.bg-blue-600:hover {
-    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
-    box-shadow: 0 10px 28px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+@media (hover:hover) {
+  #workCardContainer button.bg-blue-600:hover {
+    box-shadow: 0 10px 28px var(--r-accent-glow), inset 0 1px 0 rgba(255,255,255,0.2) !important;
     transform: translateY(-2px) !important;
+  }
 }
-#workCardContainer button.bg-blue-600:active {
-    transform: translateY(1px) !important;
-    box-shadow: 0 3px 10px rgba(37,99,235,0.3) !important;
-}
-
+#workCardContainer button.bg-blue-600:active { transform:translateY(1px) !important; }
 /* Copy / cancel buttons */
-#workCardContainer button.bg-blue-600\/20,
-#workCardContainer button.bg-indigo-600\/20 {
-    border-radius: 10px !important;
-    font-size: 9px !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.06em !important;
-    transition: all 0.2s !important;
+#workCardContainer button.bg-blue-600\/20 {
+  border-radius: calc(var(--r-card-radius)*0.6) !important;
+  font-size: clamp(8px,2vw,10px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  transition: all 0.2s !important;
+}
+#workCardContainer .whitespace-pre-wrap {
+  font-family: var(--r-font-mono) !important;
+  font-size: clamp(11px,2.8vw,13px) !important;
+  line-height: 1.7 !important;
+  color: color-mix(in srgb,var(--r-text) 80%,transparent) !important;
+}
+#workCardContainer .border-t { border-color: var(--r-border) !important; }
+
+/* ══════════════════════════════════════════════════════════
+   RIGHT PANEL (Calendar)
+══════════════════════════════════════════════════════════ */
+.sr-right {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.65rem, 2vw, 1rem);
 }
 
-/* ── Right Panel: Calendar Wrapper ── */
-.flex-1.w-full > .bg-slate-900 {
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%) !important;
-    border: 1px solid var(--border) !important;
-    border-top: 1px solid var(--border2) !important;
-    border-radius: 24px !important;
-    box-shadow:
-        0 16px 40px rgba(0,0,0,0.55),
-        0 4px 12px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.05) !important;
-    position: relative;
-    overflow: hidden;
+.sr-cal-card {
+  background: linear-gradient(145deg, var(--r-surface2) 0%, var(--r-surface) 100%);
+  border: 1px solid var(--r-border);
+  border-top: 1px solid var(--r-border2);
+  border-radius: var(--r-card-radius);
+  padding: clamp(14px,4vw,22px);
+  position: relative;
+  box-shadow: inset 0 1px 0 var(--r-card-shine), 0 16px 40px var(--r-card-far);
 }
-.flex-1.w-full > .bg-slate-900::before {
-    content: '';
-    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.25), rgba(6,182,212,0.25), transparent);
+.sr-cal-card::before {
+  content:'';
+  position:absolute; top:0; left:10%; right:10%; height:1px;
+  background: var(--r-card-bevel);
+  pointer-events:none;
 }
 
-/* ── Nav buttons ── */
-.nav-btn {
-    transition: all 0.2s ease;
-    border-radius: 8px;
-    font-family: 'SF Mono', monospace;
-    font-size: 9px !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.05em;
+/* Cal header row */
+.sr-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(12px,3vw,18px);
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.nav-btn:hover {
-    background: rgba(59,130,246,0.12) !important;
-    color: #60a5fa !important;
-    box-shadow: 0 0 12px rgba(59,130,246,0.2);
-}
-.nav-btn:active { transform: scale(0.95); }
-
-/* Nav bar wrapper */
-.flex.bg-slate-800.rounded-lg {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-    padding: 3px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+.sr-cal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Month title */
 #miniCalMonth {
-    font-family: 'SF Mono', 'Fira Code', monospace !important;
-    font-weight: 900 !important;
-    font-style: italic !important;
-    color: var(--text) !important;
-    letter-spacing: -0.02em !important;
-    text-shadow: 0 0 20px rgba(59,130,246,0.2);
+  font-family: var(--r-font-display) !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  color: var(--r-text) !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: 0 0 20px var(--r-accent-glow);
+  font-size: clamp(14px,4vw,18px);
 }
 
+/* Nav bar */
+.sr-nav-bar {
+  display: flex;
+  background: linear-gradient(145deg,var(--r-surface3),var(--r-surface2));
+  border: 1px solid var(--r-border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 var(--r-card-shine), 0 2px 8px rgba(0,0,0,0.3);
+}
+.nav-btn {
+  padding: clamp(4px,1.5vw,6px) clamp(8px,2.8vw,13px);
+  font-size: clamp(7px,2vw,10px) !important;
+  font-weight: 900 !important;
+  color: var(--r-muted);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--r-font-mono);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  transition: color 0.15s, background 0.15s;
+}
+@media (hover:hover) {
+  .nav-btn:hover { color:var(--r-text); background:color-mix(in srgb,var(--r-accent) 12%,transparent); }
+}
+.nav-btn:active { transform:scale(0.95); }
+.nav-btn.today-btn { color:var(--r-accent); text-shadow:0 0 8px var(--r-accent-glow); }
+
+/* Year select */
 .year-select {
-    background: transparent !important;
-    color: var(--cyan) !important;
-    font-weight: 900 !important;
-    cursor: pointer;
-    padding: 0 4px;
-    border: none; outline: none; appearance: none;
-    text-shadow: 0 0 10px rgba(6,182,212,0.4);
+  background: transparent !important;
+  color: var(--r-accent2) !important;
+  font-weight: 900 !important;
+  cursor: pointer; padding: 0 4px;
+  border: none; outline: none; appearance: none;
+  text-shadow: 0 0 10px var(--r-accent-glow);
+  font-family: var(--r-font-display);
 }
-.year-select option { background: #0d1628; color: white; }
+.year-select option { background: var(--r-surface2); color: var(--r-text); }
 
-/* ── Productivity Summary ── */
-#productivitySummary {
-    background: linear-gradient(145deg, rgba(8,15,30,0.8) 0%, rgba(5,10,20,0.6) 100%) !important;
-    border: 1px solid var(--border) !important;
-    border-top: 1px solid var(--border2) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important;
-}
-
-/* Progress bar track */
-.w-full.bg-slate-700.rounded-full {
-    background: rgba(30,41,59,0.8) !important;
-    border-radius: 99px !important;
-    overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4) !important;
-}
-#achieveBar {
-    border-radius: 99px !important;
-    box-shadow: 0 0 12px rgba(6,182,212,0.4) !important;
-    transition: width 0.8s cubic-bezier(0.4,0,0.2,1) !important;
-}
-
-/* ── Blinking missing dates ── */
-@keyframes blink-red {
-    0%,100% { opacity: 1; color: #f87171; text-shadow: 0 0 8px rgba(248,113,113,0.6); }
-    50% { opacity: 0.3; color: #7f1d1d; text-shadow: none; }
-}
-.blink-text {
-    animation: blink-red 1.2s infinite;
-    font-weight: 900;
-    font-family: 'SF Mono', monospace;
-}
-
-/* ── Import / Export Buttons ── */
+/* ── Import / Export buttons ── */
 .import-btn {
-    background: rgba(59,130,246,0.08) !important;
-    color: var(--blue) !important;
-    border: 1px solid rgba(59,130,246,0.3) !important;
-    border-radius: 10px !important;
-    font-family: 'SF Mono', monospace !important;
-    font-size: 9px !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.06em !important;
-    transition: all 0.2s !important;
-    padding: 6px 12px !important;
+  background: color-mix(in srgb,var(--r-accent) 10%,transparent) !important;
+  color: var(--r-accent) !important;
+  border: 1px solid color-mix(in srgb,var(--r-accent) 35%,transparent) !important;
+  border-radius: calc(var(--r-card-radius)*0.6) !important;
+  font-family: var(--r-font-mono) !important;
+  font-size: clamp(8px,2vw,10px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  transition: all 0.2s !important;
+  padding: clamp(5px,1.5vw,7px) clamp(10px,3vw,14px) !important;
+  white-space: nowrap;
 }
-.import-btn:hover {
-    background: var(--blue) !important;
-    color: white !important;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.35) !important;
+@media (hover:hover) {
+  .import-btn:hover {
+    background: var(--r-accent) !important; color: #fff !important;
+    box-shadow: 0 4px 16px var(--r-accent-glow) !important;
     transform: translateY(-1px) !important;
+  }
+}
+.export-btn-trigger {
+  background: rgba(16,185,129,0.1);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: calc(var(--r-card-radius)*0.6);
+  font-family: var(--r-font-mono);
+  font-size: clamp(8px,2vw,10px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: clamp(5px,1.5vw,7px) clamp(10px,3vw,14px);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+@media (hover:hover) {
+  .export-btn-trigger:hover { background:#10b981; color:#fff; box-shadow:0 4px 16px rgba(16,185,129,0.35); transform:translateY(-1px); }
 }
 
 /* Export dropdown */
 .export-dropdown { position: relative; display: inline-block; }
 .export-content {
-    display: none;
-    position: fixed; /* absolute → fixed 로 변경 */
-    background: linear-gradient(145deg, #0d1628, #080f1e);
-    min-width: 150px;
-    box-shadow: 0 16px 32px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
-    z-index: 99999; /* 최상위로 올림 */
-    border: 1px solid var(--border2);
-    border-radius: 14px;
-    overflow: hidden;
-    backdrop-filter: blur(12px);
+  display: none;
+  position: fixed;
+  background: linear-gradient(145deg, var(--r-surface2), var(--r-surface));
+  min-width: 160px;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.7), 0 0 0 1px var(--r-border2);
+  z-index: 99999;
+  border: 1px solid var(--r-border2);
+  border-radius: calc(var(--r-card-radius)*0.8);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
 }
-
 .export-content button {
-    width: 100%; padding: 10px 16px; text-align: left;
-    font-size: 9px; font-weight: 900;
-    font-family: 'SF Mono', monospace;
-    color: var(--muted); transition: all 0.15s;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    border-bottom: 1px solid var(--border);
-    background: none;
+  width:100%; padding:10px 16px; text-align:left;
+  font-size:clamp(8px,2vw,10px); font-weight:900;
+  font-family: var(--r-font-mono);
+  color:var(--r-muted); transition:all 0.15s;
+  text-transform:uppercase; letter-spacing:0.06em;
+  border-bottom:1px solid var(--r-border);
+  background:none; cursor:pointer;
 }
-.export-content button:last-child { border-bottom: none; }
-.export-content button:hover {
-    background: rgba(59,130,246,0.1);
-    color: #60a5fa;
+.export-content button:last-child { border-bottom:none; }
+@media (hover:hover) {
+  .export-content button:hover {
+    background: color-mix(in srgb,var(--r-accent) 12%,transparent);
+    color: var(--r-accent);
     padding-left: 22px;
+  }
 }
 
-/* ── Staff List ── */
+/* ══════════════════════════════════════════════════════════
+   MINI CALENDAR
+══════════════════════════════════════════════════════════ */
+.mini-cal { width:100%; border-collapse:separate; border-spacing:2px; }
+.mini-cal th {
+  padding: clamp(6px,2vw,10px) 0;
+  color: var(--r-muted);
+  font-size: clamp(7px,2vw,9px); font-weight:900;
+  text-transform:uppercase; letter-spacing:0.12em;
+  font-family: var(--r-font-ui);
+}
+.mini-cal th.text-sun { color:rgba(244,63,94,0.85); text-shadow:0 0 8px rgba(244,63,94,0.3); }
+.mini-cal th.text-sat { color:color-mix(in srgb,var(--r-accent) 80%,white); text-shadow:0 0 8px var(--r-accent-glow); }
+
+.mini-cal td {
+  height: clamp(52px,12vw,72px);
+  width: 14.28%;
+  background: linear-gradient(145deg, var(--r-surface3) 0%, var(--r-surface2) 100%);
+  border: 1px solid var(--r-border);
+  border-radius: 8px;
+  vertical-align: top;
+  padding: clamp(3px,1vw,6px);
+  cursor: pointer;
+  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25), inset 0 1px 0 var(--r-card-shine);
+}
+@media (hover:hover) {
+  .mini-cal td:hover {
+    background: linear-gradient(145deg,color-mix(in srgb,var(--r-accent) 12%,var(--r-surface3)),var(--r-surface2));
+    border-color: color-mix(in srgb,var(--r-accent) 35%,transparent);
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 20px var(--r-accent-glow), inset 0 1px 0 var(--r-card-shine);
+    z-index: 2;
+  }
+}
+.mini-cal td.has-report {}
+.mini-cal td.selected-date {
+  background: linear-gradient(145deg,color-mix(in srgb,var(--r-accent) 22%,var(--r-surface3)),color-mix(in srgb,var(--r-accent2) 12%,var(--r-surface2))) !important;
+  border: 1px solid color-mix(in srgb,var(--r-accent) 55%,transparent) !important;
+  box-shadow: 0 0 0 2px var(--r-accent-glow), 0 8px 24px var(--r-accent-glow) !important;
+  transform: translateY(-2px) !important;
+}
+.mini-cal td.selected-date .date-num { color:var(--r-accent) !important; font-weight:900; text-shadow:0 0 10px var(--r-accent-glow); }
+
+/* Date number */
+.date-num {
+  font-size: clamp(8px,2.2vw,11px);
+  font-weight: 900;
+  font-family: var(--r-font-mono);
+  color: var(--r-muted);
+  letter-spacing: -0.02em;
+}
+.text-sun { color:#f87171 !important; text-shadow:0 0 8px rgba(248,113,113,0.3); }
+.text-sat { color:color-mix(in srgb,var(--r-accent) 80%,white) !important; text-shadow:0 0 8px var(--r-accent-glow); }
+
+/* Status tags */
+.status-tag {
+  position:absolute; bottom:4px; left:50%;
+  transform:translateX(-50%);
+  font-size: clamp(6px,1.6vw,8px); font-weight:900;
+  padding:2px 5px; border-radius:5px;
+  white-space:nowrap; pointer-events:none;
+  letter-spacing:0.06em; backdrop-filter:blur(4px);
+}
+.status-progress  { background:rgba(59,130,246,0.18); color:#93c5fd; border:1px solid rgba(59,130,246,0.35); box-shadow:0 0 8px rgba(59,130,246,0.2); }
+.status-completed { background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid rgba(16,185,129,0.35); box-shadow:0 0 8px rgba(16,185,129,0.2); }
+.status-pending   { background:rgba(245,158,11,0.18); color:#fcd34d; border:1px solid rgba(245,158,11,0.35); box-shadow:0 0 8px rgba(245,158,11,0.2); }
+
+/* Admin dot */
+.admin-dot {
+  position:absolute; top:5px; right:5px;
+  width:6px; height:6px;
+  background:#ef4444; border-radius:50%;
+  box-shadow:0 0 8px rgba(239,68,68,0.8);
+  z-index:10;
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse { 0%,100%{box-shadow:0 0 6px rgba(239,68,68,0.8)} 50%{box-shadow:0 0 14px rgba(239,68,68,0.4)} }
+
+/* Col widths */
+.mini-cal col.weekend { width:6%; }
+.mini-cal col.weekday { width:calc((100% - 12%) / 5); }
+
+/* ══════════════════════════════════════════════════════════
+   PRODUCTIVITY SUMMARY
+══════════════════════════════════════════════════════════ */
+#productivitySummary {
+  background: linear-gradient(145deg,rgba(0,0,0,0.25),rgba(0,0,0,0.15)) !important;
+  border: 1px solid var(--r-border) !important;
+  border-top: 1px solid var(--r-border2) !important;
+  border-radius: calc(var(--r-card-radius)*0.75) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 var(--r-card-shine) !important;
+  margin-top: clamp(10px,3vw,16px);
+  padding: clamp(12px,3vw,18px);
+}
+.sr-summary-label {
+  font-size: clamp(7px,2vw,10px);
+  font-weight: 900;
+  color: var(--r-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--r-font-ui);
+  margin-bottom: 5px;
+}
+#writtenDates, #missingDates {
+  font-size: clamp(9px,2.4vw,12px);
+  font-family: var(--r-font-mono);
+  line-height: 1.6;
+}
+/* Progress bar */
+.sr-bar-track {
+  width:100%; height:6px;
+  background: var(--r-dim);
+  border-radius:99px; overflow:hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+}
+#achieveBar {
+  height:100%; border-radius:99px;
+  box-shadow: 0 0 12px var(--r-accent-glow);
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+#achievePct { color:var(--r-accent); font-size:clamp(8px,2vw,11px); font-weight:900; }
+
+/* Blinking missing */
+@keyframes blink-red { 0%,100%{opacity:1;color:#f87171;text-shadow:0 0 8px rgba(248,113,113,0.6)} 50%{opacity:0.3;color:#7f1d1d;text-shadow:none} }
+.blink-text { animation:blink-red 1.2s infinite; font-weight:900; font-family:var(--r-font-mono); }
+
+/* ══════════════════════════════════════════════════════════
+   STAFF LIST
+══════════════════════════════════════════════════════════ */
 .staff-list-container {
-    margin-top: 16px;
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%);
-    border: 1px solid var(--border);
-    border-top: 1px solid var(--border2);
-    border-radius: 18px;
-    padding: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+  background: linear-gradient(145deg, var(--r-surface2) 0%, var(--r-surface) 100%);
+  border: 1px solid var(--r-border);
+  border-top: 1px solid var(--r-border2);
+  border-radius: var(--r-card-radius);
+  padding: clamp(12px,3.5vw,18px);
+  box-shadow: 0 8px 24px var(--r-card-far), inset 0 1px 0 var(--r-card-shine);
+  margin-top: clamp(8px,2.5vw,14px);
 }
 .staff-list-title {
-    font-size: 9px; font-weight: 900;
-    font-family: 'SF Mono', monospace;
-    color: var(--muted); text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 14px;
-    display: flex; justify-content: space-between; align-items: center;
+  font-size: clamp(7px,2vw,9px); font-weight:900;
+  font-family: var(--r-font-mono);
+  color: var(--r-muted); text-transform:uppercase; letter-spacing:0.12em;
+  margin-bottom: clamp(10px,3vw,16px);
+  display:flex; justify-content:space-between; align-items:center;
 }
-.staff-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
-}
+.staff-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
 .staff-item {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2));
-    padding: 10px 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+  background: linear-gradient(145deg,var(--r-surface3),var(--r-surface2));
+  padding: clamp(8px,2.5vw,12px);
+  border-radius: calc(var(--r-card-radius)*0.65);
+  cursor:pointer; border:1px solid var(--r-border);
+  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 var(--r-card-shine);
 }
-.staff-item:hover {
-    border-color: rgba(59,130,246,0.4);
-    background: linear-gradient(145deg, rgba(59,130,246,0.1), var(--surface2));
+@media (hover:hover) {
+  .staff-item:hover {
+    border-color: color-mix(in srgb,var(--r-accent) 45%,transparent);
+    background: linear-gradient(145deg,color-mix(in srgb,var(--r-accent) 10%,var(--r-surface3)),var(--r-surface2));
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.07);
+    box-shadow: 0 8px 20px var(--r-accent-glow), inset 0 1px 0 var(--r-card-shine);
+  }
 }
-.staff-name {
-    font-size: 11px; font-weight: 700;
-    color: var(--text); display: block;
-    font-family: 'SF Mono', monospace;
-}
-.staff-status {
-    font-size: 7px; font-weight: 900;
-    padding: 2px 7px; border-radius: 5px;
-    margin-top: 5px; display: inline-block;
-    text-transform: uppercase; letter-spacing: 0.06em;
-}
+.staff-name { font-size:clamp(9px,2.5vw,12px); font-weight:700; color:var(--r-text); display:block; font-family:var(--r-font-mono); }
+.staff-status { font-size:7px; font-weight:900; padding:2px 7px; border-radius:5px; margin-top:5px; display:inline-block; text-transform:uppercase; letter-spacing:0.06em; }
 
-/* ── Modal ── */
+/* ══════════════════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════════════════ */
 .report-modal {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(10px);
-    z-index: 20000;
-    align-items: center; justify-content: center;
-    padding: 20px;
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.88); backdrop-filter:blur(12px);
+  z-index:20000; align-items:center; justify-content:center; padding:20px;
 }
 .modal-content {
-    background: linear-gradient(145deg, #0d1628 0%, #080f1e 100%);
-    border: 1px solid rgba(59,130,246,0.3);
-    border-top: 1px solid rgba(59,130,246,0.5);
-    width: 100%; max-width: 520px;
-    border-radius: 24px; padding: 28px;
-    position: relative; max-height: 85vh; overflow-y: auto;
-    box-shadow:
-        0 40px 80px rgba(0,0,0,0.7),
-        0 0 0 1px rgba(255,255,255,0.05),
-        inset 0 1px 0 rgba(255,255,255,0.07);
-    animation: modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
+  background: linear-gradient(145deg,var(--r-surface2),var(--r-surface));
+  border: 1px solid var(--r-border);
+  border-top: 1px solid var(--r-border2);
+  width:100%; max-width:520px;
+  border-radius: calc(var(--r-card-radius)*1.2);
+  padding: clamp(20px,5vw,30px);
+  position:relative; max-height:85vh; overflow-y:auto;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.75), inset 0 1px 0 var(--r-card-shine);
+  animation: modalIn 0.35s cubic-bezier(0.23,1,0.32,1) both;
 }
-@keyframes modalIn {
-    from { opacity:0; transform: scale(0.94) translateY(20px); }
-    to   { opacity:1; transform: none; }
-}
+@keyframes modalIn { from{opacity:0;transform:scale(0.93) translateY(18px)} to{opacity:1;transform:none} }
 .modal-close {
-    position: absolute; top: 18px; right: 18px;
-    color: var(--muted); cursor: pointer;
-    font-size: 22px; line-height: 1;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
+  position:absolute; top:16px; right:16px;
+  color:var(--r-muted); cursor:pointer;
+  font-size:22px; line-height:1;
+  width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%;
+  transition:all 0.2s;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--r-border);
 }
-.modal-close:hover {
-    color: white;
-    background: rgba(244,63,94,0.15);
-    border-color: rgba(244,63,94,0.3);
-    box-shadow: 0 0 12px rgba(244,63,94,0.2);
+@media (hover:hover) {
+  .modal-close:hover { color:#fff; background:rgba(244,63,94,0.15); border-color:rgba(244,63,94,0.3); box-shadow:0 0 12px rgba(244,63,94,0.2); }
 }
 
-/* ── Hover Popup ── */
+/* ══════════════════════════════════════════════════════════
+   HOVER POPUP
+══════════════════════════════════════════════════════════ */
 #reportHoverPopup {
-    position: fixed;
-    z-index: 999999 !important;
-    pointer-events: none;
-    background: linear-gradient(145deg, #0d1628, #080f1e);
-    border: 1px solid rgba(59,130,246,0.4);
-    padding: 14px 16px;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
-    width: 290px;
-    display: none;
-    font-size: 11px;
-    color: var(--text);
-    backdrop-filter: blur(16px);
+  position:fixed; z-index:999999 !important; pointer-events:none;
+  background: linear-gradient(145deg,var(--r-surface2),var(--r-surface));
+  border: 1px solid color-mix(in srgb,var(--r-accent) 45%,transparent);
+  padding: clamp(10px,3vw,16px);
+  border-radius: calc(var(--r-card-radius)*0.9);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04);
+  width: clamp(220px,75vw,300px);
+  display:none;
+  font-size: clamp(9px,2.4vw,12px);
+  color: var(--r-text);
+  backdrop-filter: blur(16px);
 }
 .popup-label {
-    color: var(--blue);
-    font-weight: 900;
-    font-size: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 3px;
-    display: block;
-    font-family: 'SF Mono', monospace;
+  color: var(--r-accent);
+  font-weight:900; font-size:clamp(7px,1.8vw,9px);
+  text-transform:uppercase; letter-spacing:0.12em;
+  margin-bottom:3px; display:block;
+  font-family: var(--r-font-mono);
 }
 .popup-content {
-    margin-bottom: 10px;
-    white-space: pre-wrap;
-    word-break: break-all;
-    color: #93c5fd;
-    line-height: 1.5;
-    font-family: 'SF Mono', monospace;
-    font-size: 10px;
+  margin-bottom:10px; white-space:pre-wrap; word-break:break-all;
+  color: color-mix(in srgb,var(--r-accent2) 80%,white);
+  line-height:1.5; font-family:var(--r-font-mono);
+  font-size:clamp(8px,2.2vw,11px);
 }
 
-/* ── AI Alert Popup ── */
+/* ══════════════════════════════════════════════════════════
+   AI ALERT POPUP
+══════════════════════════════════════════════════════════ */
 #leaveStatusAlert {
-    position: fixed;
-    top: 24px; left: 0; right: 0;
-    display: none;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 100000;
-    pointer-events: none;
-    padding: 0 16px;
+  position:fixed; top:24px; left:0; right:0;
+  display:none; justify-content:center; align-items:flex-start;
+  z-index:100000; pointer-events:none; padding:0 16px;
 }
 #leaveAlertContent {
-    pointer-events: auto;
-    background: linear-gradient(145deg, rgba(8,15,30,0.97), rgba(5,10,20,0.97));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1.5px solid var(--emerald);
-    box-shadow:
-        0 0 30px rgba(16,185,129,0.3),
-        0 24px 48px rgba(0,0,0,0.7),
-        inset 0 1px 0 rgba(255,255,255,0.07);
-    width: 90%; max-width: 460px;
-    border-radius: 20px;
-    opacity: 0;
-    transform: scale(0.92) translateY(-16px);
-    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:auto;
+  background: linear-gradient(145deg,rgba(4,8,20,0.97),rgba(2,5,12,0.97));
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border: 1.5px solid var(--emerald);
+  box-shadow: 0 0 30px rgba(16,185,129,0.3), 0 24px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+  width:90%; max-width:460px;
+  border-radius: calc(var(--r-card-radius)*1.1);
+  opacity:0; transform:scale(0.92) translateY(-16px);
+  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
-#leaveAlertContent.show {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-}
-.ai-glow-text { text-shadow: 0 0 10px rgba(16,185,129,0.5); }
-@keyframes pulse-slow {
-    0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.2), 0 24px 48px rgba(0,0,0,0.7); }
-    50% { box-shadow: 0 0 35px rgba(59,130,246,0.4), 0 24px 48px rgba(0,0,0,0.7); }
-}
-.animate-pulse-slow { animation: pulse-slow 2s infinite; }
+#leaveAlertContent.show { opacity:1; transform:scale(1) translateY(0); }
+.ai-glow-text { text-shadow:0 0 10px rgba(16,185,129,0.5); }
+@keyframes pulse-slow { 0%,100%{box-shadow:0 0 20px rgba(59,130,246,0.2),0 24px 48px rgba(0,0,0,0.7)} 50%{box-shadow:0 0 35px rgba(59,130,246,0.4),0 24px 48px rgba(0,0,0,0.7)} }
+.animate-pulse-slow { animation:pulse-slow 2s infinite; }
+@media (max-width:640px) { #leaveStatusAlert { top:35%; align-items:center; } }
 
-@media (max-width: 640px) {
-    #leaveStatusAlert { top: 35%; align-items: center; }
-}
+/* ══════════════════════════════════════════════════════════
+   ENTRY ANIMATION
+══════════════════════════════════════════════════════════ */
+@keyframes fadeSlideIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.animate-fadeIn { animation:fadeSlideIn 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.sr-left  { animation:fadeSlideIn 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.sr-right { animation:fadeSlideIn 0.45s 0.08s cubic-bezier(0.22,1,0.36,1) both; }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #334155; }
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--r-dim); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb,var(--r-accent) 30%,var(--r-dim)); }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
 
-/* ── Weekend col width ── */
-.mini-cal col.weekend { width: 5%; }
-.mini-cal col.weekday { width: calc((100% - 10%) / 5); }
-.mini-cal td:nth-child(1),
-.mini-cal td:nth-child(7) { width: 5%; padding: 3px 2px; }
-.mini-cal td:nth-child(1) .date-num,
-.mini-cal td:nth-child(7) .date-num { font-size: 8px; }
+/* ── Override any Tailwind white/light backgrounds ── */
+.bg-slate-800\/30,
+.bg-slate-800\/50,
+.bg-slate-800,
+.bg-slate-900 {
+  background: linear-gradient(145deg,var(--r-surface2),var(--r-surface)) !important;
+  color: var(--r-text) !important;
+}
+.border-slate-700 { border-color: var(--r-border) !important; }
+.border-slate-800 { border-color: var(--r-border) !important; }
+.text-slate-200 { color: color-mix(in srgb,var(--r-text) 88%,transparent) !important; }
+.text-slate-400 { color: var(--r-muted) !important; }
+.text-slate-500 { color: var(--r-muted) !important; opacity:0.75; }
+.rounded-xl  { border-radius: calc(var(--r-card-radius)*0.75) !important; }
+.rounded-2xl { border-radius: var(--r-card-radius) !important; }
 
-/* ── Action Buttons (Edit/Delete/Copy) ── */
-#actionButtons button {
-    font-family: 'SF Mono', monospace !important;
-    font-size: 9px !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.06em !important;
-    border-radius: 8px !important;
-    padding: 6px 12px !important;
-    transition: all 0.2s !important;
+/* ── Reduce motion ── */
+@media (prefers-reduced-motion:reduce) {
+  .card-3d, .mini-cal td, .staff-item { transition:none !important; }
+  .animate-fadeIn, .sr-left, .sr-right { animation:none !important; }
+  .blink-text { animation:none !important; }
+  .admin-dot  { animation:none !important; }
 }
-#actionButtons .text-indigo-400 {
-    background: rgba(99,102,241,0.08) !important;
-    border: 1px solid rgba(99,102,241,0.2) !important;
-    padding: 5px 10px !important;
-    border-radius: 8px !important;
-}
-#actionButtons .text-indigo-400:hover {
-    background: rgba(99,102,241,0.2) !important;
-    color: #a5b4fc !important;
-}
-#actionButtons .text-rose-500 {
-    background: rgba(244,63,94,0.08) !important;
-    border: 1px solid rgba(244,63,94,0.2) !important;
-    padding: 5px 10px !important;
-    border-radius: 8px !important;
-}
-#actionButtons .text-rose-500:hover {
-    background: rgba(244,63,94,0.2) !important;
-    color: #fb7185 !important;
-}
-#actionButtons .bg-slate-700 {
-    background: linear-gradient(135deg, #1e293b, #162032) !important;
-    border: 1px solid var(--border2) !important;
-    color: var(--text) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06) !important;
-}
-#actionButtons .bg-slate-700:hover {
-    background: linear-gradient(135deg, #253347, #1e2d42) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
-}
-
-/* ── Report view card internal styling ── */
-#workCardContainer h4 { letter-spacing: 0.1em !important; }
-#workCardContainer .whitespace-pre-wrap {
-    font-family: 'SF Mono', 'Fira Code', monospace !important;
-    font-size: 12px !important;
-    line-height: 1.7 !important;
-    color: #cbd5e1 !important;
-}
-#workCardContainer .border-t { border-color: var(--border) !important; }
-
-/* ── Misc utility overrides ── */
-.bg-slate-800\/30 { background: rgba(15,23,42,0.4) !important; }
-.border-slate-700 { border-color: var(--border) !important; }
-.rounded-xl { border-radius: 14px !important; }
-.rounded-2xl { border-radius: 18px !important; }
 </style>
 
+<!-- ══════════════════════════════════════════════════════════
+     HTML STRUCTURE
+══════════════════════════════════════════════════════════ -->
+<div class="sr-root animate-fadeIn">
 
-<div class="animate-fadeIn flex flex-col lg:flex-row gap-6 items-start">
-    <div class="report-card-fixed">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-white">Work Report Detail</h3>
-            <div id="actionButtons"></div>
-        </div>
-        <div id="workCardContainer"><div class="text-slate-500 animate-pulse text-sm">Loading...</div></div>
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="sr-left">
+    <div class="sr-panel">
+      <div class="sr-panel-header">
+        <h3 class="sr-panel-title">Work Report Detail</h3>
+        <div id="actionButtons"></div>
+      </div>
+      <div id="workCardContainer">
+        <div style="color:var(--r-muted);font-size:13px;animation:fadeSlideIn 1s ease infinite alternate;">Loading...</div>
+      </div>
     </div>
+  </div>
 
-<div id="leaveStatusAlert" style="display: none;">
-<div id="leaveAlertContent" class="p-4 rounded-[1.25rem] border flex items-center justify-between shadow-lg">
-        <div class="flex items-center gap-3">
-            <span id="leaveAlertIcon" class="text-xl"></span>
-            <div>
-                <p id="leaveAlertTitle" class="text-[10px] font-black uppercase italic leading-none"></p>
-                <p id="leaveAlertMsg" class="text-white text-xs font-bold mt-1"></p>
+  <!-- AI Alert Popup -->
+  <div id="leaveStatusAlert" style="display:none;">
+    <div id="leaveAlertContent" class="p-4 rounded-[1.25rem] border flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-3">
+        <span id="leaveAlertIcon" class="text-xl"></span>
+        <div>
+          <p id="leaveAlertTitle" class="text-[10px] font-black uppercase italic leading-none"></p>
+          <p id="leaveAlertMsg"   class="text-white text-xs font-bold mt-1"></p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('leaveStatusAlert').style.display='none'" style="color:rgba(255,255,255,0.5);margin-left:14px;font-size:18px;background:none;border:none;cursor:pointer;">&times;</button>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="sr-right">
+    <div class="sr-cal-card">
+
+      <!-- Calendar header -->
+      <div class="sr-cal-header">
+        <div id="miniCalMonth"></div>
+        <div class="sr-cal-header-actions">
+          <div class="sr-nav-bar">
+            <button onclick="window.changeViewMonth(-1)" class="nav-btn">PREV</button>
+            <button onclick="window.goToday()"           class="nav-btn today-btn">TODAY</button>
+            <button onclick="window.changeViewMonth(1)"  class="nav-btn">NEXT</button>
+          </div>
+          <!-- Import -->
+          <input type="file" id="excelImportInput" accept=".xlsx,.xls" class="hidden" onchange="window.importStaffReport(event)">
+          <button onclick="document.getElementById('excelImportInput').click()" class="import-btn">Excel ⬆</button>
+          <!-- Export -->
+          <div class="export-dropdown">
+            <button class="export-btn-trigger">Export ▾</button>
+            <div class="export-content">
+              <button onclick="window.exportStaffReport('monthly')">Monthly Report</button>
+              <button onclick="window.exportStaffReport('yearly')">Yearly Report</button>
+              <button onclick="window.exportStaffReport('all')">All-Time Overall</button>
             </div>
+          </div>
         </div>
-        <button onclick="document.getElementById('leaveStatusAlert').classList.add('hidden')" class="text-white/50 hover:text-white ml-4">&times;</button>
-    </div>
-</div>
+      </div>
 
+      <!-- Calendar table -->
+      <div class="no-scrollbar" style="overflow-x:auto;">
+        <table class="mini-cal">
+          <colgroup>
+            <col class="weekend">
+            <col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday">
+            <col class="weekend">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="text-sun">SUN</th>
+              <th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th>
+              <th class="text-sat">SAT</th>
+            </tr>
+          </thead>
+          <tbody id="miniCalBody"></tbody>
+        </table>
+      </div>
 
-    <div class="flex-1 w-full"> 
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 shadow-xl">
-            <div class="flex flex-wrap justify-between items-center mb-4 gap-4 px-1">
-                <div class="flex items-center gap-4">
-                    <div id="miniCalMonth" class="text-lg font-black text-white italic"></div>
-                    <div class="flex bg-slate-800 rounded-lg p-1">
-                        <button onclick="window.changeViewMonth(-1)" class="nav-btn px-2 py-1 text-slate-400 rounded-md text-[10px] font-black">PREV</button>
-                        <button onclick="window.goToday()" class="nav-btn px-2 py-1 text-blue-400 rounded-md text-[10px] font-black mx-1">TODAY</button>
-                        <button onclick="window.changeViewMonth(1)" class="nav-btn px-2 py-1 text-slate-400 rounded-md text-[10px] font-black">NEXT</button>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <input type="file" id="excelImportInput" accept=".xlsx, .xls" class="hidden" onchange="window.importStaffReport(event)">
-                    <button onclick="document.getElementById('excelImportInput').click()" class="import-btn px-3 py-1.5 rounded-lg text-[10px] font-black transition uppercase tracking-widest flex items-center gap-1">Excel Import ⬆</button>
-                    <div class="export-dropdown">
-                        <button class="bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-600 hover:text-white transition uppercase tracking-widest flex items-center gap-1">Excel Export ▾</button>
-                        <div class="export-content">
-                            <button onclick="window.exportStaffReport('monthly')">Monthly Report</button>
-                            <button onclick="window.exportStaffReport('yearly')">Yearly Report</button>
-                            <button onclick="window.exportStaffReport('all')">All-Time Overall</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-<table class="mini-cal w-full border-collapse">
-    <colgroup>
-        <col class="weekend">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekday">
-        <col class="weekend">
-    </colgroup>
-    <thead><tr class="text-slate-500"><th class="text-sun">SUN</th>
-<th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th class="text-sat">SAT</th></tr></thead>
-                <tbody id="miniCalBody"></tbody>
-            </table>
-<div id="productivitySummary" class="mt-4 flex flex-col gap-3 bg-slate-800/30 p-4 rounded-xl border border-slate-700">
-    <div class="flex flex-col gap-1">
-        <span class="text-[10px] font-black text-slate-500 uppercase">Report Creation Date:</span>
-        <div id="writtenDates" class="text-xs text-emerald-400 font-mono flex flex-wrap gap-x-2 italic">-</div>
-    </div>
-    <div class="flex flex-col gap-1">
-        <span class="text-[10px] font-black text-slate-500 uppercase">Report Unwritten Date:</span>
-        <div id="missingDates" class="text-xs font-mono flex flex-wrap gap-x-2 italic">-</div>
-    </div>
-    <div class="flex flex-col gap-1 mt-2 pt-3 border-t border-slate-700">
-        <div class="flex justify-between items-center">
-            <span class="text-[10px] font-black text-slate-500 uppercase">Monthly Achievement</span>
-            <span id="achievePct" class="text-[10px] font-black text-cyan-400">--%</span>
+      <!-- Productivity Summary -->
+      <div id="productivitySummary">
+        <div style="margin-bottom:10px;">
+          <div class="sr-summary-label">Report Written Dates</div>
+          <div id="writtenDates" style="color:#10b981;">-</div>
         </div>
-        <div class="w-full bg-slate-700 rounded-full h-2">
-            <div id="achieveBar" class="h-2 rounded-full transition-all duration-500"
-                 style="width:0%;background:linear-gradient(90deg,#3b82f6,#10b981)"></div>
+        <div style="margin-bottom:12px;">
+          <div class="sr-summary-label">Report Unwritten Dates</div>
+          <div id="missingDates">-</div>
         </div>
-        <div class="flex justify-between text-[9px] text-slate-600 mt-0.5">
+        <div style="padding-top:12px;border-top:1px solid var(--r-border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="sr-summary-label" style="margin-bottom:0;">Monthly Achievement</span>
+            <span id="achievePct">--%</span>
+          </div>
+          <div class="sr-bar-track">
+            <div id="achieveBar" style="width:0%;background:linear-gradient(90deg,var(--r-accent),#10b981);"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:clamp(8px,2vw,10px);color:var(--r-muted);margin-top:5px;">
             <span id="achieveDetail">0 written / 0 workdays</span>
-            <span id="achieveStreak" class="text-amber-500 font-bold"></span>
+            <span id="achieveStreak" style="color:var(--r-amber,#f59e0b);font-weight:700;"></span>
+          </div>
         </div>
-    </div>
+      </div>
 
-</div>
-            <div id="staffListArea" class="staff-list-container hidden">
-                <div class="staff-list-title"><span>Staff Reports - <span id="targetDateDisplay"></span></span><span id="staffCount" class="text-blue-500">0 persons</span></div>
-                <div id="staffGrid" class="staff-grid"></div>
-            </div>
-            <div id="reportDetailModal" class="report-modal" onclick="if(event.target===this) window.closeModal()">
-                <div class="modal-content animate-fadeIn"><span class="modal-close" onclick="window.closeModal()">&times;</span><div id="modalBody"></div><button onclick="window.closeModal()" class="w-full mt-6 bg-slate-800 text-slate-300 py-3 rounded-xl text-sm font-bold hover:bg-slate-700">Close</button></div>
-            </div>
+      <!-- Staff list for selected date -->
+      <div id="staffListArea" class="staff-list-container hidden">
+        <div class="staff-list-title">
+          <span>Staff Reports — <span id="targetDateDisplay"></span></span>
+          <span id="staffCount" style="color:var(--r-accent);">0 persons</span>
         </div>
-    </div>
-</div>
+        <div id="staffGrid" class="staff-grid"></div>
+      </div>
+
+      <!-- Staff detail modal -->
+      <div id="reportDetailModal" class="report-modal" onclick="if(event.target===this) window.closeModal()">
+        <div class="modal-content animate-fadeIn">
+          <span class="modal-close" onclick="window.closeModal()">&times;</span>
+          <div id="modalBody"></div>
+          <button onclick="window.closeModal()" style="width:100%;margin-top:20px;background:var(--r-surface2);color:var(--r-muted);padding:12px;border-radius:calc(var(--r-card-radius)*0.75);font-size:13px;font-weight:700;border:1px solid var(--r-border);cursor:pointer;transition:all 0.2s;">Close</button>
+        </div>
+      </div>
+
+    </div><!-- /sr-cal-card -->
+  </div><!-- /sr-right -->
+
+</div><!-- /sr-root -->
+
 <div id="reportHoverPopup"></div>
 
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — all original logic preserved
+══════════════════════════════════════════════════════════ -->
 <script>
 (function() {
-    const user = sessionStorage.getItem('loggedInUser');
-    const db = firebase.database();
-    let viewDate = new Date(), selectedDateStr = new Date().toISOString().split('T')[0], currentReportData = null;
+  const user = sessionStorage.getItem('loggedInUser');
+  const db = firebase.database();
+  let viewDate = new Date(), selectedDateStr = new Date().toISOString().split('T')[0], currentReportData = null;
 
-    if (!user || user === "null") {
-        alert("Login required.");
-        if(document.getElementById('workCardContainer')) document.getElementById('workCardContainer').innerHTML = '<p class="text-slate-500">Login is required.</p>';
-        return; 
-    }
+  if (!user || user === "null") {
+    alert("Login required.");
+    const wcc = document.getElementById('workCardContainer');
+    if (wcc) wcc.innerHTML = '<p style="color:var(--r-muted);">Login is required.</p>';
+    return;
+  }
 
-    const getTempKey = (date) => `temp_report_${user}_${date}`;
-    const escapeHtml = (s) => s ? s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : '-';
+  const getTempKey  = (date) => `temp_report_${user}_${date}`;
+  const escapeHtml  = (s) => s ? s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : '-';
 
-    window.importStaffReport = (e) => {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const data = new Uint8Array(ev.target.result), workbook = XLSX.read(data, {type:'array', cellDates:true});
-                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                if (!jsonData.length || !confirm(`Save ${jsonData.length} records?`)) return;
-                let sc = 0;
-                Promise.all(jsonData.map(row => {
-                    let rd = row["Date"], dk = "";
-                    if (typeof rd === 'number') dk = new Date(Math.round((rd - 25569) * 86400 * 1000)).toISOString().split('T')[0];
-                    else if (rd instanceof Date) dk = rd.toISOString().split('T')[0];
-                    else if (typeof rd === 'string') dk = rd.trim();
-                    if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return Promise.resolve();
-                    return db.ref(`reports/${dk}/${user}`).set({
-                        status: row["Status"] || "In Progress", todo: row["To-Do"] || "", summary: row["Summary"] || "",
-                        adminMemo: row["Admin Memo"] || "", time: row["Update Time"] || new Date().getHours().toString().padStart(2,'0')+":00"
-                    }).then(() => sc++);
-                })).then(() => { alert(`Imported ${sc} reports.`); window.loadReport(selectedDateStr); e.target.value=''; });
-            } catch(err) { alert("Parsing error."); }
-        }; reader.readAsArrayBuffer(file);
+  /* ── Import ── */
+  window.importStaffReport = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = new Uint8Array(ev.target.result), workbook = XLSX.read(data,{type:'array',cellDates:true});
+        const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        if (!jsonData.length || !confirm(`Save ${jsonData.length} records?`)) return;
+        let sc = 0;
+        Promise.all(jsonData.map(row => {
+          let rd = row["Date"], dk = "";
+          if (typeof rd==='number') dk = new Date(Math.round((rd-25569)*86400*1000)).toISOString().split('T')[0];
+          else if (rd instanceof Date) dk = rd.toISOString().split('T')[0];
+          else if (typeof rd==='string') dk = rd.trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return Promise.resolve();
+          return db.ref(`reports/${dk}/${user}`).set({
+            status:row["Status"]||"In Progress", todo:row["To-Do"]||"", summary:row["Summary"]||"",
+            adminMemo:row["Admin Memo"]||"", time:row["Update Time"]||new Date().getHours().toString().padStart(2,'0')+":00"
+          }).then(()=>sc++);
+        })).then(()=>{ alert(`Imported ${sc} reports.`); window.loadReport(selectedDateStr); e.target.value=''; });
+      } catch(err) { alert("Parsing error."); }
     };
+    reader.readAsArrayBuffer(file);
+  };
 
-    window.exportStaffReport = (mode) => {
-        const y = viewDate.getFullYear(), m = viewDate.getMonth() + 1;
-        db.ref('reports').once('value', (snap) => {
-            const allData = snap.val() || {}, rows = [], sDates = Object.keys(allData).sort();
-            let fn = "";
-            sDates.forEach(dk => {
-                const r = allData[dk]?.[user]; if (!r) return;
-                const [ry, rm] = dk.split('-').map(Number);
-                let inc = (mode==='monthly' && ry===y && rm===m) || (mode==='yearly' && ry===y) || (mode==='all');
-                if (inc) {
-                    if(!fn) fn = mode==='monthly' ? `WorkReport_${user}_${y}-${String(m).padStart(2,'0')}.xlsx` : mode==='yearly' ? `WorkReport_${user}_Year_${y}.xlsx` : `WorkReport_${user}_AllTime.xlsx`;
-                    rows.push({"Date":dk, "Status":r.status||"In Progress", "To-Do":r.todo||"", "Summary":r.summary||r.content||"", "Admin Memo":r.adminMemo||"", "Update Time":r.time||""});
-                }
-            });
-            if (!rows.length) return alert("No data.");
-            const ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Report");
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            for (let R = range.s.r; R <= range.e.r; ++R) {
-                for (let C = range.s.c; C <= range.e.c; ++C) {
-                    const addr = XLSX.utils.encode_cell({r:R, c:C}); if (!ws[addr]) continue;
-                    ws[addr].s = { alignment:{wrapText:true, vertical:'top', horizontal:'left'}, font:{name:'Arial', sz:10} };
-                    if (R === 0) { ws[addr].s.fill = {fgColor:{rgb:"F2F2F2"}}; ws[addr].s.font.bold = true; }
-                }
-            }
-            ws['!cols'] = [{wch:12}, {wch:12}, {wch:45}, {wch:55}, {wch:35}, {wch:12}];
-            XLSX.writeFile(wb, fn);
-        });
-    };
+  /* ── Export ── */
+  window.exportStaffReport = (mode) => {
+    const y=viewDate.getFullYear(), m=viewDate.getMonth()+1;
+    db.ref('reports').once('value', (snap) => {
+      const allData=snap.val()||{}, rows=[], sDates=Object.keys(allData).sort(); let fn="";
+      sDates.forEach(dk => {
+        const r=allData[dk]?.[user]; if (!r) return;
+        const [ry,rm]=dk.split('-').map(Number);
+        let inc=(mode==='monthly'&&ry===y&&rm===m)||(mode==='yearly'&&ry===y)||(mode==='all');
+        if (inc) {
+          if (!fn) fn=mode==='monthly'?`WorkReport_${user}_${y}-${String(m).padStart(2,'0')}.xlsx`:mode==='yearly'?`WorkReport_${user}_Year_${y}.xlsx`:`WorkReport_${user}_AllTime.xlsx`;
+          rows.push({"Date":dk,"Status":r.status||"In Progress","To-Do":r.todo||"","Summary":r.summary||r.content||"","Admin Memo":r.adminMemo||"","Update Time":r.time||""});
+        }
+      });
+      if (!rows.length) return alert("No data.");
+      const ws=XLSX.utils.json_to_sheet(rows), wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,"Report");
+      const range=XLSX.utils.decode_range(ws['!ref']);
+      for (let R=range.s.r;R<=range.e.r;++R) for (let C=range.s.c;C<=range.e.c;++C) {
+        const addr=XLSX.utils.encode_cell({r:R,c:C}); if (!ws[addr]) continue;
+        ws[addr].s={alignment:{wrapText:true,vertical:'top',horizontal:'left'},font:{name:'Arial',sz:10}};
+        if (R===0) {ws[addr].s.fill={fgColor:{rgb:"F2F2F2"}};ws[addr].s.font.bold=true;}
+      }
+      ws['!cols']=[{wch:12},{wch:12},{wch:45},{wch:55},{wch:35},{wch:12}];
+      XLSX.writeFile(wb,fn);
+    });
+  };
 
-    window.updateCharCount = (tid, cid) => {
-        const t = document.getElementById(tid), c = document.getElementById(cid), max = 2000;
-        if (t.value.length > max) { alert("Max 2,000 characters exceeded."); t.value = t.value.substring(0, max); }
-        c.innerText = `${t.value.length}/${max}`;
-        c.style.color = t.value.length >= max ? "#ef4444" : "#64748b";
-        c.style.fontWeight = t.value.length >= max ? "900" : "normal";
-        if(window.saveToTemp) window.saveToTemp();
-    };
-    window.saveToTemp = () => {
-        let td = document.getElementById('editTodo')?.value || "", sm = document.getElementById('editSummary')?.value || "";
-        const st = document.getElementById('editStatus')?.value, max = 2000;
-        const data = { todo:td.substring(0,max), summary:sm.substring(0,max), status:st, timestamp: Date.now() };
-        localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify(data));
-    };
+  /* ── Char count / temp save ── */
+  window.updateCharCount = (tid, cid) => {
+    const t=document.getElementById(tid), c=document.getElementById(cid), max=2000;
+    if (t.value.length>max) { alert("Max 2,000 characters exceeded."); t.value=t.value.substring(0,max); }
+    c.innerText=`${t.value.length}/${max}`;
+    c.style.color=t.value.length>=max?"#ef4444":"var(--r-muted)";
+    c.style.fontWeight=t.value.length>=max?"900":"normal";
+    if (window.saveToTemp) window.saveToTemp();
+  };
+  window.saveToTemp = () => {
+    let td=document.getElementById('editTodo')?.value||"", sm=document.getElementById('editSummary')?.value||"";
+    const st=document.getElementById('editStatus')?.value, max=2000;
+    localStorage.setItem(getTempKey(selectedDateStr), JSON.stringify({todo:td.substring(0,max),summary:sm.substring(0,max),status:st,timestamp:Date.now()}));
+  };
+  window.clearTemp = (d) => localStorage.removeItem(getTempKey(d));
+  window.changeViewMonth = (o) => { viewDate.setMonth(viewDate.getMonth()+o); if(typeof renderMiniCalendar==='function') renderMiniCalendar(); };
+  window.goToday = () => { viewDate=new Date(); selectedDateStr=new Date().toISOString().split('T')[0]; window.loadReport(selectedDateStr); };
 
-    window.clearTemp = (d) => localStorage.removeItem(getTempKey(d));
-    window.changeViewMonth = (o) => { viewDate.setMonth(viewDate.getMonth() + o); if(typeof renderMiniCalendar==='function') renderMiniCalendar(); };
-    window.goToday = () => { viewDate = new Date(); selectedDateStr = new Date().toISOString().split('T')[0]; window.loadReport(selectedDateStr); };
+  /* ── Save Report ── */
+  window.saveReport = () => {
+    const tdF=document.getElementById('editTodo'), smF=document.getElementById('editSummary'), stF=document.getElementById('editStatus'), max=2000;
+    if (!tdF.value.trim()&&!smF.value.trim()) return alert("Enter content.");
+    if ((tdF.value.length>max||smF.value.length>max)&&!confirm(`Exceeds ${max} chars. Save first ${max}?`)) return;
+    const now=new Date(), time=now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
+    const data={todo:tdF.value.substring(0,max),summary:smF.value.substring(0,max),status:stF.value,time};
+    if (currentReportData?.adminMemo) data.adminMemo=currentReportData.adminMemo;
+    db.ref(`reports/${selectedDateStr}/${user}`).set(data).then(()=>{
+      window.showReportAI(selectedDateStr, smF.value);
+      window.clearTemp(selectedDateStr); window.loadReport(selectedDateStr);
+    }).catch(()=>alert("Error."));
+  };
 
-// --- [수정] saveReport 함수 ---
-window.saveReport = () => {
-    const tdF = document.getElementById('editTodo'), 
-          smF = document.getElementById('editSummary'), 
-          stF = document.getElementById('editStatus'), 
-          max = 2000;
-    
-    if(!tdF.value.trim() && !smF.value.trim()) return alert("Enter content.");
-    if((tdF.value.length > max || smF.value.length > max) && !confirm(`Exceeds ${max} chars. Save first ${max}?`)) return;
-    
-    const now = new Date(), 
-          time = now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
-    
-    const data = { 
-        todo: tdF.value.substring(0,max), 
-        summary: smF.value.substring(0,max), 
-        status: stF.value, 
-        time: time 
-    };
-    
-    if (currentReportData?.adminMemo) data.adminMemo = currentReportData.adminMemo;
-    
-    db.ref(`reports/${selectedDateStr}/${user}`).set(data).then(() => {
-        // [추가] 저장 성공 후 AI Assistant 팝업 호출
-        window.showReportAI(selectedDateStr, smF.value); 
-        
-        window.clearTemp(selectedDateStr); 
-        window.loadReport(selectedDateStr); 
-    }).catch(() => alert("Error."));
-};
-
-// 전역 변수 설정
-let isAILoading = false;
-
-window.showReportAI = async function(date, summary) {
-    // 중복 클릭 방지: 이미 로딩 중이면 실행하지 않음
+  /* ── AI Analysis popup ── */
+  let isAILoading = false;
+  window.showReportAI = async function(date, summary) {
     if (isAILoading) return;
     isAILoading = true;
-
-    const container = document.getElementById('leaveStatusAlert');
-    const content = document.getElementById('leaveAlertContent');
-    const icon = document.getElementById('leaveAlertIcon');
-    const title = document.getElementById('leaveAlertTitle');
-    const msg = document.getElementById('leaveAlertMsg');
-
-    if(!container || !content) {
-        isAILoading = false;
-        return;
-    }
-
-    // 1. UI 즉시 표시 (로딩 상태)
-    container.style.display = 'flex';
-    content.className = "p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-blue-500 w-full animate-pulse-slow show";
-    icon.innerText = "🧠";
-    title.innerText = "AI System Checking...";
-    msg.innerHTML = `<span class="text-blue-400 text-xs font-bold italic">AI sedang analysis report...</span>`;
-    
-    setTimeout(() => content.classList.add('show'), 10);
-
-    let aiResponse = "";
-    const dateLabel = date.split('-').slice(1).join('/');
-
+    const container=document.getElementById('leaveStatusAlert');
+    const content=document.getElementById('leaveAlertContent');
+    const icon=document.getElementById('leaveAlertIcon');
+    const title=document.getElementById('leaveAlertTitle');
+    const msg=document.getElementById('leaveAlertMsg');
+    if (!container||!content) { isAILoading=false; return; }
+    container.style.display='flex';
+    content.className="p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-blue-500 w-full animate-pulse-slow show";
+    icon.innerText="🧠"; title.innerText="AI System Checking...";
+    msg.innerHTML=`<span class="text-blue-400 text-xs font-bold italic">AI sedang analysis report...</span>`;
+    setTimeout(()=>content.classList.add('show'),10);
+    let aiResponse="";
+    const dateLabel=date.split('-').slice(1).join('/');
     try {
-        // Firebase 경로 확인 및 API Key 호출
-        let apiKey = (typeof config !== 'undefined' && config.LLMAPIkey) ? config.LLMAPIkey : "";
-        
-        if (!apiKey) {
-            console.log("Config not ready, fetching API Key from Firebase...");
-            // 경로가 'settings/config/LLMAPIkey'인지 확인 필요
-            const snap = await firebase.database().ref('settings/config/LLMAPIkey').once('value');
-            apiKey = snap.val();
-        }
-
-        if (!apiKey) throw new Error("LLM API Key missing");
-
-        const url = "https://api.groq.com/openai/v1/chat/completions";
-        const prompt = `[REPORT_ANALYSIS]
-            User: ${sessionStorage.getItem('loggedInUser') || 'Staff'}
-            Work Summary: ${summary}
-            Instruction:
-            1. Berikan pujian profesional namun lucu/witty tentang ringkasan pekerjaan ini dalam satu kalimat.
-            2. Tambahkan emoji yang relevan di akhir kalimat.
-            3. Balas dalam bahasa Indonesia saja (Bahasa Indonesia Only).
-            4. Maksimum 2 kalimat.`;
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: "You are a witty office manager AI. You must respond in Indonesian language ONLY." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.8
-            })
-        });
-
-        const data = await response.json();
-        aiResponse = data.choices[0].message.content.trim();
-
-    } catch (error) {
-        console.error("showReportAI API Error:", error);
-        aiResponse = "Catatan kerja berhasil disimpan! Analisis AI gagal dimuat, tapi performa Anda tetap luar biasa! 🚀";
-    } finally {
-        // 로딩 상태 해제 (성공/실패 여부와 상관없이)
-        isAILoading = false;
-    }
-
-    // 2. UI 최종 업데이트 (Emerald 글로우 효과)
+      let apiKey=(typeof config!=='undefined'&&config.LLMAPIkey)?config.LLMAPIkey:"";
+      if (!apiKey) { const snap=await firebase.database().ref('settings/config/LLMAPIkey').once('value'); apiKey=snap.val(); }
+      if (!apiKey) throw new Error("LLM API Key missing");
+      const url="https://api.groq.com/openai/v1/chat/completions";
+      const prompt=`[REPORT_ANALYSIS]\nUser: ${sessionStorage.getItem('loggedInUser')||'Staff'}\nWork Summary: ${summary}\nInstruction:\n1. Berikan pujian profesional namun lucu/witty tentang ringkasan pekerjaan ini dalam satu kalimat.\n2. Tambahkan emoji yang relevan di akhir kalimat.\n3. Balas dalam bahasa Indonesia saja.\n4. Maksimum 2 kalimat.`;
+      const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"system",content:"You are a witty office manager AI. Respond in Indonesian language ONLY."},{role:"user",content:prompt}],temperature:0.8})});
+      const data=await response.json();
+      aiResponse=data.choices[0].message.content.trim();
+    } catch(error) {
+      console.error("showReportAI error:",error);
+      aiResponse="Catatan kerja berhasil disimpan! Analisis AI gagal dimuat, tapi performa Anda tetap luar biasa! 🚀";
+    } finally { isAILoading=false; }
     content.classList.remove('animate-pulse-slow');
-    content.className = "p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-emerald-500 w-full ai-glow-text show";
-    icon.innerText = "🤖";
-    
-    title.innerText = "AI Assistant Analysis";
-    title.className = "text-[11px] font-black uppercase italic tracking-widest text-emerald-400 mb-1";
-    
-    msg.innerHTML = `
-        <div class="flex flex-col">
-            <span class="text-white/60 text-[10px] mb-1">[${dateLabel}] Record Success</span>
-            <span class="text-white text-sm font-bold leading-tight">${aiResponse}</span>
-        </div>
-    `;
-
-    // 3. 자동 닫기 (5초)
+    content.className="p-5 rounded-[1.5rem] border-2 flex items-center justify-between shadow-2xl bg-slate-900/95 border-emerald-500 w-full ai-glow-text show";
+    icon.innerText="🤖";
+    title.innerText="AI Assistant Analysis";
+    title.className="text-[11px] font-black uppercase italic tracking-widest text-emerald-400 mb-1";
+    msg.innerHTML=`<div class="flex flex-col"><span class="text-white/60 text-[10px] mb-1">[${dateLabel}] Record Success</span><span class="text-white text-sm font-bold leading-tight">${aiResponse}</span></div>`;
     if (window.aiPopupTimer) clearTimeout(window.aiPopupTimer);
-    window.aiPopupTimer = setTimeout(() => {
-        content.classList.remove('show');
-        setTimeout(() => { container.style.display = 'none'; }, 400);
-    }, 5000);
-};
+    window.aiPopupTimer=setTimeout(()=>{ content.classList.remove('show'); setTimeout(()=>{container.style.display='none';},400); },5000);
+  };
 
-    window.deleteReport = () => {
-        if (!confirm("Delete this report?")) return;
-        db.ref(`reports/${selectedDateStr}/${user}`).remove().then(() => { alert("Deleted."); window.clearTemp(selectedDateStr); currentReportData = null; window.loadReport(selectedDateStr); });
-    };
+  /* ── Delete ── */
+  window.deleteReport = () => {
+    if (!confirm("Delete this report?")) return;
+    db.ref(`reports/${selectedDateStr}/${user}`).remove().then(()=>{ alert("Deleted."); window.clearTemp(selectedDateStr); currentReportData=null; window.loadReport(selectedDateStr); });
+  };
 
-    window.loadReport = (ds) => {
-        selectedDateStr = ds; const d = new Date(ds); viewDate.setFullYear(d.getFullYear()); viewDate.setMonth(d.getMonth());
-        if(typeof renderMiniCalendar==='function') renderMiniCalendar();
-        const ab = document.getElementById('actionButtons'); ab.innerHTML = '';
-        db.ref(`reports/${ds}/${user}`).once('value', (snap) => {
-            const r = snap.val(); currentReportData = r;
-            const c = document.getElementById('workCardContainer');
-            if (!r) { if(window.showEditor) window.showEditor(); } 
-            else {
-                ab.innerHTML = `<button onclick="window.copyReportText()" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold mr-3 uppercase tracking-tighter">Copy</button>
-<button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button><button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600">Edit</button>`;
-                const amH = r.adminMemo ? `<div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl"><p class="text-[10px] font-black text-blue-400 uppercase mb-1">Admin Memo</p><p class="text-xs text-blue-200 italic leading-relaxed whitespace-pre-wrap">${escapeHtml(r.adminMemo)}</p></div>` : "";
-                c.innerHTML = `<div class="bg-slate-900 p-6 rounded-2xl border ${r.status==='Completed'?'border-green-900/50':'border-slate-800'} shadow-lg animate-fadeIn"><div class="flex justify-between items-center mb-6"><div class="flex items-center gap-3"><span class="text-blue-400 text-xs font-black uppercase tracking-widest">Work Report</span><span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${r.status==='Completed'?'bg-emerald-500/20 text-emerald-500':r.status==='Pending'?'bg-amber-500/20 text-amber-500':'bg-blue-500/20 text-blue-400'}">${r.status||'In Progress'}</span></div><span class="text-slate-500 text-[10px] font-mono">${ds}</span></div><div class="space-y-6"><div><h4 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter mb-2">Today's To-Do</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.todo)}</p></div><div><h4 class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mb-2">Work Summary</h4><p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(r.summary||r.content)}</p></div></div>${amH}<div class="mt-6 pt-4 border-t border-slate-800 text-right"><span class="text-[10px] text-slate-500 italic">Last Update: ${r.time||'N/A'}</span></div></div>`;
-            }
+  /* ── Load Report ── */
+  window.loadReport = (ds) => {
+    selectedDateStr=ds;
+    const d=new Date(ds); viewDate.setFullYear(d.getFullYear()); viewDate.setMonth(d.getMonth());
+    if (typeof renderMiniCalendar==='function') renderMiniCalendar();
+    const ab=document.getElementById('actionButtons'); if(ab) ab.innerHTML='';
+    db.ref(`reports/${ds}/${user}`).once('value',(snap)=>{
+      const r=snap.val(); currentReportData=r;
+      const c=document.getElementById('workCardContainer');
+      if (!c) return;
+      if (!r) { if(window.showEditor) window.showEditor(); }
+      else {
+        if(ab) ab.innerHTML=`<button onclick="window.copyReportText()" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold mr-3 uppercase tracking-tighter">Copy</button><button onclick="window.deleteReport()" class="text-rose-500 hover:text-rose-400 text-xs font-bold mr-3">Delete</button><button onclick="window.showEditor()" class="bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-600">Edit</button>`;
+        const amH=r.adminMemo?`<div style="margin-top:16px;padding:14px;background:color-mix(in srgb,var(--r-accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--r-accent) 30%,transparent);border-radius:calc(var(--r-card-radius)*0.75);"><p style="font-size:9px;font-weight:900;color:var(--r-accent);text-transform:uppercase;margin-bottom:4px;">Admin Memo</p><p style="font-size:12px;color:color-mix(in srgb,var(--r-accent2) 80%,white);font-style:italic;line-height:1.6;white-space:pre-wrap;">${escapeHtml(r.adminMemo)}</p></div>`:"";
+        const statusColor=r.status==='Completed'?'#10b981':r.status==='Pending'?'#f59e0b':'var(--r-accent)';
+        c.innerHTML=`<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-lg animate-fadeIn"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><div style="display:flex;align-items:center;gap:10px;"><span style="color:var(--r-accent);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;">Work Report</span><span style="padding:2px 8px;border-radius:5px;font-size:9px;font-weight:900;text-transform:uppercase;background:color-mix(in srgb,${statusColor} 18%,transparent);color:${statusColor};border:1px solid color-mix(in srgb,${statusColor} 35%,transparent);">${r.status||'In Progress'}</span></div><span style="color:var(--r-muted);font-size:10px;font-family:var(--r-font-mono);">${ds}</span></div><div style="display:flex;flex-direction:column;gap:20px;"><div><h4 style="font-size:10px;font-weight:900;color:var(--r-accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Today's To-Do</h4><p class="whitespace-pre-wrap">${escapeHtml(r.todo)}</p></div><div><h4 style="font-size:10px;font-weight:900;color:#10b981;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Work Summary</h4><p class="whitespace-pre-wrap">${escapeHtml(r.summary||r.content)}</p></div></div>${amH}<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--r-border);text-align:right;"><span style="font-size:10px;color:var(--r-muted);font-style:italic;font-family:var(--r-font-mono);">Last Update: ${r.time||'N/A'}</span></div></div>`;
+      }
+    });
+    /* Staff list update */
+    const staffListArea=document.getElementById('staffListArea');
+    const staffGrid=document.getElementById('staffGrid');
+    const targetDateDisplay=document.getElementById('targetDateDisplay');
+    firebase.database().ref(`reports/${ds}`).once('value',(snapshot)=>{
+      const staffData=snapshot.val();
+      if(staffGrid) staffGrid.innerHTML='';
+      if(targetDateDisplay) targetDateDisplay.innerText=ds;
+      if (staffData) {
+        const staffNames=Object.keys(staffData);
+        const sc=document.getElementById('staffCount'); if(sc) sc.innerText=`${staffNames.length} persons`;
+        staffNames.forEach(name=>{
+          const data=staffData[name];
+          const statusClass=data.status==='Completed'?'status-completed':data.status==='Pending'?'status-pending':'status-progress';
+          const item=document.createElement('div'); item.className='staff-item';
+          item.onclick=()=>window.openStaffDetail(name,ds);
+          item.innerHTML=`<span class="staff-name">${name}</span><span class="staff-status ${statusClass}">${data.status||'In Progress'}</span>`;
+          if(staffGrid) staffGrid.appendChild(item);
         });
-    };
+        if(staffListArea) staffListArea.classList.remove('hidden');
+      } else { if(staffListArea) staffListArea.classList.add('hidden'); }
+    });
+  };
 
-function getSafeText(html) {
-    if (!html) return "";
-    let tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    let text = tmp.textContent || tmp.innerText || "";
-    
-    // 1. 따옴표 처리 (JS 오류 방지)
-    // 2. 줄바꿈(\n)을 HTML 줄바꿈(<br>)으로 변환하여 팝업에서 줄바꿈 유지
-    return text.replace(/'/g, "\\'").replace(/\n/g, "<br>");
-}
-
-// 팝업 표시/이동/숨기기 함수
-window.showReportPopup = function(event, todo, summary) {
-    // 팝업을 body 직하위로 이동 (컨테이너 overflow 제약 탈출)
-    let popup = document.getElementById('reportHoverPopup');
-    if (!popup) return;
-    if (popup.parentElement !== document.body) {
-        document.body.appendChild(popup);
-    }
-
-    popup.innerHTML = `
-        <span class="popup-label">To-Do</span>
-        <div class="popup-content">${todo || 'No data'}</div>
-        <span class="popup-label" style="color:#10b981">Summary</span>
-        <div class="popup-content" style="color:#f1f5f9">${summary || 'No data'}</div>
-    `;
-    popup.style.visibility = 'hidden';
-    popup.style.display = 'block';
-    window.moveReportPopup(event);
-    popup.style.visibility = 'visible';
-};
-
-window.moveReportPopup = function(event) {
-    const popup = document.getElementById('reportHoverPopup');
-    if (!popup) return;
-
-    // staff.html의 <main> 스크롤 컨테이너 찾기
-    // contentFrame을 감싸는 overflow-y:auto 컨테이너의 scrollTop을 반영
-    let scrollContainerTop = 0;
-    let scrollContainerLeft = 0;
-    let el = event.target;
-    while (el && el !== document.body) {
-        const style = window.getComputedStyle(el);
-        const overflow = style.overflow + style.overflowY + style.overflowX;
-        if (/auto|scroll/.test(overflow)) {
-            scrollContainerTop  += el.scrollTop;
-            scrollContainerLeft += el.scrollLeft;
-        }
-        el = el.parentElement;
-    }
-
-    // clientX/Y (뷰포트 기준) + 스크롤 컨테이너 보정
-    const rawX = event.clientX;
-    const rawY = event.clientY;
-
-    const popupW = popup.offsetWidth || 290;
-    const popupH = popup.offsetHeight || 160;
-    const gap    = 14;
-    const margin = 8;
-
-    let posX = rawX + gap;
-    let posY = rawY + gap;
-
-    if (posX + popupW > window.innerWidth  - margin) posX = rawX - popupW - gap;
-    if (posX < margin) posX = margin;
-    if (posY + popupH > window.innerHeight - margin) posY = rawY - popupH - gap;
-    if (posY < margin) posY = margin;
-
-    popup.style.left = posX + 'px';
-    popup.style.top  = posY + 'px';
-};
-
-window.hideReportPopup = function() {
-    const popup = document.getElementById('reportHoverPopup');
-    if(popup) popup.style.display = 'none';
-};
-
-
-async function renderMiniCalendar() {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
-    const monthName = viewDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
-    
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    // Year selection
-    let yearOptions = '';
-    for (let y = year - 5; y <= year + 5; y++) { 
-        yearOptions += `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`; 
-    }
-    document.getElementById('miniCalMonth').innerHTML = `${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
-    
-    try {
-        // [추가] reports와 attendance 데이터를 동시에 가져옵니다.
-        const [reportSnap, attendSnap] = await Promise.all([
-            db.ref('reports').once('value'),
-            db.ref('attendance').once('value')
-        ]);
-
-        const allReports = reportSnap.val() || {};
-        const allAttendance = attendSnap.val() || {};
-        const tbody = document.getElementById('miniCalBody');
-        tbody.innerHTML = '';
-
-        // --- [수정] 최근 7일 작성 여부 체크 (토/일 제외 + 휴가 제외) ---
-        const writtenDatesContainer = document.getElementById('writtenDates');
-        const missingDatesContainer = document.getElementById('missingDates');
-        
-if (writtenDatesContainer && missingDatesContainer) {
-            // 1. 해당 유저의 WarnFlag 상태 확인 (users 노드 참조)
-            const userSettingsSnap = await db.ref(`users/${user}/WarnFlag`).once('value');
-            const warnFlag = userSettingsSnap.val();
-
-            if (warnFlag === "off") {
-                // WarnFlag가 off인 경우 표시할 메시지
-                writtenDatesContainer.innerHTML = '<span class="text-slate-500 italic uppercase">Monitoring Paused</span>';
-                missingDatesContainer.innerHTML = `<span class="text-amber-500 font-bold text-[10px] uppercase tracking-wider">
-                    THIS STAFF IS IN "WARNFLAG OFF" STATUS.
-                </span>`;
-            } else {
-                // 기존 로직: WarnFlag가 on이거나 설정이 없을 때 (정상 체크)
-                let writtenArr = [];
-                let missingArr = [];
-                const leaveTypes = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
-                
-                for (let i = 0; i < 7; i++) {
-                    let d = new Date();
-                    d.setDate(d.getDate() - i);
-                    
-                    let dayOfWeek = d.getDay(); 
-                    let dStr = d.toISOString().split('T')[0];
-                    
-                    const userAtnd = allAttendance[dStr]?.[user];
-                    const isOnLeave = leaveTypes.includes(userAtnd);
-                    
-                    if (allReports[dStr] && allReports[dStr][user]) {
-                        writtenArr.push(dStr);
-                    } else {
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isOnLeave) {
-                            missingArr.push(dStr);
-                        }
-                    }
-                }
-                
-                writtenDatesContainer.innerHTML = writtenArr.length > 0 
-                    ? writtenArr.map(date => `<span class="mr-2">${date}</span>`).join('') 
-                    : '<span class="text-slate-600">No records</span>';
-                    
-                missingDatesContainer.innerHTML = missingArr.length > 0 
-                    ? missingArr.map(date => `<span class="blink-text mr-2">${date}</span>`).join('') 
-                    : '<span class="text-emerald-500 font-black text-[10px]">ALL COMPLETED!</span>';
-            }
-        }
-
-        // --- 캘린더 그리드 그리기 ---
-        let summaryCount = { "Completed": 0, "Pending": 0, "In Progress": 0 };
-        let date = 1;
-        const leaveTypes = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
-
-        for (let i = 0; i < 6; i++) {
-            let row = document.createElement('tr');
-            for (let j = 0; j < 7; j++) {
-                let cell = document.createElement('td');
-                if ((i === 0 && j < firstDay) || date > lastDate) { 
-                    row.appendChild(cell); 
-                } else {
-                    const curDate = date;
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(curDate).padStart(2, '0')}`;
-                    
-                    let dayColorClass = "text-slate-500"; 
-                    if (j === 0) dayColorClass = "text-sun";
-                    else if (j === 6) dayColorClass = "text-sat";
-                    if (dateStr === todayStr) dayColorClass = "text-blue-500";
-
-                    let cellHTML = `<div class="date-num text-xs font-bold ${dayColorClass}">${curDate}</div>`;
-                    
-                    const userReport = (allReports[dateStr] && allReports[dateStr][user]) ? allReports[dateStr][user] : null;
-                    const userAtnd = allAttendance[dateStr]?.[user];
-                    const isLeave = leaveTypes.includes(userAtnd);
-
-                    // 1. 리포트가 있는 경우 (기존 로직)
-                    if (userReport) {
-                        cell.classList.add('has-report');
-                        const status = userReport.status || "In Progress";
-                        if (summaryCount.hasOwnProperty(status)) {
-                            summaryCount[status]++;
-                        }
-
-                        if (userReport.adminMemo && userReport.adminMemo.trim() !== "") {
-                            cellHTML += `<div class="admin-dot" title="Admin feedback available"></div>`;
-                        }
-
-                        let statusClass = status === 'Completed' ? "status-completed" : (status === 'Pending' ? "status-pending" : "status-progress");
-                        let statusText = status === 'Completed' ? "COMPLETED" : (status === 'Pending' ? "PENDING" : "PROGRESS");
-                        
-                        cellHTML += `<div class="status-tag ${statusClass}">${statusText}</div>`;
-                        
-                        const safeTodo = getSafeText(userReport.todo || "-");
-                        const safeSummary = getSafeText(userReport.summary || userReport.content || "-");
-
-                        cell.onmouseenter = (e) => window.showReportPopup(e, safeTodo, safeSummary);
-                        cell.onmousemove = (e) => window.moveReportPopup(e);
-                        cell.onmouseleave = () => window.hideReportPopup();
-                    } 
-                    // 2. 리포트는 없지만 휴가인 경우 (추가된 기능)
-                    else if (isLeave) {
-                        cellHTML += `<div class="status-tag bg-rose-500/20 text-rose-500 border border-rose-500/30 font-black">${userAtnd}</div>`;
-                    }
-                    
-                    cell.innerHTML = cellHTML;
-                    if (dateStr === selectedDateStr) cell.classList.add('selected-date');
-                    
-                    cell.onclick = () => {
-                        window.hideReportPopup();
-                        window.loadReport(dateStr);
-                    };
-                    row.appendChild(cell);
-                    date++;
-                }
-            }
-            tbody.appendChild(row);
-            if (date > lastDate) break;
-        }
-
-        // 하단 요약 카운트 업데이트
-        if (document.getElementById('countCompleted')) {
-            document.getElementById('countCompleted').innerText = summaryCount["Completed"];
-            document.getElementById('countPending').innerText = summaryCount["Pending"];
-            document.getElementById('countProgress').innerText = summaryCount["In Progress"];
-        }
-
-        // ▼ 여기에 추가 (summaryCount 업데이트 바로 다음)
-        (async function updateAchievement() {
-            const now = new Date();
-            const y = now.getFullYear(), mo = now.getMonth();
-            let workdays = 0, written = 0, streak = 0, streakActive = true;
-
-            for (let d = 1; d <= now.getDate(); d++) {
-                const dow = new Date(y, mo, d).getDay();
-                if (dow === 0 || dow === 6) continue;
-
-                const dStr = `${y}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const attVal = allAttendance[dStr]?.[user];
-
-                // 휴가일은 workday에서 제외
-                if (['PEL','ANL','HAL','SIL','SPL'].includes(attVal)) continue;
-
-                workdays++;
-                if (allReports[dStr]?.[user]) {
-                    written++;
-                    if (streakActive) streak++;
-                } else {
-                    streakActive = false;
-                }
-            }
-
-            const pct = workdays > 0 ? Math.round((written / workdays) * 100) : 0;
-            const barColor = pct >= 90
-                ? 'linear-gradient(90deg,#10b981,#06b6d4)'
-                : pct >= 70
-                    ? 'linear-gradient(90deg,#3b82f6,#10b981)'
-                    : 'linear-gradient(90deg,#f59e0b,#ef4444)';
-
-            const barEl    = document.getElementById('achieveBar');
-            const pctEl    = document.getElementById('achievePct');
-            const detailEl = document.getElementById('achieveDetail');
-            const streakEl = document.getElementById('achieveStreak');
-
-            if (barEl)    { barEl.style.width = pct + '%'; barEl.style.background = barColor; }
-            if (pctEl)    pctEl.innerText = pct + '%';
-            if (detailEl) detailEl.innerText = `${written} written / ${workdays} workdays`;
-            if (streakEl) streakEl.innerText = streak > 1 ? `🔥 ${streak} day streak!` : '';
-        })();
-
-
-    } catch (error) {
-        console.error("Calendar Rendering Error:", error);
-    }
-}
-// 클립보드 복사 함수 추가
-window.copyReportText = function() {
+  /* ── Clipboard copy ── */
+  window.copyReportText = function() {
     if (!currentReportData) return;
-
-    const todo = currentReportData.todo || "";
-    const summary = currentReportData.summary || currentReportData.content || "";
-    const date = selectedDateStr;
-
-    // 복사될 텍스트 형식 구성
-    const textToCopy = `[Work Report - ${date}]\n\n■ To-Do:\n${todo}\n\n■ Summary:\n${summary}`;
-
-    // 클립보드 API 사용
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        alert("Report copied to clipboard!");
-    }).catch(err => {
-        // 구형 브라우저 대응용 fallback
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            alert("Report copied to clipboard!");
-        } catch (err) {
-            alert("Unable to copy.");
-        }
-        document.body.removeChild(textArea);
+    const todo=currentReportData.todo||"", summary=currentReportData.summary||currentReportData.content||"";
+    const text=`[Work Report - ${selectedDateStr}]\n\n■ To-Do:\n${todo}\n\n■ Summary:\n${summary}`;
+    navigator.clipboard.writeText(text).then(()=>alert("Report copied to clipboard!")).catch(()=>{
+      const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+      try{document.execCommand('copy');alert("Report copied to clipboard!");}catch(e){alert("Unable to copy.");}
+      document.body.removeChild(ta);
     });
-};
+  };
 
-window.openCopyFromPicker = function() {
-            if (!document.getElementById('hiddenCopyInput')) {
-                const input = document.createElement('input');
-                input.id = 'hiddenCopyInput';
-                input.style.display = 'none';
-                document.body.appendChild(input);
-            }
-            if (window.copyPicker) window.copyPicker.destroy();
-            window.copyPicker = flatpickr("#hiddenCopyInput", {
-                theme: "dark", maxDate: "today", onChange: function(selectedDates, dateStr) {
-                    if (confirm(`Do you want to copy the report content from ${dateStr}?`)) {
-                        // [수정] database -> db (이미 상단에서 const db = firebase.database()로 선언됨)
-                        db.ref('reports/' + dateStr + '/' + user).once('value', (snapshot) => {
-                            const data = snapshot.val();
-                            if (data) {
-                                const todoEl = document.getElementById('editTodo');
-                                const summaryEl = document.getElementById('editSummary');
-                                if(todoEl) todoEl.value = data.todo || "";
-                                if(summaryEl) summaryEl.value = data.summary || data.content || "";
-                                window.saveToTemp();
-                                alert("Data copied successfully.");
-                            } else { alert("No report found for the selected date."); }
-                        });
-                    }
-                }
-            });
-            window.copyPicker.open();
-        };
+  /* ── Hover popup helpers ── */
+  function getSafeText(html) {
+    if (!html) return "";
+    let tmp=document.createElement("DIV"); tmp.innerHTML=html;
+    return (tmp.textContent||tmp.innerText||"").replace(/'/g,"\\'").replace(/\n/g,"<br>");
+  }
 
-// 모달 닫기 함수
-window.closeModal = function() {
-    document.getElementById('reportDetailModal').style.display = 'none';
-};
+  window.showReportPopup = function(event, todo, summary) {
+    let popup=document.getElementById('reportHoverPopup'); if (!popup) return;
+    if (popup.parentElement!==document.body) document.body.appendChild(popup);
+    popup.innerHTML=`<span class="popup-label">To-Do</span><div class="popup-content">${todo||'No data'}</div><span class="popup-label" style="color:#10b981">Summary</span><div class="popup-content" style="color:var(--r-text);">${summary||'No data'}</div>`;
+    popup.style.visibility='hidden'; popup.style.display='block';
+    window.moveReportPopup(event); popup.style.visibility='visible';
+  };
+  window.moveReportPopup = function(event) {
+    const popup=document.getElementById('reportHoverPopup'); if (!popup) return;
+    const rawX=event.clientX, rawY=event.clientY;
+    const popupW=popup.offsetWidth||290, popupH=popup.offsetHeight||160, gap=14, margin=8;
+    let posX=rawX+gap, posY=rawY+gap;
+    if (posX+popupW>window.innerWidth-margin) posX=rawX-popupW-gap;
+    if (posX<margin) posX=margin;
+    if (posY+popupH>window.innerHeight-margin) posY=rawY-popupH-gap;
+    if (posY<margin) posY=margin;
+    popup.style.left=posX+'px'; popup.style.top=posY+'px';
+  };
+  window.hideReportPopup = function() { const p=document.getElementById('reportHoverPopup'); if(p) p.style.display='none'; };
 
-window.copyFromRecent = async () => {
-    const today = new Date(selectedDateStr);
-    let foundData = null;
-
-    // 어제(1일 전)부터 7일 전까지 루프
-    for (let i = 1; i <= 7; i++) {
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() - i);
-        const targetDateStr = targetDate.toISOString().split('T')[0];
-
-        // Firebase에서 해당 날짜의 유저 데이터 확인
-        const snap = await db.ref(`reports/${targetDateStr}/${user}`).once('value');
-        const data = snap.val();
-
-        if (data && (data.todo || data.summary)) {
-            foundData = {
-                date: targetDateStr,
-                todo: data.todo || "",
-                summary: data.summary || data.content || ""
-            };
-            break; 
-        }
+  /* ── Copy from picker ── */
+  window.openCopyFromPicker = function() {
+    if (!document.getElementById('hiddenCopyInput')) {
+      const input=document.createElement('input'); input.id='hiddenCopyInput'; input.style.display='none'; document.body.appendChild(input);
     }
-
-    if (foundData) {
-        const todoField = document.getElementById('editTodo');
-        const summaryField = document.getElementById('editSummary');
-        
-        if (todoField && summaryField) {
-            todoField.value = foundData.todo;
-            summaryField.value = foundData.summary;
-
-            // 핵심 수정: showEditor에서 정의한 ID와 일치시킴
-            window.updateCharCount('editTodo', 'todoCount');
-            window.updateCharCount('editSummary', 'summaryCount');
-            
-            // 텍스트가 들어왔으므로 높이 자동 조절 (선택 사항이지만 권장)
-            if(window.autoResize) {
-                window.autoResize(todoField);
-                window.autoResize(summaryField);
-            }
-
-            alert(`Successfully copied data from ${foundData.date}.`);
-        }
-    } else {
-        alert("No report found within the last 7 days.");
-    }
-};
-
-
-// 특정 Staff의 리포트 상세 팝업 열기
-window.openStaffDetail = function(staffName, dateStr) {
-    const database = firebase.database();
-    database.ref(`reports/${dateStr}/${staffName}`).once('value', (snapshot) => {
-        const report = snapshot.val();
-        if(!report) return;
-
-        const modalBody = document.getElementById('modalBody');
-        const statusClass = report.status === 'Completed' ? "bg-emerald-500/20 text-emerald-500" : (report.status === 'Pending' ? "bg-amber-500/20 text-amber-500" : "bg-blue-500/20 text-blue-400");
-        
-        modalBody.innerHTML = `
-            <div class="mb-4">
-                <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Staff Report Detail</span>
-                <h2 class="text-2xl font-black text-white mt-1">${staffName}</h2>
-                <div class="flex gap-2 mt-2">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${statusClass}">${report.status || 'In Progress'}</span>
-                    <span class="text-slate-500 text-[10px] font-mono">${dateStr}</span>
-                </div>
-            </div>
-            <div class="space-y-6 mt-6">
-                <div>
-                    <h4 class="text-[10px] font-black text-blue-400 uppercase mb-2">Today's To-Do</h4>
-                    <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap bg-slate-800/50 p-3 rounded-lg border border-slate-700">${report.todo || '-'}</p>
-                </div>
-                <div>
-                    <h4 class="text-[10px] font-black text-emerald-400 uppercase mb-2">Work Summary</h4>
-                    <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap bg-slate-800/50 p-3 rounded-lg border border-slate-700">${report.summary || report.content || '-'}</p>
-                </div>
-                ${report.adminMemo ? `<div><h4 class="text-[10px] font-black text-rose-400 uppercase mb-2">Admin Memo</h4><p class="text-rose-200/80 text-xs italic bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">${report.adminMemo}</p></div>` : ''}
-            </div>
-            <div class="mt-6 text-right text-[10px] text-slate-500 font-mono italic">Update: ${report.time || 'N/A'}</div>
-        `;
-        document.getElementById('reportDetailModal').style.display = 'flex';
-    });
-};
-
-// loadReport 함수 끝부분에 아래 내용을 추가하여 전체 리스트를 갱신하도록 합니다.
-// (window.loadReport 정의 부분의 마지막에 아래 로직을 병합하세요)
-const originalLoadReport = window.loadReport;
-window.loadReport = function(dateStr) {
-    originalLoadReport(dateStr); // 기존 기능 유지
-    
-    // 추가: Staff 리스트 갱신 로직
-    const staffListArea = document.getElementById('staffListArea');
-    const staffGrid = document.getElementById('staffGrid');
-    const targetDateDisplay = document.getElementById('targetDateDisplay');
-    
-    firebase.database().ref(`reports/${dateStr}`).once('value', (snapshot) => {
-        const staffData = snapshot.val();
-        staffGrid.innerHTML = '';
-        targetDateDisplay.innerText = dateStr;
-        
-        if (staffData) {
-            const staffNames = Object.keys(staffData);
-            document.getElementById('staffCount').innerText = `${staffNames.length} persons`;
-            
-            staffNames.forEach(name => {
-                const data = staffData[name];
-                const statusClass = data.status === 'Completed' ? "status-completed" : (data.status === 'Pending' ? "status-pending" : "status-progress");
-                
-                const item = document.createElement('div');
-                item.className = 'staff-item';
-                item.onclick = () => window.openStaffDetail(name, dateStr);
-                item.innerHTML = `
-                    <span class="staff-name">${name}</span>
-                    <span class="staff-status ${statusClass}">${data.status || 'In Progress'}</span>
-                `;
-                staffGrid.appendChild(item);
-            });
-            staffListArea.classList.remove('hidden');
-        } else {
-            staffListArea.classList.add('hidden');
-        }
-    });
-};
-
-// 1. 자동 높이 조절 함수 (Script 상단에 선언되어 있어야 합니다)
-window.autoResize = function(obj) {
-    if (!obj) return;
-    obj.style.height = 'auto'; 
-    obj.style.height = (obj.scrollHeight) + 'px';
-};
-
-window.showEditor = function() {
-    document.getElementById('actionButtons').innerHTML = '';
-    const container = document.getElementById('workCardContainer');
-    const serverReport = currentReportData || { todo: "", summary: "", status: "In Progress", content: "" };
-    const tempRaw = localStorage.getItem(getTempKey(selectedDateStr));
-    let report = serverReport, hasTemp = false, max = 2000;
-
-    if (tempRaw) {
-        const tmp = JSON.parse(tempRaw);
-        report = { ...serverReport, ...tmp };
-        report.summary = tmp.summary || serverReport.summary || serverReport.content;
-        hasTemp = true;
-    }
-
-    const isNew = !currentReportData;
-    const s = report.status, t = report.todo || '', c = report.summary || report.content || '';
-
-    container.innerHTML = `
-        <div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn">
-            <div class="flex justify-between items-center mb-5">
-                <div class="flex flex-col">
-                    <span class="text-blue-400 text-xs font-black uppercase tracking-widest">${isNew ? 'New' : 'Edit'} Report</span>
-                    ${hasTemp ? '<span class="text-rose-500 text-[8px] animate-pulse font-bold mt-1">(Temp Data Restored)</span>' : ''}
-                </div>
-<div class="flex flex-col items-start gap-2">
-    <button onclick="window.openCopyFromPicker()" class="w-full bg-blue-600/20 text-blue-400 border border-blue-500/40 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-blue-600 hover:text-white transition uppercase tracking-tighter">
-        📋 Copy from date
-    </button>
-    
-    <button onclick="window.copyFromRecent()" class="w-full bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-[9px] font-black hover:bg-indigo-600 hover:text-white transition uppercase tracking-widest">
-        📋 Copy from yesterday
-    </button>
-    
-    <span class="text-slate-500 text-[10px] font-mono mt-1">
-        Target Date: ${selectedDateStr}
-    </span>
-</div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Status</label>
-                <select id="editStatus" onchange="window.saveToTemp()" class="w-full bg-slate-800 text-white p-2 rounded-xl border border-slate-700 text-sm outline-none">
-                    ${['In Progress', 'Completed', 'Pending'].map(v => `<option value="${v}" ${s===v?'selected':''}>${v}</option>`).join('')}
-                </select>
-            </div>
-
-            ${[['Todo', 'blue', t], ['Summary', 'emerald', c]].map(([id, col, val]) => `
-                <div class="mb-4">
-                    <div class="flex justify-between items-end mb-2">
-                        <label class="text-[10px] font-bold text-${col}-500 uppercase">Today's ${id}</label>
-                        <span id="${id.toLowerCase()}Count" class="text-[9px] text-slate-500 font-mono">${val.length}/${max}</span>
-                    </div>
-                    <textarea id="edit${id}" 
-                        oninput="window.autoResize(this); window.updateCharCount('edit${id}', '${id.toLowerCase()}Count');" 
-                        class="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700 text-sm min-h-[${id==='Todo'?'100':'150'}px] resize-none focus:border-${col}-500 transition outline-none overflow-hidden" 
-                        style="height: auto;"
-                        placeholder="Enter ${id}...">${val}</textarea>
-                </div>`).join('')}
-
-            <div class="flex flex-col gap-2">
-                <button onclick="window.saveReport()" class="w-full bg-blue-600 text-white py-4 rounded-xl text-sm font-black hover:bg-blue-500 transition uppercase tracking-widest shadow-lg shadow-blue-900/20">Save Report</button>
-                <button onclick="window.cancelEdit()" class="w-full bg-slate-800 text-slate-400 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-700 transition">Cancel / Discard Changes</button>
-            </div>
-        </div>`;
-
-    // 초기화 및 데이터 로드 시 실행
-    ['editTodo', 'editSummary'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            window.updateCharCount(id, id.replace('edit', '').toLowerCase() + 'Count');
-            window.autoResize(el); // 텍스트 내용에 맞춰 높이 즉시 조정
-        }
-    });
-};
-
-window.cancelEdit = function() {
-    if (confirm("Discard changes and return?")) {
-        window.clearTemp(selectedDateStr);
-        window.loadReport(selectedDateStr);
-    }
-};
-// Export 드롭다운 — click 방식으로 변경 (hover 위치 문제 완전 해결)
-        document.querySelectorAll('.export-dropdown').forEach(dropdown => {
-            const btn     = dropdown.querySelector('button');
-            const content = dropdown.querySelector('.export-content');
-            if (!btn || !content) return;
-
-            // content를 body로 이동 (overflow 완전 탈출)
-            document.body.appendChild(content);
-
-            const positionMenu = () => {
-                const rect = btn.getBoundingClientRect();
-                content.style.position = 'fixed';
-                content.style.top      = (rect.bottom + 4) + 'px';
-                content.style.left     = 'auto';
-                content.style.right    = (window.innerWidth - rect.right) + 'px';
-                content.style.zIndex   = '999999';
-            };
-
-            // 클릭으로 토글
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isVisible = content.style.display === 'block';
-                // 다른 열린 드롭다운 모두 닫기
-                document.querySelectorAll('.export-content').forEach(c => c.style.display = 'none');
-                if (!isVisible) {
-                    positionMenu();
-                    content.style.display = 'block';
-                }
-            });
-
-            // 외부 클릭 시 닫기
-            document.addEventListener('click', () => {
-                content.style.display = 'none';
-            });
-
-            // content 내부 클릭이 외부 클릭으로 전파되지 않도록
-            content.addEventListener('click', (e) => e.stopPropagation());
+    if (window.copyPicker) window.copyPicker.destroy();
+    window.copyPicker=flatpickr("#hiddenCopyInput",{theme:"dark",maxDate:"today",onChange:function(selectedDates,dateStr){
+      if (confirm(`Copy report content from ${dateStr}?`)) {
+        db.ref('reports/'+dateStr+'/'+user).once('value',(snapshot)=>{
+          const data=snapshot.val();
+          if (data) {
+            const todoEl=document.getElementById('editTodo'), summaryEl=document.getElementById('editSummary');
+            if(todoEl) todoEl.value=data.todo||"";
+            if(summaryEl) summaryEl.value=data.summary||data.content||"";
+            window.saveToTemp(); alert("Data copied successfully.");
+          } else alert("No report found for the selected date.");
         });
+      }
+    }});
+    window.copyPicker.open();
+  };
 
-        loadReport(selectedDateStr);
-    })();
+  /* ── Copy from recent (yesterday-7d) ── */
+  window.copyFromRecent = async() => {
+    const today=new Date(selectedDateStr); let foundData=null;
+    for (let i=1;i<=7;i++) {
+      const target=new Date(today); target.setDate(today.getDate()-i);
+      const tStr=target.toISOString().split('T')[0];
+      const snap=await db.ref(`reports/${tStr}/${user}`).once('value');
+      const data=snap.val();
+      if (data&&(data.todo||data.summary)) { foundData={date:tStr,todo:data.todo||"",summary:data.summary||data.content||""}; break; }
+    }
+    if (foundData) {
+      const todoField=document.getElementById('editTodo'), summaryField=document.getElementById('editSummary');
+      if (todoField&&summaryField) {
+        todoField.value=foundData.todo; summaryField.value=foundData.summary;
+        window.updateCharCount('editTodo','todoCount'); window.updateCharCount('editSummary','summaryCount');
+        if(window.autoResize){window.autoResize(todoField);window.autoResize(summaryField);}
+        alert(`Successfully copied data from ${foundData.date}.`);
+      }
+    } else alert("No report found within the last 7 days.");
+  };
+
+  /* ── Staff detail modal ── */
+  window.openStaffDetail = function(staffName, dateStr) {
+    firebase.database().ref(`reports/${dateStr}/${staffName}`).once('value',(snapshot)=>{
+      const report=snapshot.val(); if(!report) return;
+      const modalBody=document.getElementById('modalBody');
+      const statusColor=report.status==='Completed'?'#10b981':report.status==='Pending'?'#f59e0b':'var(--r-accent)';
+      modalBody.innerHTML=`<div style="margin-bottom:16px;"><span style="font-size:10px;font-weight:900;color:var(--r-accent);text-transform:uppercase;letter-spacing:0.1em;">Staff Report Detail</span><h2 style="font-size:22px;font-weight:900;color:var(--r-text);margin-top:4px;font-family:var(--r-font-display);">${staffName}</h2><div style="display:flex;gap:8px;margin-top:8px;"><span style="padding:2px 8px;border-radius:5px;font-size:10px;font-weight:900;text-transform:uppercase;background:color-mix(in srgb,${statusColor} 18%,transparent);color:${statusColor};border:1px solid color-mix(in srgb,${statusColor} 35%,transparent);">${report.status||'In Progress'}</span><span style="color:var(--r-muted);font-size:10px;font-family:var(--r-font-mono);">${dateStr}</span></div></div><div style="display:flex;flex-direction:column;gap:18px;margin-top:20px;"><div><h4 style="font-size:10px;font-weight:900;color:var(--r-accent);text-transform:uppercase;margin-bottom:8px;">Today's To-Do</h4><p style="color:var(--r-text);font-size:13px;line-height:1.7;white-space:pre-wrap;background:rgba(0,0,0,0.2);padding:12px;border-radius:10px;border:1px solid var(--r-border);">${report.todo||'-'}</p></div><div><h4 style="font-size:10px;font-weight:900;color:#10b981;text-transform:uppercase;margin-bottom:8px;">Work Summary</h4><p style="color:var(--r-text);font-size:13px;line-height:1.7;white-space:pre-wrap;background:rgba(0,0,0,0.2);padding:12px;border-radius:10px;border:1px solid var(--r-border);">${report.summary||report.content||'-'}</p></div>${report.adminMemo?`<div><h4 style="font-size:10px;font-weight:900;color:#f43f5e;text-transform:uppercase;margin-bottom:8px;">Admin Memo</h4><p style="color:rgba(244,63,94,0.8);font-size:12px;font-style:italic;background:rgba(244,63,94,0.08);padding:12px;border-radius:10px;border:1px solid rgba(244,63,94,0.2);">${report.adminMemo}</p></div>`:''}</div><div style="margin-top:18px;text-align:right;font-size:10px;color:var(--r-muted);font-style:italic;font-family:var(--r-font-mono);">Update: ${report.time||'N/A'}</div>`;
+      document.getElementById('reportDetailModal').style.display='flex';
+    });
+  };
+  window.closeModal = function() { document.getElementById('reportDetailModal').style.display='none'; };
+
+  /* ── Auto resize textarea ── */
+  window.autoResize = function(obj) { if (!obj) return; obj.style.height='auto'; obj.style.height=obj.scrollHeight+'px'; };
+
+  /* ── Show editor ── */
+  window.showEditor = function() {
+    const ab=document.getElementById('actionButtons'); if(ab) ab.innerHTML='';
+    const container=document.getElementById('workCardContainer');
+    const serverReport=currentReportData||{todo:"",summary:"",status:"In Progress",content:""};
+    const tempRaw=localStorage.getItem(getTempKey(selectedDateStr));
+    let report=serverReport, hasTemp=false, max=2000;
+    if (tempRaw) { const tmp=JSON.parse(tempRaw); report={...serverReport,...tmp}; report.summary=tmp.summary||serverReport.summary||serverReport.content; hasTemp=true; }
+    const isNew=!currentReportData, s=report.status, t=report.todo||'', c=report.summary||report.content||'';
+    container.innerHTML=`<div class="bg-slate-900 p-6 rounded-2xl border border-blue-500/50 shadow-lg animate-fadeIn"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px;"><div style="display:flex;flex-direction:column;"><span style="color:var(--r-accent);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;">${isNew?'New':'Edit'} Report</span>${hasTemp?'<span style="color:#f43f5e;font-size:8px;font-weight:700;margin-top:3px;">(Temp Data Restored)</span>':''}</div><div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;"><button onclick="window.openCopyFromPicker()" style="width:100%;background:color-mix(in srgb,var(--r-accent) 12%,transparent);color:var(--r-accent);border:1px solid color-mix(in srgb,var(--r-accent) 35%,transparent);padding:6px 12px;border-radius:8px;font-size:9px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:all 0.2s;">📋 Copy from date</button><button onclick="window.copyFromRecent()" style="width:100%;background:rgba(99,102,241,0.1);color:#818cf8;border:1px solid rgba(99,102,241,0.28);padding:6px 12px;border-radius:8px;font-size:9px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;transition:all 0.2s;">📋 Copy from yesterday</button><span style="font-size:10px;color:var(--r-muted);font-family:var(--r-font-mono);">Target: ${selectedDateStr}</span></div></div><div style="margin-bottom:14px;"><label style="display:block;font-size:9px;font-weight:900;color:var(--r-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Status</label><select id="editStatus" onchange="window.saveToTemp()" style="width:100%;padding:9px 12px;color:var(--r-text);font-size:13px;outline:none;">${['In Progress','Completed','Pending'].map(v=>`<option value="${v}" ${s===v?'selected':''}>${v}</option>`).join('')}</select></div>${[['Todo','var(--r-accent)',t],['Summary','#10b981',c]].map(([id,col,val])=>`<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px;"><label style="font-size:9px;font-weight:900;text-transform:uppercase;color:${col};">Today's ${id}</label><span id="${id.toLowerCase()}Count" style="font-size:9px;color:var(--r-muted);font-family:var(--r-font-mono);">${val.length}/${max}</span></div><textarea id="edit${id}" oninput="window.autoResize(this);window.updateCharCount('edit${id}','${id.toLowerCase()}Count');" style="width:100%;padding:12px;color:var(--r-text);font-size:13px;min-height:${id==='Todo'?'100':'150'}px;resize:none;overflow:hidden;outline:none;" placeholder="Enter ${id}...">${val}</textarea></div>`).join('')}<div style="display:flex;flex-direction:column;gap:8px;"><button onclick="window.saveReport()" class="bg-blue-600" style="width:100%;padding:16px;color:#fff;font-size:13px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.1em;">Save Report</button><button onclick="window.cancelEdit()" style="width:100%;background:var(--r-surface2);color:var(--r-muted);padding:10px;border-radius:calc(var(--r-card-radius)*0.7);font-size:10px;font-weight:700;border:1px solid var(--r-border);cursor:pointer;transition:all 0.2s;">Cancel / Discard Changes</button></div></div>`;
+    ['editTodo','editSummary'].forEach(id=>{ const el=document.getElementById(id); if(el){window.updateCharCount(id,id.replace('edit','').toLowerCase()+'Count');window.autoResize(el);} });
+  };
+
+  window.cancelEdit = function() { if(confirm("Discard changes and return?")){ window.clearTemp(selectedDateStr); window.loadReport(selectedDateStr); } };
+
+  /* ── Render Mini Calendar ── */
+  async function renderMiniCalendar() {
+    const year=viewDate.getFullYear(), month=viewDate.getMonth();
+    const firstDay=new Date(year,month,1).getDay(), lastDate=new Date(year,month+1,0).getDate();
+    const monthName=viewDate.toLocaleString('en-US',{month:'long'}).toUpperCase();
+    const todayStr=new Date().toISOString().split('T')[0];
+    /* Year select */
+    let yearOptions='';
+    for (let y=year-5;y<=year+5;y++) yearOptions+=`<option value="${y}" ${y===year?'selected':''}>${y}</option>`;
+    const mcm=document.getElementById('miniCalMonth');
+    if(mcm) mcm.innerHTML=`${monthName} <select class="year-select" onchange="window.changeViewYear(this.value)">${yearOptions}</select>`;
+    try {
+      const [reportSnap,attendSnap]=await Promise.all([db.ref('reports').once('value'),db.ref('attendance').once('value')]);
+      const allReports=reportSnap.val()||{}, allAttendance=attendSnap.val()||{};
+      const tbody=document.getElementById('miniCalBody'); if(!tbody) return;
+      tbody.innerHTML='';
+      /* Written / missing dates */
+      const writtenEl=document.getElementById('writtenDates'), missingEl=document.getElementById('missingDates');
+      if (writtenEl&&missingEl) {
+        const userSettingsSnap=await db.ref(`users/${user}/WarnFlag`).once('value');
+        const warnFlag=userSettingsSnap.val();
+        if (warnFlag==="off") {
+          writtenEl.innerHTML='<span style="color:var(--r-muted);font-style:italic;text-transform:uppercase;">Monitoring Paused</span>';
+          missingEl.innerHTML=`<span style="color:var(--r-amber,#f59e0b);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">THIS STAFF IS IN "WARNFLAG OFF" STATUS.</span>`;
+        } else {
+          let writtenArr=[],missingArr=[]; const leaveTypes=['PEL','ANL','HAL','SIL','SPL'];
+          for (let i=0;i<7;i++) { let d=new Date(); d.setDate(d.getDate()-i); const dw=d.getDay(),dStr=d.toISOString().split('T')[0]; const userAtnd=allAttendance[dStr]?.[user]; const isOnLeave=leaveTypes.includes(userAtnd); if(allReports[dStr]&&allReports[dStr][user]) writtenArr.push(dStr); else if(dw!==0&&dw!==6&&!isOnLeave) missingArr.push(dStr); }
+          writtenEl.innerHTML=writtenArr.length>0?writtenArr.map(date=>`<span style="margin-right:8px;">${date}</span>`).join(''):'<span style="color:var(--r-dim);">No records</span>';
+          missingEl.innerHTML=missingArr.length>0?missingArr.map(date=>`<span class="blink-text" style="margin-right:8px;">${date}</span>`).join(''):'<span style="color:#10b981;font-weight:900;font-size:10px;">ALL COMPLETED! ✓</span>';
+        }
+      }
+      /* Calendar grid */
+      let summaryCount={"Completed":0,"Pending":0,"In Progress":0}, date=1;
+      const leaveTypes=['PEL','ANL','HAL','SIL','SPL'];
+      for (let i=0;i<6;i++) {
+        let row=document.createElement('tr');
+        for (let j=0;j<7;j++) {
+          let cell=document.createElement('td');
+          if ((i===0&&j<firstDay)||date>lastDate) { row.appendChild(cell); continue; }
+          const curDate=date;
+          const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(curDate).padStart(2,'0')}`;
+          let dayColorClass="date-num"; if(j===0) dayColorClass+=" text-sun"; else if(j===6) dayColorClass+=" text-sat"; if(dateStr===todayStr) dayColorClass+=" today-today";
+          let cellHTML=`<div class="${dayColorClass}" ${dateStr===todayStr?`style="color:var(--r-accent);text-shadow:0 0 8px var(--r-accent-glow);"`:""}>${curDate}</div>`;
+          const userReport=allReports[dateStr]?.[user]||null;
+          const userAtnd=allAttendance[dateStr]?.[user];
+          const isLeave=leaveTypes.includes(userAtnd);
+          if (userReport) {
+            cell.classList.add('has-report');
+            const status=userReport.status||"In Progress";
+            if (summaryCount.hasOwnProperty(status)) summaryCount[status]++;
+            if (userReport.adminMemo&&userReport.adminMemo.trim()!=="") cellHTML+=`<div class="admin-dot" title="Admin feedback"></div>`;
+            let statusClass=status==='Completed'?'status-completed':status==='Pending'?'status-pending':'status-progress';
+            let statusText=status==='Completed'?'DONE':status==='Pending'?'PENDING':'PROG';
+            cellHTML+=`<div class="status-tag ${statusClass}">${statusText}</div>`;
+            const safeTodo=getSafeText(userReport.todo||"-"), safeSummary=getSafeText(userReport.summary||userReport.content||"-");
+            cell.onmouseenter=(e)=>window.showReportPopup(e,safeTodo,safeSummary);
+            cell.onmousemove=(e)=>window.moveReportPopup(e);
+            cell.onmouseleave=()=>window.hideReportPopup();
+          } else if (isLeave) {
+            cellHTML+=`<div class="status-tag" style="background:rgba(244,63,94,0.15);color:#f43f5e;border:1px solid rgba(244,63,94,0.3);">${userAtnd}</div>`;
+          }
+          cell.innerHTML=cellHTML;
+          if (dateStr===selectedDateStr) cell.classList.add('selected-date');
+          cell.onclick=()=>{ window.hideReportPopup(); window.loadReport(dateStr); };
+          row.appendChild(cell); date++;
+        }
+        tbody.appendChild(row); if(date>lastDate) break;
+      }
+      /* Achievement calculation */
+      (async function updateAchievement() {
+        const now=new Date(), y2=now.getFullYear(), mo=now.getMonth();
+        let workdays=0,written=0,streak=0,streakActive=true;
+        for (let d=1;d<=now.getDate();d++) {
+          const dow=new Date(y2,mo,d).getDay(); if(dow===0||dow===6) continue;
+          const dStr=`${y2}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          const attVal=allAttendance[dStr]?.[user];
+          if (['PEL','ANL','HAL','SIL','SPL'].includes(attVal)) continue;
+          workdays++;
+          if (allReports[dStr]?.[user]) { written++; if(streakActive) streak++; } else streakActive=false;
+        }
+        const pct=workdays>0?Math.round((written/workdays)*100):0;
+        const barColor=pct>=90?'linear-gradient(90deg,#10b981,#06b6d4)':pct>=70?'linear-gradient(90deg,var(--r-accent),#10b981)':'linear-gradient(90deg,#f59e0b,#ef4444)';
+        const barEl=document.getElementById('achieveBar'),pctEl=document.getElementById('achievePct'),detailEl=document.getElementById('achieveDetail'),streakEl=document.getElementById('achieveStreak');
+        if(barEl){barEl.style.width=pct+'%';barEl.style.background=barColor;}
+        if(pctEl) pctEl.innerText=pct+'%';
+        if(detailEl) detailEl.innerText=`${written} written / ${workdays} workdays`;
+        if(streakEl) streakEl.innerText=streak>1?`🔥 ${streak} day streak!`:'';
+      })();
+    } catch(error) { console.error("Calendar Rendering Error:",error); }
+  }
+
+  window.changeViewYear = function(y) { viewDate.setFullYear(parseInt(y)); renderMiniCalendar(); };
+
+  /* ── Export dropdown — click-based, body-appended ── */
+  document.querySelectorAll('.export-dropdown').forEach(dropdown=>{
+    const btn=dropdown.querySelector('button'), content=dropdown.querySelector('.export-content');
+    if (!btn||!content) return;
+    document.body.appendChild(content);
+    const positionMenu=()=>{ const rect=btn.getBoundingClientRect(); content.style.position='fixed'; content.style.top=(rect.bottom+4)+'px'; content.style.left='auto'; content.style.right=(window.innerWidth-rect.right)+'px'; content.style.zIndex='999999'; };
+    btn.addEventListener('click',(e)=>{ e.stopPropagation(); const isVisible=content.style.display==='block'; document.querySelectorAll('.export-content').forEach(c=>c.style.display='none'); if(!isVisible){positionMenu();content.style.display='block';} });
+    document.addEventListener('click',()=>content.style.display='none');
+    content.addEventListener('click',(e)=>e.stopPropagation());
+  });
+
+  /* ── Cleanup on tab switch ── */
+  window._leavePageCleanup = function() {
+    if (window.aiPopupTimer) clearTimeout(window.aiPopupTimer);
+  };
+
+  /* Initial load */
+  window.loadReport(selectedDateStr);
+
+})();
 </script>
