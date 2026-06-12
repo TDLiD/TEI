@@ -1,1558 +1,1139 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- ══════════════════════════════════════════════════════════
+     7-DAY THEME INJECTION — runs before paint (no FOUC)
+══════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  const THEMES = {
+    0: { /* SUN — Sunset Ember */
+      '--v-bg':'#160403','--v-surface':'#220605','--v-surface2':'#2e0907','--v-surface3':'#3a0d09',
+      '--v-border':'rgba(249,115,22,0.1)','--v-border2':'rgba(249,115,22,0.22)',
+      '--v-text':'#fdf0e8','--v-muted':'#7c4a30','--v-dim':'#3a1a0e',
+      '--v-accent':'#f97316','--v-accent2':'#fbbf24',
+      '--v-accent-glow':'rgba(249,115,22,0.2)',
+      '--v-card-shine':'rgba(249,115,22,0.07)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(249,115,22,0.28),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(249,115,22,0.05) 0%,transparent 55%)',
+      '--v-card-radius':'10px',
+      '--v-cell-hover':'rgba(249,115,22,0.08)',
+      '--v-cell-border':'rgba(249,115,22,0.25)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(249,115,22,0.16),rgba(251,191,36,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#f97316,#b45309)',
+      '--v-btn-bg':'linear-gradient(135deg,#f97316,#c2410c)',
+      '--v-btn-hover':'linear-gradient(135deg,#fb923c,#f97316)',
+    },
+    1: { /* MON — Deep Space */
+      '--v-bg':'#040810','--v-surface':'#080f1e','--v-surface2':'#0d1628','--v-surface3':'#111e33',
+      '--v-border':'rgba(99,102,241,0.09)','--v-border2':'rgba(99,102,241,0.2)',
+      '--v-text':'#e2e8f0','--v-muted':'#475569','--v-dim':'#1e293b',
+      '--v-accent':'#6366f1','--v-accent2':'#818cf8',
+      '--v-accent-glow':'rgba(99,102,241,0.2)',
+      '--v-card-shine':'rgba(99,102,241,0.07)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(99,102,241,0.28),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(99,102,241,0.04) 0%,transparent 55%)',
+      '--v-card-radius':'18px',
+      '--v-cell-hover':'rgba(99,102,241,0.08)',
+      '--v-cell-border':'rgba(99,102,241,0.3)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(99,102,241,0.16),rgba(129,140,248,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#6366f1,#4f46e5)',
+      '--v-btn-bg':'linear-gradient(135deg,#6366f1,#4f46e5)',
+      '--v-btn-hover':'linear-gradient(135deg,#818cf8,#6366f1)',
+    },
+    2: { /* TUE — Dark Ink */
+      '--v-bg':'#100c08','--v-surface':'#18120d','--v-surface2':'#201810','--v-surface3':'#281e15',
+      '--v-border':'rgba(180,145,100,0.12)','--v-border2':'rgba(180,145,100,0.24)',
+      '--v-text':'#e8ddd0','--v-muted':'#7a6550','--v-dim':'#302418',
+      '--v-accent':'#c8a060','--v-accent2':'#e0c080',
+      '--v-accent-glow':'rgba(200,160,96,0.18)',
+      '--v-card-shine':'rgba(200,160,96,0.07)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(200,160,96,0.25),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(200,160,96,0.04) 0%,transparent 55%)',
+      '--v-card-radius':'6px',
+      '--v-cell-hover':'rgba(200,160,96,0.08)',
+      '--v-cell-border':'rgba(200,160,96,0.28)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(200,160,96,0.16),rgba(224,192,128,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#c8a060,#92703c)',
+      '--v-btn-bg':'linear-gradient(135deg,#c8a060,#8a6030)',
+      '--v-btn-hover':'linear-gradient(135deg,#e0c080,#c8a060)',
+    },
+    3: { /* WED — Art Deco */
+      '--v-bg':'#080e09','--v-surface':'#0d1a0f','--v-surface2':'#122014','--v-surface3':'#172618',
+      '--v-border':'rgba(200,168,75,0.1)','--v-border2':'rgba(200,168,75,0.22)',
+      '--v-text':'#f0e8d0','--v-muted':'#5a5040','--v-dim':'#253020',
+      '--v-accent':'#c8a84b','--v-accent2':'#e8d48a',
+      '--v-accent-glow':'rgba(200,168,75,0.18)',
+      '--v-card-shine':'rgba(200,168,75,0.09)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(200,168,75,0.3),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(200,168,75,0.05) 0%,transparent 55%)',
+      '--v-card-radius':'0px',
+      '--v-cell-hover':'rgba(200,168,75,0.08)',
+      '--v-cell-border':'rgba(200,168,75,0.28)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(200,168,75,0.16),rgba(232,212,138,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#c8a84b,#8a6a20)',
+      '--v-btn-bg':'linear-gradient(135deg,#c8a84b,#8a6820)',
+      '--v-btn-hover':'linear-gradient(135deg,#e8d48a,#c8a84b)',
+    },
+    4: { /* THU — Dark Terra */
+      '--v-bg':'#0a0e06','--v-surface':'#101508','--v-surface2':'#161c0c','--v-surface3':'#1c2410',
+      '--v-border':'rgba(100,140,70,0.12)','--v-border2':'rgba(100,140,70,0.24)',
+      '--v-text':'#dde8cc','--v-muted':'#5a6a40','--v-dim':'#202c10',
+      '--v-accent':'#6aaa40','--v-accent2':'#a8c060',
+      '--v-accent-glow':'rgba(106,170,64,0.18)',
+      '--v-card-shine':'rgba(106,170,64,0.07)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(106,170,64,0.25),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(106,170,64,0.04) 0%,transparent 55%)',
+      '--v-card-radius':'18px 4px 18px 4px',
+      '--v-cell-hover':'rgba(106,170,64,0.08)',
+      '--v-cell-border':'rgba(106,170,64,0.28)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(106,170,64,0.16),rgba(168,192,96,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#6aaa40,#3d6820)',
+      '--v-btn-bg':'linear-gradient(135deg,#6aaa40,#3d6820)',
+      '--v-btn-hover':'linear-gradient(135deg,#a8c060,#6aaa40)',
+    },
+    5: { /* FRI — Synthwave */
+      '--v-bg':'#06021a','--v-surface':'#0d0428','--v-surface2':'#130635','--v-surface3':'#190842',
+      '--v-border':'rgba(255,0,204,0.12)','--v-border2':'rgba(255,0,204,0.25)',
+      '--v-text':'#ffffff','--v-muted':'#5c4080','--v-dim':'#2a1050',
+      '--v-accent':'#ff00cc','--v-accent2':'#00eeff',
+      '--v-accent-glow':'rgba(255,0,204,0.2)',
+      '--v-card-shine':'rgba(255,0,204,0.07)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(255,0,204,0.28),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(255,0,204,0.04) 0%,transparent 55%)',
+      '--v-card-radius':'0px',
+      '--v-cell-hover':'rgba(255,0,204,0.08)',
+      '--v-cell-border':'rgba(255,0,204,0.28)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(255,0,204,0.18),rgba(0,238,255,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#ff00cc,#7700aa)',
+      '--v-btn-bg':'linear-gradient(135deg,#ff00cc,#7700aa)',
+      '--v-btn-hover':'linear-gradient(135deg,#ff55dd,#ff00cc)',
+    },
+    6: { /* SAT — Arctic Dark */
+      '--v-bg':'#08122a','--v-surface':'#0c1a38','--v-surface2':'#102044','--v-surface3':'#142650',
+      '--v-border':'rgba(96,165,250,0.12)','--v-border2':'rgba(96,165,250,0.24)',
+      '--v-text':'#e8f0fe','--v-muted':'#4a6090','--v-dim':'#1e3060',
+      '--v-accent':'#60a5fa','--v-accent2':'#a5c8ff',
+      '--v-accent-glow':'rgba(96,165,250,0.2)',
+      '--v-card-shine':'rgba(188,213,250,0.12)',
+      '--v-card-bevel':'linear-gradient(90deg,transparent,rgba(188,213,250,0.32),transparent)',
+      '--v-card-face':'linear-gradient(155deg,rgba(188,213,250,0.1) 0%,transparent 55%)',
+      '--v-card-radius':'16px',
+      '--v-cell-hover':'rgba(96,165,250,0.08)',
+      '--v-cell-border':'rgba(96,165,250,0.3)',
+      '--v-today-bg':'linear-gradient(145deg,rgba(96,165,250,0.18),rgba(165,200,255,0.06))',
+      '--v-today-badge':'linear-gradient(135deg,#60a5fa,#1d4ed8)',
+      '--v-btn-bg':'linear-gradient(135deg,#60a5fa,#1d4ed8)',
+      '--v-btn-hover':'linear-gradient(135deg,#93c5fd,#60a5fa)',
+    },
+  };
+  const idx = new Date().getDay();
+  const t = THEMES[idx] || THEMES[1];
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(t)) root.style.setProperty(k, v);
+  window._vacDayIdx = idx;
+})();
+</script>
+
 <style>
-/* ══════════════════════════════════════════
-   STAFF VACATION — 3D DARK COCKPIT THEME
-   Deep navy + indigo/violet command center
-   Pretendard Font System
-══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   STAFF VACATION — 7-DAY ADAPTIVE DARK THEME
+   All colours from --v-* tokens. No white backgrounds.
+══════════════════════════════════════════════════════════ */
 
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
-
+/* ── compat aliases ── */
 :root {
-    --bg:        #040810;
-    --surface:   #080f1e;
-    --surface2:  #0d1628;
-    --surface3:  #111e33;
-    --border:    rgba(255,255,255,0.06);
-    --border2:   rgba(255,255,255,0.12);
-    --text:      #f1f5f9;
-    --muted:     #475569;
-    --dim:       #1e293b;
-    --indigo:    #6366f1;
-    --green:     #10b981;
-    --red:       #f43f5e;
-    --blue:      #3b82f6;
-    --amber:     #f59e0b;
-    --violet:    #a855f7;
+  --bg:       var(--v-bg);
+  --surface:  var(--v-surface);
+  --surface2: var(--v-surface2);
+  --surface3: var(--v-surface3);
+  --border:   var(--v-border);
+  --border2:  var(--v-border2);
+  --text:     var(--v-text);
+  --muted:    var(--v-muted);
+  --dim:      var(--v-dim);
+  --indigo:   var(--v-accent);
+  --green:    #10b981;
+  --red:      #f43f5e;
+  --blue:     #3b82f6;
+  --amber:    #f59e0b;
+  --violet:   #a855f7;
 }
 
-*, *::before, *::after { 
-    box-sizing: border-box; 
-    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+*, *::before, *::after {
+  box-sizing: border-box;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+               Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+               "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
 
-/* ══ Leave Calendar Table ══ */
-.leave-calendar-table {
-    width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed;
+/* ══════════════════════════════════════════════════════════
+   3-D CARD BASE
+══════════════════════════════════════════════════════════ */
+.card-3d {
+  position: relative;
+  background: linear-gradient(145deg, var(--v-surface2) 0%, var(--v-surface) 100%);
+  border: 1px solid var(--v-border);
+  border-top: 1px solid var(--v-border2);
+  border-radius: var(--v-card-radius);
+  box-shadow:
+    inset 0 1px 0 var(--v-card-shine),
+    inset 0 -1px 0 rgba(0,0,0,0.25),
+    0 4px 14px rgba(0,0,0,0.32),
+    0 12px 32px rgba(0,0,0,0.45);
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.23,1,0.32,1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
 }
-.leave-calendar-table th {
-    padding: 10px 0;
-    font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
+.card-3d::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: var(--v-card-bevel);
+  pointer-events: none;
 }
-/* 이하 기존 CSS 계속... */
-.leave-calendar-table th.text-rose-500   { color: rgba(244,63,94,0.8); text-shadow: 0 0 8px rgba(244,63,94,0.3); }
-.leave-calendar-table th.text-blue-500   { color: rgba(59,130,246,0.8); text-shadow: 0 0 8px rgba(59,130,246,0.3); }
-.leave-calendar-table th.text-slate-500  { color: var(--muted); }
-
-/* ── Calendar Cells ── */
-.leave-calendar-table td {
-    height: 90px;
-    background: linear-gradient(145deg, var(--surface3) 0%, var(--surface2) 100%);
-    border: 1px solid rgba(20,30,50,0.8);
-    border-radius: 8px;
-    vertical-align: top; padding: 5px;
-    position: relative;
-    transition: all 0.18s cubic-bezier(0.23,1,0.32,1);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.03);
-    cursor: pointer;
+.card-3d::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--v-card-face);
+  pointer-events: none;
+  border-radius: inherit;
 }
-.leave-calendar-table td:hover {
-    background: linear-gradient(145deg, rgba(99,102,241,0.1) 0%, var(--surface2) 100%);
-    border-color: rgba(99,102,241,0.3);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 16px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
-    z-index: 2;
-}
-
-/* Weekend col width */
-.leave-calendar-table col.weekend { width: 5%; }
-.leave-calendar-table col.weekday { width: calc((100% - 10%) / 5); }
-.leave-calendar-table td.sun-col,
-.leave-calendar-table td.sat-col { width: 5%; padding: 3px 1px; }
-.leave-calendar-table td.sun-col .leave-day-num,
-.leave-calendar-table td.sat-col .leave-day-num { font-size: 8px; }
-
-/* ── Date Number ── */
-.leave-day-num {
-    font-size: 10px; font-weight: 900;
-    color: var(--muted); margin-bottom: 3px;
-    font-family: 'SF Mono', monospace; letter-spacing: -0.02em;
-}
-.leave-day-num.text-rose-500 { color: rgba(244,63,94,0.7); }
-.leave-day-num.text-blue-500 { color: rgba(59,130,246,0.7); }
-
-/* ── Today Cell ── */
-.today-cell {
-    background: linear-gradient(145deg, rgba(99,102,241,0.14), rgba(99,102,241,0.06)) !important;
-    border: 1px solid rgba(99,102,241,0.45) !important;
-    box-shadow: 0 0 0 1px rgba(99,102,241,0.2), 0 4px 14px rgba(99,102,241,0.15) !important;
-}
-.today-cell .leave-day-num {
-    color: var(--indigo);
-    text-shadow: 0 0 10px rgba(99,102,241,0.5);
-}
-.today-mark {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: white; padding: 1px 5px; border-radius: 5px;
-    font-size: 7px; font-weight: 900; margin-left: 4px;
-    vertical-align: middle; display: inline-block;
-    box-shadow: 0 0 8px rgba(99,102,241,0.4);
-    font-family: 'SF Mono', monospace; letter-spacing: 0.05em;
-}
-
-/* ── Leave Badges ── */
-.leave-badge {
-    font-size: 8px; padding: 2px 5px; border-radius: 5px;
-    margin-top: 2px; font-weight: 900; color: white;
-    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    font-family: 'SF Mono', monospace; letter-spacing: 0.03em;
-}
-.badge-pending {
-    background: linear-gradient(135deg, rgba(245,158,11,0.9), rgba(180,115,9,0.9));
-    border-left: 2px solid #f59e0b;
-    box-shadow: 0 0 8px rgba(245,158,11,0.2);
-}
-.badge-approved {
-    background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(4,120,87,0.9));
-    border-left: 2px solid #10b981;
-    box-shadow: 0 0 8px rgba(16,185,129,0.2);
-}
-.badge-others {
-    background: linear-gradient(135deg, rgba(99,102,241,0.8), rgba(67,56,202,0.8));
-    border-left: 2px solid #6366f1;
-    box-shadow: 0 0 8px rgba(99,102,241,0.2);
-    opacity: 0.85;
-}
-
-/* ══ Panel Cards (3D) ══ */
-.bg-slate-900\/50 {
-    position: relative;
-    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%) !important;
-    border: 1px solid var(--border) !important;
-    border-top: 1px solid var(--border2) !important;
-    border-radius: 20px !important;
+@media (hover:hover) {
+  .card-3d:hover {
+    transform: translateY(-4px) perspective(900px) rotateX(2deg);
+    border-color: var(--v-accent);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        0 8px 28px rgba(0,0,0,0.5),
-        0 2px 8px rgba(0,0,0,0.3) !important;
-    transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), box-shadow 0.3s ease;
-    overflow: hidden;
+      inset 0 1px 0 var(--v-card-shine),
+      0 6px 16px rgba(0,0,0,0.38),
+      0 20px 45px rgba(0,0,0,0.5),
+      0 0 0 1px var(--v-accent-glow),
+      0 0 28px var(--v-accent-glow);
+  }
 }
-.bg-slate-900\/50::before {
-    content: '';
-    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.28), transparent);
-    pointer-events: none; z-index: 1;
+
+/* ══════════════════════════════════════════════════════════
+   PAGE LAYOUT
+══════════════════════════════════════════════════════════ */
+.sv-root {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2.5vw, 1.25rem);
+  padding-bottom: clamp(1.5rem, 6vw, 5rem);
+  color: var(--v-text);
 }
+
+/* ── Header card ── */
+.sv-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: clamp(14px, 4vw, 22px);
+}
+.sv-header-title {
+  font-size: clamp(18px, 5.5vw, 26px);
+  font-weight: 900;
+  color: var(--v-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.02em;
+  font-style: italic;
+  text-transform: uppercase;
+}
+.sv-header-accent { width: 5px; height: clamp(22px,5vw,28px); background: var(--v-accent); border-radius: 3px; flex-shrink: 0; box-shadow: 0 0 10px var(--v-accent-glow); }
+.sv-header-sub { font-size: clamp(8px,2vw,10px); color: var(--v-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; margin-top: 4px; }
 
 /* ── NEW REQUEST button ── */
-button[onclick="openLeaveModal()"] {
-    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-    box-shadow: 0 4px 16px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
-    border: none !important;
-    transition: all 0.2s cubic-bezier(0.23,1,0.32,1) !important;
+.sv-new-btn {
+  background: var(--v-btn-bg) !important;
+  color: #fff !important;
+  padding: clamp(10px,3vw,14px) clamp(16px,5vw,24px);
+  border-radius: calc(var(--v-card-radius) * 1.1);
+  font-weight: 900;
+  font-size: clamp(9px,2.2vw,12px);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px var(--v-accent-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
+  flex-shrink: 0;
 }
-button[onclick="openLeaveModal()"]:hover {
-    background: linear-gradient(135deg, #818cf8, #6366f1) !important;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.55), inset 0 1px 0 rgba(255,255,255,0.25) !important;
-    transform: translateY(-2px) !important;
+@media (hover:hover) {
+  .sv-new-btn:hover {
+    background: var(--v-btn-hover) !important;
+    box-shadow: 0 8px 24px var(--v-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+    transform: translateY(-2px);
+  }
 }
+.sv-new-btn:active { transform: scale(0.96) translateY(1px) !important; }
 
-/* ── Nav buttons (prev/next/today) ── */
-button[onclick*="changeLeaveMonth"],
-button[onclick="goToToday()"] {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3) !important;
-    transition: all 0.2s !important;
+/* ══════════════════════════════════════════════════════════
+   CALENDAR CARD
+══════════════════════════════════════════════════════════ */
+.sv-cal-card {
+  padding: clamp(12px,3.5vw,20px);
 }
-button[onclick*="changeLeaveMonth"]:hover,
-button[onclick="goToToday()"]:hover {
-    border-color: rgba(99,102,241,0.3) !important;
-    background: rgba(99,102,241,0.1) !important;
-    box-shadow: 0 0 12px rgba(99,102,241,0.2) !important;
-    transform: translateY(-1px) !important;
-    color: #a5b4fc !important;
+.sv-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(12px,3vw,20px);
+  gap: 10px;
+  flex-wrap: wrap;
 }
-
-/* ── Calendar month title ── */
 #calendarMonthTitle {
-    font-family: 'SF Mono', 'Fira Code', monospace !important;
-    text-shadow: 0 0 20px rgba(99,102,241,0.2);
+  font-size: clamp(13px,4vw,18px);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--v-text);
+  text-shadow: 0 0 20px var(--v-accent-glow);
+}
+.sv-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(145deg,var(--v-surface3),var(--v-surface2));
+  border: 1px solid var(--v-border);
+  border-radius: calc(var(--v-card-radius)*0.75);
+  padding: 4px;
+  box-shadow: inset 0 1px 0 var(--v-card-shine), 0 2px 8px rgba(0,0,0,0.3);
+}
+.sv-nav-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(5px,1.5vw,8px) clamp(8px,2.5vw,12px);
+  font-size: clamp(7px,2vw,10px);
+  font-weight: 900;
+  color: var(--v-muted);
+  background: none; border: none; cursor: pointer;
+  border-radius: calc(var(--v-card-radius)*0.55);
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+@media (hover:hover) {
+  .sv-nav-btn:hover { background:color-mix(in srgb,var(--v-accent) 14%,transparent); color:var(--v-text); }
+}
+.sv-nav-btn.today-btn { color: var(--v-accent); text-shadow: 0 0 8px var(--v-accent-glow); }
+
+/* ══════════════════════════════════════════════════════════
+   LEAVE CALENDAR TABLE
+══════════════════════════════════════════════════════════ */
+.leave-calendar-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  table-layout: fixed;
+}
+.leave-calendar-table th {
+  padding: clamp(5px,1.5vw,10px) 0;
+  font-size: clamp(7px,1.8vw,9px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--v-muted);
+  border-bottom: 1px solid var(--v-border);
+}
+.leave-calendar-table th.th-sun { color: rgba(244,63,94,0.85); text-shadow:0 0 8px rgba(244,63,94,0.3); }
+.leave-calendar-table th.th-sat { color: color-mix(in srgb,var(--v-accent) 80%,white); text-shadow:0 0 6px var(--v-accent-glow); }
+
+/* Col widths */
+.leave-calendar-table col.weekend { width: 6%; }
+.leave-calendar-table col.weekday { width: calc((100% - 12%) / 5); }
+
+.leave-calendar-table td {
+  height: clamp(52px,12vw,90px);
+  background: linear-gradient(145deg, var(--v-surface3) 0%, var(--v-surface2) 100%);
+  border: 1px solid rgba(10,16,30,0.85);
+  border-radius: 8px;
+  vertical-align: top;
+  padding: clamp(3px,1vw,5px);
+  position: relative;
+  will-change: transform;
+  transition: all 0.18s cubic-bezier(0.23,1,0.32,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25), inset 0 1px 0 var(--v-card-shine);
+  cursor: pointer;
+}
+.leave-calendar-table td.td-sun { background: linear-gradient(145deg,rgba(244,63,94,0.07),var(--v-surface2)); }
+.leave-calendar-table td.td-sat { background: linear-gradient(145deg,color-mix(in srgb,var(--v-accent) 7%,transparent),var(--v-surface2)); }
+.leave-calendar-table td.today-cell {
+  background: var(--v-today-bg) !important;
+  border: 1px solid color-mix(in srgb,var(--v-accent) 48%,transparent) !important;
+  box-shadow: 0 0 0 1px var(--v-accent-glow), 0 4px 14px var(--v-accent-glow) !important;
+}
+@media (hover:hover) {
+  .leave-calendar-table td:hover {
+    background: linear-gradient(145deg,var(--v-cell-hover),var(--v-surface2)) !important;
+    border-color: var(--v-cell-border) !important;
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 6px 16px var(--v-accent-glow), inset 0 1px 0 var(--v-card-shine);
+    z-index: 2;
+  }
 }
 
-/* ── History Table ── */
-#leaveHistoryBody tr { transition: background 0.15s; }
-#leaveHistoryBody tr:hover { background: rgba(99,102,241,0.04) !important; }
-#leaveHistoryBody td { font-family: 'SF Mono', monospace; }
-
-/* ══ Modal ══ */
-#leaveModal {
-    background: rgba(0,0,0,0.88) !important;
-    backdrop-filter: blur(12px) !important;
+/* ── Date number ── */
+.leave-day-num {
+  font-size: clamp(8px,2.2vw,11px);
+  font-weight: 900;
+  color: var(--v-muted);
+  margin-bottom: 2px;
+  font-family: 'SF Mono','Fira Code',monospace;
+  letter-spacing: -0.02em;
 }
-#leaveModal > div {
-    position: relative;
-    background: linear-gradient(145deg, #0d1628, #080f1e) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-top: 1px solid rgba(99,102,241,0.3) !important;
-    border-radius: 24px !important;
-    box-shadow:
-        0 40px 80px rgba(0,0,0,0.7),
-        0 0 0 1px rgba(99,102,241,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.07) !important;
+.leave-day-num.sun-color  { color: rgba(244,63,94,0.75); }
+.leave-day-num.sat-color  { color: color-mix(in srgb,var(--v-accent) 75%,white); }
+.leave-day-num.today-color { color: var(--v-accent); text-shadow: 0 0 10px var(--v-accent-glow); }
+
+/* Today mark badge */
+.today-mark {
+  background: var(--v-today-badge);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: clamp(6px,1.5vw,8px);
+  font-weight: 900;
+  margin-left: 3px;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: 0 0 8px var(--v-accent-glow);
+  font-family: 'SF Mono',monospace;
+  letter-spacing: 0.05em;
+}
+
+/* ── Leave badges ── */
+.leave-badge {
+  font-size: clamp(6px,1.6vw,8px);
+  padding: 2px 5px;
+  border-radius: 5px;
+  margin-top: 2px;
+  font-weight: 900;
+  color: #fff;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-family: 'SF Mono',monospace;
+  letter-spacing: 0.03em;
+}
+.badge-pending  { background:linear-gradient(135deg,rgba(245,158,11,0.9),rgba(180,115,9,0.9)); border-left:2px solid #f59e0b; box-shadow:0 0 8px rgba(245,158,11,0.2); }
+.badge-approved { background:linear-gradient(135deg,rgba(16,185,129,0.9),rgba(4,120,87,0.9));  border-left:2px solid #10b981; box-shadow:0 0 8px rgba(16,185,129,0.2); }
+.badge-others   { background:linear-gradient(135deg,color-mix(in srgb,var(--v-accent) 80%,transparent),color-mix(in srgb,var(--v-accent) 55%,#000)); border-left:2px solid var(--v-accent); opacity:0.85; }
+
+/* ══════════════════════════════════════════════════════════
+   HISTORY CARD
+══════════════════════════════════════════════════════════ */
+.sv-history-card { padding: clamp(14px,4vw,22px); }
+.sv-section-title {
+  font-size: clamp(9px,2.3vw,12px);
+  font-weight: 900;
+  color: var(--v-text);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: clamp(12px,3vw,20px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sv-pulse-dot { width:7px; height:7px; background:var(--v-accent); border-radius:50%; animation:svPulse 2s ease-in-out infinite; box-shadow:0 0 8px var(--v-accent-glow); }
+@keyframes svPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.45;transform:scale(0.7)} }
+
+/* History table */
+.sv-table { width:100%; text-align:left; font-size:clamp(9px,2.2vw,12px); border-collapse:separate; border-spacing:0; }
+.sv-table thead th { padding:clamp(6px,1.8vw,10px) clamp(4px,1.2vw,8px); font-size:clamp(7px,1.8vw,9px); font-weight:900; text-transform:uppercase; letter-spacing:0.1em; color:var(--v-muted); border-bottom:1px solid var(--v-border); }
+.sv-table tbody tr { will-change:background; transition:background 0.15s; cursor:pointer; }
+@media (hover:hover) { .sv-table tbody tr:hover { background:color-mix(in srgb,var(--v-accent) 5%,transparent) !important; } }
+.sv-table tbody td { padding:clamp(6px,1.8vw,10px) clamp(4px,1.2vw,8px); font-family:'SF Mono','Fira Code',monospace; font-size:clamp(8px,2vw,11px); border-bottom:1px solid color-mix(in srgb,var(--v-border) 60%,transparent); color:var(--v-text); }
+
+/* Section group row */
+.sv-group-row td { padding-top: clamp(14px,3.5vw,22px); padding-bottom: 6px; }
+.sv-group-label { font-size:clamp(7px,2vw,10px); font-weight:900; text-transform:uppercase; letter-spacing:0.12em; }
+
+/* Staff list */
+.sv-staff-section { padding-top: clamp(14px,3.5vw,22px); margin-top: clamp(14px,3.5vw,22px); border-top:1px solid var(--v-border); }
+.sv-staff-grid { display:flex; flex-wrap:wrap; gap:7px; }
+.sv-staff-btn {
+  padding: clamp(6px,2vw,9px) clamp(10px,3vw,14px);
+  background: linear-gradient(145deg,var(--v-surface3),var(--v-surface2));
+  border: 1px solid var(--v-border);
+  border-radius: calc(var(--v-card-radius)*0.65);
+  color: var(--v-muted);
+  font-size: clamp(8px,2vw,10px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: inset 0 1px 0 var(--v-card-shine), 0 2px 6px rgba(0,0,0,0.25);
+}
+@media (hover:hover) {
+  .sv-staff-btn:hover {
+    background: linear-gradient(145deg,color-mix(in srgb,var(--v-accent) 14%,var(--v-surface3)),var(--v-surface2));
+    border-color: color-mix(in srgb,var(--v-accent) 40%,transparent);
+    color: var(--v-text);
+    box-shadow: 0 4px 12px var(--v-accent-glow);
+    transform: translateY(-1px);
+  }
+}
+.sv-staff-btn:active { transform: scale(0.95) !important; }
+
+/* ══════════════════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════════════════ */
+#leaveModal, #staffLeaveModal {
+  background: rgba(0,0,0,0.9) !important;
+  backdrop-filter: blur(14px) !important;
+}
+#leaveModal > div, #staffLeaveModal > div {
+  position: relative;
+  background: linear-gradient(145deg,var(--v-surface2),var(--v-surface)) !important;
+  border: 1px solid var(--v-border) !important;
+  border-top: 1px solid var(--v-border2) !important;
+  border-radius: calc(var(--v-card-radius)*1.5) !important;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.75), inset 0 1px 0 var(--v-card-shine) !important;
+  animation: modalIn 0.34s cubic-bezier(0.23,1,0.32,1) both;
 }
 #leaveModal > div::before {
-    content: '';
-    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.4), transparent);
-    pointer-events: none; border-radius: 50%;
+  content:'';
+  position:absolute; top:0; left:15%; right:15%; height:1px;
+  background: var(--v-card-bevel);
+  pointer-events:none;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.93) translateY(18px)} to{opacity:1;transform:none} }
+
+/* Modal headers */
+#leaveModal h3, #staffLeaveModal h3 {
+  font-size: clamp(14px,4vw,18px) !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  letter-spacing: -0.01em !important;
+  color: var(--v-text) !important;
+  text-shadow: 0 0 16px var(--v-accent-glow);
+}
+#leaveModal label {
+  font-size: clamp(7px,1.8vw,9px) !important;
+  font-weight: 700 !important;
+  color: var(--v-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 /* Modal inputs */
 #leaveModal select,
 #leaveModal input[id="leaveDateRange"],
 #leaveModal textarea {
-    background: linear-gradient(145deg, #050a14, #070d1a) !important;
-    border: 1px solid var(--dim) !important;
-    border-radius: 12px !important;
-    color: var(--text) !important;
-    font-family: 'SF Mono', monospace !important;
-    font-size: 12px !important;
-    padding: 12px 14px !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.35) !important;
-    width: 100%;
+  width:100%;
+  background: rgba(0,0,0,0.35) !important;
+  border:1px solid var(--v-dim) !important;
+  border-radius: calc(var(--v-card-radius)*0.75) !important;
+  color:var(--v-text) !important;
+  font-family:'SF Mono','Fira Code',monospace !important;
+  font-size:clamp(11px,2.8vw,13px) !important;
+  padding:clamp(10px,2.8vw,14px) !important;
+  transition:border-color 0.2s,box-shadow 0.2s !important;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.35) !important;
 }
 #leaveModal select:focus,
 #leaveModal input:focus,
 #leaveModal textarea:focus {
-    border-color: var(--indigo) !important;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.35), 0 0 0 3px rgba(99,102,241,0.12) !important;
-    outline: none !important;
+  border-color: var(--v-accent) !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.35), 0 0 0 3px var(--v-accent-glow) !important;
+  outline: none !important;
 }
 #leaveModal select:disabled,
-#leaveModal textarea:disabled {
-    opacity: 0.45; cursor: not-allowed;
+#leaveModal textarea:disabled,
+#leaveModal input:disabled {
+  opacity: 0.45; cursor: not-allowed;
 }
 
-/* Submit button */
+/* Modal close button */
+.modal-close-btn {
+  width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--v-muted); font-size:22px;
+  background:rgba(255,255,255,0.05) !important;
+  border:1px solid var(--v-border) !important;
+  border-radius:50%;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+@media (hover:hover) {
+  .modal-close-btn:hover { background:rgba(244,63,94,0.15) !important; border-color:rgba(244,63,94,0.3) !important; color:#fff !important; }
+}
+
+/* Save button */
 #saveLeaveBtn {
-    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-    box-shadow: 0 4px 16px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.18) !important;
-    border: none !important;
-    transition: all 0.2s ease !important;
-    border-radius: 14px !important;
+  background: var(--v-btn-bg) !important;
+  color:#fff !important;
+  border-radius: calc(var(--v-card-radius)*0.85) !important;
+  font-weight:900 !important;
+  letter-spacing:0.1em !important;
+  box-shadow:0 4px 16px var(--v-accent-glow),inset 0 1px 0 rgba(255,255,255,0.18) !important;
+  transition:all 0.2s ease !important;
+  border:none !important;
 }
-#saveLeaveBtn:hover {
-    background: linear-gradient(135deg, #818cf8, #6366f1) !important;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.55), inset 0 1px 0 rgba(255,255,255,0.22) !important;
-    transform: translateY(-1px) !important;
+@media (hover:hover) {
+  #saveLeaveBtn:hover { background:var(--v-btn-hover) !important; box-shadow:0 8px 24px var(--v-accent-glow),inset 0 1px 0 rgba(255,255,255,0.22) !important; transform:translateY(-1px) !important; }
 }
+#saveLeaveBtn:active { transform:translateY(1px) !important; }
 
 /* Cancel button */
-#leaveModal button[onclick="closeLeaveModal()"] {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--muted) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3) !important;
-    transition: all 0.2s !important;
-    border-radius: 14px !important;
+.modal-cancel-btn {
+  background: linear-gradient(145deg,var(--v-surface3),var(--v-surface2)) !important;
+  border:1px solid var(--v-border) !important;
+  color:var(--v-muted) !important;
+  border-radius: calc(var(--v-card-radius)*0.85) !important;
+  font-weight:900 !important;
+  font-size:clamp(9px,2.2vw,12px) !important;
+  letter-spacing:0.08em !important;
+  text-transform:uppercase !important;
+  transition:all 0.2s !important;
+  cursor:pointer;
+  box-shadow: inset 0 1px 0 var(--v-card-shine), 0 2px 8px rgba(0,0,0,0.28) !important;
 }
-#leaveModal button[onclick="closeLeaveModal()"]:hover {
-    background: rgba(255,255,255,0.05) !important;
-    border-color: var(--border2) !important;
-    color: var(--text) !important;
-    transform: translateY(-1px) !important;
+@media (hover:hover) {
+  .modal-cancel-btn:hover { border-color:var(--v-border2) !important; color:var(--v-text) !important; transform:translateY(-1px) !important; }
 }
 
 /* Delete button */
 #deleteLeaveBtn {
-    background: transparent !important;
-    border: 1px solid rgba(244,63,94,0.2) !important;
-    color: var(--red) !important;
-    transition: all 0.2s !important;
-    border-radius: 12px !important;
-    padding: 10px !important;
+  color: #f43f5e !important;
+  font-size: clamp(8px,2vw,10px) !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  padding: clamp(8px,2.5vw,12px) !important;
 }
-#deleteLeaveBtn:hover {
-    background: rgba(244,63,94,0.1) !important;
-    border-color: rgba(244,63,94,0.4) !important;
-    box-shadow: 0 0 12px rgba(244,63,94,0.2) !important;
-}
+@media (hover:hover) { #deleteLeaveBtn:hover { text-decoration:underline; } }
 
-/* Modal close button */
-#leaveModal button[onclick="closeLeaveModal()"]:first-of-type {
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 6px rgba(0,0,0,0.3) !important;
-    transition: all 0.2s !important;
-}
-#leaveModal button[onclick="closeLeaveModal()"]:first-of-type:hover {
-    background: rgba(244,63,94,0.15) !important;
-    border-color: rgba(244,63,94,0.3) !important;
-    color: #fca5a5 !important;
-}
-
-/* Admin memo container */
+/* Admin memo */
 #adminMemoContainer {
-    background: linear-gradient(145deg, rgba(244,63,94,0.05), rgba(244,63,94,0.02)) !important;
-    border: 1px solid rgba(244,63,94,0.15) !important;
-    border-radius: 12px !important;
-    padding: 14px !important;
+  background: linear-gradient(145deg,rgba(244,63,94,0.06),rgba(244,63,94,0.02)) !important;
+  border: 1px solid rgba(244,63,94,0.18) !important;
+  border-radius: calc(var(--v-card-radius)*0.75) !important;
+  padding: 14px !important;
 }
-#adminMemoText {
-    color: rgba(252,165,165,0.9) !important;
-    font-family: 'SF Mono', monospace !important;
-    font-size: 11px !important;
-    line-height: 1.6 !important;
-}
+#adminMemoText { color:rgba(252,165,165,0.9) !important; font-family:'SF Mono',monospace !important; font-size:11px !important; line-height:1.6 !important; }
 
-/* Animation */
-@keyframes modalZoom {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.animate-zoomIn { animation: modalZoom 0.2s ease-out forwards; }
+/* ── Staff detail modal content ── */
+#staffLeaveContent { max-height:70vh; overflow-y:auto; }
+#staffLeaveContent::-webkit-scrollbar { width:3px; }
+#staffLeaveContent::-webkit-scrollbar-thumb { background:var(--v-dim); border-radius:10px; }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
-
-/* Scrollbar styling */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Flatpickr dark theme override */
+/* ══════════════════════════════════════════════════════════
+   FLATPICKR OVERRIDE
+══════════════════════════════════════════════════════════ */
 .flatpickr-calendar {
-    background: var(--surface2) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
-    border-radius: 16px !important;
+  background: var(--v-surface2) !important;
+  border:1px solid var(--v-border2) !important;
+  box-shadow:0 20px 60px rgba(0,0,0,0.65) !important;
+  border-radius:16px !important;
 }
-.flatpickr-day.selected {
-    background: var(--indigo) !important;
-    border-color: var(--indigo) !important;
-    box-shadow: 0 0 12px rgba(99,102,241,0.4) !important;
+.flatpickr-day.selected,.flatpickr-day.selected:hover {
+  background:var(--v-accent) !important; border-color:var(--v-accent) !important;
+  box-shadow:0 0 12px var(--v-accent-glow) !important;
 }
-.flatpickr-day:hover {
-    background: rgba(99,102,241,0.2) !important;
-}
+@media (hover:hover) { .flatpickr-day:hover { background:color-mix(in srgb,var(--v-accent) 20%,transparent) !important; } }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .leave-calendar-table td {
-        height: 70px;
-        padding: 3px;
-    }
-    .leave-day-num {
-        font-size: 9px;
-    }
-    .leave-badge {
-        font-size: 7px;
-        padding: 2px 4px;
-    }
-}
-/* ═══════════════════════════════════════════════════════════════
-   MOBILE RESPONSIVE OPTIMIZATION (추가)
-═══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   UTILITY / ANIMATIONS
+══════════════════════════════════════════════════════════ */
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--v-dim); border-radius:10px; }
 
-/* 태블릿/대형 모바일 (768px 이상) */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .leave-calendar-table td {
-        height: 80px;
-    }
-    .leave-badge {
-        font-size: 7.5px;
-    }
-    #leaveModal > div {
-        max-width: 90% !important;
-    }
-    #staffLeaveModal > div {
-        max-width: 85% !important;
-    }
+@keyframes fadeSlideIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.animate-fadeIn { animation:fadeSlideIn 0.44s cubic-bezier(0.22,1,0.36,1) both; }
+
+@media (prefers-reduced-motion:reduce) {
+  .card-3d,.leave-calendar-table td,.sv-staff-btn { transition:none !important; }
+  .animate-fadeIn { animation:none !important; }
+  .sv-pulse-dot { animation:none !important; }
 }
 
-/* 모바일 (max-width: 768px) */
-@media (max-width: 768px) {
-    /* ── 전체 레이아웃 ── */
-    .animate-fadeIn.space-y-6 {
-        padding: 0 !important;
-    }
-
-    /* ── Header 섹션 ── */
-    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-        padding: 1rem !important;
-        border-radius: 1.5rem !important;
-    }
-
-    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type > div {
-        width: 100%;
-    }
-
-    .flex.justify-between.items-center.bg-slate-900\/50:first-of-type > button {
-        width: 100% !important;
-        padding: 1rem !important;
-        font-size: 0.75rem !important;
-    }
-
-    h2 {
-        font-size: 1.5rem !important;
-        flex-wrap: wrap;
-    }
-
-    h2 .w-1\.5 {
-        display: none;
-    }
-
-    /* ── 캘린더 섹션 ── */
-    .bg-slate-900\/50:nth-of-type(2) {
-        padding: 1rem !important;
-        border-radius: 1rem !important;
-    }
-
-    .flex.justify-between.items-center.mb-6.px-2 {
-        flex-direction: column;
-        gap: 0.75rem !important;
-        align-items: stretch !important;
-    }
-
-    #calendarMonthTitle {
-        font-size: 1rem !important;
-        text-align: center;
-        width: 100%;
-    }
-
-    .flex.gap-2.items-center {
-        width: 100%;
-        justify-content: center !important;
-    }
-
-    .flex.gap-2.items-center button {
-        flex: 1;
-        max-width: 100px;
-        padding: 0.5rem !important;
-        font-size: 0.7rem !important;
-    }
-
-    button[onclick="goToToday()"] {
-        max-width: 70px !important;
-        font-size: 0.65rem !important;
-        padding: 0.4rem !important;
-    }
-
-    /* ── 캘린더 테이블 ── */
-    .leave-calendar-table {
-        font-size: 0.65rem !important;
-    }
-
-    .leave-calendar-table th {
-        padding: 0.4rem 0 !important;
-        font-size: 0.6rem !important;
-    }
-
-    .leave-calendar-table td {
-        height: 60px !important;
-        padding: 2px !important;
-        border-radius: 4px;
-    }
-
-    .leave-day-num {
-        font-size: 0.7rem !important;
-        margin-bottom: 1px;
-    }
-
-    .leave-badge {
-        font-size: 0.6rem !important;
-        padding: 1px 3px !important;
-        margin-top: 1px;
-    }
-
-    .today-mark {
-        font-size: 0.5rem !important;
-        padding: 0px 3px !important;
-        margin-left: 2px;
-    }
-
-    /* ── 히스토리 섹션 ── */
-    .bg-slate-900\/50:nth-of-type(3) {
-        padding: 1rem !important;
-        border-radius: 1rem !important;
-    }
-
-    .overflow-x-auto {
-        border-radius: 0.5rem;
-    }
-
-    table {
-        font-size: 0.7rem !important;
-    }
-
-    table thead tr {
-        font-size: 0.65rem !important;
-    }
-
-    table th {
-        padding: 0.5rem 0.25rem !important;
-        font-size: 0.65rem !important;
-    }
-
-    table td {
-        padding: 0.5rem 0.25rem !important;
-        font-size: 0.7rem !important;
-    }
-
-    table .text-[11px] {
-        font-size: 0.65rem !important;
-    }
-
-    table .text-[10px] {
-        font-size: 0.6rem !important;
-    }
-
-    table .max-w-\[120px\] {
-        max-width: 80px !important;
-    }
-
-    table .max-w-\[80px\] {
-        max-width: 50px !important;
-    }
-
-/* ── 스태프 리스트 섹션 ── */
-#staffListContainer {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+/* ── Tailwind overrides → force dark ── */
+.bg-slate-900\/50,.bg-slate-900,.bg-slate-800 {
+  background: linear-gradient(145deg,var(--v-surface2),var(--v-surface)) !important;
 }
-
-#staffListContainer button {
-    display: inline-block !important;
-    width: auto !important;
-    min-width: fit-content !important;
-    padding: 0.6rem 0.8rem !important;
-    font-size: 0.7rem !important;
-    white-space: nowrap !important;
-    background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--muted) !important;
-    border-radius: 0.75rem !important;
-    transition: all 0.2s !important;
-    cursor: pointer !important;
-}
-
-#staffListContainer button:hover {
-    background: rgba(99, 102, 241, 0.2) !important;
-    border-color: rgba(99, 102, 241, 0.3) !important;
-    color: #a5b4fc !important;
-}
-
-#staffListContainer button:active {
-    transform: scale(0.95) !important;
-}
-
-    /* ── 모달 창 ── */
-    #leaveModal > div,
-    #staffLeaveModal > div {
-        width: calc(100% - 1rem) !important;
-        max-width: 100% !important;
-        margin: 1rem auto !important;
-        padding: 1.25rem !important;
-        border-radius: 1.5rem !important;
-    }
-
-    /* 모달 타이틀 */
-    #leaveModal h3,
-    #staffLeaveModal h3 {
-        font-size: 1rem !important;
-    }
-
-    .w-10.h-10 {
-        width: 2rem !important;
-        height: 2rem !important;
-        font-size: 1.5rem !important;
-    }
-
-    /* ── 모달 입력 필드 ── */
-    #leaveModal select,
-    #leaveModal input,
-    #leaveModal textarea,
-    #staffLeaveModal select,
-    #staffLeaveModal input,
-    #staffLeaveModal textarea {
-        font-size: 0.9rem !important;
-        padding: 0.8rem !important;
-        border-radius: 0.75rem !important;
-    }
-
-    #leaveModal textarea,
-    #staffLeaveModal textarea {
-        min-height: 80px !important;
-    }
-
-    /* ── 모달 버튼 ── */
-    .grid.grid-cols-2 {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.5rem !important;
-    }
-
-    .grid.grid-cols-2 button {
-        padding: 0.8rem !important;
-        font-size: 0.75rem !important;
-    }
-
-    #deleteLeaveBtn,
-    #staffLeaveModal button {
-        padding: 0.75rem !important;
-        font-size: 0.7rem !important;
-    }
-
-    /* ── 레이블 ── */
-    label {
-        font-size: 0.7rem !important;
-    }
-
-    /* ── 스태프 모달 콘텐츠 ── */
-    #staffLeaveContent {
-        max-height: 60vh !important;
-        padding-right: 0.5rem;
-    }
-
-    #staffLeaveContent > div {
-        padding: 0.75rem 0 !important;
-        border-left-width: 3px !important;
-    }
-
-    #staffLeaveContent h4 {
-        font-size: 0.8rem !important;
-        margin-bottom: 0.5rem !important;
-    }
-
-    #staffLeaveContent .bg-slate-800\/50 {
-        padding: 0.75rem !important;
-        border-radius: 0.5rem !important;
-    }
-
-    #staffLeaveContent .flex.items-center.justify-between {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 0.25rem !important;
-    }
-
-    #staffLeaveContent .flex.items-center.gap-3 {
-        flex-wrap: wrap;
-        gap: 0.25rem !important;
-    }
-
-    /* ── Admin Memo Container ── */
-    #adminMemoContainer {
-        padding: 0.75rem !important;
-    }
-
-    #adminMemoText {
-        font-size: 0.7rem !important;
-        min-height: 50px !important;
-    }
-
-    /* ── 섹션 제목 ── */
-    h3, h4 {
-        font-size: 0.85rem !important;
-        margin-bottom: 0.75rem !important;
-    }
-
-    h4.text-xs {
-        font-size: 0.7rem !important;
-        margin-bottom: 0.5rem !important;
-    }
-
-    /* ── 스크롤바 ── */
-    .no-scrollbar {
-        scrollbar-width: none;
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* ── 페이딩과 애니메이션 ── */
-    .animate-fadeIn {
-        animation: fadeIn 0.3s ease-out forwards;
-    }
-
-    .animate-zoomIn {
-        animation: modalZoom 0.2s ease-out forwards;
-    }
-
-    /* ── 여백 조정 ── */
-    .pb-20 {
-        padding-bottom: 2rem !important;
-    }
-
-    .space-y-6 > * + * {
-        margin-top: 1rem !important;
-    }
-
-    .space-y-4 > * + * {
-        margin-top: 0.75rem !important;
-    }
-
-    .space-y-2 > * + * {
-        margin-top: 0.5rem !important;
-    }
-
-    /* ── 테두리 반경 조정 ── */
-    .rounded-2xl {
-        border-radius: 1rem !important;
-    }
-
-    .rounded-xl {
-        border-radius: 0.75rem !important;
-    }
-
-    .rounded-lg {
-        border-radius: 0.5rem !important;
-    }
-
-    /* ── 호버 효과 비활성화 (터치 기기) ── */
-    @media (hover: none) {
-        .leave-calendar-table td:hover {
-            transform: none !important;
-        }
-
-        button:hover {
-            transform: none !important;
-        }
-    }
-
-    /* ── Safe Area 고려 (iPhone 노치) ── */
-    @supports (padding: max(0px)) {
-        .animate-fadeIn.space-y-6 {
-            padding-left: max(0.5rem, env(safe-area-inset-left)) !important;
-            padding-right: max(0.5rem, env(safe-area-inset-right)) !important;
-            padding-top: max(0.5rem, env(safe-area-inset-top)) !important;
-        }
-    }
-}
-
-/* 매우 작은 모바일 (max-width: 480px) */
-@media (max-width: 480px) {
-    h2 {
-        font-size: 1.25rem !important;
-    }
-
-    #calendarMonthTitle {
-        font-size: 0.9rem !important;
-    }
-
-    .leave-calendar-table {
-        font-size: 0.55rem !important;
-    }
-
-    .leave-calendar-table td {
-        height: 50px !important;
-        padding: 1px !important;
-    }
-
-    .leave-day-num {
-        font-size: 0.6rem !important;
-    }
-
-    .leave-badge {
-        font-size: 0.5rem !important;
-        padding: 1px 2px !important;
-    }
-
-    table {
-        font-size: 0.65rem !important;
-    }
-
-    table th {
-        padding: 0.4rem 0.15rem !important;
-        font-size: 0.55rem !important;
-    }
-
-    table td {
-        padding: 0.4rem 0.15rem !important;
-    }
-
-    #staffListContainer {
-        flex-direction: column !important;
-    }
-
-    #staffListContainer button {
-        padding: 0.5rem 0.6rem !important;
-        font-size: 0.65rem !important;
-    }
-
-    #leaveModal > div,
-    #staffLeaveModal > div {
-        padding: 1rem !important;
-    }
-
-    .grid.grid-cols-2 button {
-        padding: 0.7rem !important;
-        font-size: 0.7rem !important;
-    }
-
-    /* 테이블 컬럼 숨기기 (매우 좁은 화면) */
-    table .max-w-\[120px\] {
-        display: none;
-    }
-
-    table tbody tr > td:nth-child(3) {
-        display: none;
-    }
-
-    table thead tr > th:nth-child(3) {
-        display: none;
-    }
-}
-
-/* 초소형 모바일 (max-width: 360px) */
-@media (max-width: 360px) {
-    .leave-calendar-table {
-        font-size: 0.5rem !important;
-    }
-
-    .leave-calendar-table td {
-        height: 45px !important;
-    }
-
-    .leave-day-num {
-        font-size: 0.55rem !important;
-    }
-
-    .leave-badge {
-        font-size: 0.45rem !important;
-        padding: 0.5px 1px !important;
-    }
-
-    #calendarMonthTitle {
-        font-size: 0.8rem !important;
-    }
-
-    table {
-        font-size: 0.6rem !important;
-    }
-
-    h2 {
-        font-size: 1.1rem !important;
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   직사각형 모바일 (가로 모드)
-═══════════════════════════════════════════════════════════════ */
-
-@media (max-width: 1024px) and (orientation: landscape) {
-    .leave-calendar-table td {
-        height: 70px !important;
-    }
-
-    .flex.justify-between.items-center.mb-6.px-2 {
-        flex-direction: row !important;
-        justify-content: space-between !important;
-    }
-
-    #calendarMonthTitle {
-        text-align: left;
-        flex: 1;
-    }
-
-    .flex.gap-2.items-center {
-        justify-content: flex-end !important;
-        max-width: 300px;
-    }
-}
-/* Staff Leave Modal specific styles */
-#staffLeaveModal input[type="text"],
-#staffLeaveModal select {
-    background: linear-gradient(145deg, #050a14, #070d1a) !important;
-    border: 1px solid var(--dim) !important;
-    color: var(--text) !important;
-}
-
-#staffLeaveModal .space-y-4 {
-    padding-right: 8px;
-}
-
-#staffLeaveModal .space-y-4::-webkit-scrollbar {
-    width: 6px;
-}
-
-#staffLeaveModal .space-y-4::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#staffLeaveModal .space-y-4::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.3);
-    border-radius: 3px;
-}
-
-#staffLeaveModal .space-y-4::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.5);
-}
+.border-slate-700,.border-slate-800 { border-color:var(--v-border) !important; }
+.text-slate-400,.text-slate-500 { color:var(--v-muted) !important; }
+.text-white { color:var(--v-text) !important; }
+.rounded-2xl { border-radius:var(--v-card-radius) !important; }
+.rounded-\[2\.5rem\] { border-radius:calc(var(--v-card-radius)*1.5) !important; }
+.divide-y.divide-slate-800\/50 > * + * { border-top:1px solid var(--v-border); }
 </style>
 
-<div class="animate-fadeIn space-y-6 pb-20">
-    <div class="flex justify-between items-center bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800">
-        <div>
-            <h2 class="text-2xl font-black text-white flex items-center gap-3"><div class="w-1.5 h-7 bg-indigo-500 rounded-full"></div>LEAVE APPLICATION</h2>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 ml-4">Request and manage your time off</p>
-        </div>
-        <button onclick="openLeaveModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs transition-all active:scale-95 shadow-lg shadow-indigo-500/20">NEW REQUEST</button>
+<!-- ══════════════════════════════════════════════════════════
+     HTML
+══════════════════════════════════════════════════════════ -->
+<div class="sv-root animate-fadeIn">
+
+  <!-- ── Header ── -->
+  <div class="card-3d sv-header-card">
+    <div>
+      <div class="sv-header-title">
+        <div class="sv-header-accent"></div>
+        Leave Application
+      </div>
+      <p class="sv-header-sub">Request and manage your time off</p>
+    </div>
+    <button class="sv-new-btn" onclick="openLeaveModal()">NEW REQUEST</button>
+  </div>
+
+  <!-- ── Calendar Card ── -->
+  <div class="card-3d sv-cal-card">
+    <div class="sv-cal-header">
+      <h3 id="calendarMonthTitle">Month Year</h3>
+      <div class="sv-nav-bar">
+        <button class="sv-nav-btn today-btn" onclick="goToToday()">TODAY</button>
+        <button class="sv-nav-btn" onclick="changeLeaveMonth(-1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="sv-nav-btn" onclick="changeLeaveMonth(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar"></div>
+  </div>
+
+  <!-- ── History Card ── -->
+  <div class="card-3d sv-history-card">
+    <div class="sv-section-title">
+      <span class="sv-pulse-dot"></span>
+      Leave Application Status
     </div>
 
-    <div class="bg-slate-900/50 p-4 md:p-6 rounded-[2rem] border border-slate-800 backdrop-blur-sm">
-        <div class="flex justify-between items-center mb-6 px-2">
-            <h3 id="calendarMonthTitle" class="text-lg font-black text-white uppercase italic tracking-tighter">Month Year</h3>
-            <div class="flex gap-2 items-center">
-                <button onclick="goToToday()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl text-[10px] font-black transition-all border border-indigo-500/30 active:scale-95 mr-1">TODAY</button>
-                <button onclick="changeLeaveMonth(-1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg></button>
-                <button onclick="changeLeaveMonth(1)" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg></button>
-            </div>
-        </div>
-        <div id="leaveCalendarContainer" class="overflow-x-auto no-scrollbar"></div>
+    <div style="overflow-x:auto;">
+      <table class="sv-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Dates</th>
+            <th>Reason</th>
+            <th>Memo</th>
+            <th>Status</th>
+            <th style="text-align:right;">Days</th>
+          </tr>
+        </thead>
+        <tbody id="leaveHistoryBody"></tbody>
+      </table>
     </div>
 
-<!-- 기존 "My Annual Leave History" 섹션을 아래로 교체하세요 -->
-<div class="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-800 shadow-2xl">
-    <h3 class="text-sm font-black text-white mb-6 flex items-center gap-2 uppercase tracking-tighter">
-        <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Leave Application Status
-    </h3>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-            <thead>
-                <tr class="text-slate-500 uppercase tracking-widest border-b border-slate-800">
-                    <th class="pb-4 font-black">Type</th>
-                    <th class="pb-4 font-black">Dates</th>
-                    <th class="pb-4 font-black">Reason</th>
-                    <th class="pb-4 font-black">Status</th>
-                    <th class="pb-4 font-black text-right">Action</th>
-                </tr>
-            </thead>
-            <tbody id="leaveHistoryBody" class="divide-y divide-slate-800/50"></tbody>
-        </table>
+    <!-- Staff list -->
+    <div class="sv-staff-section">
+      <div class="sv-section-title" style="margin-bottom:12px;font-size:clamp(8px,2vw,11px);">Team Leave Overview</div>
+      <div id="staffListContainer" class="sv-staff-grid"></div>
     </div>
-    
-<!-- Staff List Section -->
-<div class="mt-8 pt-8 border-t border-slate-800">
-    <h4 class="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Team Leave Overview</h4>
-    <div id="staffListContainer" class="flex flex-wrap gap-2 w-full"></div>
-</div>
-</div>
+  </div>
 
-    </div>
-</div>
+</div><!-- /sv-root -->
 
+<!-- ══ Leave Request Modal ══ -->
 <div id="leaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] hidden overflow-y-auto pt-4 pb-20 px-4">
-    <div class="relative bg-slate-900 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8">
-        <div class="flex justify-between items-center mb-6">
-            <h3 id="modalTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">New Leave Request</h3>
-            <button onclick="closeLeaveModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl bg-slate-800 rounded-full transition-all">&times;</button>
-        </div>
-        
-        <div class="space-y-4">
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Leave Type</label>
-                <select id="leaveType" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                    <option value="PEL">PEL (Personal Leave)</option>
-                    <option value="ANL">ANL (Annual Leave)</option>
-                    <option value="HAL">HAL (Half Day Leave)</option>
-                    <option value="SIL">SIL (Sick Leave)</option>
-                    <option value="SPL">SPL (Special Leave)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Select Dates</label>
-                <input type="text" id="leaveDateRange" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white font-bold outline-none" placeholder="Choose your dates">
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 ml-1">Reason / Note</label>
-                <textarea id="leaveReason" rows="3" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-2xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="Why are you taking leave?   Please enter at least 5 words!"></textarea>
+  <div class="w-full max-w-md rounded-[2.5rem] p-6 shadow-2xl mx-auto my-8" style="position:relative;">
 
-            </div>
-            <div id="adminMemoContainer" class="hidden">
-                <label class="block text-[10px] font-bold text-rose-400 uppercase mb-2 ml-1">Admin Memo</label>
-                <div id="adminMemoText" class="w-full bg-rose-500/5 border border-rose-500/20 p-4 rounded-2xl text-rose-200 text-sm italic min-h-[60px]"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 mt-8">
-            <button onclick="closeLeaveModal()" class="bg-slate-800 text-slate-400 font-bold py-4 rounded-2xl hover:bg-slate-700 transition uppercase text-xs tracking-widest">Cancel</button>
-            <button id="saveLeaveBtn" onclick="submitLeaveRequest()" class="bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition uppercase text-xs tracking-widest">Submit</button>
-        </div>
-        <button id="deleteLeaveBtn" onclick="deleteLeave()" class="w-full mt-4 text-rose-500 text-[10px] font-black uppercase tracking-widest hidden hover:underline">Delete this request</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 id="modalTitle" style="margin:0;">New Leave Request</h3>
+      <button class="modal-close-btn" onclick="closeLeaveModal()">&times;</button>
     </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="display:block;margin-bottom:6px;">Leave Type</label>
+        <select id="leaveType">
+          <option value="PEL">PEL (Personal Leave)</option>
+          <option value="ANL">ANL (Annual Leave)</option>
+          <option value="HAL">HAL (Half Day Leave)</option>
+          <option value="SIL">SIL (Sick Leave)</option>
+          <option value="SPL">SPL (Special Leave)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;">Select Dates</label>
+        <input type="text" id="leaveDateRange" placeholder="Choose your dates">
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;">Reason / Note</label>
+        <textarea id="leaveReason" rows="3" placeholder="Why are you taking leave? Please enter at least 5 words!" style="resize:none;min-height:80px;"></textarea>
+      </div>
+      <div id="adminMemoContainer" class="hidden">
+        <label style="display:block;margin-bottom:6px;color:rgba(252,165,165,0.9) !important;">Admin Memo</label>
+        <div id="adminMemoText" style="min-height:55px;"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px;">
+      <button class="modal-cancel-btn" onclick="closeLeaveModal()" style="padding:14px 8px;">Cancel</button>
+      <button id="saveLeaveBtn" onclick="submitLeaveRequest()" style="padding:14px 8px;font-size:clamp(9px,2.2vw,12px);font-weight:900;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;">Submit</button>
+    </div>
+    <button id="deleteLeaveBtn" onclick="deleteLeave()" class="hidden" style="width:100%;margin-top:10px;text-align:center;">Delete this request</button>
+  </div>
 </div>
 
-<!-- Staff Leave Overview Modal -->
+<!-- ══ Staff Leave Overview Modal ══ -->
 <div id="staffLeaveModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] hidden overflow-y-auto pt-4 pb-20 px-4">
-    <div class="relative bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl animate-zoomIn mx-auto my-8">
-        <div class="flex justify-between items-center mb-6">
-            <h3 id="staffModalTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">Staff Leave Overview</h3>
-            <button onclick="window.closeStaffLeaveModal()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white text-3xl bg-slate-800 rounded-full transition-all">&times;</button>
-        </div>
-        
-        <div id="staffLeaveContent" class="space-y-4 max-h-[70vh] overflow-y-auto"></div>
+  <div class="w-full max-w-2xl rounded-[2.5rem] p-6 shadow-2xl mx-auto my-8" style="position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 id="staffModalTitle" style="margin:0;">Staff Leave Overview</h3>
+      <button class="modal-close-btn" onclick="window.closeStaffLeaveModal()">&times;</button>
     </div>
+    <div id="staffLeaveContent" class="no-scrollbar" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — all original logic preserved
+══════════════════════════════════════════════════════════ -->
 <script>
-(function() {
-    const db = firebase.database();
-    const user = sessionStorage.getItem('loggedInUser');
-    let datePicker, editingId = null, editingData = null, currentViewDate = new Date();
+(function () {
+  const db = firebase.database();
+  const user = sessionStorage.getItem('loggedInUser');
+  let datePicker, editingId = null, editingData = null, currentViewDate = new Date();
+  let _leaveListener = null; /* cleanup ref */
 
-    window.initLeavePage = function() {
-        if (!user || user === "null") {
-            alert("Login required.");
-            return;
-        }
-        initFlatpickr();
-        loadLeaveHistory();
-        renderCalendar();
-    };
+  /* ── Flatpickr ── */
+  function initFlatpickr() {
+    datePicker = flatpickr("#leaveDateRange", {
+      mode:"range", dateFormat:"Y-m-d", theme:"dark", minDate:"today",
+      locale:{rangeSeparator:' ~ '}, static:true, disableMobile:true
+    });
+  }
 
-    function initFlatpickr() {
-        datePicker = flatpickr("#leaveDateRange", {
-            mode: "range", dateFormat: "Y-m-d", theme: "dark", minDate: "today", 
-            locale: { rangeSeparator: ' ~ ' }, static: true, disableMobile: true
-        });
-    }
+  /* ── Init ── */
+  window.initLeavePage = function () {
+    if (!user || user === "null") { alert("Login required."); return; }
+    initFlatpickr();
+    loadLeaveHistory();
+    renderCalendar();
+  };
 
-window.renderCalendar = function() {
+  /* ── Calendar render ── */
+  window.renderCalendar = function () {
     const container = document.getElementById('leaveCalendarContainer');
     const title = document.getElementById('calendarMonthTitle');
+    if (!container || !title) return;
+
     const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
-    title.innerText = currentViewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    title.innerText = currentViewDate.toLocaleString('en-US', {month:'long',year:'numeric'});
 
-    // 본인 데이터만이 아니라 전체 leaves 노드를 참조합니다.
-    db.ref(`leaves`).once('value', snap => {
-        const allLeavesData = snap.val() || {};
-let html = `<table class="leave-calendar-table">
-<colgroup>
-    <col class="weekend">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekday">
-    <col class="weekend">
-</colgroup><thead><tr>`;
+    const firstDay = new Date(year,month,1).getDay();
+    const lastDate  = new Date(year,month+1,0).getDate();
+    const today     = new Date();
+    const todayStr  = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
-['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day, idx) => {
-    let colorClass = idx === 0 ? 'text-rose-500' : (idx === 6 ? 'text-blue-500' : 'text-slate-500');
-    html += `<th class="${colorClass}">${day}</th>`;
-});
-
-html += `</tr></thead><tbody><tr>`;
-for(let i=0; i<firstDay; i++) html += `<td></td>`;
-        
-        for(let d=1; d<=lastDate; d++) {
-            const dayOfWeek = (firstDay + d - 1) % 7;
-            if(dayOfWeek === 0 && d > 1) html += `</tr><tr>`;
-            
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isToday = dateStr === todayStr;
-            
-            let tdStyle = "";
-            let dayNumClass = "leave-day-num";
-            if (dayOfWeek === 0) { tdStyle = "background-color: rgba(244, 63, 94, 0.08);"; dayNumClass += " text-rose-500"; }
-            else if (dayOfWeek === 6) { tdStyle = "background-color: rgba(59, 130, 246, 0.08);"; dayNumClass += " text-blue-500"; }
-
-            const tdClass = isToday ? 'today-cell' : '';
-            const todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
-            
-            let badges = '';
-            
-            // 모든 사용자의 데이터를 순회하며 해당 날짜의 휴가를 찾습니다.
-            Object.entries(allLeavesData).forEach(([userId, yearsData]) => {
-                const userYearLeaves = yearsData[year] || {};
-                Object.entries(userYearLeaves).forEach(([id, item]) => {
-                    if(dateStr >= item.startDate && dateStr <= item.endDate && item.status === 'Approved') {
-                        if (userId === user) {
-                            // 본인 휴가
-                            const sClass = 'badge-approved';
-                            badges += `<div class="leave-badge ${sClass}">${item.type}</div>`;
-                        } else {
-                            // 다른 팀원 휴가 (이름만 표시, 사유 비공개)
-                            // userId가 이메일 형태라면 @ 앞부분만 추출
-                            const displayName = userId.split('@')[0].toUpperCase();
-                            badges += `<div class="leave-badge badge-others" title="Team member is off">${displayName} OFF</div>`;
-                        }
-                    }
-                });
-            });
-
-            html += `<td class="${tdClass}" style="${tdStyle}">
-                        <div class="${dayNumClass}">${d}${todayBadge}</div>
-                        <div class="overflow-y-auto max-h-[60px] no-scrollbar">${badges}</div>
-                     </td>`;
-        }
-        html += `</tr></tbody></table>`;
-        if(container) container.innerHTML = html;
-    });
-};
-
-
-    window.changeLeaveMonth = function(val) { currentViewDate.setMonth(currentViewDate.getMonth() + val); renderCalendar(); };
-    window.goToToday = function() { currentViewDate = new Date(); renderCalendar(); };
-
-// ═══════════════════════════════════════════════════════════════
-// 1. loadLeaveHistory() 함수를 완전히 교체하세요
-// ═══════════════════════════════════════════════════════════════
-
-function loadLeaveHistory() {
-    const now = new Date();
-    const thisYear = now.getFullYear();
-    const thisMonth = String(now.getMonth() + 1).padStart(2, '0');
-    const LEAVE_TYPES = ['PEL', 'ANL', 'HAL', 'SIL', 'SPL'];
-
-    let leaveListenerRef = null;
-
-    function detachLeaveListener() {
-        if (leaveListenerRef) {
-            leaveListenerRef.off('value');
-            leaveListenerRef = null;
-        }
-    }
-
-    window._leavePageCleanup = detachLeaveListener;
-
-    // Step 1: attendance 스캔
-    db.ref('attendance').once('value', attSnap => {
-        const attData = attSnap.val() || {};
-        const writes = [];
-
-        Object.entries(attData).forEach(([dateStr, dayData]) => {
-            if (!dayData || typeof dayData !== 'object') return;
-            const attYear = parseInt(dateStr.split('-')[0]);
-
-            Object.entries(dayData).forEach(([name, info]) => {
-                if (name !== user) return;
-                if (typeof info !== 'string') return;
-                const leaveType = info.trim().toUpperCase();
-                if (!LEAVE_TYPES.includes(leaveType)) return;
-
-                writes.push(
-                    db.ref(`leaves/${user}/${attYear}`).once('value').then(leaveSnap => {
-                        const yearLeaves = leaveSnap.val() || {};
-                        const isDuplicate = Object.values(yearLeaves).some(item =>
-                            item.startDate <= dateStr && item.endDate >= dateStr
-                        );
-                        if (isDuplicate) return;
-                        return db.ref(`leaves/${user}/${attYear}`).push({
-                            type: leaveType,
-                            startDate: dateStr,
-                            endDate: dateStr,
-                            reason: '(From attendance record)',
-                            status: 'Approved',
-                            requestedAt: new Date(dateStr).getTime(),
-                            reviewedAt: new Date(dateStr).getTime(),
-                            totalWeekdays: 1,
-                            source: 'attendance'
-                        });
-                    })
-                );
-            });
-        });
-
-        Promise.all(writes).then(() => {
-            startLeaveListener();
-            loadStaffList(); // 스태프 리스트 로드 추가
-        });
-    });
-
-    // Step 2: leaves 리스너 (모든 상태 포함)
-    function startLeaveListener() {
-        leaveListenerRef = db.ref(`leaves/${user}`);
-
-        leaveListenerRef.on('value', snap => {
-            const tbody = document.getElementById('leaveHistoryBody');
-            if (!tbody) {
-                detachLeaveListener();
-                return;
-            }
-
-            const allYearsData = snap.val() || {};
-            let allLeaves = []; // Approved만 아니라 모든 상태 포함
-
-            Object.entries(allYearsData).forEach(([yr, yearData]) => {
-                if (!yearData || typeof yearData !== 'object') return;
-                Object.entries(yearData).forEach(([id, item]) => {
-                    if (item) {
-                        allLeaves.push({ id, year: parseInt(yr), ...item });
-                    }
-                });
-            });
-
-            const monthPrefix = `${thisYear}-${thisMonth}`;
-            const thisMonthItems = allLeaves.filter(i => i.startDate && i.startDate.startsWith(monthPrefix));
-            const thisYearItems  = allLeaves.filter(i => i.startDate && i.startDate.startsWith(`${thisYear}`));
-            const overallItems   = allLeaves;
-            const sumDays = arr => arr.reduce((acc, i) => acc + (i.totalWeekdays || 0), 0);
-
-            const renderSection = (label, color, items, totalDays) => {
-                let html = `
-                    <tr>
-                        <td colspan="6" class="pt-6 pb-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black uppercase tracking-widest ${color}">${label}</span>
-                                <span class="text-[9px] font-black ${color} bg-slate-800 px-3 py-1 rounded-full">${totalDays} day${totalDays !== 1 ? 's' : ''} used</span>
-                            </div>
-                            <div class="h-px bg-slate-800 mt-2"></div>
-                        </td>
-                    </tr>`;
-
-                if (items.length === 0) {
-                    html += `<tr><td colspan="6" class="py-3 text-center text-[10px] text-slate-600 italic">No records</td></tr>`;
-                } else {
-                    items.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0)).forEach(item => {
-                        let statusColor = 'text-emerald-500';
-                        if (item.status === 'Pending') statusColor = 'text-amber-500';
-                        else if (item.status === 'Rejected') statusColor = 'text-rose-500';
-
-                        const sourceTag = item.source === 'attendance'
-                            ? `<span class="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded ml-1">ATT</span>`
-                            : '';
-                        const memoHtml = item.adminMemo
-                            ? `<div class="flex items-center gap-1 text-amber-500/80 italic"><span class="text-[10px]">💬</span><span class="truncate max-w-[80px] text-[10px]">${item.adminMemo}</span></div>`
-                            : `-`;
-                        const dateRange = item.endDate !== item.startDate
-                            ? `${item.startDate} → ${item.endDate}`
-                            : item.startDate;
-
-                        html += `
-                            <tr class="hover:bg-white/5 transition-colors cursor-pointer"
-                                onclick="window.openLeaveModal('${item.id}', JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(item))}')))">
-                                <td class="py-3 font-black text-indigo-400">${item.type}${sourceTag}</td>
-                                <td class="py-3 text-slate-300 font-mono text-[11px]">${dateRange}</td>
-                                <td class="py-3 text-slate-500 max-w-[120px] truncate text-[11px]">${item.reason || '-'}</td>
-                                <td class="py-3">${memoHtml}</td>
-                                <td class="py-3 font-bold ${statusColor} text-[10px] uppercase">${item.status}</td>
-                                <td class="py-3 text-right text-[10px] text-slate-600 font-bold">${item.totalWeekdays || 0}d</td>
-                            </tr>`;
-                    });
-                }
-                return html;
-            };
-
-            tbody.innerHTML =
-                renderSection(`This Month (${thisYear}.${thisMonth})`, 'text-indigo-400', thisMonthItems, sumDays(thisMonthItems)) +
-                renderSection(`This Year (${thisYear})`,               'text-emerald-400', thisYearItems,  sumDays(thisYearItems))  +
-                renderSection('Overall',                                'text-slate-400',   overallItems,   sumDays(overallItems));
-        });
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 2. 스태프 리스트 로드 함수 추가
-// ═══════════════════════════════════════════════════════════════
-
-window.loadStaffList = function() {
     db.ref('leaves').once('value', snap => {
-        const allUsers = Object.keys(snap.val() || {});
-        const container = document.getElementById('staffListContainer');
-        if (!container) return;
+      const allLeavesData = snap.val() || {};
 
-        const staffButtons = allUsers
-            .filter(u => u !== user) // 자신 제외
-            .sort()
-            .map(staffName => {
-                const displayName = staffName.includes('@') 
-                    ? staffName.split('@')[0].toUpperCase() 
-                    : staffName.toUpperCase();
-                return `<button type="button" onclick="window.showStaffLeaveOverview('${staffName}')" class="px-3 py-2 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95">${displayName}</button>`;
-            })
-            .join('');
+      let html = `<table class="leave-calendar-table">
+        <colgroup>
+          <col class="weekend"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekday"><col class="weekend">
+        </colgroup>
+        <thead><tr>`;
+      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day,idx) => {
+        const cls = idx===0?'th-sun':idx===6?'th-sat':'';
+        html += `<th class="${cls}">${day}</th>`;
+      });
+      html += `</tr></thead><tbody><tr>`;
+      for (let i=0;i<firstDay;i++) html += `<td></td>`;
 
-        container.innerHTML = staffButtons || '<p class="text-slate-500 text-xs">No team members</p>';
-    });
-};
+      for (let d=1;d<=lastDate;d++) {
+        const dow = (firstDay+d-1)%7;
+        if (dow===0&&d>1) html += `</tr><tr>`;
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = dateStr===todayStr;
 
-// ═══════════════════════════════════════════════════════════════
-// 3. 스태프 휴가 개요 팝업 함수 추가
-// ═══════════════════════════════════════════════════════════════
+        let tdClass = isToday?'today-cell':'';
+        if (dow===0) tdClass += ' td-sun'; else if (dow===6) tdClass += ' td-sat';
 
-window.showStaffLeaveOverview = function(staffName) {
-    db.ref(`leaves/${staffName}`).once('value', snap => {
-        const yearData = snap.val() || {};
-        const modal = document.getElementById('staffLeaveModal');
-        const title = document.getElementById('staffModalTitle');
-        const content = document.getElementById('staffLeaveContent');
-        
-        if (!modal || !content) return;
+        let numClass = 'leave-day-num';
+        if (isToday) numClass += ' today-color';
+        else if (dow===0) numClass += ' sun-color';
+        else if (dow===6) numClass += ' sat-color';
 
-        // 타이틀 설정
-        title.innerText = `${staffName.toUpperCase()} - Leave Records`;
+        const todayBadge = isToday ? `<span class="today-mark">TODAY</span>` : '';
 
-        // 모든 휴가 데이터를 평탄화하여 정렬
-        let allLeaves = [];
-        Object.keys(yearData).forEach(year => {
-            const yearLeaves = yearData[year] || {};
-            Object.entries(yearLeaves).forEach(([id, item]) => {
-                if (item) {
-                    allLeaves.push({
-                        id,
-                        year: parseInt(year),
-                        ...item
-                    });
-                }
-            });
-        });
-
-        // 날짜 역순 정렬 (최신순)
-        allLeaves.sort((a, b) => {
-            const dateA = new Date(a.startDate);
-            const dateB = new Date(b.startDate);
-            return dateB - dateA;
-        });
-
-        // 연도별로 그룹화
-        const groupedByYear = {};
-        allLeaves.forEach(leave => {
-            if (!groupedByYear[leave.year]) {
-                groupedByYear[leave.year] = [];
+        let badges = '';
+        Object.entries(allLeavesData).forEach(([uid, yearsData]) => {
+          const userYearLeaves = yearsData[year] || {};
+          Object.entries(userYearLeaves).forEach(([, item]) => {
+            if (dateStr>=item.startDate && dateStr<=item.endDate && item.status==='Approved') {
+              if (uid===user) {
+                badges += `<div class="leave-badge badge-approved">${item.type}</div>`;
+              } else {
+                const dn = uid.includes('@')?uid.split('@')[0].toUpperCase():uid.toUpperCase();
+                badges += `<div class="leave-badge badge-others">${dn} OFF</div>`;
+              }
             }
-            groupedByYear[leave.year].push(leave);
+          });
         });
 
-        // HTML 생성
-        let html = '';
-        
-        if (allLeaves.length === 0) {
-            html = '<div class="text-center py-8"><p class="text-slate-400 text-sm">No leave records found</p></div>';
-        } else {
-            Object.keys(groupedByYear)
-                .sort()
-                .reverse()
-                .forEach(year => {
-                    const leaves = groupedByYear[year];
-                    
-                    html += `
-                        <div class="border-l-4 border-indigo-500 pl-4 py-2">
-                            <h4 class="text-sm font-black text-indigo-400 uppercase mb-3">━━ ${year} ━━</h4>
-                            <div class="space-y-2">
-                    `;
-
-                    leaves.forEach(item => {
-                        // 상태별 색상
-                        let statusColor = 'text-emerald-400';
-                        let statusBg = 'bg-emerald-500/10';
-                        if (item.status === 'Pending') {
-                            statusColor = 'text-amber-400';
-                            statusBg = 'bg-amber-500/10';
-                        } else if (item.status === 'Rejected') {
-                            statusColor = 'text-rose-400';
-                            statusBg = 'bg-rose-500/10';
-                        }
-
-                        // 날짜 포맷
-                        const dateDisplay = item.startDate === item.endDate 
-                            ? item.startDate 
-                            : `${item.startDate} ~ ${item.endDate}`;
-
-                        html += `
-                            <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:bg-slate-800 transition-colors">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-indigo-300 font-black text-sm">${item.type}</span>
-                                        <span class="text-slate-500 text-xs font-bold">${dateDisplay}</span>
-                                    </div>
-                                    <span class="font-black text-xs px-3 py-1 rounded-full ${statusColor} ${statusBg} uppercase">${item.status}</span>
-                                </div>
-                                <div class="text-slate-400 text-xs">${item.reason || 'No reason provided'}</div>
-                                ${item.totalWeekdays ? `<div class="text-slate-500 text-xs mt-2">Days: <span class="text-slate-300 font-bold">${item.totalWeekdays}d</span></div>` : ''}
-                            </div>
-                        `;
-                    });
-
-                    html += `
-                            </div>
-                        </div>
-                    `;
-                });
-        }
-
-        content.innerHTML = html;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        html += `<td class="${tdClass}">
+          <div class="${numClass}">${d}${todayBadge}</div>
+          <div class="overflow-y-auto no-scrollbar" style="max-height:clamp(35px,8vw,55px);">${badges}</div>
+        </td>`;
+      }
+      html += `</tr></tbody></table>`;
+      container.innerHTML = html;
     });
-};
+  };
 
-window.closeStaffLeaveModal = function() {
-    const modal = document.getElementById('staffLeaveModal');
-    if (modal) modal.classList.add('hidden');
-    document.body.style.overflow = '';
-};
+  window.changeLeaveMonth = (val) => { currentViewDate.setMonth(currentViewDate.getMonth()+val); renderCalendar(); };
+  window.goToToday = () => { currentViewDate=new Date(); renderCalendar(); };
 
-// ═══════════════════════════════════════════════════════════════
-// 4. renderCalendar() 함수 수정 (이미 모든 staff 표시하도록 되어있음)
-// 기존 코드 유지 - 변경 필요 없음
-// ═══════════════════════════════════════════════════════════════
+  /* ── Leave history ── */
+  function loadLeaveHistory() {
+    const now = new Date(), thisYear=now.getFullYear(), thisMonth=String(now.getMonth()+1).padStart(2,'0');
+    const LEAVE_TYPES=['PEL','ANL','HAL','SIL','SPL'];
 
-// ═══════════════════════════════════════════════════════════════
-// 5. submitLeaveRequest() 함수 수정 (Rejected도 수정 가능하도록)
-// ═══════════════════════════════════════════════════════════════
+    function detach() { if (_leaveListener) { _leaveListener.off('value'); _leaveListener=null; } }
+    window._leavePageCleanup = detach;
 
-window.submitLeaveRequest = function() {
-    // Approved만 수정 불가 (Rejected/Pending은 수정 가능)
-    if (editingData && editingData.status === 'Approved') {
-        return alert("Approved requests cannot be modified.");
-    }
-
-    const type = document.getElementById('leaveType').value;
-    const range = datePicker.selectedDates;
-    
-    const escapeHTML = (str) => {
-        return str.replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[m]);
-    };
-    const reasonRaw = document.getElementById('leaveReason').value.trim();
-    const reason = escapeHTML(reasonRaw);
-
-    const wordCount = reasonRaw.match(/\b\w+\b/g)?.length || 0;
-    if (wordCount < 5) {
-        alert("Please describe your reason in more detail (at least 5 words).");
-        document.getElementById('leaveReason').focus();
-        return;
-    }
-
-    if (range.length === 0) return alert("Please select dates.");
-    
-    const start = new Date(range[0]);
-    const end = range.length > 1 ? new Date(range[1]) : new Date(range[0]);
-    
-    let validDates = [], tempDate = new Date(start);
-    while (tempDate <= end) {
-        if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) validDates.push(new Date(tempDate));
-        tempDate.setDate(tempDate.getDate() + 1);
-    }
-    
-    if (validDates.length === 0) return alert("Weekends are excluded. Please select weekdays.");
-    
-    const startDate = validDates[0].toLocaleDateString('en-CA');
-    const endDate = validDates[validDates.length - 1].toLocaleDateString('en-CA');
-    const year = new Date(startDate).getFullYear();
-    
-    const leaveData = {
-        type, startDate, endDate, reason,
-        status: editingData && editingData.status === 'Rejected' ? "Pending" : "Pending",
-        requestedAt: editingData?.requestedAt || firebase.database.ServerValue.TIMESTAMP,
-        totalWeekdays: validDates.length
-    };
-
-    const ref = editingId ? db.ref(`leaves/${user}/${year}/${editingId}`) : db.ref(`leaves/${user}/${year}`).push();
-    ref.set(leaveData).then(() => {
-        alert("Request submitted successfully.");
-        closeLeaveModal();
+    /* scan attendance → auto-create leaves */
+    db.ref('attendance').once('value', attSnap => {
+      const attData = attSnap.val()||{};
+      const writes = [];
+      Object.entries(attData).forEach(([dateStr,dayData]) => {
+        if (!dayData||typeof dayData!=='object') return;
+        const attYear=parseInt(dateStr.split('-')[0]);
+        Object.entries(dayData).forEach(([name,info]) => {
+          if (name!==user||typeof info!=='string') return;
+          const lt=info.trim().toUpperCase(); if (!LEAVE_TYPES.includes(lt)) return;
+          writes.push(
+            db.ref(`leaves/${user}/${attYear}`).once('value').then(ls => {
+              const yl=ls.val()||{};
+              const dup=Object.values(yl).some(i=>i.startDate<=dateStr&&i.endDate>=dateStr);
+              if (dup) return;
+              return db.ref(`leaves/${user}/${attYear}`).push({
+                type:lt, startDate:dateStr, endDate:dateStr,
+                reason:'(From attendance record)', status:'Approved',
+                requestedAt:new Date(dateStr).getTime(), reviewedAt:new Date(dateStr).getTime(),
+                totalWeekdays:1, source:'attendance'
+              });
+            })
+          );
+        });
+      });
+      Promise.all(writes).then(() => { startListener(); loadStaffList(); });
     });
-};
 
-// ═══════════════════════════════════════════════════════════════
-// 6. openLeaveModal() 함수 수정 (Rejected/Pending 수정 가능)
-// ═══════════════════════════════════════════════════════════════
+    function startListener() {
+      _leaveListener = db.ref(`leaves/${user}`);
+      _leaveListener.on('value', snap => {
+        const tbody=document.getElementById('leaveHistoryBody');
+        if (!tbody) { detach(); return; }
+        const allYears=snap.val()||{};
+        let all=[];
+        Object.entries(allYears).forEach(([yr,yd])=>{
+          if (!yd||typeof yd!=='object') return;
+          Object.entries(yd).forEach(([id,item])=>{ if(item) all.push({id,year:parseInt(yr),...item}); });
+        });
+        const mp=`${thisYear}-${thisMonth}`;
+        const thisM=all.filter(i=>i.startDate?.startsWith(mp));
+        const thisY=all.filter(i=>i.startDate?.startsWith(`${thisYear}`));
+        const overall=all;
+        const sumD=arr=>arr.reduce((a,i)=>a+(i.totalWeekdays||0),0);
 
-window.openLeaveModal = function(id = null, data = null) {
-    editingId = id; 
-    editingData = data;
-    const modal = document.getElementById('leaveModal');
-    if (!modal) return;
+        const mkSection=(label,color,items,total)=>{
+          let h=`<tr class="sv-group-row"><td colspan="6">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="sv-group-label" style="color:${color};">${label}</span>
+              <span style="font-size:clamp(7px,2vw,9px);font-weight:900;color:${color};background:rgba(0,0,0,0.2);padding:3px 10px;border-radius:999px;">${total} day${total!==1?'s':''} used</span>
+            </div>
+            <div style="height:1px;background:var(--v-border);margin-top:6px;"></div>
+          </td></tr>`;
+          if (!items.length) {
+            h+=`<tr><td colspan="6" style="padding:12px;text-align:center;font-size:10px;color:var(--v-muted);font-style:italic;">No records</td></tr>`;
+          } else {
+            items.sort((a,b)=>(b.requestedAt||0)-(a.requestedAt||0)).forEach(item=>{
+              const sc=item.status==='Pending'?'#f59e0b':item.status==='Rejected'?'#f43f5e':'#10b981';
+              const src=item.source==='attendance'?`<span style="font-size:8px;background:rgba(0,0,0,0.25);color:var(--v-muted);padding:1px 5px;border-radius:4px;margin-left:4px;">ATT</span>`:'';
+              const memo=item.adminMemo?`<span style="color:rgba(245,158,11,0.8);font-size:10px;font-style:italic;">💬 ${item.adminMemo.substring(0,30)}…</span>`:`<span style="color:var(--v-muted);">-</span>`;
+              const dr=item.endDate!==item.startDate?`${item.startDate} → ${item.endDate}`:item.startDate;
+              const evJson=encodeURIComponent(JSON.stringify(item));
+              h+=`<tr onclick="window.openLeaveModal('${item.id}',JSON.parse(decodeURIComponent('${evJson}')))">
+                <td><span style="color:var(--v-accent);font-weight:900;">${item.type}</span>${src}</td>
+                <td>${dr}</td>
+                <td style="max-width:clamp(60px,15vw,120px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.reason||'-'}</td>
+                <td>${memo}</td>
+                <td><span style="color:${sc};font-weight:900;font-size:clamp(8px,2vw,10px);text-transform:uppercase;">${item.status}</span></td>
+                <td style="text-align:right;color:var(--v-muted);font-weight:700;">${item.totalWeekdays||0}d</td>
+              </tr>`;
+            });
+          }
+          return h;
+        };
 
+        tbody.innerHTML =
+          mkSection(`This Month (${thisYear}.${thisMonth})`,'var(--v-accent)',thisM,sumD(thisM)) +
+          mkSection(`This Year (${thisYear})`,'#10b981',thisY,sumD(thisY)) +
+          mkSection('Overall','var(--v-muted)',overall,sumD(overall));
+      });
+    }
+  }
+
+  /* ── Staff list ── */
+  window.loadStaffList = function () {
+    db.ref('leaves').once('value', snap => {
+      const users=Object.keys(snap.val()||{}).filter(u=>u!==user).sort();
+      const c=document.getElementById('staffListContainer'); if (!c) return;
+      c.innerHTML=users.length
+        ? users.map(su=>`<button class="sv-staff-btn" onclick="window.showStaffLeaveOverview('${su}')">${su.includes('@')?su.split('@')[0].toUpperCase():su.toUpperCase()}</button>`).join('')
+        : `<p style="font-size:12px;color:var(--v-muted);">No team members</p>`;
+    });
+  };
+
+  /* ── Staff overview modal ── */
+  window.showStaffLeaveOverview = function (staffName) {
+    db.ref(`leaves/${staffName}`).once('value', snap => {
+      const yearData=snap.val()||{};
+      const modal=document.getElementById('staffLeaveModal');
+      const title=document.getElementById('staffModalTitle');
+      const content=document.getElementById('staffLeaveContent');
+      if (!modal||!content) return;
+      title.innerText=`${staffName.toUpperCase()} — Leave Records`;
+
+      let all=[];
+      Object.keys(yearData).forEach(yr=>{
+        Object.entries(yearData[yr]||{}).forEach(([id,item])=>{ if(item) all.push({id,year:parseInt(yr),...item}); });
+      });
+      all.sort((a,b)=>new Date(b.startDate)-new Date(a.startDate));
+
+      if (!all.length) {
+        content.innerHTML=`<p style="text-align:center;padding:24px;color:var(--v-muted);font-size:13px;">No leave records found</p>`;
+      } else {
+        const byYear={};
+        all.forEach(l=>{ if (!byYear[l.year]) byYear[l.year]=[]; byYear[l.year].push(l); });
+        content.innerHTML=Object.keys(byYear).sort().reverse().map(yr=>{
+          const leaves=byYear[yr];
+          return `<div style="border-left:3px solid var(--v-accent);padding-left:14px;">
+            <div style="font-size:10px;font-weight:900;color:var(--v-accent);text-transform:uppercase;margin-bottom:10px;letter-spacing:0.1em;">━ ${yr} ━</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${leaves.map(item=>{
+                const sc=item.status==='Pending'?'rgba(245,158,11,0.9)':item.status==='Rejected'?'rgba(244,63,94,0.9)':'rgba(16,185,129,0.9)';
+                const sbg=item.status==='Pending'?'rgba(245,158,11,0.1)':item.status==='Rejected'?'rgba(244,63,94,0.1)':'rgba(16,185,129,0.1)';
+                const dr=item.startDate===item.endDate?item.startDate:`${item.startDate} ~ ${item.endDate}`;
+                return `<div style="background:rgba(0,0,0,0.2);border:1px solid var(--v-border);border-radius:calc(var(--v-card-radius)*0.65);padding:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                      <span style="color:var(--v-accent2);font-weight:900;font-size:13px;">${item.type}</span>
+                      <span style="color:var(--v-muted);font-size:11px;font-family:'SF Mono',monospace;">${dr}</span>
+                    </div>
+                    <span style="font-weight:900;font-size:10px;padding:2px 10px;border-radius:999px;color:${sc};background:${sbg};text-transform:uppercase;">${item.status}</span>
+                  </div>
+                  <div style="color:var(--v-muted);font-size:11px;">${item.reason||'No reason provided'}</div>
+                  ${item.totalWeekdays?`<div style="color:var(--v-muted);font-size:10px;margin-top:4px;">Days: <span style="color:var(--v-text);font-weight:700;">${item.totalWeekdays}d</span></div>`:''}
+                </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+        }).join('');
+      }
+      modal.classList.remove('hidden');
+      document.body.style.overflow='hidden';
+    });
+  };
+
+  window.closeStaffLeaveModal = function () {
+    const m=document.getElementById('staffLeaveModal'); if(m) m.classList.add('hidden');
+    document.body.style.overflow='';
+  };
+
+  /* ── Modal open/close ── */
+  window.openLeaveModal = function (id=null, data=null) {
+    editingId=id; editingData=data;
+    const modal=document.getElementById('leaveModal'); if (!modal) return;
     modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow='hidden';
 
-    const deleteBtn = document.getElementById('deleteLeaveBtn');
-    const saveBtn = document.getElementById('saveLeaveBtn');
-    const memoContainer = document.getElementById('adminMemoContainer');
-    const memoText = document.getElementById('adminMemoText');
-    const leaveTypeInput = document.getElementById('leaveType');
-    const leaveReasonInput = document.getElementById('leaveReason');
-    const dateInput = document.getElementById('leaveDateRange');
-    const modalTitle = document.getElementById('modalTitle');
+    const delBtn=document.getElementById('deleteLeaveBtn');
+    const saveBtn=document.getElementById('saveLeaveBtn');
+    const memoCont=document.getElementById('adminMemoContainer');
+    const memoText=document.getElementById('adminMemoText');
+    const ltInput=document.getElementById('leaveType');
+    const rsInput=document.getElementById('leaveReason');
+    const dtInput=document.getElementById('leaveDateRange');
+    const ttl=document.getElementById('modalTitle');
 
-    if (id && data) {
-        if (data.status === 'Approved') {
-            if (modalTitle) modalTitle.innerText = "View Approved Leave";
-            if (leaveTypeInput) leaveTypeInput.disabled = true;
-            if (leaveReasonInput) leaveReasonInput.disabled = true;
-            if (dateInput) dateInput.disabled = true;
-            if (deleteBtn) deleteBtn.classList.add('hidden');
-            if (saveBtn) saveBtn.classList.add('hidden');
-        } else {
-            if (modalTitle) modalTitle.innerText = `Edit Leave Request (${data.status})`;
-            if (leaveTypeInput) leaveTypeInput.disabled = false;
-            if (leaveReasonInput) leaveReasonInput.disabled = false;
-            if (dateInput) dateInput.disabled = false;
-            if (deleteBtn) deleteBtn.classList.remove('hidden');
-            if (saveBtn) saveBtn.classList.remove('hidden');
-        }
-
-        if (leaveTypeInput) leaveTypeInput.value = data.type;
-        if (datePicker) datePicker.setDate([data.startDate, data.endDate]);
-        if (leaveReasonInput) leaveReasonInput.value = data.reason || "";
-        
-        if (data.adminMemo) {
-            if (memoContainer) memoContainer.classList.remove('hidden');
-            if (memoText) memoText.innerText = data.adminMemo;
-        } else {
-            if (memoContainer) memoContainer.classList.add('hidden');
-        }
-    } else {
-        if (modalTitle) modalTitle.innerText = "New Leave Request";
-        if (leaveTypeInput) {
-            leaveTypeInput.selectedIndex = 0;
-            leaveTypeInput.disabled = false;
-        }
-        if (datePicker) datePicker.clear();
-        if (leaveReasonInput) {
-            leaveReasonInput.value = "";
-            leaveReasonInput.disabled = false;
-        }
-        if (dateInput) dateInput.disabled = false;
-        if (deleteBtn) deleteBtn.classList.add('hidden');
+    if (id&&data) {
+      if (data.status==='Approved') {
+        if (ttl) ttl.innerText='View Approved Leave';
+        [ltInput,rsInput,dtInput].forEach(el=>{ if(el) el.disabled=true; });
+        if (delBtn) delBtn.classList.add('hidden');
+        if (saveBtn) saveBtn.classList.add('hidden');
+      } else {
+        if (ttl) ttl.innerText=`Edit Leave Request (${data.status})`;
+        [ltInput,rsInput,dtInput].forEach(el=>{ if(el) el.disabled=false; });
+        if (delBtn) delBtn.classList.remove('hidden');
         if (saveBtn) saveBtn.classList.remove('hidden');
-        if (memoContainer) memoContainer.classList.add('hidden');
+      }
+      if (ltInput) ltInput.value=data.type;
+      if (datePicker) datePicker.setDate([data.startDate,data.endDate]);
+      if (rsInput) rsInput.value=data.reason||'';
+      if (data.adminMemo) {
+        if (memoCont) memoCont.classList.remove('hidden');
+        if (memoText) memoText.innerText=data.adminMemo;
+      } else { if (memoCont) memoCont.classList.add('hidden'); }
+    } else {
+      if (ttl) ttl.innerText='New Leave Request';
+      if (ltInput) { ltInput.selectedIndex=0; ltInput.disabled=false; }
+      if (datePicker) datePicker.clear();
+      if (rsInput) { rsInput.value=''; rsInput.disabled=false; }
+      if (dtInput) dtInput.disabled=false;
+      if (delBtn) delBtn.classList.add('hidden');
+      if (saveBtn) saveBtn.classList.remove('hidden');
+      if (memoCont) memoCont.classList.add('hidden');
     }
-};
+  };
 
+  window.closeLeaveModal = function () {
+    const m=document.getElementById('leaveModal'); if(m) m.classList.add('hidden');
+    document.body.style.overflow='';
+  };
 
-    window.closeLeaveModal = function() { 
-        const modal = document.getElementById('leaveModal');
-        if(modal) modal.classList.add('hidden'); 
-        document.body.style.overflow = '';
-    };
+  /* ── Submit ── */
+  window.submitLeaveRequest = function () {
+    if (editingData&&editingData.status==='Approved') return alert("Approved requests cannot be modified.");
+    const type=document.getElementById('leaveType').value;
+    const range=datePicker.selectedDates;
+    const escape=s=>s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]);
+    const raw=document.getElementById('leaveReason').value.trim();
+    const reason=escape(raw);
+    if ((raw.match(/\b\w+\b/g)?.length||0)<5) { alert("Please describe your reason in more detail (at least 5 words)."); document.getElementById('leaveReason').focus(); return; }
+    if (!range.length) return alert("Please select dates.");
+    const start=new Date(range[0]), end=range.length>1?new Date(range[1]):new Date(range[0]);
+    let valid=[],tmp=new Date(start);
+    while(tmp<=end){ if(tmp.getDay()!==0&&tmp.getDay()!==6) valid.push(new Date(tmp)); tmp.setDate(tmp.getDate()+1); }
+    if (!valid.length) return alert("Weekends are excluded. Please select weekdays.");
+    const startDate=valid[0].toLocaleDateString('en-CA'), endDate=valid[valid.length-1].toLocaleDateString('en-CA');
+    const year=new Date(startDate).getFullYear();
+    const leaveData={type,startDate,endDate,reason,status:"Pending",requestedAt:editingData?.requestedAt||firebase.database.ServerValue.TIMESTAMP,totalWeekdays:valid.length};
+    const ref=editingId?db.ref(`leaves/${user}/${year}/${editingId}`):db.ref(`leaves/${user}/${year}`).push();
+    ref.set(leaveData).then(()=>{ alert("Request submitted successfully."); closeLeaveModal(); });
+  };
 
+  /* ── Delete ── */
+  window.deleteLeave = function () {
+    if (!editingId||!editingData||editingData.status==='Approved') return;
+    if (!confirm("Cancel this request?")) return;
+    const year=new Date(editingData.startDate).getFullYear();
+    db.ref(`leaves/${user}/${year}/${editingId}`).remove().then(()=>{ alert("Deleted."); closeLeaveModal(); });
+  };
 
-    window.deleteLeave = function() {
-        if (!editingId || !editingData || editingData.status === 'Approved') return;
-        if (!confirm("Cancel this request?")) return;
-        const year = new Date(editingData.startDate).getFullYear();
-        db.ref(`leaves/${user}/${year}/${editingId}`).remove().then(() => {
-            alert("Deleted.");
-            closeLeaveModal();
-        });
-    };
-
-    initLeavePage();
+  /* ── Start ── */
+  initLeavePage();
 })();
 </script>
