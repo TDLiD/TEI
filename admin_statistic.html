@@ -2,16 +2,23 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 .stat-card {
+    --day-accent: #3b82f6;
+    --day-depth: rgba(59,130,246,0.22);
     background: linear-gradient(145deg, #0d1424 0%, #080d18 100%);
     border: 1px solid #1a2540;
     border-top: 1px solid #243050;
     border-radius: 1.5rem;
     padding: 1.2rem;
     margin-bottom: 1rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.5),
+        8px 10px 0 -6px var(--day-depth),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
+    contain: layout paint style;
 }
 .stat-card::before {
     content: '';
@@ -20,12 +27,16 @@
     pointer-events: none;
 }
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    transform: translateY(-3px) rotateX(1deg);
+    border-color: color-mix(in srgb, var(--day-accent) 42%, #1a2540);
+    box-shadow:
+        0 16px 40px rgba(0,0,0,0.6),
+        12px 14px 0 -7px var(--day-depth),
+        inset 0 1px 0 rgba(255,255,255,0.07);
 }
 @media (min-width: 768px) { .stat-card { padding: 1.5rem; margin-bottom: 1.2rem; } }
-.chart-container { position: relative; height: 280px; width: 100%; }
-@media (min-width: 768px) { .chart-container { height: 260px; } }
+.chart-container { position: relative; height: clamp(260px, 48vh, 360px); width: 100%; }
+@media (min-width: 768px) { .chart-container { height: clamp(260px, 34vh, 340px); } }
 
 /* 3D 원근감 래퍼 */
 .chart-3d-wrap {
@@ -33,9 +44,9 @@
     perspective-origin: 50% 40%;
 }
 .chart-3d-inner {
-    transform: rotateX(6deg) scale(0.98);
+    transform: rotateX(4deg) scale(0.99);
     transform-style: preserve-3d;
-    transition: transform 0.4s ease;
+    transition: transform 0.18s ease;
     border-radius: 12px;
     overflow: hidden;
     background: rgba(5,8,18,0.6);
@@ -47,35 +58,136 @@
     padding: 12px;
 }
 .stat-card:hover .chart-3d-inner {
-    transform: rotateX(2deg) scale(1);
+    transform: rotateX(1deg) scale(1);
 }
 
     .nav-btn { transition: all 0.2s ease; }
     .nav-btn:hover { background-color: #1e293b; color: #3b82f6; }
     .nav-btn:active { scale: 0.95; }
-    .export-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: all 0.2s; }
+    .export-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem; font-size: 10px; font-weight: 900; text-transform: uppercase; transition: transform 0.18s ease, background 0.18s ease; }
     .export-btn:hover { background: #059669; transform: translateY(-1px); }
-    .admin-stat-tab { transition: all 0.3s; position: relative; opacity: 0.5; }
-    .admin-stat-tab.active { opacity: 1; color: #3b82f6; }
-    .admin-stat-tab.active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 3px; background: #3b82f6; border-radius: 10px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+    .admin-stat-tab {
+        transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+        position: relative;
+        opacity: 0.62;
+        border: 1px solid rgba(148,163,184,0.14);
+        border-radius: 0.8rem;
+        padding: 0.68rem 0.9rem;
+        background: rgba(15,23,42,0.56);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 24px rgba(0,0,0,0.25);
+        white-space: nowrap;
+    }
+    .admin-stat-tab:hover { opacity: 0.9; transform: translateY(-1px); }
+    .admin-stat-tab.active { opacity: 1; color: #3b82f6; background: linear-gradient(145deg, rgba(59,130,246,0.18), rgba(8,13,24,0.92)); border-color: rgba(59,130,246,0.34); }
+    .admin-stat-tab.active-rep { color: #06b6d4; background: linear-gradient(145deg, rgba(6,182,212,0.18), rgba(8,13,24,0.92)); border-color: rgba(6,182,212,0.34); }
+    .admin-stat-tab.active-vac { color: #a855f7; background: linear-gradient(145deg, rgba(168,85,247,0.18), rgba(8,13,24,0.92)); border-color: rgba(168,85,247,0.34); }
+    .admin-stat-tab.active::after { content: ''; position: absolute; bottom: -7px; left: 10%; width: 80%; height: 2px; background: currentColor; border-radius: 10px; box-shadow: 0 0 10px currentColor; }
+
+    .admin-stat-root {
+        background:
+            radial-gradient(circle at 12% 0%, rgba(59,130,246,0.12), transparent 26rem),
+            radial-gradient(circle at 88% 4%, rgba(168,85,247,0.12), transparent 24rem),
+            linear-gradient(135deg, #040712 0%, #08101f 52%, #03050d 100%);
+        border-radius: 1.25rem;
+        color: #f8fafc;
+    }
+    .admin-tab-bar {
+        display: flex;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        border-bottom: 1px solid rgba(30,41,59,0.9);
+        padding: 0 0.5rem 0.75rem;
+    }
+    .weekday-strip {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: clamp(0.45rem, 1.2vw, 0.8rem);
+        perspective: 1000px;
+        margin: -0.35rem 0 1rem;
+    }
+    .day-cube {
+        --cube-accent: #3b82f6;
+        --cube-depth: rgba(59,130,246,0.28);
+        min-height: 54px;
+        display: grid;
+        place-items: center;
+        border-radius: 0.85rem;
+        border: 1px solid color-mix(in srgb, var(--cube-accent) 38%, transparent);
+        background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(15,23,42,0.86) 42%, rgba(3,7,18,0.98));
+        color: var(--cube-accent);
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 0 16px 26px rgba(0,0,0,0.38), 7px 8px 0 -5px var(--cube-depth);
+        transform: rotateX(5deg) rotateY(-4deg);
+    }
+    .day-cube:nth-child(1) { --cube-accent:#22c55e; --cube-depth:rgba(34,197,94,0.30); }
+    .day-cube:nth-child(2) { --cube-accent:#06b6d4; --cube-depth:rgba(6,182,212,0.30); transform:rotateX(-4deg) rotateY(4deg); }
+    .day-cube:nth-child(3) { --cube-accent:#facc15; --cube-depth:rgba(250,204,21,0.28); }
+    .day-cube:nth-child(4) { --cube-accent:#a855f7; --cube-depth:rgba(168,85,247,0.30); transform:rotateX(-3deg) rotateY(-5deg); }
+    .day-cube:nth-child(5) { --cube-accent:#fb7185; --cube-depth:rgba(251,113,133,0.30); }
+    .day-cube:nth-child(6) { --cube-accent:#f97316; --cube-depth:rgba(249,115,22,0.30); transform:rotateX(-5deg) rotateY(3deg); }
+    .day-cube:nth-child(7) { --cube-accent:#ef4444; --cube-depth:rgba(239,68,68,0.30); }
+    .day-theme-0 { --day-accent:#ef4444; --day-depth:rgba(239,68,68,0.24); }
+    .day-theme-1 { --day-accent:#22c55e; --day-depth:rgba(34,197,94,0.24); }
+    .day-theme-2 { --day-accent:#06b6d4; --day-depth:rgba(6,182,212,0.24); }
+    .day-theme-3 { --day-accent:#facc15; --day-depth:rgba(250,204,21,0.22); }
+    .day-theme-4 { --day-accent:#a855f7; --day-depth:rgba(168,85,247,0.24); }
+    .day-theme-5 { --day-accent:#fb7185; --day-depth:rgba(251,113,133,0.24); }
+    .day-theme-6 { --day-accent:#f97316; --day-depth:rgba(249,115,22,0.24); }
 
     /* 모달 스타일 추가 */
     #statDetailModal { z-index: 9999 !important; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    @media (max-width: 767px) {
+        .admin-tab-bar {
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .admin-stat-tab { flex: 0 0 auto; font-size: 0.72rem; padding: 0.62rem 0.78rem; }
+        .weekday-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .day-cube { min-height: 46px; font-size: 0.68rem; }
+        .stat-card { border-radius: 1rem; padding: 1rem; }
+        .chart-3d-inner { padding: 8px; transform: none; }
+        .stat-card:hover, .stat-card:hover .chart-3d-inner { transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce), (max-width: 767px) {
+        *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+        }
+        .stat-card, .chart-3d-inner, .admin-stat-tab, .export-btn, .nav-btn { transition-duration: 0.12s !important; }
+    }
 </style>
 
-<div class="animate-fadeIn space-y-6 md:space-y-8 pb-10 max-w-[1200px] mx-auto px-4">
+<div class="admin-stat-root animate-fadeIn space-y-6 md:space-y-8 pb-10 max-w-[1200px] mx-auto px-4 py-4">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
         <div class="flex items-center gap-3">
             <div class="w-1.5 h-7 md:w-2 md:h-8 bg-blue-500 rounded-full"></div>
             <h2 class="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Analytics</h2>
         </div>
-        <div class="flex gap-8 border-b border-slate-800 pb-2 px-2">
-            <button onclick="switchAdminStatTab('att')" id="tabAtt" class="admin-stat-tab active text-sm font-black tracking-widest uppercase">Attendance</button>
-            <button onclick="switchAdminStatTab('leave')" id="tabLeave" class="admin-stat-tab text-sm font-black tracking-widest uppercase">Leave (Out)</button>
+        <div class="admin-tab-bar">
+            <button onclick="switchAdminStatTab('att')" id="tabAtt" class="admin-stat-tab active text-sm font-black tracking-widest uppercase">📊 Attendance</button>
+            <button onclick="switchAdminStatTab('rep')" id="tabRep" class="admin-stat-tab text-sm font-black tracking-widest uppercase">📝 Work Report</button>
+            <button onclick="switchAdminStatTab('vac')" id="tabVac" class="admin-stat-tab text-sm font-black tracking-widest uppercase">🏖️ Vacation</button>
         </div>
+    </div>
+
+    <div class="weekday-strip" aria-label="weekday 3D design strip">
+        <div class="day-cube">Mon</div>
+        <div class="day-cube">Tue</div>
+        <div class="day-cube">Wed</div>
+        <div class="day-cube">Thu</div>
+        <div class="day-cube">Fri</div>
+        <div class="day-cube">Sat</div>
+        <div class="day-cube">Sun</div>
     </div>
 
     <section class="stat-card shadow-2xl backdrop-blur-sm border-slate-800/50">
@@ -155,7 +267,7 @@ window.switchAdminStatTab = function(mode) {
     // DOM이 준비되지 않은 경우 대비
     if (!document.getElementById('tabAtt')) return;
     if (typeof window._switchLogic === 'function') {
-        window._switchLogic(mode);
+        window._switchLogic(mode === 'leave' ? 'vac' : mode);
     }
 };
 
@@ -165,8 +277,45 @@ window.switchAdminStatTab = function(mode) {
         let yearViewDate = new Date();
         let currentMode = 'att'; 
         const typeColors = { 'ATT': '#10b981', 'LATE': '#f43f5e', 'WO': '#3b82f6', 'PEL': '#eab308', 'ANL': '#f97316', 'HAL': '#a855f7', 'SIL': '#2dd4bf', 'SPL': '#64748b', 'EVL': '#475569', 'LEAVE': '#6366f1' };
+        const reportColors = { Completed: '#10b981', 'In Progress': '#06b6d4', Pending: '#f59e0b' };
         let charts = { month: null, year: null, overall: null };
         let cachedData = null;
+        let cachedReports = null;
+        let resizeTimer = null;
+
+        function normalizeMode(mode) {
+            return mode === 'leave' ? 'vac' : mode;
+        }
+
+        function getDayThemeClass(dateValue) {
+            const d = dateValue instanceof Date ? dateValue : new Date(dateValue);
+            return `day-theme-${Number.isNaN(d.getTime()) ? 1 : d.getDay()}`;
+        }
+
+        function applyDayThemes() {
+            const cards = document.querySelectorAll('.admin-stat-root .stat-card');
+            cards.forEach((card, index) => {
+                card.classList.remove('day-theme-0','day-theme-1','day-theme-2','day-theme-3','day-theme-4','day-theme-5','day-theme-6');
+                const base = index === 0 ? monthViewDate : (index === 1 ? yearViewDate : new Date());
+                const shifted = new Date(base);
+                shifted.setDate(shifted.getDate() + index);
+                card.classList.add(getDayThemeClass(shifted));
+            });
+        }
+
+        function fmtDate(d) {
+            return d.toISOString().split('T')[0];
+        }
+
+        function countWorkdays(filterFn) {
+            let total = 0;
+            Object.keys(cachedData || {}).forEach(date => {
+                const d = new Date(date);
+                const dow = d.getDay();
+                if (filterFn(date) && dow !== 0 && dow !== 6) total++;
+            });
+            return total;
+        }
 
         // 팝업 닫기 함수
         window.closeStatModal = function() {
@@ -183,8 +332,8 @@ window.switchAdminStatTab = function(mode) {
             document.getElementById('detailUserName').innerText = userName;
             tbody.innerHTML = '';
 
-            // 데이터 필터링 (기간별)
-            const entries = Object.entries(cachedData).filter(([date]) => {
+            const source = currentMode === 'rep' ? (cachedReports || {}) : cachedData;
+            const entries = Object.entries(source).filter(([date]) => {
                 if (periodType === 'month') return date.startsWith(mKey);
                 if (periodType === 'year') return date.startsWith(yKey);
                 return true;
@@ -194,10 +343,13 @@ window.switchAdminStatTab = function(mode) {
                 if (dayData[userName]) {
                     const record = dayData[userName];
                     let typeDisplay = "";
-                    let note = record.remark || record.reason || "-";
+                    let note = record.remark || record.reason || record.content || record.summary || "-";
                     let rowColor = "#475569";
 
-                    if (typeof record === 'string') {
+                    if (currentMode === 'rep') {
+                        typeDisplay = record.status || 'Submitted';
+                        rowColor = reportColors[typeDisplay] || '#475569';
+                    } else if (typeof record === 'string') {
                         typeDisplay = record;
                     } else if (record.attend) {
                         typeDisplay = record.attend;
@@ -206,7 +358,7 @@ window.switchAdminStatTab = function(mode) {
                     }
 
                     const typeKey = typeDisplay.includes("ATT") ? "ATT" : (typeDisplay.includes("LATE") ? "LATE" : typeDisplay);
-                    const bgColor = typeColors[typeKey] || "#475569";
+                    const bgColor = currentMode === 'rep' ? rowColor : (typeColors[typeKey] || "#475569");
 
                     const tr = `
                         <tr class="hover:bg-slate-700/30 transition">
@@ -230,19 +382,25 @@ window.switchAdminStatTab = function(mode) {
         };
 
         window._switchLogic = function(mode) {
-            currentMode = mode;
+            currentMode = normalizeMode(mode);
             const tabAtt = document.getElementById('tabAtt');
-            const tabLeave = document.getElementById('tabLeave');
-            if(tabAtt) tabAtt.classList.toggle('active', mode === 'att');
-            if(tabLeave) tabLeave.classList.toggle('active', mode === 'leave');
+            const tabRep = document.getElementById('tabRep');
+            const tabVac = document.getElementById('tabVac');
+            if(tabAtt) tabAtt.className = 'admin-stat-tab text-sm font-black tracking-widest uppercase' + (currentMode === 'att' ? ' active' : '');
+            if(tabRep) tabRep.className = 'admin-stat-tab text-sm font-black tracking-widest uppercase' + (currentMode === 'rep' ? ' active active-rep' : '');
+            if(tabVac) tabVac.className = 'admin-stat-tab text-sm font-black tracking-widest uppercase' + (currentMode === 'vac' ? ' active active-vac' : '');
 
-            const isAtt = mode === 'att';
             const lblMonth = document.getElementById('labelMonth');
             const lblYear = document.getElementById('labelYear');
             const lblOverall = document.getElementById('labelOverall');
-            if(lblMonth) lblMonth.innerText = isAtt ? 'Monthly Performance' : 'Monthly Leave Times';
-            if(lblYear) lblYear.innerText = isAtt ? 'Yearly Accumulation' : 'Yearly Leave Times';
-            if(lblOverall) lblOverall.innerText = isAtt ? 'Records' : 'Leave Records';
+            const labels = {
+                att: ['Monthly Performance', 'Yearly Accumulation', 'Records'],
+                rep: ['Monthly Work Reports', 'Yearly Work Reports', 'Report Records'],
+                vac: ['Monthly Vacation Times', 'Yearly Vacation Times', 'Vacation Records']
+            }[currentMode];
+            if(lblMonth) lblMonth.innerText = labels[0];
+            if(lblYear) lblYear.innerText = labels[1];
+            if(lblOverall) lblOverall.innerText = labels[2];
 
             processAndRender();
         };
@@ -254,8 +412,32 @@ window.switchAdminStatTab = function(mode) {
             if (periodType === 'month') { filterKey = monthViewDate.toISOString().substring(0, 7); fileNameSuffix = filterKey; }
             else if (periodType === 'year') { filterKey = yearViewDate.getFullYear().toString(); fileNameSuffix = filterKey; }
             else { fileNameSuffix = "Overall"; }
+
+            if (currentMode === 'rep') {
+                const rows = [["WORK REPORT SUMMARY"], ["Staff Name", "Reports Written", "Completed", "In Progress", "Pending", "Completion Rate"]];
+                const targetStats = {};
+                Object.entries(cachedReports || {}).forEach(([date, dayData]) => {
+                    if (filterKey && !date.startsWith(filterKey)) return;
+                    Object.entries(dayData || {}).forEach(([user, report]) => {
+                        if (!targetStats[user]) targetStats[user] = { total: 0, Completed: 0, 'In Progress': 0, Pending: 0 };
+                        const status = report.status || 'In Progress';
+                        targetStats[user].total++;
+                        targetStats[user][status] = (targetStats[user][status] || 0) + 1;
+                    });
+                });
+                Object.keys(targetStats).sort().forEach(staff => {
+                    const s = targetStats[staff];
+                    const rate = s.total > 0 ? ((s.Completed / s.total) * 100).toFixed(1) + '%' : '0%';
+                    rows.push([staff, s.total, s.Completed || 0, s['In Progress'] || 0, s.Pending || 0, rate]);
+                });
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+                XLSX.utils.book_append_sheet(wb, ws, "Work Reports");
+                XLSX.writeFile(wb, `Work_Report_${fileNameSuffix}.xlsx`);
+                return;
+            }
             
-            const fileName = `Performance_Report_${fileNameSuffix}.xlsx`;
+            const fileName = `${currentMode === 'vac' ? 'Vacation' : 'Performance'}_Report_${fileNameSuffix}.xlsx`;
             let targetStats = {};
             const attendanceTypes = Object.keys(typeColors).filter(k => k !== 'LEAVE');
             
@@ -306,8 +488,12 @@ window.switchAdminStatTab = function(mode) {
 
         window.initAdminStats = async function() {
             try {
-                const snap = await db.ref('attendance').once('value');
-                cachedData = snap.val() || {};
+                const [attSnap, repSnap] = await Promise.all([
+                    db.ref('attendance').once('value'),
+                    db.ref('reports').once('value')
+                ]);
+                cachedData = attSnap.val() || {};
+                cachedReports = repSnap.val() || {};
                 processAndRender();
             } catch (e) { console.error(e); }
         };
@@ -317,6 +503,7 @@ function processAndRender() {
     if (!document.getElementById('monthlyChart') || 
         !document.getElementById('yearlyChart') || 
         !document.getElementById('overallChart')) return;
+            applyDayThemes();
             const mKey = monthViewDate.toISOString().substring(0, 7);
             const yKey = yearViewDate.getFullYear().toString();
             
@@ -326,20 +513,36 @@ function processAndRender() {
             if(txtYear) txtYear.innerText = yKey;
 
             const stats = { month: {}, year: {}, overall: {} };
-            Object.entries(cachedData).forEach(([date, dayData]) => {
-                Object.entries(dayData).forEach(([user, record]) => {
+            if (currentMode === 'rep') {
+                Object.entries(cachedReports || {}).forEach(([date, dayData]) => {
+                    Object.entries(dayData || {}).forEach(([user, report]) => {
+                        const status = report.status || 'In Progress';
+                        const up = (obj) => {
+                            if (!obj[user]) obj[user] = { total: 0, statuses: {} };
+                            obj[user].total++;
+                            obj[user].statuses[status] = (obj[user].statuses[status] || 0) + 1;
+                        };
+                        if (date.startsWith(mKey)) up(stats.month);
+                        if (date.startsWith(yKey)) up(stats.year);
+                        up(stats.overall);
+                    });
+                });
+            } else {
+                Object.entries(cachedData).forEach(([date, dayData]) => {
+                    Object.entries(dayData).forEach(([user, record]) => {
                     if (currentMode === 'att') {
                         let type = (typeof record === 'string') ? record : (record.attend?.includes("ATT") ? "ATT" : (record.attend?.includes("LATE") ? "LATE" : record.attend));
                         if (!type || !typeColors[type]) return;
                         const up = (obj) => { if (!obj[user]) obj[user] = {}; obj[user][type] = (obj[user][type] || 0) + 1; };
                         if (date.startsWith(mKey)) up(stats.month); if (date.startsWith(yKey)) up(stats.year); up(stats.overall);
-                    } else if (typeof record !== 'string' && record.leave) {
+                    } else if (currentMode === 'vac' && typeof record !== 'string' && record.leave) {
                         const [hh, mm] = record.leave.split(':').map(Number);
                         const ut = (obj) => { if (!obj[user]) obj[user] = []; obj[user].push({ x: date, y: hh + (mm / 60) }); };
                         if (date.startsWith(mKey)) ut(stats.month); if (date.startsWith(yKey)) ut(stats.year); ut(stats.overall);
                     }
                 });
-            });
+                });
+            }
             renderChart('monthlyChart', 'month', stats.month);
             renderChart('yearlyChart', 'year', stats.year);
             renderChart('overallChart', 'overall', stats.overall);
@@ -383,11 +586,7 @@ options: {
             showUserDetail(label, chartType);
         }
     },
-    animation: {
-        duration: 900,
-        easing: 'easeOutQuart',
-        delay: (ctx) => ctx.dataIndex * 60
-    },
+    animation: false,
     scales: {
         y: {
             beginAtZero: true,
@@ -425,6 +624,81 @@ options: {
     }
 }
                 };
+            } else if (currentMode === 'rep') {
+                const users = Object.keys(chartData).sort();
+                const statuses = Object.keys(reportColors);
+                const ds = [
+                    {
+                        label: 'Reports Written',
+                        data: users.map(u => chartData[u].total || 0),
+                        backgroundColor: '#06b6d4cc',
+                        hoverBackgroundColor: '#06b6d4',
+                        borderColor: '#06b6d4',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    },
+                    ...statuses.map(status => ({
+                        label: status,
+                        data: users.map(u => chartData[u].statuses?.[status] || 0),
+                        backgroundColor: `${reportColors[status]}99`,
+                        hoverBackgroundColor: reportColors[status],
+                        borderColor: reportColors[status],
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }))
+                ].filter(d => d.data.some(v => v > 0));
+
+                config = {
+                    type: 'bar',
+                    data: { labels: users, datasets: ds },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: isMobile ? 'y' : 'x',
+                        onClick: (e, activeEls) => {
+                            if (activeEls.length > 0) {
+                                const index = activeEls[0].index;
+                                const label = charts[chartType].data.labels[index];
+                                showUserDetail(label, chartType);
+                            }
+                        },
+                        animation: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(255,255,255,0.04)', lineWidth: 1 },
+                                border: { dash: [4,4] },
+                                ticks: { color: '#64748b', font: { size: 10, weight: '700' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8', font: { size: 10, weight: '900' } }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#94a3b8',
+                                    font: { size: 10, weight: '700' },
+                                    boxWidth: 10, boxHeight: 10,
+                                    borderRadius: 3, useBorderRadius: true,
+                                    padding: 16
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(8,12,24,0.95)',
+                                borderColor: 'rgba(6,182,212,0.3)',
+                                borderWidth: 1,
+                                titleColor: '#f8fafc',
+                                bodyColor: '#94a3b8',
+                                padding: 12,
+                                cornerRadius: 10
+                            }
+                        }
+                    }
+                };
             } else {
                 const ds = Object.entries(chartData).map(([u, p], i) => ({
                     label: u,
@@ -437,7 +711,7 @@ options: {
                     data: { datasets: ds },
 options: {
     responsive: true, maintainAspectRatio: false,
-    animation: { duration: 800, easing: 'easeOutQuart' },
+    animation: false,
     scales: {
         x: {
             type: 'category',
@@ -484,7 +758,10 @@ options: {
             charts[chartType] = new Chart(ctx, config);
         }
 
-        window.addEventListener('resize', () => { if (cachedData) processAndRender(); });
+        window.addEventListener('resize', () => {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(() => { if (cachedData) processAndRender(); }, 180);
+        });
         setTimeout(initAdminStats, 300);
     })();
 </script>
