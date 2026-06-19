@@ -1,13 +1,14 @@
 <style>
 /* ══════════════════════════════════════════
    STAFF SETTINGS — 3D DARK COCKPIT THEME
-   Deep navy + indigo/violet command center
+   7-Day Dynamic Theming + Responsive Layout
    Pretendard Font System
 ══════════════════════════════════════════ */
 
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
 
 :root {
+    /* ── default (Monday) fallback, overwritten by JS day-theme below ── */
     --bg:        #040810;
     --surface:   #080f1e;
     --surface2:  #0d1628;
@@ -17,7 +18,9 @@
     --text:      #f1f5f9;
     --muted:     #475569;
     --dim:       #1e293b;
-    --indigo:    #6366f1;
+    --accent:    #6366f1;
+    --accent2:   #4f46e5;
+    --accent-soft: rgba(99,102,241,0.15);
     --green:     #10b981;
     --red:       #f43f5e;
     --blue:      #3b82f6;
@@ -25,8 +28,8 @@
     --violet:    #a855f7;
 }
 
-*, *::before, *::after { 
-    box-sizing: border-box; 
+*, *::before, *::after {
+    box-sizing: border-box;
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
@@ -43,39 +46,190 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeIn { 
-    animation: fadeIn 0.4s ease-out forwards; 
+.animate-fadeIn {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* ══ Main Container ══ */
+@keyframes bgDrift {
+    0%   { transform: translate3d(-2%, -1%, 0) rotateX(8deg) rotateY(-6deg) scale(1); }
+    50%  { transform: translate3d(2%, 1.5%, 0) rotateX(-6deg) rotateY(8deg) scale(1.04); }
+    100% { transform: translate3d(-2%, -1%, 0) rotateX(8deg) rotateY(-6deg) scale(1); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════
+   PAGE SHELL — wide PC layout container
+══════════════════════════════════════════ */
+.settings-page-shell {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%), var(--bg);
+    overflow: hidden;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 2rem);
+    isolation: isolate;
+}
+
+/* ── Background floating "TDLiD" 3D text ── */
+.tdlid-bg-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    perspective: 900px;
+}
+.tdlid-bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-weight: 900;
+    font-size: clamp(6rem, 22vw, 22rem);
+    letter-spacing: 0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 38%, transparent);
+    text-shadow:
+        0 0 60px color-mix(in srgb, var(--accent) 25%, transparent),
+        0 0 140px color-mix(in srgb, var(--accent) 12%, transparent);
+    opacity: 0.16;
+    white-space: nowrap;
+    transform: translate(-50%, -50%) rotateX(8deg) rotateY(-6deg);
+    animation: bgDrift 22s ease-in-out infinite;
+    user-select: none;
+}
+.tdlid-bg-text.dup {
+    font-size: clamp(3rem, 10vw, 9rem);
+    top: 14%;
+    left: 12%;
+    transform: translate(-50%, -50%) rotateX(-10deg) rotateY(10deg);
+    opacity: 0.08;
+    animation-delay: -7s;
+    animation-duration: 26s;
+}
+.tdlid-bg-text.dup2 {
+    font-size: clamp(3rem, 9vw, 8rem);
+    top: 86%;
+    left: 88%;
+    transform: translate(-50%, -50%) rotateX(10deg) rotateY(-10deg);
+    opacity: 0.07;
+    animation-delay: -14s;
+    animation-duration: 30s;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE WIDTH CONTROL (PC <-> Mobile)
+══════════════════════════════════════════ */
 .max-w-md {
     position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;       /* mobile default */
+    margin: 0 auto;
+    transition: max-width 0.3s ease;
+}
+
+@media (min-width: 640px) {
+    .max-w-md { max-width: 560px; }
+}
+@media (min-width: 1024px) {
+    .max-w-md { max-width: 880px; }
+}
+@media (min-width: 1440px) {
+    .max-w-md { max-width: 1040px; }
+}
+
+/* PC에서는 내부를 2-column grid로 확장 */
+@media (min-width: 1024px) {
+    .bg-slate-900 {
+        display: grid !important;
+        grid-template-columns: 320px 1fr;
+        gap: 2rem !important;
+        align-items: start;
+        padding: 2.5rem !important;
+    }
+    .settings-col-left {
+        grid-column: 1 / 2;
+    }
+    .settings-col-right {
+        grid-column: 2 / 3;
+    }
+    .settings-page-title {
+        font-size: 1.75rem !important;
+        max-width: 1040px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.settings-col-left, .settings-col-right {
+    min-width: 0;
 }
 
 /* ══ Title ══ */
 h3.text-xl {
     font-weight: 700 !important;
     letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+}
+
+/* ══ Day theme badge ══ */
+.day-theme-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-left: 10px;
+    vertical-align: middle;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.day-theme-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: glowPulse 2s ease-in-out infinite;
 }
 
 /* ══ Main Card (3D Panel) ══ */
 .bg-slate-900 {
     position: relative;
+    z-index: 1;
     background: linear-gradient(145deg, var(--surface2) 0%, var(--surface) 100%) !important;
     border: 1px solid var(--border) !important;
     border-top: 1px solid var(--border2) !important;
     border-radius: 24px !important;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.07),
-        0 12px 32px rgba(0,0,0,0.6),
-        0 4px 12px rgba(0,0,0,0.4) !important;
+        0 24px 60px rgba(0,0,0,0.55),
+        0 8px 24px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(0,0,0,0.3) !important;
     overflow: hidden;
+    backdrop-filter: blur(2px);
 }
 .bg-slate-900::before {
     content: '';
     position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 45%, transparent), transparent);
     pointer-events: none; z-index: 1;
+}
+.bg-slate-900::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ══ Profile Display Card ══ */
@@ -83,58 +237,63 @@ h3.text-xl {
     background: linear-gradient(145deg, rgba(5,10,20,0.9), rgba(8,15,30,0.8)) !important;
     border: 1px solid rgba(30,41,59,0.6) !important;
     border-radius: 16px !important;
-    box-shadow: 
+    box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.04),
         0 4px 12px rgba(0,0,0,0.3) !important;
     transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
 }
 .bg-slate-950\/50:hover {
-    border-color: rgba(99,102,241,0.2) !important;
-    box-shadow: 
+    border-color: color-mix(in srgb, var(--accent) 25%, transparent) !important;
+    box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.06),
-        0 6px 20px rgba(99,102,241,0.1) !important;
+        0 6px 20px color-mix(in srgb, var(--accent) 12%, transparent) !important;
 }
 
 /* ── Avatar Display ── */
-/* ── Avatar Display ── */
 #currentAvatarDisplay {
+    position: relative !important;
     border: 2px solid var(--border2) !important;
     border-radius: 50% !important;
     background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
-    box-shadow: 
+    box-shadow:
         inset 0 2px 8px rgba(0,0,0,0.4),
         0 4px 12px rgba(0,0,0,0.3),
-        0 0 0 3px rgba(99,102,241,0.08) !important;
+        0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent) !important;
     overflow: hidden;
     transition: all 0.3s ease;
+    flex-shrink: 0 !important;
 }
-
-/* 이미지 자체도 원형으로 설정 */
 #currentAvatarDisplay img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     border-radius: 50% !important;
     object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
 }
-
 #currentAvatarDisplay:hover {
-    box-shadow: 
+    box-shadow:
         inset 0 2px 8px rgba(0,0,0,0.4),
-        0 6px 16px rgba(99,102,241,0.2),
-        0 0 0 3px rgba(99,102,241,0.15) !important;
+        0 6px 16px color-mix(in srgb, var(--accent) 22%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent) !important;
     transform: scale(1.05);
 }
 
 /* ── Last Login Display ── */
 #lastLoginDisplay {
-    background: rgba(99,102,241,0.08);
+    background: var(--accent-soft);
     padding: 2px 6px;
     border-radius: 6px;
-    border: 1px solid rgba(99,102,241,0.15);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 /* ── Display Name ── */
 #displayUserName {
     letter-spacing: -0.01em;
-    text-shadow: 0 0 12px rgba(99,102,241,0.2);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* ══ Section Divider ══ */
@@ -145,18 +304,25 @@ h3.text-xl {
 .border-b.border-slate-800\/50::after {
     content: '';
     position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 18%, transparent), transparent);
+}
+
+@media (min-width: 1024px) {
+    .border-b.border-slate-800\/50 {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
 }
 
 /* ══ Form Labels ══ */
 label.block {
     letter-spacing: 0.08em;
     color: var(--muted) !important;
-    text-shadow: 0 0 8px rgba(99,102,241,0.1);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* ══ Form Inputs (Select, Text, Date, Password, Textarea) ══ */
-select, 
+select,
 input[type="text"],
 input[type="date"],
 input[type="password"] {
@@ -165,10 +331,10 @@ input[type="password"] {
     border-radius: 14px !important;
     color: var(--text) !important;
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
-    font-size: 12px !important;
+    font-size: clamp(12px, 1vw, 13px) !important;
     padding: 12px 14px !important;
     transition: all 0.25s cubic-bezier(0.23,1,0.32,1) !important;
-    box-shadow: 
+    box-shadow:
         inset 0 2px 6px rgba(0,0,0,0.4),
         0 1px 3px rgba(0,0,0,0.2) !important;
 }
@@ -177,18 +343,18 @@ select:focus,
 input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="password"]:focus {
-    border-color: var(--indigo) !important;
-    box-shadow: 
+    border-color: var(--accent) !important;
+    box-shadow:
         inset 0 2px 6px rgba(0,0,0,0.4),
-        0 0 0 3px rgba(99,102,241,0.15),
-        0 4px 12px rgba(99,102,241,0.2) !important;
+        0 0 0 3px var(--accent-soft),
+        0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent) !important;
     outline: none !important;
     transform: translateY(-1px);
 }
 
 select:hover,
 input:hover {
-    border-color: rgba(99,102,241,0.3) !important;
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
 
 /* ── Password Input Container ── */
@@ -206,33 +372,23 @@ input:hover {
     transition: all 0.2s !important;
 }
 #togglePwBtn:hover {
-    background: rgba(99,102,241,0.15) !important;
-    border-color: rgba(99,102,241,0.3) !important;
-    box-shadow: 0 0 12px rgba(99,102,241,0.2) !important;
+    background: var(--accent-soft) !important;
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 20%, transparent) !important;
 }
 #togglePwBtn svg {
-    filter: drop-shadow(0 0 4px rgba(99,102,241,0.3));
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 30%, transparent));
 }
 
 /* ── Password Strength Bars ── */
-.h-1 {
-    margin-top: 8px;
-}
+.h-1 { margin-top: 8px; }
 #pwBar1, #pwBar2, #pwBar3, #pwBar4 {
     height: 3px;
     border-radius: 3px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
-
-/* ── Password Strength Label ── */
-#pwStrengthLabel {
-    text-shadow: 0 0 8px rgba(99,102,241,0.2);
-}
-
-/* ── Password Match Message ── */
-#pwMatchMessage {
-    text-shadow: 0 0 8px currentColor;
-}
+#pwStrengthLabel { text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 20%, transparent); }
+#pwMatchMessage { text-shadow: 0 0 8px currentColor; }
 
 /* ══ Team Birthdays Container ══ */
 .bg-slate-950\/30 {
@@ -241,8 +397,6 @@ input:hover {
     border-radius: 14px !important;
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.3) !important;
 }
-
-/* ── Team Birthday List ── */
 #allUsersBirthdayList > div {
     transition: all 0.15s;
     padding: 6px 8px;
@@ -250,7 +404,7 @@ input:hover {
     border-radius: 8px;
 }
 #allUsersBirthdayList > div:hover {
-    background: rgba(99,102,241,0.08) !important;
+    background: var(--accent-soft) !important;
 }
 
 /* ══ Emoji Grid ══ */
@@ -260,43 +414,46 @@ input:hover {
     border-radius: 16px !important;
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.4) !important;
 }
-
-/* ── Emoji Grid Items ── */
 #emojiGrid > div {
     transition: all 0.2s cubic-bezier(0.23,1,0.32,1);
     border-radius: 10px !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 #emojiGrid > div:hover {
-    background: rgba(99,102,241,0.12) !important;
+    background: var(--accent-soft) !important;
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(99,102,241,0.2) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent) !important;
 }
 #emojiGrid > div.border-blue-500 {
-    border-color: var(--indigo) !important;
-    background: rgba(99,102,241,0.2) !important;
-    box-shadow: 
-        0 0 0 2px rgba(99,102,241,0.3),
-        0 4px 16px rgba(99,102,241,0.3) !important;
+    border-color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 20%, transparent) !important;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent),
+        0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+@media (min-width: 1024px) {
+    #emojiGrid {
+        grid-template-columns: repeat(7, 1fr) !important;
+        max-height: 260px !important;
+    }
 }
 
 /* ══ Buttons ══ */
-
-/* ── Save Button ── */
 #saveBtn {
-    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
     border: none !important;
     border-radius: 16px !important;
-    box-shadow: 
-        0 6px 20px rgba(99,102,241,0.4),
+    box-shadow:
+        0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent),
         inset 0 1px 0 rgba(255,255,255,0.2) !important;
     transition: all 0.25s cubic-bezier(0.23,1,0.32,1) !important;
     letter-spacing: 0.05em;
 }
 #saveBtn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #818cf8, #6366f1) !important;
-    box-shadow: 
-        0 8px 28px rgba(99,102,241,0.55),
+    filter: brightness(1.12);
+    box-shadow:
+        0 8px 28px color-mix(in srgb, var(--accent) 55%, transparent),
         inset 0 1px 0 rgba(255,255,255,0.25) !important;
     transform: translateY(-2px);
 }
@@ -306,18 +463,17 @@ input:hover {
 #saveBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    box-shadow: 
-        0 4px 12px rgba(99,102,241,0.2),
+    box-shadow:
+        0 4px 12px color-mix(in srgb, var(--accent) 20%, transparent),
         inset 0 1px 0 rgba(255,255,255,0.1) !important;
 }
 
-/* ── Logout Button ── */
 button[onclick="handleLogout()"] {
     background: linear-gradient(145deg, var(--surface3), var(--surface2)) !important;
     border: 1px solid rgba(244,63,94,0.25) !important;
     border-radius: 16px !important;
     color: var(--red) !important;
-    box-shadow: 
+    box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.04),
         0 2px 8px rgba(0,0,0,0.3) !important;
     transition: all 0.2s !important;
@@ -326,7 +482,7 @@ button[onclick="handleLogout()"] {
 button[onclick="handleLogout()"]:hover {
     background: rgba(244,63,94,0.12) !important;
     border-color: rgba(244,63,94,0.4) !important;
-    box-shadow: 
+    box-shadow:
         0 0 16px rgba(244,63,94,0.25),
         inset 0 1px 0 rgba(255,255,255,0.06) !important;
     transform: translateY(-1px);
@@ -335,35 +491,16 @@ button[onclick="handleLogout()"]:active {
     transform: translateY(0) scale(0.98) !important;
 }
 
-/* ══ Loading Spinner ══ */
-#saveBtnSpinner {
-    filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));
-}
+#saveBtnSpinner { filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
 
 /* ══ Scrollbar Styling ══ */
-.no-scrollbar::-webkit-scrollbar { 
-    display: none; 
-}
-.no-scrollbar { 
-    -ms-overflow-style: none; 
-    scrollbar-width: none; 
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Custom scrollbar for birthday list */
-#allUsersBirthdayList::-webkit-scrollbar {
-    width: 6px;
-}
-#allUsersBirthdayList::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.2);
-    border-radius: 3px;
-}
-#allUsersBirthdayList::-webkit-scrollbar-thumb {
-    background: rgba(99,102,241,0.3);
-    border-radius: 3px;
-}
-#allUsersBirthdayList::-webkit-scrollbar-thumb:hover {
-    background: rgba(99,102,241,0.5);
-}
+#allUsersBirthdayList::-webkit-scrollbar { width: 6px; }
+#allUsersBirthdayList::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
+#allUsersBirthdayList::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 3px; }
+#allUsersBirthdayList::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--accent) 50%, transparent); }
 
 /* ══ Spacing Adjustments ══ */
 .space-y-6 > * + * { margin-top: 1.5rem !important; }
@@ -371,204 +508,218 @@ button[onclick="handleLogout()"]:active {
 .space-y-3 > * + * { margin-top: 0.75rem !important; }
 .space-y-2 > * + * { margin-top: 0.5rem !important; }
 
-/* ══ Responsive Adjustments ══ */
+/* ══ Responsive Adjustments (Mobile) ══ */
 @media (max-width: 768px) {
     .bg-slate-900 {
         padding: 1.25rem !important;
         border-radius: 20px !important;
     }
-    
-    /* 모바일에서 프로필 카드 패딩 증가 */
-    .bg-slate-950\/50 {
-        padding: 1.25rem !important;
-    }
-    
-    /* 모바일에서 프로필 이미지 크기 대폭 증가 */
+    .bg-slate-950\/50 { padding: 1.25rem !important; }
     #currentAvatarDisplay {
         width: 80px !important;
         height: 80px !important;
         min-width: 80px !important;
         min-height: 80px !important;
     }
-    
-    /* 모바일에서 사용자 이름 크기 증가 */
-    #displayUserName {
-        font-size: 1.125rem !important;
-        line-height: 1.3 !important;
-    }
-    
-    /* 모바일에서 Last Login 텍스트 크기 조정 */
-    #lastLoginDisplay {
-        font-size: 10px !important;
-    }
-    
-    #emojiGrid {
-        grid-template-columns: repeat(4, 1fr) !important;
-        max-height: 180px !important;
-    }
-    
-    select, 
+    #displayUserName { font-size: 1.125rem !important; line-height: 1.3 !important; }
+    #lastLoginDisplay { font-size: 10px !important; }
+    #emojiGrid { grid-template-columns: repeat(4, 1fr) !important; max-height: 180px !important; }
+    select,
     input[type="text"],
     input[type="date"],
-    input[type="password"] {
-        font-size: 11px !important;
-        padding: 10px 12px !important;
-    }
+    input[type="password"] { font-size: 11px !important; padding: 10px 12px !important; }
+
+    .tdlid-bg-text { font-size: clamp(4rem, 26vw, 9rem); }
+    .tdlid-bg-text.dup, .tdlid-bg-text.dup2 { display: none; }
 }
 
 /* ══ Focus Glow Effect ══ */
-input:focus,
-select:focus {
-    position: relative;
-}
-input:focus::after,
-select:focus::after {
+input:focus, select:focus { position: relative; }
+input:focus::after, select:focus::after {
     content: '';
     position: absolute;
     inset: -3px;
     border-radius: 16px;
-    background: radial-gradient(circle at center, rgba(99,102,241,0.15), transparent 70%);
+    background: radial-gradient(circle at center, var(--accent-soft), transparent 70%);
     pointer-events: none;
     z-index: -1;
 }
 
-/* ══ Helper Text Styling ══ */
-p.text-\[9px\] {
-    letter-spacing: 0.03em;
-    opacity: 0.7;
-}
-/* ── Date Input Calendar Icon ── */
+p.text-\[9px\] { letter-spacing: 0.03em; opacity: 0.7; }
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1) brightness(1.2);
     cursor: pointer;
     opacity: 0.8;
     transition: opacity 0.2s;
 }
-
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
     filter: invert(1) brightness(1.5);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .tdlid-bg-text { animation: none; }
+}
 </style>
 
-<div class="animate-fadeIn max-w-md mx-auto">
-    <h3 class="text-xl font-bold text-white mb-6">Account Settings</h3>
-    
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-6">
-        
-        <div class="pb-6 border-b border-slate-800/50">
-            <div class="flex items-center gap-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+<div class="settings-page-shell">
 
+    <!-- ══ Background floating 3D "TDLiD" text ══ -->
+    <div class="tdlid-bg-wrap" aria-hidden="true">
+        <div class="tdlid-bg-text">TDLiD</div>
+        <div class="tdlid-bg-text dup">TDLiD</div>
+        <div class="tdlid-bg-text dup2">TDLiD</div>
+    </div>
 
-<div id="currentAvatarDisplay" class="flex-shrink-0 w-12 h-12 rounded-full border border-slate-700 bg-slate-900 overflow-hidden flex items-center justify-center">
+    <div class="animate-fadeIn max-w-md mx-auto">
+        <h3 class="text-xl font-bold text-white mb-6 settings-page-title">
+            Account Settings
+            <span id="dayThemeBadge" class="day-theme-badge"><span class="dot"></span><span id="dayThemeLabel">—</span></span>
+        </h3>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-6">
+
+            <div class="settings-col-left">
+                <div class="pb-6 border-b border-slate-800/50">
+                    <div class="flex items-center gap-4 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+<div id="currentAvatarDisplay" class="flex-shrink-0 w-12 h-12 rounded-full border border-slate-700 bg-slate-900 overflow-hidden">
     <div class="animate-pulse w-full h-full bg-slate-800"></div>
 </div>
-<div class="flex-1">
-    <div id="displayUserName" class="text-white font-bold text-base uppercase tracking-tight">Loading...</div>
-    <div class="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-2">Staff Member</div>
-    <div class="flex items-center gap-2">
-        <span class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Last Login</span>
-        <span id="lastLoginDisplay" class="text-[9px] text-slate-500 font-mono">—</span>
-    </div>
-</div>
+                        <div class="flex-1">
+                            <div id="displayUserName" class="text-white font-bold text-base uppercase tracking-tight">Loading...</div>
+                            <div class="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-2">Staff Member</div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Last Login</span>
+                                <span id="lastLoginDisplay" class="text-[9px] text-slate-500 font-mono">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-3 mt-6">Profile Icon</label>
+                    <div id="emojiGrid" class="grid grid-cols-5 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 max-h-48 overflow-y-auto no-scrollbar"></div>
+                    <input type="hidden" id="selectedEmoji">
+                </div>
             </div>
-        </div>
 
-        <div class="space-y-4">
+            <div class="settings-col-right space-y-4">
 
-<div>
-    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Staff Birthday</label>
-    <div class="flex gap-2">
-        <select id="settingBirthType" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-            <option value="Solar">Solar (양력)</option>
-            <option value="Lunar">Lunar (음력)</option>
-        </select>
-        <input type="date" id="settingBirthDate" 
-               class="flex-1 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Display Name</label>
+                    <input type="text" id="settingDisplayName"
+                           class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                           placeholder="Enter your display name"
+                           maxlength="20">
+                    <p class="text-[9px] text-slate-600 mt-1">Shown on dashboard and reports</p>
+                </div>
 
-<div class="mt-4 p-4 bg-slate-950/30 rounded-xl border border-slate-800/50">
-    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-3 tracking-widest">Team Birthdays</label>
-    <div id="allUsersBirthdayList" class="space-y-2 max-h-40 overflow-y-auto no-scrollbar text-[11px]">
-        <div class="text-slate-500 animate-pulse">Loading team birthdays...</div>
-    </div>
-</div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Staff Birthday</label>
+                    <div class="flex gap-2">
+                        <select id="settingBirthType" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                            <option value="Solar">Solar (양력)</option>
+                            <option value="Lunar">Lunar (음력)</option>
+                        </select>
+                        <input type="date" id="settingBirthDate"
+                               class="flex-1 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
 
-</div>
+                    <div class="mt-4 p-4 bg-slate-950/30 rounded-xl border border-slate-800/50">
+                        <label class="block text-[10px] font-bold text-slate-600 uppercase mb-3 tracking-widest">Team Birthdays</label>
+                        <div id="allUsersBirthdayList" class="space-y-2 max-h-40 overflow-y-auto no-scrollbar text-[11px]">
+                            <div class="text-slate-500 animate-pulse">Loading team birthdays...</div>
+                        </div>
+                    </div>
+                </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Password</label>
-                <div class="relative">
-<input type="password" id="settingNewPw" 
-       class="w-full bg-slate-800 border border-slate-700 p-3 pr-12 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
-       placeholder="Loading password..."
-       autocomplete="new-password"
-       title="Must be 8+ characters with uppercase, lowercase, and numbers">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="settingNewPw"
+                               class="w-full bg-slate-800 border border-slate-700 p-3 pr-12 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                               placeholder="Loading password..."
+                               autocomplete="new-password"
+                               title="Must be 8+ characters with uppercase, lowercase, and numbers">
 
-<!-- input type="password" 닫는 태그 아래, toggleBtn div 위에 추가 -->
-<div class="mt-2 flex gap-1 h-1">
-    <div id="pwBar1" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
-    <div id="pwBar2" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
-    <div id="pwBar3" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
-    <div id="pwBar4" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
-</div>
-<p id="pwStrengthLabel" class="text-[9px] text-slate-600 mt-1 font-bold uppercase tracking-widest"></p>
+                        <div class="mt-2 flex gap-1 h-1">
+                            <div id="pwBar1" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+                            <div id="pwBar2" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+                            <div id="pwBar3" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+                            <div id="pwBar4" class="flex-1 rounded-full bg-slate-700 transition-all duration-300"></div>
+                        </div>
+                        <p id="pwStrengthLabel" class="text-[9px] text-slate-600 mt-1 font-bold uppercase tracking-widest"></p>
 
-                    
-                    <button type="button" id="togglePwBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors z-10">
-                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 pointer-events-none">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <button type="button" id="togglePwBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors z-10">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 pointer-events-none">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Confirm Password</label>
+                    <input type="password" id="confirmPw"
+                           class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                           placeholder="Re-type password to verify"
+                           autocomplete="new-password">
+                    <p id="pwMatchMessage" class="text-[10px] mt-2 font-bold hidden"></p>
+                </div>
+
+                <div class="space-y-3 pt-4">
+                    <button id="saveBtn" onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2">
+                        <span id="saveBtnText">SAVE CHANGES</span>
+                        <svg id="saveBtnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
+                    </button>
+
+                    <button onclick="handleLogout()" class="w-full bg-slate-800 text-rose-500 py-3 rounded-xl font-bold text-xs hover:bg-rose-500/10 transition border border-rose-500/20">
+                        LOGOUT
                     </button>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Confirm Password</label>
-                <input type="password" id="confirmPw" 
-                       class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
-                       placeholder="Re-type password to verify"
-                       autocomplete="new-password">
-                <p id="pwMatchMessage" class="text-[10px] mt-2 font-bold hidden"></p>
-            </div>
-<!-- password label div 바로 위에 추가 -->
-<div>
-    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Display Name</label>
-    <input type="text" id="settingDisplayName"
-           class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-           placeholder="Enter your display name"
-           maxlength="20">
-    <p class="text-[9px] text-slate-600 mt-1">Shown on dashboard and reports</p>
-</div>
-        </div>
-
-        <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-3">Profile Icon</label>
-            <div id="emojiGrid" class="grid grid-cols-5 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 max-h-48 overflow-y-auto no-scrollbar"></div>
-            <input type="hidden" id="selectedEmoji">
-        </div>
-        
-        <div class="space-y-3 pt-4">
-            <button id="saveBtn" onclick="updateUserAccount()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black border border-blue-500/20 hover:bg-blue-500 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2">
-                <span id="saveBtnText">SAVE CHANGES</span>
-                <svg id="saveBtnSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </button>
-
-            <button onclick="handleLogout()" class="w-full bg-slate-800 text-rose-500 py-3 rounded-xl font-bold text-xs hover:bg-rose-500/10 transition border border-rose-500/20">
-                LOGOUT
-            </button>
         </div>
     </div>
 </div>
 
 <script>
 (function() {
+    /* ══════════════════════════════════════════
+       7-DAY DYNAMIC THEME SYSTEM
+       Mon~Sun, each a distinct dark 3D palette
+    ══════════════════════════════════════════ */
+    const DAY_THEMES = {
+        1: { name: "Deep Navy Steel",   bg:"#040810", surface:"#080f1e", surface2:"#0d1628", surface3:"#111e33", accent:"#6366f1", accent2:"#4f46e5" }, // Mon
+        2: { name: "Dark Emerald Forge",bg:"#040b09", surface:"#08160f", surface2:"#0c2018", surface3:"#102b20", accent:"#10b981", accent2:"#059669" }, // Tue
+        3: { name: "Crimson Obsidian",  bg:"#0a0506", surface:"#170a0c", surface2:"#220e11", surface3:"#2e1216", accent:"#f43f5e", accent2:"#be123c" }, // Wed
+        4: { name: "Violet Abyss",      bg:"#08050d", surface:"#130a1d", surface2:"#1c0f2b", surface3:"#261439", accent:"#a855f7", accent2:"#7e22ce" }, // Thu
+        5: { name: "Amber Furnace",     bg:"#0a0703", surface:"#180f05", surface2:"#231607", surface3:"#2e1d09", accent:"#f59e0b", accent2:"#d97706" }, // Fri
+        6: { name: "Glacial Cyan Drift",bg:"#04090b", surface:"#081417", surface2:"#0c1d22", surface3:"#10262d", accent:"#22d3ee", accent2:"#0891b2" }, // Sat
+        0: { name: "Sunset Ember",      bg:"#0a0506", surface:"#1a0c0a", surface2:"#26120d", surface3:"#321810", accent:"#fb7185", accent2:"#f97316" }  // Sun
+    };
+
+    function applyDayTheme() {
+        const day = new Date().getDay(); // 0=Sun ... 6=Sat
+        const t = DAY_THEMES[day];
+        const root = document.documentElement.style;
+        root.setProperty('--bg', t.bg);
+        root.setProperty('--surface', t.surface);
+        root.setProperty('--surface2', t.surface2);
+        root.setProperty('--surface3', t.surface3);
+        root.setProperty('--accent', t.accent);
+        root.setProperty('--accent2', t.accent2);
+        root.setProperty('--accent-soft', t.accent + '26');
+        const label = document.getElementById('dayThemeLabel');
+        if (label) label.textContent = t.name;
+    }
+    applyDayTheme();
+
     const pwInput = document.getElementById('settingNewPw');
     const confirmInput = document.getElementById('confirmPw');
     const pwMessage = document.getElementById('pwMatchMessage');
@@ -577,7 +728,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     const hiddenInput = document.getElementById('selectedEmoji');
     const toggleBtn = document.getElementById('togglePwBtn');
     const eyeIcon = document.getElementById('eyeIcon');
-    
+
     const user = sessionStorage.getItem('loggedInUser');
 
     // 1. 이미지를 부드럽게 업데이트하는 함수
@@ -585,9 +736,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         const display = document.getElementById('currentAvatarDisplay');
         const newImg = document.createElement('img');
         newImg.src = `images/profile/${imgName}`;
-        newImg.className = "w-full h-full object-cover fade-in-quick";
-        
-        display.innerHTML = ""; 
+        newImg.className = "fade-in-quick";
+newImg.style.cssText = "width:100%; height:100%; object-fit:cover; display:block;";
+
+        display.innerHTML = "";
         display.appendChild(newImg);
     }
 
@@ -602,8 +754,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         eyeIcon.innerHTML = isPw ? eyeOffPath : eyeOnPath;
     };
 
-    // 3. 비밀번호 실시간 일치 체크
-// 3. 비밀번호 강도 & 일치 체크
+    // 3. 비밀번호 강도 & 일치 체크
     const pwStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
     function getPwStrength(pw) {
@@ -675,14 +826,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
                 if (data.displayName) document.getElementById('settingDisplayName').value = data.displayName;
 
-    if (data.lastLogin) {
-        const d = new Date(data.lastLogin);
-        const el = document.getElementById('lastLoginDisplay');
-        if (el) el.textContent = d.toLocaleString('en-US', {
-            month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit', hour12: false
-        });
-    }
+                if (data.lastLogin) {
+                    const d = new Date(data.lastLogin);
+                    const el = document.getElementById('lastLoginDisplay');
+                    if (el) el.textContent = d.toLocaleString('en-US', {
+                        month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit', hour12: false
+                    });
+                }
 
                 const currentImg = data.profileImg || 'image-001.webp';
                 hiddenInput.value = currentImg;
@@ -712,44 +863,43 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         const jpgNums = [2, 5, 8, 10, 12, 14, 16, 18, 20, 22];
         jpgNums.forEach(num => emojis.push(`image-${String(num).padStart(2, '0')}.jpg`));
 
-        // 5. 개별 파일 추가 (Yuda 입사 2026.04)
+        // 5. 개별 파일 추가
         emojis.push('Yuda.png');
-       
+
         // 생성된 리스트로 그리드 렌더링
         emojis.forEach(name => {
             const wrap = document.createElement('div');
-            // 만약 DB에 저장된 값이 풀경로(images/profile/...)라면 파일명만 추출해서 비교
             const pureCurrentImg = currentImg ? currentImg.split('/').pop() : "";
             const active = name === pureCurrentImg;
-            
+
             wrap.className = `cursor-pointer p-1 rounded-lg border-2 transition-all ${active ? 'border-blue-500 bg-blue-500/20' : 'border-transparent hover:bg-slate-800'}`;
             wrap.innerHTML = `<img src="images/profile/${name}" class="w-full h-auto rounded-md object-cover aspect-square" onerror="this.parentElement.style.display='none'">`;
-            
+
             wrap.onclick = () => {
                 const kids = grid.children;
-                for(let k of kids) { 
-                    k.classList.remove('border-blue-500', 'bg-blue-500/20'); 
-                    k.classList.add('border-transparent'); 
+                for(let k of kids) {
+                    k.classList.remove('border-blue-500', 'bg-blue-500/20');
+                    k.classList.add('border-transparent');
                 }
                 wrap.classList.remove('border-transparent');
                 wrap.classList.add('border-blue-500', 'bg-blue-500/20');
-                
+
                 hiddenInput.value = name;
                 updateAvatarWithFade(name);
             };
             grid.appendChild(wrap);
         });
     }
-// 모든 사용자 생일 리스트 렌더링 함수
+
+    // 모든 사용자 생일 리스트 렌더링 함수
     function renderAllStaffBirthdays() {
         const listContainer = document.getElementById('allUsersBirthdayList');
-        
+
         firebase.database().ref('users').once('value').then(snap => {
             const allUsers = snap.val();
             if (!allUsers) return;
 
             let html = "";
-            // 사용자 ID순으로 정렬
             const sortedKeys = Object.keys(allUsers).sort();
 
             sortedKeys.forEach(uid => {
@@ -758,7 +908,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
                     const bType = u.birthType === "Lunar" ? "🌙" : "☀️";
                     const bDate = u.birthday.replace(/-/g, '.');
                     const isMe = uid === user ? "(ME)" : "";
-                    
+
                     html += `
                         <div class="flex justify-between items-center py-1.5 border-b border-slate-800/30 last:border-0">
                             <span class="text-slate-300 font-bold uppercase ${uid === user ? 'text-blue-400' : ''}">
@@ -775,34 +925,30 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         });
     }
 
-    // 초기 실행 목록에 추가
     renderAllStaffBirthdays();
 
-
-    // 6. 업데이트 (페이지 튕김 방지 수정 완료)
+    // 6. 업데이트
     window.updateUserAccount = function() {
         const passValue = pwInput.value.trim();
-const birthValue = document.getElementById('settingBirthDate').value; // 추가
-    const birthTypeValue = document.getElementById('settingBirthType').value; // 추가
+        const birthValue = document.getElementById('settingBirthDate').value;
+        const birthTypeValue = document.getElementById('settingBirthType').value;
         if(!passValue) return alert("Password cannot be empty.");
 
         const btnText = document.getElementById('saveBtnText');
         const btnSpinner = document.getElementById('saveBtnSpinner');
-        
+
         saveBtn.disabled = true;
         btnText.textContent = "SAVING...";
         btnSpinner.classList.remove('hidden');
 
-firebase.database().ref('users/' + user).update({
-        password: passValue,
-        profileImg: hiddenInput.value,
-        birthday: birthValue,    // Firebase에 저장될 필드
-        birthType: birthTypeValue, // Firebase에 저장될 필드 (Solar/Lunar)
-    displayName:  document.getElementById('settingDisplayName').value.trim() || user, // ← 여기
-
-    }).then(() => {
+        firebase.database().ref('users/' + user).update({
+            password: passValue,
+            profileImg: hiddenInput.value,
+            birthday: birthValue,
+            birthType: birthTypeValue,
+            displayName: document.getElementById('settingDisplayName').value.trim() || user,
+        }).then(() => {
             alert("Changes saved successfully!");
-            // UI 복구 (location.reload() 제거)
             saveBtn.disabled = false;
             btnText.textContent = "SAVE CHANGES";
             btnSpinner.classList.add('hidden');
@@ -814,16 +960,14 @@ firebase.database().ref('users/' + user).update({
         });
     };
 
-    // 7. 로그아웃 (Firebase 서버 세션 종료 추가)
+    // 7. 로그아웃
     window.handleLogout = function() {
         if(confirm("Are you sure you want to logout?")) {
-            // Firebase 인증 로그아웃 호출 (서버 세션 확실히 종료)
             firebase.auth().signOut().then(() => {
                 sessionStorage.clear();
                 location.href = 'index.html';
             }).catch((error) => {
                 console.error("Logout Error:", error);
-                // 에러가 나더라도 클라이언트 세션은 정리 후 이동
                 sessionStorage.clear();
                 location.href = 'index.html';
             });
