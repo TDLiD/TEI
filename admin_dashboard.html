@@ -2,572 +2,692 @@
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
-<script src="jakarta-info.js"></script>
 
 <style>
-/* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; }
+/* ══════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Layout ── */
+:root {
+    --font-main: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    --radius-card: 20px;
+    --radius-inner: 12px;
+    --gap: 12px;
+}
+
+/* ══════════════════════════════════════════════
+   DAY-OF-WEEK CSS TOKENS
+   0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+══════════════════════════════════════════════ */
+
+/* Monday — Cyberpunk Neon (cyan/magenta) */
+[data-day="1"] {
+    --day-accent:    #00f5ff;
+    --day-accent2:   #ff00cc;
+    --day-accent3:   #ffe600;
+    --day-glow:      rgba(0,245,255,0.18);
+    --day-glow2:     rgba(255,0,204,0.10);
+    --day-border:    rgba(0,245,255,0.30);
+    --day-border-t:  rgba(0,245,255,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(0,245,255,0.06) 0%, rgba(255,0,204,0.04) 100%);
+    --day-text:      #00f5ff;
+    --day-label:     MONDAY;
+    --day-theme:     CYBERPUNK NEON;
+}
+/* Tuesday — Matrix Green */
+[data-day="2"] {
+    --day-accent:    #39ff14;
+    --day-accent2:   #00cc44;
+    --day-accent3:   #a8ff78;
+    --day-glow:      rgba(57,255,20,0.15);
+    --day-glow2:     rgba(0,204,68,0.08);
+    --day-border:    rgba(57,255,20,0.28);
+    --day-border-t:  rgba(57,255,20,0.50);
+    --day-bg:        linear-gradient(145deg, rgba(57,255,20,0.05) 0%, rgba(0,30,10,0.6) 100%);
+    --day-text:      #39ff14;
+    --day-label:     TUESDAY;
+    --day-theme:     MATRIX GRID;
+}
+/* Wednesday — Deep Ocean Blueprint */
+[data-day="3"] {
+    --day-accent:    #4facfe;
+    --day-accent2:   #00f2fe;
+    --day-accent3:   #a8edea;
+    --day-glow:      rgba(79,172,254,0.18);
+    --day-glow2:     rgba(0,242,254,0.10);
+    --day-border:    rgba(79,172,254,0.30);
+    --day-border-t:  rgba(79,172,254,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(79,172,254,0.06) 0%, rgba(0,242,254,0.03) 100%);
+    --day-text:      #4facfe;
+    --day-label:     WEDNESDAY;
+    --day-theme:     DEEP OCEAN;
+}
+/* Thursday — Volcanic Amber */
+[data-day="4"] {
+    --day-accent:    #fbbf24;
+    --day-accent2:   #f97316;
+    --day-accent3:   #fde68a;
+    --day-glow:      rgba(251,191,36,0.16);
+    --day-glow2:     rgba(249,115,22,0.08);
+    --day-border:    rgba(251,191,36,0.30);
+    --day-border-t:  rgba(251,191,36,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(251,191,36,0.06) 0%, rgba(249,115,22,0.04) 100%);
+    --day-text:      #fbbf24;
+    --day-label:     THURSDAY;
+    --day-theme:     VOLCANIC AMBER;
+}
+/* Friday — Neon Violet */
+[data-day="5"] {
+    --day-accent:    #c084fc;
+    --day-accent2:   #818cf8;
+    --day-accent3:   #f0abfc;
+    --day-glow:      rgba(192,132,252,0.16);
+    --day-glow2:     rgba(129,140,248,0.10);
+    --day-border:    rgba(192,132,252,0.30);
+    --day-border-t:  rgba(192,132,252,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(192,132,252,0.06) 0%, rgba(129,140,248,0.04) 100%);
+    --day-text:      #c084fc;
+    --day-label:     FRIDAY;
+    --day-theme:     NEON VIOLET;
+}
+/* Saturday — Glacial Cyan Drift */
+[data-day="6"] {
+    --day-accent:    #67e8f9;
+    --day-accent2:   #38bdf8;
+    --day-accent3:   #bae6fd;
+    --day-glow:      rgba(103,232,249,0.16);
+    --day-glow2:     rgba(56,189,248,0.10);
+    --day-border:    rgba(103,232,249,0.30);
+    --day-border-t:  rgba(103,232,249,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(103,232,249,0.06) 0%, rgba(56,189,248,0.03) 100%);
+    --day-text:      #67e8f9;
+    --day-label:     SATURDAY;
+    --day-theme:     GLACIAL CYAN;
+}
+/* Sunday — Sunset Ember */
+[data-day="0"] {
+    --day-accent:    #fb7185;
+    --day-accent2:   #f43f5e;
+    --day-accent3:   #fda4af;
+    --day-glow:      rgba(251,113,133,0.16);
+    --day-glow2:     rgba(244,63,94,0.10);
+    --day-border:    rgba(251,113,133,0.30);
+    --day-border-t:  rgba(251,113,133,0.55);
+    --day-bg:        linear-gradient(145deg, rgba(251,113,133,0.07) 0%, rgba(244,63,94,0.04) 100%);
+    --day-text:      #fb7185;
+    --day-label:     SUNDAY;
+    --day-theme:     SUNSET EMBER;
+}
+
+/* ══════════════════════════════════════════════
+   PAGE SCAFFOLD
+══════════════════════════════════════════════ */
 .db-root {
-    display: flex; flex-direction: column; gap: 14px; padding: 4px 0;
-    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: 6px 2px;
+    font-family: var(--font-main);
 }
 
-/* ── 3D Card Base ── */
-.card-3d {
+/* ══════════════════════════════════════════════
+   DAY BANNER — top identifier strip
+══════════════════════════════════════════════ */
+.day-banner {
     position: relative;
+    border-radius: var(--radius-card);
+    background: var(--day-bg);
+    border: 1px solid var(--day-border);
+    border-top: 1px solid var(--day-border-t);
+    box-shadow: 0 0 30px var(--day-glow), 0 0 60px var(--day-glow2), inset 0 1px 0 rgba(255,255,255,0.07);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
     transform-style: preserve-3d;
-    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.35s ease;
-    border-radius: 18px;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease;
 }
-.card-3d:hover {
-    transform: translateY(-6px) rotateX(4deg) rotateY(-2deg);
-    box-shadow: 0 24px 48px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
+.day-banner:hover {
+    transform: translateY(-3px) rotateX(3deg);
+    box-shadow: 0 0 40px var(--day-glow), 0 16px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
 }
-.card-3d::before {
+.day-banner::before {
     content: '';
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 50%);
-    pointer-events: none; z-index: 1;
+    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--day-accent), transparent);
 }
-.card-3d::after {
-    content: '';
+/* 3D floating background text */
+.day-banner::after {
+    content: 'TDLiD';
     position: absolute;
-    bottom: -4px; left: 6px; right: 6px; height: 12px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
-    filter: blur(8px);
-    transition: all 0.35s ease;
-    z-index: -1;
+    right: -10px; top: 50%; transform: translateY(-50%);
+    font-size: clamp(36px, 8vw, 72px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--day-accent);
+    opacity: 0.06;
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 4px 4px 12px var(--day-glow);
 }
-.card-3d:hover::after {
-    bottom: -10px; left: 10px; right: 10px;
-    filter: blur(14px);
+.day-banner-left { display: flex; flex-direction: column; gap: 3px; }
+.day-name {
+    font-size: clamp(18px, 4vw, 28px);
+    font-weight: 900;
+    color: var(--day-accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px var(--day-accent), 0 0 40px var(--day-glow);
+    line-height: 1;
+}
+.day-theme-tag {
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--day-accent2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+.day-banner-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.day-date-big {
+    font-size: clamp(11px, 2.5vw, 14px);
+    font-weight: 900;
+    color: rgba(255,255,255,0.65);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+}
+.day-clock {
+    font-size: clamp(9px, 2vw, 11px);
+    font-weight: 700;
+    color: var(--day-accent);
+    font-family: var(--font-mono);
     opacity: 0.7;
 }
 
-/* ── Alert Banner ── */
-.db-alert {
-    display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.06) 100%);
-    border: 1px solid rgba(245,158,11,0.5);
-    border-top: 1px solid rgba(245,158,11,0.7);
-    border-radius: 16px; padding: 12px 16px; cursor: pointer;
-    box-shadow: 0 8px 24px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
-    animation: alertPulse 2.5s ease-in-out infinite;
-    transform-style: preserve-3d;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.db-alert:hover {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 16px 32px rgba(245,158,11,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
-}
-.db-alert-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.db-alert-text { flex: 1; margin: 0 12px; }
-.db-alert-text h3 { font-size: 11px; font-weight: 900; color: #fbbf24; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 2px; }
-.db-alert-text p { font-size: 10px; color: rgba(253,230,138,0.65); font-weight: 600; margin: 0; }
-.db-alert-badge {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white; font-size: 9px; font-weight: 900;
-    padding: 5px 12px; border-radius: 8px;
-    text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
-    box-shadow: 0 4px 10px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-@keyframes alertPulse {
-    0%,100% { box-shadow: 0 8px 24px rgba(245,158,11,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
-    50% { box-shadow: 0 8px 28px rgba(245,158,11,0.3), 0 0 0 3px rgba(245,158,11,0.1), inset 0 1px 0 rgba(255,255,255,0.15); }
-}
-
-/* ── Top Row ── */
-.db-top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 640px) { .db-top-row { grid-template-columns: 1fr; } }
-
-/* Jakarta Info (always visible panel) */
-.db-jakarta-panel {
-    background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(6,78,59,0.08) 100%);
-    border: 1px solid rgba(16,185,129,0.25);
-    border-top: 1px solid rgba(16,185,129,0.45);
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(16,185,129,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+/* ══════════════════════════════════════════════
+   SECTION CARD — shared 3D base for all panels
+══════════════════════════════════════════════ */
+.section-card {
     position: relative;
-}
-.db-jakarta-panel::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent);
-}
-.db-jakarta-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px 10px;
-    border-bottom: 1px solid rgba(16,185,129,0.12);
-    cursor: pointer;
-}
-.db-jakarta-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #059669, #047857);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(5,150,105,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.db-jakarta-title { font-size: 11px; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 0.06em; }
-.db-jakarta-sub { font-size: 9px; color: #475569; font-weight: 700; margin-top: 1px; }
-.db-jakarta-body { padding: 10px 14px 12px; }
-
-/* Jakarta info grid */
-.db-jk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.db-jk-item {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(16,185,129,0.1);
-    border-radius: 10px; padding: 8px 10px;
-}
-.db-jk-item-label { font-size: 8px; font-weight: 900; color: #1e4a3a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
-.db-jk-item-value { font-size: 12px; font-weight: 900; color: #34d399; }
-.db-jk-item-sub { font-size: 8px; color: #475569; font-weight: 600; margin-top: 1px; }
-
-/* News ticker area */
-.db-news-section { margin-top: 4px; }
-.db-news-title { font-size: 9px; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
-.db-news-dot { width: 5px; height: 5px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 6px #ef4444; animation: pulse 1.5s infinite; }
-.db-news-list { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto; }
-.db-news-item {
-    padding: 6px 10px;
-    background: rgba(0,0,0,0.25);
+    border-radius: var(--radius-card);
+    background: linear-gradient(145deg, rgba(12,18,36,0.96) 0%, rgba(8,12,24,0.92) 100%);
     border: 1px solid rgba(30,41,59,0.8);
-    border-radius: 8px; cursor: pointer;
-    transition: all 0.15s;
-    display: flex; gap: 8px; align-items: flex-start;
-}
-.db-news-item:hover { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
-.db-news-tag {
-    font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px;
-    text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
-}
-.db-news-tag.eco { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
-.db-news-tag.policy { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
-.db-news-tag.general { background: rgba(100,116,139,0.15); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
-.db-news-tag.ev { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.2); }
-.db-news-text { font-size: 9px; color: #64748b; font-weight: 600; line-height: 1.4; }
-.db-news-text a { color: #94a3b8; text-decoration: none; }
-.db-news-text a:hover { color: #60a5fa; }
-
-/* Vacationers */
-.db-vacation-card {
-    background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(67,56,202,0.06) 100%);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-top: 1px solid rgba(99,102,241,0.45);
-    border-radius: 16px; padding: 14px 16px; cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow: 0 8px 24px rgba(99,102,241,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
-    position: relative; overflow: hidden;
-}
-.db-vacation-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(129,140,248,0.5), transparent);
-}
-.db-vacation-card:hover {
-    transform: translateY(-5px) rotateX(3deg);
-    box-shadow: 0 18px 36px rgba(99,102,241,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
-}
-.db-vacation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.db-vacation-title { font-size: 10px; font-weight: 900; color: #818cf8; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px; }
-.db-vacation-dot { width: 6px; height: 6px; background: #6366f1; border-radius: 50%; box-shadow: 0 0 6px #6366f1; animation: pulse 2s infinite; }
-.db-week-range { font-size: 9px; color: #475569; font-weight: 700; background: rgba(30,41,59,0.6); padding: 3px 8px; border-radius: 10px; border: 1px solid #1e293b; }
-.db-vacation-chips { display: flex; flex-wrap: wrap; gap: 5px; max-height: 54px; overflow-y: auto; }
-.db-vacation-chip {
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(99,102,241,0.12);
-    border: 1px solid rgba(99,102,241,0.25);
-    padding: 3px 9px; border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(99,102,241,0.15);
-}
-.db-vacation-chip .name { font-size: 9px; font-weight: 900; color: #e2e8f0; }
-.db-vacation-chip .dates { font-size: 8px; color: #475569; font-family: monospace; }
-.db-vacation-chip .type { font-size: 8px; font-weight: 900; color: #818cf8; text-transform: uppercase; }
-@keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor; } 50% { opacity: 0.4; box-shadow: none; } }
-
-/* ── Stats Row ── */
-.db-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-@media (max-width: 640px) { .db-stats-row { grid-template-columns: repeat(2, 1fr); } }
-
-.db-stat {
-    background: linear-gradient(145deg, rgba(15,23,42,0.9) 0%, rgba(8,12,26,0.8) 100%);
-    border: 1px solid #1e293b;
-    border-top: 1px solid #253047;
-    border-radius: 16px; padding: 14px 16px; cursor: pointer;
-    transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative; overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(45,63,90,0.9);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    overflow: hidden;
     transform-style: preserve-3d;
+    transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), box-shadow 0.35s ease;
 }
-.db-stat::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
-    border-radius: inherit; pointer-events: none;
+.section-card:hover {
+    transform: translateY(-4px) rotateX(2deg);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.08);
+    border-color: var(--day-border);
+    border-top-color: var(--day-border-t);
 }
-.db-stat::after {
+.section-card::before {
     content: '';
     position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    background: linear-gradient(90deg, transparent, var(--day-accent), transparent);
+    opacity: 0.35;
+    pointer-events: none;
 }
-.db-stat:hover {
-    transform: translateY(-8px) rotateX(6deg) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.1);
-}
-.db-stat.blue:hover { border-color: rgba(59,130,246,0.5); box-shadow: 0 20px 40px rgba(59,130,246,0.2), 0 0 20px rgba(59,130,246,0.1); }
-.db-stat.rose:hover  { border-color: rgba(244,63,94,0.4);  box-shadow: 0 20px 40px rgba(244,63,94,0.2),  0 0 20px rgba(244,63,94,0.1); }
-.db-stat.amber:hover { border-color: rgba(245,158,11,0.5); box-shadow: 0 20px 40px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.1); }
-.db-stat.purple:hover{ border-color: rgba(168,85,247,0.5); box-shadow: 0 20px 40px rgba(168,85,247,0.2), 0 0 20px rgba(168,85,247,0.1); }
 
-.db-stat-label { font-size: 9px; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-.db-stat-value { font-size: 24px; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-.db-stat-value.blue { color: #fff; text-shadow: 0 0 20px rgba(59,130,246,0.3); }
-.db-stat-value.rose { color: #fb7185; text-shadow: 0 0 20px rgba(244,63,94,0.3); }
-.db-stat-value.amber { color: #fbbf24; text-shadow: 0 0 20px rgba(245,158,11,0.3); }
-.db-stat-value.purple { color: #c084fc; text-shadow: 0 0 20px rgba(168,85,247,0.3); }
-.db-stat-sub { font-size: 8px; color: #334155; font-weight: 700; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.db-stat-late { font-size: 9px; color: #f87171; font-weight: 900; margin-top: 4px; text-transform: uppercase; }
+/* card pseudo-shadow */
+.section-card::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; left: 8px; right: 8px; height: 14px;
+    background: rgba(0,0,0,0.28);
+    border-radius: 50%;
+    filter: blur(10px);
+    z-index: -1;
+    transition: all 0.35s ease;
+    pointer-events: none;
+}
+.section-card:hover::after {
+    bottom: -12px; left: 12px; right: 12px;
+    filter: blur(18px);
+    opacity: 0.65;
+}
 
-/* ── Today/Yesterday Section ── */
-.db-daily-section {
-    background: linear-gradient(145deg, rgba(12,18,36,0.95) 0%, rgba(8,12,24,0.9) 100%);
-    border: 1px solid #1e293b;
-    border-top: 1px solid #253047;
-    border-radius: 20px; overflow: hidden;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+/* card header */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid rgba(30,41,59,0.6);
+    background: rgba(0,0,0,0.25);
+    flex-shrink: 0;
 }
-.db-daily-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid #1e293b;
-    background: rgba(0,0,0,0.3);
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-.db-daily-title {
-    font-size: 10px; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.08em;
-    display: flex; align-items: center; gap: 6px;
+.card-icon {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+    background: var(--day-bg);
+    border: 1px solid var(--day-border);
+    box-shadow: 0 0 10px var(--day-glow), inset 0 1px 0 rgba(255,255,255,0.1);
 }
-.db-daily-badge {
-    font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 6px;
+.card-title {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--day-text);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+.card-sub {
+    font-size: 8px;
+    color: #334155;
+    font-weight: 700;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* date pair badges */
+.date-pair {
+    display: flex; gap: 5px; align-items: center;
+}
+.date-badge {
+    font-size: 8px; font-weight: 900;
+    padding: 3px 9px; border-radius: 7px;
     text-transform: uppercase; letter-spacing: 0.05em;
 }
-.db-daily-badge.today { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
-.db-daily-badge.yesterday { background: rgba(100,116,139,0.12); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
+.date-badge.yday { background: rgba(30,41,59,0.6); color: #475569; border: 1px solid rgba(30,41,59,0.9); }
+.date-badge.tday { background: var(--day-glow); color: var(--day-accent); border: 1px solid var(--day-border); box-shadow: 0 0 8px var(--day-glow); }
 
-/* Three-column day comparison */
-.db-day-comparison {
+/* ══════════════════════════════════════════════
+   TWO-COLUMN COMPARISON GRID
+══════════════════════════════════════════════ */
+.col-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
 }
-.db-day-col-wrap {
-    padding: 14px;
-    border-right: 1px solid rgba(30,41,59,0.6);
+@media (max-width: 480px) {
+    .col-grid { grid-template-columns: 1fr; }
 }
-.db-day-col-wrap:last-child { border-right: none; }
+.col-pane {
+    padding: 12px 14px;
+    border-right: 1px solid rgba(30,41,59,0.5);
+}
+.col-pane:last-child { border-right: none; }
+@media (max-width: 480px) {
+    .col-pane { border-right: none; border-bottom: 1px solid rgba(30,41,59,0.5); }
+    .col-pane:last-child { border-bottom: none; }
+}
 
-.db-day-label {
-    font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+.col-label {
+    font-size: 9px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
 }
-.db-day-label.today { color: #60a5fa; }
-.db-day-label.yesterday { color: #475569; }
-.db-day-label-dot { width: 5px; height: 5px; border-radius: 50%; }
-.db-day-label-dot.today { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
-.db-day-label-dot.yesterday { background: #334155; }
+.col-label.yday { color: #334155; }
+.col-label.tday { color: var(--day-accent); text-shadow: 0 0 10px var(--day-glow); }
+.col-label-dot {
+    width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+}
+.col-label-dot.yday { background: #1e293b; }
+.col-label-dot.tday { background: var(--day-accent); box-shadow: 0 0 6px var(--day-accent); animation: dotPulse 2s infinite; }
 
-/* Staff rows in daily view */
-.db-daily-staff-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
-    transition: all 0.15s ease; border: 1px solid transparent;
-    background: rgba(15,23,42,0.4);
+/* ══════════════════════════════════════════════
+   ATTENDANCE ROW
+══════════════════════════════════════════════ */
+.att-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-radius: var(--radius-inner);
+    margin-bottom: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    background: rgba(15,23,42,0.5);
+    gap: 6px;
 }
-.db-daily-staff-row:hover {
-    background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.15);
+.att-row:hover {
+    background: rgba(255,255,255,0.03);
+    border-color: var(--day-border);
+    box-shadow: 0 0 10px var(--day-glow);
 }
-.db-daily-staff-name { font-size: 9px; font-weight: 800; color: #94a3b8; }
-.db-daily-times { display: flex; align-items: center; gap: 4px; }
-.db-daily-in { font-size: 8px; font-weight: 900; font-family: monospace; }
-.db-daily-in.normal { color: #34d399; }
-.db-daily-in.late { color: #f87171; }
-.db-daily-out { font-size: 8px; color: #334155; font-family: monospace; }
-.db-daily-badge-special {
-    font-size: 8px; font-weight: 900; color: #fbbf24;
-    padding: 1px 5px;
+.att-name {
+    font-size: 10px; font-weight: 800; color: #94a3b8;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+}
+.att-times {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.att-in {
+    font-size: 9px; font-weight: 900; font-family: var(--font-mono);
+}
+.att-in.normal { color: #34d399; }
+.att-in.late { color: #f87171; }
+.att-out { font-size: 8px; color: #334155; font-family: var(--font-mono); }
+.att-arrow { font-size: 8px; color: #1e293b; }
+.att-special {
+    font-size: 9px; font-weight: 900;
+    padding: 2px 7px; border-radius: 6px;
     background: rgba(245,158,11,0.12);
-    border-radius: 4px; border: 1px solid rgba(245,158,11,0.25);
+    color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.25);
 }
-.db-no-data { font-size: 8px; color: #1e293b; font-style: italic; padding: 4px 6px; }
 
-/* Report rows */
-.db-daily-rep-row {
-    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
-    transition: all 0.15s; font-size: 9px; font-weight: 700;
-    border: 1px solid transparent; display: flex; align-items: center; gap: 4px;
-    background: rgba(15,23,42,0.4);
+/* ══════════════════════════════════════════════
+   REPORT ROW
+══════════════════════════════════════════════ */
+.rep-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 8px;
+    border-radius: var(--radius-inner);
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    background: rgba(15,23,42,0.5);
+    gap: 7px;
 }
-.db-daily-rep-row.completed { color: #34d399; border-color: rgba(16,185,129,0.15); }
-.db-daily-rep-row.pending   { color: #fbbf24; border-color: rgba(245,158,11,0.15); }
-.db-daily-rep-row.progress  { color: #60a5fa; border-color: rgba(59,130,246,0.15); }
-.db-daily-rep-row:hover { filter: brightness(1.25); }
-.db-new-badge {
+.rep-row:hover { filter: brightness(1.2); border-color: var(--day-border); }
+.rep-status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
+}
+.rep-status-dot.completed { background: #34d399; box-shadow: 0 0 6px #34d399; }
+.rep-status-dot.pending   { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
+.rep-status-dot.progress  { background: #60a5fa; box-shadow: 0 0 6px #60a5fa; }
+.rep-info { flex: 1; min-width: 0; }
+.rep-name {
+    font-size: 10px; font-weight: 900; color: #e2e8f0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rep-content {
+    font-size: 8px; color: #475569; font-weight: 600;
+    margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rep-meta {
+    display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 2px;
+}
+.rep-status-label {
+    font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.rep-status-label.completed { color: #34d399; }
+.rep-status-label.pending   { color: #fbbf24; }
+.rep-status-label.progress  { color: #60a5fa; }
+.rep-new-badge {
     font-size: 7px; font-weight: 900;
     background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white; padding: 1px 4px; border-radius: 3px; flex-shrink: 0;
+    color: white; padding: 1px 5px; border-radius: 4px;
     box-shadow: 0 0 8px rgba(239,68,68,0.4);
 }
 
-/* Schedule rows */
-.db-daily-sch-row {
-    padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
-    transition: all 0.15s; font-size: 9px; font-weight: 700;
-    color: #c084fc; border: 1px solid rgba(168,85,247,0.15);
-    background: rgba(168,85,247,0.05);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+/* ══════════════════════════════════════════════
+   VACATION / CALENDAR EVENT ROW
+══════════════════════════════════════════════ */
+.event-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-inner);
+    margin-bottom: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: rgba(15,23,42,0.5);
+    border: 1px solid transparent;
 }
-.db-daily-sch-row:hover { filter: brightness(1.25); }
+.event-row:hover { background: rgba(255,255,255,0.03); border-color: var(--day-border); }
+.event-tag {
+    font-size: 7px; font-weight: 900; padding: 2px 6px; border-radius: 5px;
+    text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0;
+}
+.event-tag.vacation { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); }
+.event-tag.calendar { background: rgba(192,132,252,0.13); color: #c084fc; border: 1px solid rgba(192,132,252,0.22); }
+.event-tag.leave    { background: rgba(251,191,36,0.12);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+.event-name { font-size: 10px; font-weight: 900; color: #94a3b8; flex-shrink: 0; }
+.event-title { font-size: 9px; color: #64748b; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.event-date { font-size: 8px; font-weight: 700; color: #334155; font-family: var(--font-mono); flex-shrink: 0; }
 
-/* Section divider inside day comparison */
-.db-section-divider {
-    font-size: 8px; font-weight: 900; color: #1e293b; text-transform: uppercase;
-    letter-spacing: 0.1em; margin: 8px 0 5px; display: flex; align-items: center; gap: 5px;
-}
-.db-section-divider::after {
-    content: ''; flex: 1; height: 1px; background: rgba(30,41,59,0.5);
+/* ══════════════════════════════════════════════
+   EMPTY / NO DATA
+══════════════════════════════════════════════ */
+.no-data {
+    font-size: 9px; color: #1e293b; font-style: italic;
+    padding: 6px 8px; font-weight: 600;
 }
 
-/* ── Legend ── */
-.db-legend {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    padding: 10px 14px; border-top: 1px solid #0f172a;
+/* ══════════════════════════════════════════════
+   LEGEND BAR
+══════════════════════════════════════════════ */
+.legend-bar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid rgba(15,23,42,0.8);
     background: rgba(0,0,0,0.2);
 }
-.db-legend-item { display: flex; align-items: center; gap: 4px; font-size: 8px; font-weight: 700; color: #334155; text-transform: uppercase; }
-.db-legend-dot { width: 5px; height: 5px; border-radius: 50%; }
+.legend-item {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 8px; font-weight: 700; color: #1e293b;
+    text-transform: uppercase; letter-spacing: 0.07em;
+}
+.legend-dot { width: 5px; height: 5px; border-radius: 50%; }
 
-/* ── Tooltip (legacy, kept) ── */
-#jakartaQuickTooltip { display: none; }
+/* ══════════════════════════════════════════════
+   LEAVE ALERT BANNER
+══════════════════════════════════════════════ */
+.leave-alert {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
+    border: 1px solid rgba(245,158,11,0.45);
+    border-top: 1px solid rgba(245,158,11,0.7);
+    border-radius: var(--radius-card);
+    padding: 12px 16px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+    animation: alertPulse 2.8s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+.leave-alert:hover { transform: translateY(-2px); }
+.leave-alert-icon {
+    width: 32px; height: 32px; flex-shrink: 0;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+}
+.leave-alert-body { flex: 1; min-width: 0; }
+.leave-alert-title { font-size: 10px; font-weight: 900; color: #fbbf24; letter-spacing: 0.06em; text-transform: uppercase; }
+.leave-alert-sub { font-size: 9px; color: rgba(253,230,138,0.55); font-weight: 600; margin-top: 1px; }
+.leave-alert-cta {
+    font-size: 8px; font-weight: 900; color: white;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    padding: 5px 12px; border-radius: 7px; white-space: nowrap; flex-shrink: 0;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    box-shadow: 0 3px 10px rgba(245,158,11,0.35);
+}
 
-/* ── Modal ── */
+/* ══════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════ */
+@keyframes alertPulse {
+    0%,100% { box-shadow: 0 8px 24px rgba(245,158,11,0.12); }
+    50%      { box-shadow: 0 8px 28px rgba(245,158,11,0.28), 0 0 0 3px rgba(245,158,11,0.08); }
+}
+@keyframes dotPulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor; }
+    50%      { opacity: 0.35; box-shadow: none; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.db-root { animation: fadeIn 0.35s ease both; }
+
+/* ══════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════ */
 #customAdminModal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 16px; }
 #customAdminModal.open { display: flex; }
-.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(10px); }
 .modal-box {
     position: relative;
-    background: linear-gradient(145deg, #0f172a 0%, #080c18 100%);
+    background: linear-gradient(145deg, #0f172a 0%, #08111e 100%);
     width: 100%; max-width: 440px; max-height: 90vh;
     border-radius: 26px;
     border: 1px solid #1e293b;
-    border-top: 1px solid #2d3f5a;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.08);
+    border-top: 1px solid var(--day-border-t, #2d3f5a);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.07);
     overflow: hidden; display: flex; flex-direction: column;
 }
 #modalHeaderArea {
-    padding: 22px 22px 16px;
+    padding: 20px 22px 16px;
     border-bottom: 1px solid #1e293b;
-    background: linear-gradient(135deg, rgba(30,41,59,0.5) 0%, transparent 100%);
-    flex-shrink: 0; position: relative;
-}
-#modalHeaderArea::after {
-    content: '';
-    position: absolute; bottom: 0; left: 20%; right: 20%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+    background: rgba(0,0,0,0.3);
+    flex-shrink: 0;
 }
 #modalBodyArea { padding: 22px; overflow-y: auto; color: white; flex: 1; }
 #modalFooterArea { padding: 16px; flex-shrink: 0; border-top: 1px solid #0f172a; }
 
-/* ── Scrollbar ── */
+/* ══════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
 
-/* flatpickr */
+/* flatpickr z-index fix */
 .flatpickr-calendar { z-index: 999999 !important; }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE TWEAKS
+══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .day-banner { padding: 12px 14px; }
+    .card-header { padding: 10px 13px 9px; }
+    .col-pane { padding: 10px 12px; }
+}
 </style>
 
-<div class="db-root animate-fadeIn">
+<!-- ROOT: day attribute set by JS -->
+<div class="db-root" id="dashRoot">
 
-    <!-- ① Alert Banner -->
-    <div id="leave_alert_banner" class="hidden" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
-        <div class="db-alert">
-            <div class="db-alert-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div class="db-alert-text">
-                <h3>New Leave Request Pending</h3>
-                <p id="leave_alert_text">There are new leave applications waiting for your approval.</p>
+    <!-- ① Leave Alert (hidden by default) -->
+    <div id="leave_alert_banner" class="hidden"
+         onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
+        <div class="leave-alert">
+            <div class="leave-alert-icon">⏰</div>
+            <div class="leave-alert-body">
+                <div class="leave-alert-title">New Leave Request</div>
+                <div class="leave-alert-sub" id="leave_alert_text">Pending approvals waiting.</div>
             </div>
-            <div class="db-alert-badge">Review Now</div>
+            <div class="leave-alert-cta">Review →</div>
         </div>
     </div>
 
-    <!-- ② Jakarta Info Panel (always visible) -->
-    <div class="db-jakarta-panel">
-        <div class="db-jakarta-header" onclick="if(window.JakartaInfo){JakartaInfo.showPopup()}">
-            <div class="db-jakarta-icon">🏢</div>
-            <div style="flex:1">
-                <div class="db-jakarta-title">Jakarta Information</div>
-                <div class="db-jakarta-sub">Office Guide & Local Info</div>
-            </div>
-            <div style="font-size:9px;color:#1e4a3a;font-weight:900;text-transform:uppercase;">FULL GUIDE →</div>
+    <!-- ② Day Banner -->
+    <div class="day-banner">
+        <div class="day-banner-left">
+            <div class="day-name" id="bannerDayName">—</div>
+            <div class="day-theme-tag" id="bannerTheme">—</div>
         </div>
-        <div class="db-jakarta-body">
-            <div id="jakarta_inline_info" class="db-jk-grid">
-                <div class="db-jk-item" id="jk_weather">
-                    <div class="db-jk-item-label">Weather</div>
-                    <div class="db-jk-item-value" id="jk_weather_val">—</div>
-                    <div class="db-jk-item-sub" id="jk_weather_sub">Loading…</div>
-                </div>
-                <div class="db-jk-item" id="jk_time">
-                    <div class="db-jk-item-label">Jakarta Time (WIB)</div>
-                    <div class="db-jk-item-value" id="jk_time_val">—</div>
-                    <div class="db-jk-item-sub" id="jk_time_sub">GMT+7</div>
-                </div>
-<div class="db-jk-item" id="jk_rate">
-    <div class="db-jk-item-label">Exchange Rate</div>
-    <div class="db-jk-item-value" id="jk_rate_val">—</div>
-    <div class="db-jk-item-sub">
-        USD/IDR &nbsp;|&nbsp; KRW <span id="jk_krw_rate">—</span>
-    </div>
-</div>
-                <div class="db-jk-item" id="jk_holiday">
-                    <div class="db-jk-item-label">Next Holiday</div>
-                    <div class="db-jk-item-value" id="jk_holiday_val" style="font-size:10px;">—</div>
-                    <div class="db-jk-item-sub" id="jk_holiday_sub"></div>
-                </div>
-            </div>
-
-            <!-- News Section with EV Motorcycle news -->
-            <div class="db-news-section">
-                <div class="db-news-title"><span class="db-news-dot"></span>Latest Headlines</div>
-                <div class="db-news-list" id="jakarta_news_list">
-                    <!-- EV motorcycle news (static, curated) -->
-<div class="db-news-item" onclick="window.open('https://www.cnbcindonesia.com/news/motor-listrik','_blank')" style="cursor:pointer;">
-    <span class="db-news-tag ev">EV</span>
-    <span class="db-news-text">Motor listrik nasional capai 1,3 juta unit…</span>
-</div>
-
-<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=motor+listrik+subsidi+indonesia&hl=id','_blank')">
-    <span class="db-news-tag ev">EV</span>
-    <span class="db-news-text">Motor listrik nasional capai 1,3 juta unit…</span>
-</div>
-<div class="db-news-item" onclick="window.open('https://www.esdm.go.id/id/media-center/arsip-berita/konversi-motor-listrik','_blank')">
-    <span class="db-news-tag policy">Kebijakan</span>
-    <span class="db-news-text">Pemerintah perpanjang program konversi motor BBM ke listrik…</span>
-</div>
-<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=SPKLU+PLN+Jakarta&hl=id','_blank')">
-    <span class="db-news-tag ev">EV</span>
-    <span class="db-news-text">Pertamina dan PLN perluas jaringan SPKLU…</span>
-</div>
-<div class="db-news-item" onclick="window.open('https://news.google.com/search?q=SNI+motor+listrik+kemenhub&hl=id','_blank')">
-    <span class="db-news-tag policy">Regulasi</span>
-    <span class="db-news-text">Kemenhub terbitkan aturan baru uji tipe kendaraan listrik roda dua…</span>
-</div>
-                </div>
-            </div>
+        <div class="day-banner-right">
+            <div class="day-date-big" id="bannerDate">—</div>
+            <div class="day-clock" id="bannerClock">—</div>
         </div>
     </div>
 
-    <!-- ③ Top Row: Vacationers -->
-    <div>
-        <div class="db-vacation-card" onclick="if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}else if(window.switchAdminTab){switchAdminTab('vacation')}">
-            <div class="db-vacation-header">
-                <div class="db-vacation-title"><span class="db-vacation-dot"></span>Vacationers This Week</div>
-                <div id="week_range_text" class="db-week-range"></div>
+    <!-- ③ ATTENDANCE SECTION -->
+    <div class="section-card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div class="card-icon">☀️</div>
+                <div>
+                    <div class="card-title">Attendance</div>
+                    <div class="card-sub">Clock-in / Clock-out</div>
+                </div>
             </div>
-            <div id="weekly_leave_container" class="db-vacation-chips">
-                <span style="font-size:9px;color:#1e293b;font-style:italic;">Checking...</span>
+            <div class="date-pair">
+                <span class="date-badge yday" id="att_yday_badge">—</span>
+                <span class="date-badge tday">Today</span>
+            </div>
+        </div>
+        <div class="col-grid">
+            <div class="col-pane">
+                <div class="col-label yday">
+                    <span class="col-label-dot yday"></span>
+                    <span id="att_yday_label">Yesterday</span>
+                </div>
+                <div id="att_yesterday_list"><div class="no-data">Loading…</div></div>
+            </div>
+            <div class="col-pane">
+                <div class="col-label tday">
+                    <span class="col-label-dot tday"></span>Today
+                </div>
+                <div id="att_today_list"><div class="no-data">Loading…</div></div>
+            </div>
+        </div>
+        <div class="legend-bar">
+            <div class="legend-item"><span class="legend-dot" style="background:#34d399"></span>ATT: Normal</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span>LATE: Late</div>
+            <div class="legend-item" style="color:#fbbf24;">WO / PEL / ANL / SIL / OFF</div>
+        </div>
+    </div>
+
+    <!-- ④ DAILY REPORT SECTION -->
+    <div class="section-card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div class="card-icon">📋</div>
+                <div>
+                    <div class="card-title">Daily Report</div>
+                    <div class="card-sub">Work Summaries</div>
+                </div>
+            </div>
+            <div class="date-pair">
+                <span class="date-badge yday">Yest.</span>
+                <span class="date-badge tday">Today</span>
+            </div>
+        </div>
+        <div class="col-grid">
+            <div class="col-pane">
+                <div class="col-label yday"><span class="col-label-dot yday"></span>Yesterday</div>
+                <div id="rep_yesterday_list"><div class="no-data">Loading…</div></div>
+            </div>
+            <div class="col-pane">
+                <div class="col-label tday"><span class="col-label-dot tday"></span>Today</div>
+                <div id="rep_today_list"><div class="no-data">Loading…</div></div>
             </div>
         </div>
     </div>
 
-    <!-- ④ Quick Stats: 4 cards -->
-    <div id="quick_stats_container" class="db-stats-row">
-        <div class="db-stat blue" onclick="(window.switchAdminTab||window.parent.switchAdminTab)('attendance')">
-            <div class="db-stat-label">Today's Attendance</div>
-            <div id="stat_attendance"></div>
-        </div>
-        <div class="db-stat rose">
-            <div class="db-stat-label" id="yesterday_leave_label">Yesterday's Leave</div>
-            <div id="stat_leave_yesterday"></div>
-        </div>
-        <div class="db-stat amber" onclick="(window.switchAdminTab||window.parent.switchAdminTab)('reports')">
-            <div class="db-stat-label">Today Reports</div>
-            <div id="stat_pending" class="db-stat-value amber">0/0</div>
-        </div>
-        <div class="db-stat purple" onclick="(window.switchAdminTab||window.parent.switchAdminTab)('schedule')">
-            <div class="db-stat-label">Ongoing Schedules</div>
-            <div id="stat_schedules" class="db-stat-value purple">0</div>
-        </div>
-    </div>
-
-    <!-- ⑤ Today / Yesterday: Attendance + Reports + Schedule -->
-    <div class="db-daily-section">
-        <div class="db-daily-header">
-            <div class="db-daily-title">📅 Daily Overview</div>
-            <div style="display:flex;gap:6px">
-                <span class="db-daily-badge yesterday">Yesterday</span>
-                <span class="db-daily-badge today">Today</span>
-            </div>
-        </div>
-
-        <!-- Attendance -->
-        <div style="border-bottom:1px solid rgba(30,41,59,0.5)">
-            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
-                <span style="color:#3b82f6">☀</span> Attendance
-            </div>
-            <div class="db-day-comparison">
-                <div class="db-day-col-wrap">
-                    <div class="db-day-label yesterday"><span class="db-day-label-dot yesterday"></span><span id="yesterday_date_label">Yesterday</span></div>
-                    <div id="att_yesterday_list"><div class="db-no-data">Loading…</div></div>
-                </div>
-                <div class="db-day-col-wrap">
-                    <div class="db-day-label today"><span class="db-day-label-dot today"></span>Today</div>
-                    <div id="att_today_list"><div class="db-no-data">Loading…</div></div>
+    <!-- ⑤ VACATION & CALENDAR EVENTS -->
+    <div class="section-card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div class="card-icon">📌</div>
+                <div>
+                    <div class="card-title">Vacations &amp; Schedules</div>
+                    <div class="card-sub">Yesterday &amp; Today Activity</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Reports -->
-        <div style="border-bottom:1px solid rgba(30,41,59,0.5)">
-            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
-                <span style="color:#34d399">📋</span> Reports
-            </div>
-            <div class="db-day-comparison">
-                <div class="db-day-col-wrap">
-                    <div class="db-day-label yesterday"><span class="db-day-label-dot yesterday"></span>Yesterday</div>
-                    <div id="rep_yesterday_list"><div class="db-no-data">Loading…</div></div>
-                </div>
-                <div class="db-day-col-wrap">
-                    <div class="db-day-label today"><span class="db-day-label-dot today"></span>Today</div>
-                    <div id="rep_today_list"><div class="db-no-data">Loading…</div></div>
-                </div>
+            <div class="date-pair">
+                <span class="date-badge yday">Yest.</span>
+                <span class="date-badge tday">Today</span>
             </div>
         </div>
-
-        <!-- Schedule -->
-        <div>
-            <div style="padding:10px 14px 4px;font-size:9px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:5px;">
-                <span style="color:#c084fc">📌</span> Active Schedules
-            </div>
-            <div style="padding:0 14px 14px">
-                <div id="sch_active_list"><div class="db-no-data">Loading…</div></div>
-            </div>
-        </div>
-
-        <div class="db-legend">
-            <div class="db-legend-item"><span class="db-legend-dot" style="background:#34d399"></span>ATT: Normal</div>
-            <div class="db-legend-item"><span class="db-legend-dot" style="background:#f87171"></span>LATE: Late</div>
-            <div class="db-legend-item" style="color:#fbbf24">WO: Work Out</div>
-            <div class="db-legend-item">PEL · ANL · SIL · OFF</div>
+        <div style="padding: 12px 14px 14px;">
+            <div id="events_combined_list"><div class="no-data">Loading…</div></div>
         </div>
     </div>
 
@@ -578,394 +698,306 @@
     <div class="modal-backdrop" onclick="window.closeAdminCustomModal()"></div>
     <div class="modal-box">
         <div id="modalHeaderArea"></div>
-        <div id="modalBodyArea" class="custom-scrollbar"></div>
+        <div id="modalBodyArea"></div>
         <div id="modalFooterArea"></div>
     </div>
 </div>
 
-<!-- Hidden tooltip div (legacy compat) -->
-<div id="jakartaQuickTooltip"><div id="tooltipContent"></div></div>
-
 <script>
-(function() {
+(function () {
+    /* ── Helpers ── */
     const db = firebase.database();
     let editStartPicker, editEndPicker, attStartPicker, attEndPicker;
 
     const today = new Date();
     const todayStr = today.toLocaleDateString('sv-SE');
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
 
-// ── Jakarta Inline Info ──
-function initJakartaInlineInfo() {
-    // Live clock WIB (GMT+7)
-    function updateClock() {
-        const now = new Date();
-        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-        const h = String(wib.getHours()).padStart(2, '0');
-        const m = String(wib.getMinutes()).padStart(2, '0');
-        const s = String(wib.getSeconds()).padStart(2, '0');
-        const el = document.getElementById('jk_time_val');
-        if (el) el.textContent = `${h}:${m}:${s}`;
-    }
-    updateClock(); setInterval(updateClock, 1000);
+    const fmt = t =>
+        t && t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : (t || '–');
 
-    // ── 환율 fetch (USD/IDR + KRW/IDR) ──
-    fetch('https://open.er-api.com/v6/latest/USD')
-        .then(r => r.json())
-        .then(data => {
-            const idr = data.rates?.IDR;
-            const krw = data.rates?.KRW;
-            const usdEl = document.getElementById('jk_rate_val');
-            const krwEl = document.getElementById('jk_krw_rate');
-            if (usdEl && idr) usdEl.textContent = Math.round(idr).toLocaleString();
-            if (krwEl && krw && idr) krwEl.textContent = (idr / krw).toFixed(2);
-        })
-        .catch(() => {
-            const usdEl = document.getElementById('jk_rate_val');
-            if (usdEl && usdEl.textContent === '—') usdEl.textContent = '~16,200';
-        });
+    const fmtDate = d =>
+        d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-    // Next holiday (static list 2025)
-    const holidays2025 = [
-        { date: '2025-05-29', name: 'Kenaikan Isa Al Masih' },
-        { date: '2025-06-01', name: 'Hari Lahir Pancasila' },
-        { date: '2025-06-06', name: 'Idul Adha' },
-        { date: '2025-06-27', name: 'Tahun Baru Islam' },
-        { date: '2025-08-17', name: 'Kemerdekaan RI' },
-        { date: '2025-09-05', name: 'Maulid Nabi' },
-        { date: '2025-12-25', name: 'Natal' },
-    ];
-    const upcoming = holidays2025.find(h => h.date >= todayStr);
-    if (upcoming) {
-        const hv = document.getElementById('jk_holiday_val');
-        const hs = document.getElementById('jk_holiday_sub');
-        if (hv) hv.textContent = upcoming.name;
-        if (hs) hs.textContent = upcoming.date.substring(5).replace('-', '/');
-    }
+    /* ── Day-of-week setup ── */
+    const DAY_NAMES  = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+    const DAY_THEMES = ['SUNSET EMBER','CYBERPUNK NEON','MATRIX GRID','DEEP OCEAN','VOLCANIC AMBER','NEON VIOLET','GLACIAL CYAN'];
+    const dayIdx = today.getDay();
 
-    // Weather — try from JakartaInfo or firebase settings
-    if (window.JakartaInfo && typeof window.JakartaInfo.init === 'function') {
-        window.JakartaInfo.init().then(() => {
-            try {
-                const d = window.JakartaInfo.getData ? window.JakartaInfo.getData() : null;
-                if (d) {
-                    if (d.weather) {
-                        const wv = document.getElementById('jk_weather_val');
-                        const ws = document.getElementById('jk_weather_sub');
-                        if (wv) wv.textContent = d.weather.temp || '—';
-                        if (ws) ws.textContent = d.weather.desc || 'Jakarta';
-                    }
-                    if (d.exchangeRate) {
-                        const ev2 = document.getElementById('jk_rate_val');
-                        if (ev2) ev2.textContent = d.exchangeRate;
-                    }
-                    if (d.news && d.news.length > 0) {
-                        const n1 = document.getElementById('jk_news_dynamic_1');
-                        const t1 = document.getElementById('jk_news_text_1');
-                        if (n1 && t1 && d.news[0]) { t1.textContent = d.news[0]; n1.style.display = 'flex'; }
-                    }
-                }
-            } catch(e) {}
-        }).catch(() => {});
-    }
+    function initDayBanner() {
+        const root = document.getElementById('dashRoot');
+        if (root) root.setAttribute('data-day', dayIdx);
 
-    // Weather fallback from firebase
-    db.ref('settings/weather').once('value', snap => {
-        const w = snap.val();
-        if (!w) {
-            const wv = document.getElementById('jk_weather_val');
-            if (wv && wv.textContent === '—') wv.textContent = '☁ ~30°C';
-            const ws = document.getElementById('jk_weather_sub');
-            if (ws && ws.textContent === 'Loading…') ws.textContent = 'Tropical, Jakarta';
+        const nameEl = document.getElementById('bannerDayName');
+        const themeEl = document.getElementById('bannerTheme');
+        const dateEl  = document.getElementById('bannerDate');
+        const clockEl = document.getElementById('bannerClock');
+
+        if (nameEl)  nameEl.textContent  = DAY_NAMES[dayIdx];
+        if (themeEl) themeEl.textContent = '✦ ' + DAY_THEMES[dayIdx] + ' THEME';
+        if (dateEl)  dateEl.textContent  = today.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+
+        // badge
+        const attBadge = document.getElementById('att_yday_badge');
+        if (attBadge) attBadge.textContent = fmtDate(yesterday);
+
+        const attLabel = document.getElementById('att_yday_label');
+        if (attLabel) attLabel.textContent = fmtDate(yesterday);
+
+        // live WIB clock
+        function updateClock() {
+            const now = new Date();
+            const wib = new Date(now.toLocaleString('en-US',{timeZone:'Asia/Jakarta'}));
+            const h = String(wib.getHours()).padStart(2,'0');
+            const m = String(wib.getMinutes()).padStart(2,'0');
+            const s = String(wib.getSeconds()).padStart(2,'0');
+            if (clockEl) clockEl.textContent = `WIB ${h}:${m}:${s}`;
         }
-    }).catch(() => {
-        const wv = document.getElementById('jk_weather_val');
-        if (wv && wv.textContent === '—') wv.textContent = '☁ ~30°C';
-        const ws = document.getElementById('jk_weather_sub');
-        if (ws && ws.textContent === 'Loading…') ws.textContent = 'Tropical, Jakarta';
-    });
-}
-
-    // ── Daily Overview: Attendance ──
-    function renderDailyAttendance() {
-        const fmt = t => t && t.match(/\d{1,2}:\d{2}/) ? t.match(/\d{1,2}:\d{2}/)[0] : (t || '–');
-
-        function renderAttList(dateStr, containerId) {
-            db.ref(`attendance/${dateStr}`).once('value', snap => {
-                const data = snap.val() || {};
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                let html = '';
-                const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
-                if (!entries.length) { container.innerHTML = '<div class="db-no-data">No data</div>'; return; }
-                entries.forEach(([name, info]) => {
-                    const safe = encodeURIComponent(JSON.stringify(info));
-                    if (typeof info === 'string') {
-                        html += `<div class="db-daily-staff-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
-                            <span class="db-daily-staff-name">${name}</span>
-                            <span class="db-daily-badge-special">${info}</span>
-                        </div>`;
-                    } else {
-                        const isLate = info.attend && info.attend.includes('LATE');
-                        html += `<div class="db-daily-staff-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
-                            <span class="db-daily-staff-name">${name}</span>
-                            <div class="db-daily-times">
-                                <span class="db-daily-in ${isLate?'late':'normal'}">☀${fmt(info.attend)}</span>
-                                ${info.leave ? `<span class="db-daily-out">→🌙${fmt(info.leave)}</span>` : ''}
-                            </div>
-                        </div>`;
-                    }
-                });
-                container.innerHTML = html;
-            });
-        }
-
-        // Yesterday label
-        const yLabel = document.getElementById('yesterday_date_label');
-        if (yLabel) yLabel.textContent = `${yesterday.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
-
-        renderAttList(yesterdayStr, 'att_yesterday_list');
-        renderAttList(todayStr, 'att_today_list');
+        updateClock();
+        setInterval(updateClock, 1000);
     }
 
-    // ── Daily Overview: Reports ──
-    function renderDailyReports() {
-        function renderRepList(dateStr, containerId) {
-            db.ref(`reports/${dateStr}`).once('value', snap => {
-                const data = snap.val() || {};
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                let html = '';
-                const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
-                if (!entries.length) { container.innerHTML = '<div class="db-no-data">No reports</div>'; return; }
-                entries.forEach(([name, report]) => {
-                    const cls = report.status === 'Completed' ? 'completed' : report.status === 'Pending' ? 'pending' : 'progress';
-                    const isNew = containerId.includes('today') && report.readByAdmin !== true;
-                    html += `<div class="db-daily-rep-row ${cls}" onclick="window.showWorkDetail('${name}','${dateStr}')">
-                        ${isNew ? '<span class="db-new-badge">N</span>' : ''}
-                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
-                        <span style="margin-left:auto;font-size:7px;opacity:0.5;flex-shrink:0;">${report.status||'?'}</span>
-                    </div>`;
-                });
-                container.innerHTML = html;
-            });
-        }
-        renderRepList(yesterdayStr, 'rep_yesterday_list');
-        renderRepList(todayStr, 'rep_today_list');
-    }
-
-    // ── Daily Overview: Active Schedules ──
-    function renderActiveSchedules() {
-        db.ref('shared_schedules').once('value', snap => {
-            const container = document.getElementById('sch_active_list');
-            if (!container) return;
-            let html = '';
+    /* ── Attendance ── */
+    function renderAttList(dateStr, containerId) {
+        db.ref(`attendance/${dateStr}`).once('value', snap => {
             const data = snap.val() || {};
-            Object.entries(data).forEach(([id, ev]) => {
-                const s = ev.start ? ev.start.split('T')[0] : '';
-                const e = ev.end ? ev.end.split('T')[0] : s;
-                // show if active today or started yesterday and still ongoing
-                if (s && e && todayStr >= s && todayStr <= e) {
-                    html += `<div class="db-daily-sch-row" onclick="window.showSchDetail('${id}')">
-                        <span style="font-size:7px;opacity:0.5;margin-right:3px;">[${ev.author||'?'}]</span>${ev.title}
-                        <span style="font-size:7px;opacity:0.4;margin-left:auto;flex-shrink:0;">${s.substring(5)}~${e.substring(5)}</span>
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
+            if (!entries.length) { el.innerHTML = '<div class="no-data">No data</div>'; return; }
+
+            let html = '';
+            entries.forEach(([name, info]) => {
+                const safe = encodeURIComponent(JSON.stringify(info));
+                if (typeof info === 'string') {
+                    html += `<div class="att-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
+                        <span class="att-name">${name}</span>
+                        <span class="att-special">${info}</span>
+                    </div>`;
+                } else {
+                    const isLate = info.attend && info.attend.includes('LATE');
+                    const inT  = fmt(info.attend);
+                    const outT = info.leave ? fmt(info.leave) : '';
+                    html += `<div class="att-row" onclick="window.openEditAttendance('${name}','${dateStr}','${safe}')">
+                        <span class="att-name">${name}</span>
+                        <div class="att-times">
+                            <span class="att-in ${isLate?'late':'normal'}">${isLate?'⚠':'☀'} ${inT}</span>
+                            ${outT ? `<span class="att-arrow">→</span><span class="att-out">🌙${outT}</span>` : ''}
+                        </div>
                     </div>`;
                 }
             });
-            container.innerHTML = html || '<div class="db-no-data">No active schedules today</div>';
+            el.innerHTML = html;
         });
     }
 
-    // ── Weekly Leaves ──
-    window.renderWeeklyLeaves = function() {
-        const container = document.getElementById('weekly_leave_container');
-        const rangeText = document.getElementById('week_range_text');
-        if (!container) return;
-        const curr = new Date();
-        const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1);
-        const monday = new Date(new Date().setDate(first)).toISOString().split('T')[0];
-        const sunday = new Date(new Date().setDate(first + 6)).toISOString().split('T')[0];
-        if (rangeText) rangeText.innerText = `${monday.substring(5)} ~ ${sunday.substring(5)}`;
+    function renderDailyAttendance() {
+        renderAttList(yesterdayStr, 'att_yesterday_list');
+        renderAttList(todayStr,     'att_today_list');
+    }
+
+    /* ── Reports ── */
+    function renderRepList(dateStr, containerId) {
+        db.ref(`reports/${dateStr}`).once('value', snap => {
+            const data = snap.val() || {};
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            const entries = Object.entries(data).filter(([n]) => n.toLowerCase() !== 'admin');
+            if (!entries.length) { el.innerHTML = '<div class="no-data">No reports</div>'; return; }
+
+            let html = '';
+            entries.forEach(([name, r]) => {
+                const cls = r.status === 'Completed' ? 'completed'
+                          : r.status === 'Pending'   ? 'pending'
+                          : 'progress';
+                const isNew = containerId.includes('today') && r.readByAdmin !== true;
+                const content = (r.todo || r.content || r.summary || '').substring(0, 60);
+                html += `<div class="rep-row" onclick="window.showWorkDetail('${name}','${dateStr}')">
+                    <span class="rep-status-dot ${cls}"></span>
+                    <div class="rep-info">
+                        <div class="rep-name">${name}</div>
+                        ${content ? `<div class="rep-content">${content}…</div>` : ''}
+                    </div>
+                    <div class="rep-meta">
+                        ${isNew ? '<span class="rep-new-badge">NEW</span>' : ''}
+                        <span class="rep-status-label ${cls}">${r.status||'?'}</span>
+                    </div>
+                </div>`;
+            });
+            el.innerHTML = html;
+        });
+    }
+
+    function renderDailyReports() {
+        renderRepList(yesterdayStr, 'rep_yesterday_list');
+        renderRepList(todayStr,     'rep_today_list');
+    }
+
+    /* ── Vacation & Calendar Events ── */
+    function renderEvents() {
+        const el = document.getElementById('events_combined_list');
+        if (!el) return;
+        let rows = [];
+
+        // Leaves
         db.ref('leaves').once('value', snap => {
-            const allLeaves = snap.val() || {};
-            let html = '', any = false;
-            Object.entries(allLeaves).forEach(([uid, years]) => {
+            const all = snap.val() || {};
+            Object.entries(all).forEach(([uid, years]) => {
                 if (!years) return;
-                Object.values(years).forEach(yd => Object.values(yd).forEach(leave => {
-                    if ((leave.status === 'Approved' || leave.status === 'Pending') && leave.startDate <= sunday && leave.endDate >= monday) {
-                        any = true;
-                        const dr = `${leave.startDate.substring(5)}~${leave.endDate.substring(5)}`;
-                        html += `<div class="db-vacation-chip"><span class="name">${uid}</span><span class="dates">${dr}</span><span class="type">${leave.type}</span></div>`;
-                    }
-                }));
+                Object.values(years).forEach(yd =>
+                    Object.values(yd).forEach(lv => {
+                        if (!lv.startDate || !lv.endDate) return;
+                        const covers = lv.startDate <= todayStr && lv.endDate >= yesterdayStr;
+                        if (covers && (lv.status === 'Approved' || lv.status === 'Pending')) {
+                            const isToday = lv.startDate <= todayStr && lv.endDate >= todayStr;
+                            rows.push({
+                                type: 'leave',
+                                tag: 'vacation',
+                                tagLabel: lv.type || 'Leave',
+                                name: uid,
+                                title: `${lv.type||'Leave'} — ${lv.startDate.substring(5)} ~ ${lv.endDate.substring(5)}`,
+                                date: isToday ? 'Today' : 'Yest.',
+                                isToday
+                            });
+                        }
+                    })
+                );
             });
-            container.innerHTML = any ? html : '<span style="font-size:9px;color:#1e293b;font-style:italic;padding:4px 0;">No vacations this week.</span>';
-        });
-    };
 
-    // ── Quick Stats ──
-    window.updateQuickStats = function() {
-        // A. Attendance
-        db.ref('users').on('value', snap => {
-            const allStaff = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-            db.ref(`attendance/${todayStr}`).on('value', attSnap => {
-                const att = attSnap.val() || {};
-                let attendedList = [];
-                Object.entries(att).forEach(([name, info]) => {
-                    if (name.toLowerCase() === 'admin') return;
-                    if (typeof info === 'object' && info.attend) {
-                        const timeMatch = info.attend.match(/(\d{1,2}:\d{2})/);
-                        const inTime = timeMatch ? timeMatch[1] : '--:--';
-                        const isLate = info.attend.includes('LATE');
-                        let outTime = '--:--';
-                        if (info.leave) { const outMatch = info.leave.match(/(\d{1,2}:\d{2})/); outTime = outMatch ? outMatch[1] : info.leave; }
-                        attendedList.push({ name, inTime, outTime, isLate });
+            // Shared schedules
+            db.ref('shared_schedules').once('value', schSnap => {
+                const schData = schSnap.val() || {};
+                Object.entries(schData).forEach(([id, ev]) => {
+                    const s = (ev.start || ev.startDate || '').split('T')[0];
+                    const e = (ev.end   || ev.endDate   || s).split('T')[0];
+                    if (!s) return;
+                    const covers = s <= todayStr && e >= yesterdayStr;
+                    if (covers) {
+                        const isToday = s <= todayStr && e >= todayStr;
+                        rows.push({
+                            type: 'schedule',
+                            tag: 'calendar',
+                            tagLabel: 'Schedule',
+                            name: ev.author || '—',
+                            title: ev.title || '(No Title)',
+                            date: isToday ? 'Today' : 'Yest.',
+                            isToday,
+                            id
+                        });
                     }
                 });
-                attendedList.sort((a, b) => a.inTime.localeCompare(b.inTime));
-                const el = document.getElementById('stat_attendance');
-                if (el) {
-                    let listHtml = attendedList.length > 0
-                        ? attendedList.map(staff => `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(30,41,59,0.3);"><span style="font-size:9px;font-weight:900;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${staff.name}</span><div style="display:flex;gap:4px;align-items:center;"><span style="font-size:8px;font-weight:800;color:${staff.isLate ? '#f87171' : '#34d399'};font-family:monospace;">${staff.inTime}</span><span style="font-size:8px;color:#334155;">→</span><span style="font-size:8px;font-weight:700;color:${staff.outTime === '--:--' ? '#334155' : '#60a5fa'};font-family:monospace;">${staff.outTime}</span></div></div>`).join('')
-                        : '<span style="font-size:9px;color:#334155;font-style:italic;">No attendance yet</span>';
-                    el.innerHTML = `<div class="db-stat-value blue">${attendedList.length}/${allStaff.length}</div><div style="margin-top:8px;max-height:120px;overflow-y:auto;padding-right:4px;">${listHtml}</div>`;
+
+                if (!rows.length) {
+                    el.innerHTML = '<div class="no-data">No vacation or schedule events for yesterday / today.</div>';
+                    return;
                 }
+
+                // Sort: today first, then yesterday
+                rows.sort((a, b) => (b.isToday ? 1 : 0) - (a.isToday ? 1 : 0));
+
+                let html = '';
+                rows.forEach(r => {
+                    const onclick = r.type === 'schedule'
+                        ? `window.showSchDetail('${r.id}')`
+                        : `if(window.parent&&window.parent.switchAdminTab){window.parent.switchAdminTab('vacation')}`;
+                    html += `<div class="event-row" onclick="${onclick}">
+                        <span class="event-tag ${r.tag}">${r.tagLabel}</span>
+                        <span class="event-name">${r.name}</span>
+                        <span class="event-title">${r.title}</span>
+                        <span class="event-date">${r.date}</span>
+                    </div>`;
+                });
+                el.innerHTML = html;
             });
         });
-
-        // B. Last Leave
-        const findLastActiveData = () => {
-            let d = new Date(today), attempts = 0;
-            const tryNext = (d) => {
-                d.setDate(d.getDate() - 1);
-                const dStr = d.toLocaleDateString('sv-SE'), dayNum = d.getDate();
-                db.ref(`attendance/${dStr}`).once('value', snap => {
-                    const data = snap.val(); attempts++;
-                    const has = data && Object.keys(data).filter(k => k.toLowerCase() !== 'admin').length > 0;
-                    if (has || attempts >= 10) renderLastLeave(data || {}, dStr, dayNum);
-                    else tryNext(d);
-                });
-            };
-            const renderLastLeave = (yAtt, dStr, dayNum) => {
-                db.ref('users').once('value', uSnap => {
-                    const total = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin').length;
-                    let html = '', cnt = 0;
-                    Object.entries(yAtt).forEach(([n, i]) => {
-                        if (n.toLowerCase() === 'admin') return;
-                        if (i && typeof i === 'object' && i.leave && i.leave.trim()) { cnt++; html += `<div style="font-size:9px;color:#94a3b8;font-weight:700;margin-top:2px;">${n} ${i.leave}</div>`; }
-                    });
-                    const ord = n => { if(n>3&&n<21) return 'th'; switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';} };
-                    const lbl = document.getElementById('yesterday_leave_label');
-                    if (lbl) lbl.innerText = `Last Leave (${dayNum}${ord(dayNum)})`;
-                    const el = document.getElementById('stat_leave_yesterday');
-                    if (el) el.innerHTML = `<div class="db-stat-value rose">${cnt}/${total}</div><div style="margin-top:4px;">${cnt > 0 ? html : '<span style="font-size:8px;color:#334155;font-weight:700;">(No Records)</span>'}</div>`;
-                });
-            };
-            tryNext(d);
-        };
-        findLastActiveData();
-
-        // C. Reports
-        db.ref(`reports/${todayStr}`).on('value', snap => {
-            const todayReported = Object.keys(snap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-            db.ref('users').once('value', uSnap => {
-                const allStaff = Object.keys(uSnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-                const total = allStaff.length;
-                db.ref(`reports/${yesterdayStr}`).once('value', ySnap => {
-                    const yesterdayReported = Object.keys(ySnap.val() || {}).filter(n => n.toLowerCase() !== 'admin');
-                    const el = document.getElementById('stat_pending');
-                    if (el) {
-                        let yesterdayHtml = yesterdayReported.length > 0
-                            ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);"><div style="font-size:8px;color:#34d399;font-weight:900;text-transform:uppercase;margin-bottom:4px;">✓ Yesterday Completed</div><div style="display:flex;flex-wrap:wrap;gap:3px;">${yesterdayReported.map(n=>`<span style="font-size:8px;color:#f1f5f9;font-weight:700;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);padding:2px 6px;border-radius:4px;">${n}</span>`).join('')}</div></div>`
-                            : `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(30,41,59,0.4);"><div style="font-size:8px;color:#94a3b8;font-weight:900;text-transform:uppercase;">No reports from yesterday</div></div>`;
-                        el.innerHTML = `<div class="db-stat-value amber">${todayReported.length}/${total}</div><div class="db-stat-sub" title="${todayReported.join(', ')}">${todayReported.length ? todayReported.join(', ') : '(No Reports Yet)'}</div>${yesterdayHtml}`;
-                    }
-                });
-            });
-        });
-
-        // D. Schedules
-        db.ref('shared_schedules').on('value', snap => {
-            let cnt = 0;
-            Object.values(snap.val() || {}).forEach(ev => {
-                const s = (ev.start||ev.startDate||'').split('T')[0], e = (ev.end||ev.endDate||s).split('T')[0];
-                if (s && e && todayStr >= s && todayStr <= e) cnt++;
-            });
-            const el = document.getElementById('stat_schedules');
-            if (el) el.innerHTML = `<div class="db-stat-value purple">${cnt}</div>`;
-        });
-    };
-
-    // ── Modal ──
-    if (!window._coreModalRestored) {
-        window.openAdminCustomModal = function(titleHtml, bodyHtml) {
-            document.getElementById('modalHeaderArea').innerHTML = titleHtml;
-            document.getElementById('modalBodyArea').innerHTML = bodyHtml;
-            const m = document.getElementById('customAdminModal');
-            m.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        };
-        window.closeAdminCustomModal = function() {
-            if (attStartPicker) { attStartPicker.destroy(); attStartPicker = null; }
-            if (attEndPicker) { attEndPicker.destroy(); attEndPicker = null; }
-            if (editStartPicker) { editStartPicker.destroy(); editStartPicker = null; }
-            if (editEndPicker) { editEndPicker.destroy(); editEndPicker = null; }
-            document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
-            const m = document.getElementById('customAdminModal');
-            m.classList.remove('open');
-            document.body.style.overflow = '';
-        };
     }
+
+    /* ── Leave Alert ── */
+    function checkLeaveAlert() {
+        db.ref('leaves').once('value', snap => {
+            const all = snap.val() || {};
+            let pending = 0;
+            Object.values(all).forEach(years => {
+                if (!years) return;
+                Object.values(years).forEach(yd =>
+                    Object.values(yd).forEach(lv => { if (lv.status === 'Pending') pending++; })
+                );
+            });
+            const banner = document.getElementById('leave_alert_banner');
+            if (banner && pending > 0) {
+                banner.classList.remove('hidden');
+                const txt = document.getElementById('leave_alert_text');
+                if (txt) txt.textContent = `${pending} leave request${pending>1?'s':''} awaiting approval.`;
+            }
+        });
+    }
+
+    /* ══════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════ */
+    window.openAdminCustomModal = function(titleHtml, bodyHtml) {
+        document.getElementById('modalHeaderArea').innerHTML = titleHtml;
+        document.getElementById('modalBodyArea').innerHTML   = bodyHtml;
+        document.getElementById('customAdminModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    };
+    window.closeAdminCustomModal = function() {
+        [attStartPicker, attEndPicker, editStartPicker, editEndPicker].forEach(p => { if (p) { p.destroy(); } });
+        attStartPicker = attEndPicker = editStartPicker = editEndPicker = null;
+        document.querySelectorAll('.flatpickr-calendar').forEach(c => c.remove());
+        document.getElementById('customAdminModal').classList.remove('open');
+        document.body.style.overflow = '';
+    };
 
     function initEditTimePickers(isAllDay = false) {
         if (typeof flatpickr === 'undefined') return;
-        const config = { enableTime: !isAllDay, dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i", altInput: true, altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", monthSelectorType: "static", locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", static: true, theme: "dark" };
+        const cfg = { enableTime: !isAllDay, dateFormat: isAllDay ? "Y-m-d" : "Y-m-d H:i", altInput: true, altFormat: isAllDay ? "Y-m-d" : "Y-m-d h:i K", monthSelectorType: "static", locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", static: true, theme: "dark" };
         if (editStartPicker) editStartPicker.destroy();
-        if (editEndPicker) editEndPicker.destroy();
-        const startEl = document.getElementById("db_sch_start"), endEl = document.getElementById("db_sch_end");
-        if (startEl) editStartPicker = flatpickr(startEl, config);
-        if (endEl) editEndPicker = flatpickr(endEl, config);
+        if (editEndPicker)   editEndPicker.destroy();
+        const se = document.getElementById("db_sch_start"), ee = document.getElementById("db_sch_end");
+        if (se) editStartPicker = flatpickr(se, cfg);
+        if (ee) editEndPicker   = flatpickr(ee, cfg);
     }
-    window.toggleEditTimePicker = (isAllDay) => initEditTimePickers(isAllDay);
+    window.toggleEditTimePicker = isAllDay => initEditTimePickers(isAllDay);
 
-    // ── Show Work Detail ──
+    /* ── Show Work Detail ── */
     window.showWorkDetail = function(name, date) {
         db.ref(`reports/${date}/${name}`).update({ readByAdmin: true });
         db.ref(`reports/${date}/${name}`).once("value", snap => {
             const r = snap.val() || {};
-            const titleHtml = `<div class="flex items-center gap-3"><div style="width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#34d399;border:1px solid rgba(16,185,129,0.2)">${name.charAt(0)}</div><div><div style="font-size:10px;color:#475569;font-weight:700;text-transform:uppercase;">${date}</div><div style="font-size:16px;font-weight:900;color:white;">${name}'s Report</div></div></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left"><div><label class="text-[10px] text-blue-500 mb-1 block font-black uppercase tracking-widest">Status</label><select id="db_rp_status" class="w-full bg-slate-800 text-blue-400 p-3 rounded-xl border border-slate-700 font-bold text-sm"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label class="text-[10px] text-slate-500 mb-1 block font-black uppercase tracking-widest">To-Do & Content</label><textarea id="db_rp_todo" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.todo||r.content||''}</textarea></div><div><label class="text-[10px] text-emerald-500 mb-1 block font-black uppercase tracking-widest">Work Summary</label><textarea id="db_rp_summary" class="w-full bg-slate-950 text-slate-300 p-3 rounded-xl border border-slate-800 text-sm h-20 resize-none">${r.summary||''}</textarea></div><div><label class="text-[10px] text-amber-500 mb-1 block font-black uppercase tracking-widest">Admin Memo</label><textarea id="db_rp_memo" class="w-full bg-slate-950 text-amber-200/70 p-3 rounded-xl border border-amber-900/20 text-sm h-16 resize-none">${r.adminMemo||''}</textarea></div><div class="flex flex-col gap-3 mt-4"><button onclick="saveDashboardReport('${date}','${name}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Update Report</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
+            const titleHtml = `<div style="display:flex;align-items:center;gap:12px"><div style="width:38px;height:38px;border-radius:50%;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#34d399;border:1px solid rgba(16,185,129,0.2)">${name.charAt(0)}</div><div><div style="font-size:10px;color:#475569;font-weight:700;text-transform:uppercase;">${date}</div><div style="font-size:17px;font-weight:900;color:white;">${name}'s Report</div></div></div>`;
+            const bodyHtml = `<div style="display:flex;flex-direction:column;gap:14px;text-align:left;"><div><label style="font-size:10px;color:#60a5fa;display:block;margin-bottom:5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">Status</label><select id="db_rp_status" style="width:100%;background:#0f172a;color:#60a5fa;padding:12px;border-radius:12px;border:1px solid #1e293b;font-weight:700;font-size:13px;"><option ${r.status==='In Progress'?'selected':''}>In Progress</option><option ${r.status==='Completed'?'selected':''}>Completed</option><option ${r.status==='Pending'?'selected':''}>Pending</option></select></div><div><label style="font-size:10px;color:#475569;display:block;margin-bottom:5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">To-Do / Content</label><textarea id="db_rp_todo" style="width:100%;background:#080c18;color:#94a3b8;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:13px;height:80px;resize:none;">${r.todo||r.content||''}</textarea></div><div><label style="font-size:10px;color:#34d399;display:block;margin-bottom:5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">Work Summary</label><textarea id="db_rp_summary" style="width:100%;background:#080c18;color:#94a3b8;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:13px;height:80px;resize:none;">${r.summary||''}</textarea></div><div><label style="font-size:10px;color:#fbbf24;display:block;margin-bottom:5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">Admin Memo</label><textarea id="db_rp_memo" style="width:100%;background:#080c18;color:rgba(253,230,138,0.7);padding:12px;border-radius:12px;border:1px solid rgba(245,158,11,0.15);font-size:13px;height:60px;resize:none;">${r.adminMemo||''}</textarea></div><button onclick="saveDashboardReport('${date}','${name}')" style="width:100%;background:#2563eb;color:white;font-weight:900;padding:14px;border-radius:16px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">Update Report</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><button onclick="window.closeAdminCustomModal()" style="background:#1e293b;color:#94a3b8;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid #1e293b;cursor:pointer;">Cancel</button><button onclick="deleteDashboardReport('${date}','${name}')" style="background:rgba(239,68,68,0.08);color:#f87171;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid rgba(239,68,68,0.2);cursor:pointer;">Delete</button></div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
         });
     };
 
+    /* ── Edit Attendance ── */
     window.openEditAttendance = function(name, date, infoEncoded) {
-        const info = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {}, isSpecial = typeof info === 'string', isNew = name === '';
-        db.ref('users').once('value', userSnap => {
-            const allUsers = Object.keys(userSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
-            let nameFieldHtml = isNew
-                ? `<select id="editName" class="w-full bg-slate-950 text-white text-sm p-3 rounded-xl border border-blue-500/50 outline-none mt-1"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
-                : `<span class="text-lg font-black text-white">${name}</span>`;
-            const titleHtml = `<div class="flex flex-col"><span class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${isNew?'New Registration':'Edit Attendance'}</span>${nameFieldHtml}<span class="text-slate-500 text-sm font-normal">(${date})</span></div>`;
-            const bodyHtml = `<div class="space-y-4 text-left"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">In Time</span><div class="relative"><input type="text" id="editAttend" value="${isSpecial?'':(info.attend||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div><div class="space-y-1"><span class="text-[9px] text-slate-600 font-bold ml-1 uppercase">Out Time</span><div class="relative"><input type="text" id="editLeave" value="${isSpecial?'':(info.leave||'')}" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none cursor-pointer" placeholder="Pick Time" readonly><span class="absolute right-4 top-1/2 -translate-y-1/2 opacity-30">🕒</span></div></div></div><div class="relative py-2"><div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-800"></span></div><div class="relative flex justify-center text-[10px] uppercase font-black text-slate-600"><span class="bg-slate-900 px-4">OR Special Status</span></div></div><select id="editSpecial" class="w-full bg-slate-800 text-white text-sm p-4 rounded-2xl border border-slate-700 outline-none focus:border-amber-500"><option value="" ${!isSpecial?"selected":""}>--- NORMAL ATTENDANCE ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><div class="flex flex-col gap-3 pt-4"><button onclick="processAttendanceSave('${name}','${date}',${isNew})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">Save Attendance</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete Record</button>`}</div></div></div>`;
+        const info    = infoEncoded ? JSON.parse(decodeURIComponent(infoEncoded)) : {};
+        const isSpec  = typeof info === 'string';
+        const isNew   = name === '';
+        db.ref('users').once('value', uSnap => {
+            const allUsers = Object.keys(uSnap.val() || {}).filter(u => u.toLowerCase() !== 'admin');
+            const nameField = isNew
+                ? `<select id="editName" style="width:100%;background:#080c18;color:white;font-size:13px;padding:10px;border-radius:10px;border:1px solid rgba(59,130,246,0.4)"><option value="">-- SELECT STAFF --</option>${allUsers.map(u=>`<option value="${u}">${u}</option>`).join('')}</select>`
+                : `<span style="font-size:18px;font-weight:900;color:white;">${name}</span>`;
+            const titleHtml = `<div style="display:flex;flex-direction:column;gap:4px">${nameField}<span style="font-size:10px;color:#475569;font-weight:700;text-transform:uppercase;">${isNew?'New Registration':'Edit Attendance'} · ${date}</span></div>`;
+            const bodyHtml = `<div style="display:flex;flex-direction:column;gap:14px;text-align:left;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">In Time</label><input type="text" id="editAttend" value="${isSpec?'':(info.attend||'')}" style="width:100%;background:#0f172a;color:white;font-size:13px;padding:12px;border-radius:12px;border:1px solid #1e293b;cursor:pointer;" placeholder="Pick Time" readonly></div><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">Out Time</label><input type="text" id="editLeave" value="${isSpec?'':(info.leave||'')}" style="width:100%;background:#0f172a;color:white;font-size:13px;padding:12px;border-radius:12px;border:1px solid #1e293b;cursor:pointer;" placeholder="Pick Time" readonly></div></div><div style="display:flex;align-items:center;gap:10px;"><hr style="flex:1;border:none;border-top:1px solid #1e293b;"><span style="font-size:9px;color:#334155;font-weight:900;text-transform:uppercase;white-space:nowrap;">or Special</span><hr style="flex:1;border:none;border-top:1px solid #1e293b;"></div><select id="editSpecial" style="width:100%;background:#0f172a;color:white;font-size:13px;padding:12px;border-radius:12px;border:1px solid #1e293b;"><option value="" ${!isSpec?"selected":""}>--- Normal Attendance ---</option><option value="WO" ${info==="WO"?"selected":""}>WO (Work Out)</option><option value="PEL" ${info==="PEL"?"selected":""}>PEL (Personal)</option><option value="ANL" ${info==="ANL"?"selected":""}>ANL (Annual)</option><option value="SIL" ${info==="SIL"?"selected":""}>SIL (Sick)</option><option value="OFF" ${info==="OFF"?"selected":""}>OFF (Day Off)</option></select><button onclick="processAttendanceSave('${name}','${date}',${isNew})" style="width:100%;background:#059669;color:white;font-weight:900;padding:14px;border-radius:16px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">Save Attendance</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><button onclick="window.closeAdminCustomModal()" style="background:#1e293b;color:#94a3b8;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid #1e293b;cursor:pointer;">Cancel</button>${isNew?'':`<button onclick="deleteAttendance('${name}','${date}')" style="background:rgba(239,68,68,0.08);color:#f87171;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid rgba(239,68,68,0.2);cursor:pointer;">Delete Record</button>`}</div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
             setTimeout(() => {
-                const positionPicker = (fp) => {
-                    const rect = fp.input.getBoundingClientRect(), cal = fp.calendarContainer;
-                    cal.style.setProperty('position', 'fixed', 'important');
-                    cal.style.setProperty('z-index', '999999', 'important');
-                    cal.style.setProperty('top', (rect.bottom + 4) + 'px', 'important');
-                    cal.style.setProperty('left', rect.left + 'px', 'important');
-                    cal.style.setProperty('width', rect.width + 'px', 'important');
-                    cal.classList.remove('arrowTop', 'arrowBottom');
+                const posFP = fp => {
+                    const r = fp.input.getBoundingClientRect(), c = fp.calendarContainer;
+                    c.style.cssText += ';position:fixed!important;z-index:999999!important;top:'+(r.bottom+4)+'px!important;left:'+r.left+'px!important;width:'+r.width+'px!important;';
+                    c.classList.remove('arrowTop','arrowBottom');
                 };
-                const config = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, locale: (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default", theme: "dark", disableMobile: true, onOpen: function(_, __, fp) { requestAnimationFrame(() => positionPicker(fp)); setTimeout(() => positionPicker(fp), 0); setTimeout(() => positionPicker(fp), 50); } };
+                const cfg = { enableTime:true, noCalendar:true, dateFormat:"H:i", time_24hr:true, locale:(flatpickr.l10ns&&flatpickr.l10ns.ko)?"ko":"default", theme:"dark", disableMobile:true, onOpen:function(_,__,fp){ requestAnimationFrame(()=>posFP(fp)); setTimeout(()=>posFP(fp),50); } };
                 if (window.attStartPicker) window.attStartPicker.destroy();
-                if (window.attEndPicker) window.attEndPicker.destroy();
+                if (window.attEndPicker)   window.attEndPicker.destroy();
                 const aEl = document.getElementById("editAttend"), lEl = document.getElementById("editLeave");
-                if (aEl) window.attStartPicker = flatpickr(aEl, config);
-                if (lEl) window.attEndPicker = flatpickr(lEl, config);
+                if (aEl) window.attStartPicker = flatpickr(aEl, cfg);
+                if (lEl) window.attEndPicker   = flatpickr(lEl, cfg);
             }, 200);
         });
     };
@@ -973,64 +1005,86 @@ function initJakartaInlineInfo() {
     window.processAttendanceSave = function(name, date, isNew) {
         const finalName = isNew ? document.getElementById('editName').value : name;
         if (!finalName) return alert("Please select a staff member.");
-        const special = document.getElementById('editSpecial').value;
+        const special   = document.getElementById('editSpecial').value;
         const attendVal = document.getElementById('editAttend').value.trim();
-        const leaveVal = document.getElementById('editLeave').value.trim();
-        if (special) { db.ref(`attendance/${date}/${finalName}`).set(special).then(() => { alert(isNew?"Registered":"Updated"); window.closeAdminCustomModal(); }); return; }
+        const leaveVal  = document.getElementById('editLeave').value.trim();
+        if (special) {
+            db.ref(`attendance/${date}/${finalName}`).set(special)
+              .then(() => { alert(isNew ? "Registered" : "Updated"); window.closeAdminCustomModal(); });
+            return;
+        }
         db.ref('settings/config/stdAttendance').once('value', snap => {
-            const std = (snap.val() || "08:30").trim(); let finalAttend = attendVal;
+            const std = (snap.val() || "08:30").trim();
+            let finalAttend = attendVal;
             if (attendVal) {
                 const m = attendVal.match(/\d{1,2}:\d{2}/), t = m ? m[0] : attendVal;
                 const toNum = s => { const p = s.split(':'); return parseInt(p[0])*100+parseInt(p[1]); };
                 finalAttend = toNum(t) > toNum(std) ? `LATE(${t})` : `ATT(${t})`;
             }
-            db.ref(`attendance/${date}/${finalName}`).set({ attend: finalAttend, leave: leaveVal }).then(() => { alert(isNew?"Registered":"Updated"); window.closeAdminCustomModal(); });
+            db.ref(`attendance/${date}/${finalName}`).set({ attend: finalAttend, leave: leaveVal })
+              .then(() => { alert(isNew ? "Registered" : "Updated"); window.closeAdminCustomModal(); });
         });
     };
 
+    /* ── Schedule Detail ── */
     window.showSchDetail = function(id) {
         db.ref(`shared_schedules/${id}`).once("value", snap => {
             const ev = snap.val(); if (!ev) return;
             const isAllDay = ev.allDay || !ev.start.includes(':');
-            const titleHtml = `<div class="text-lg font-black text-white tracking-tighter uppercase">Edit Schedule</div>`;
-            const bodyHtml = `<div class="space-y-4 pt-2 text-left"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Title</label><input type="text" id="db_sch_title" value="${ev.title}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500 outline-none"></div><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Start</label><input type="text" id="db_sch_start" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">End</label><input type="text" id="db_sch_end" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white"></div></div><div class="flex items-center gap-2 ml-1"><input type="checkbox" id="db_sch_allday" ${isAllDay?'checked':''} onchange="window.toggleEditTimePicker(this.checked)" class="w-4 h-4 rounded border-slate-700 bg-slate-950"><label for="db_sch_allday" class="text-xs text-slate-400 font-bold cursor-pointer">All Day Event</label></div><div class="space-y-1"><label class="text-[10px] text-slate-500 font-black uppercase ml-1">Description</label><textarea id="db_sch_desc" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 h-24 resize-none outline-none focus:border-purple-500">${decodeURIComponent(ev.desc||'')}</textarea></div><div class="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3"><label class="text-[9px] text-purple-400 font-black uppercase tracking-widest mb-1 block">Private Admin Memo</label><textarea id="db_sch_memo" class="w-full bg-transparent text-sm text-purple-200 h-16 resize-none outline-none" placeholder="Internal notes...">${decodeURIComponent(ev.adminMemo||'')}</textarea></div><div class="flex flex-col gap-2"><button onclick="window.saveDashboardSchedule('${id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase active:scale-95 shadow-lg">Update Schedule</button><div class="grid grid-cols-2 gap-3"><button onclick="window.closeAdminCustomModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-slate-700 active:scale-95">Cancel</button><button onclick="window.deleteDashboardSchedule('${id}')" class="bg-rose-900/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest border border-rose-500/20 active:scale-95">Delete</button></div></div></div>`;
+            const titleHtml = `<div style="font-size:18px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:-.01em;">Edit Schedule</div>`;
+            const bodyHtml = `<div style="display:flex;flex-direction:column;gap:14px;text-align:left;margin-top:4px;"><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">Title</label><input type="text" id="db_sch_title" value="${ev.title}" style="width:100%;background:#080c18;color:white;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:13px;"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">Start</label><input type="text" id="db_sch_start" style="width:100%;background:#080c18;color:white;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:12px;"></div><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">End</label><input type="text" id="db_sch_end" style="width:100%;background:#080c18;color:white;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:12px;"></div></div><div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="db_sch_allday" ${isAllDay?'checked':''} onchange="window.toggleEditTimePicker(this.checked)" style="width:16px;height:16px;"><label for="db_sch_allday" style="font-size:12px;color:#94a3b8;font-weight:700;cursor:pointer;">All Day Event</label></div><div><label style="font-size:9px;color:#475569;font-weight:900;text-transform:uppercase;display:block;margin-bottom:5px;">Description</label><textarea id="db_sch_desc" style="width:100%;background:#080c18;color:#94a3b8;padding:12px;border-radius:12px;border:1px solid #1e293b;font-size:13px;height:90px;resize:none;">${decodeURIComponent(ev.desc||'')}</textarea></div><div style="background:rgba(192,132,252,0.05);border:1px solid rgba(192,132,252,0.12);border-radius:12px;padding:12px;"><label style="font-size:9px;color:#c084fc;font-weight:900;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px;">Admin Memo</label><textarea id="db_sch_memo" style="width:100%;background:transparent;color:rgba(240,171,252,0.7);font-size:13px;height:60px;resize:none;border:none;outline:none;">${decodeURIComponent(ev.adminMemo||'')}</textarea></div><button onclick="window.saveDashboardSchedule('${id}')" style="width:100%;background:#2563eb;color:white;font-weight:900;padding:14px;border-radius:16px;font-size:13px;border:none;cursor:pointer;text-transform:uppercase;">Update Schedule</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><button onclick="window.closeAdminCustomModal()" style="background:#1e293b;color:#94a3b8;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid #1e293b;cursor:pointer;">Cancel</button><button onclick="window.deleteDashboardSchedule('${id}')" style="background:rgba(239,68,68,0.08);color:#f87171;font-weight:700;padding:11px;border-radius:12px;font-size:12px;border:1px solid rgba(239,68,68,0.2);cursor:pointer;">Delete</button></div></div>`;
             window.openAdminCustomModal(titleHtml, bodyHtml);
             setTimeout(() => {
                 initEditTimePickers(isAllDay);
                 if (editStartPicker) editStartPicker.setDate(ev.start.replace('T',' '));
-                if (editEndPicker) editEndPicker.setDate(ev.end ? ev.end.replace('T',' ') : ev.start.replace('T',' '));
+                if (editEndPicker)   editEndPicker.setDate(ev.end ? ev.end.replace('T',' ') : ev.start.replace('T',' '));
             }, 100);
         });
     };
 
     window.saveDashboardReport = function(date, staff) {
-        const data = { status: document.getElementById('db_rp_status').value, todo: document.getElementById('db_rp_todo').value, summary: document.getElementById('db_rp_summary').value, adminMemo: document.getElementById('db_rp_memo').value, lastModified: new Date().toISOString() };
-        db.ref(`reports/${date}/${staff}`).update(data).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
+        db.ref(`reports/${date}/${staff}`).update({
+            status: document.getElementById('db_rp_status').value,
+            todo:   document.getElementById('db_rp_todo').value,
+            summary:document.getElementById('db_rp_summary').value,
+            adminMemo: document.getElementById('db_rp_memo').value,
+            lastModified: new Date().toISOString()
+        }).then(() => { alert("Saved"); window.closeAdminCustomModal(); });
     };
-    window.deleteDashboardReport = function(date, staff) { if(confirm("Delete this report?")) db.ref(`reports/${date}/${staff}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
-    window.deleteAttendance = function(name, date) { if(confirm("Delete record?")) db.ref(`attendance/${date}/${name}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
-    window.saveDashboardSchedule = function(id) {
-        const title = document.getElementById('db_sch_title').value, start = document.getElementById('db_sch_start').value, end = document.getElementById('db_sch_end').value;
-        if (!title || !start) return alert('Title and Start Date are required.');
-        db.ref(`shared_schedules/${id}`).update({ title, start: start.replace(' ','T'), end: end ? end.replace(' ','T') : start.replace(' ','T'), allDay: document.getElementById('db_sch_allday').checked, desc: document.getElementById('db_sch_desc').value, adminMemo: document.getElementById('db_sch_memo').value, lastModified: Date.now() }).then(() => window.closeAdminCustomModal());
+    window.deleteDashboardReport   = function(date, staff) { if(confirm("Delete?")) db.ref(`reports/${date}/${staff}`).remove().then(()=>{alert("Deleted");window.closeAdminCustomModal();}); };
+    window.deleteAttendance         = function(n, date)    { if(confirm("Delete?")) db.ref(`attendance/${date}/${n}`).remove().then(()=>{alert("Deleted");window.closeAdminCustomModal();}); };
+    window.saveDashboardSchedule    = function(id) {
+        const t = document.getElementById('db_sch_title').value,
+              s = document.getElementById('db_sch_start').value,
+              e = document.getElementById('db_sch_end').value;
+        if (!t || !s) return alert('Title and Start Date required.');
+        db.ref(`shared_schedules/${id}`).update({ title:t, start:s.replace(' ','T'), end:e?e.replace(' ','T'):s.replace(' ','T'), allDay:document.getElementById('db_sch_allday').checked, desc:document.getElementById('db_sch_desc').value, adminMemo:document.getElementById('db_sch_memo').value, lastModified:Date.now() }).then(()=>window.closeAdminCustomModal());
     };
-    window.deleteDashboardSchedule = function(id) { if(confirm("Delete schedule?")) db.ref(`shared_schedules/${id}`).remove().then(() => { alert("Deleted"); window.closeAdminCustomModal(); }); };
+    window.deleteDashboardSchedule  = function(id) { if(confirm("Delete?")) db.ref(`shared_schedules/${id}`).remove().then(()=>{alert("Deleted");window.closeAdminCustomModal();}); };
 
-    // ── Init ──
+    /* ── Weekly leaves (kept for external calls) ── */
+    window.renderWeeklyLeaves = function() {};
+
+    /* ── Quick Stats (kept minimal for external compatibility) ── */
+    window.updateQuickStats = function() {};
+
+    /* ══ INIT ══ */
     window.initAdminDashboard = function() {
-        initJakartaInlineInfo();
-        window.updateQuickStats();
+        initDayBanner();
+        checkLeaveAlert();
         renderDailyAttendance();
         renderDailyReports();
-        renderActiveSchedules();
-        window.renderWeeklyLeaves();
+        renderEvents();
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof firebase === 'undefined') return;
-        setTimeout(window.initAdminDashboard, 100);
-    });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof firebase !== 'undefined') setTimeout(window.initAdminDashboard, 100);
+        });
+    } else {
+        if (typeof firebase !== 'undefined') setTimeout(window.initAdminDashboard, 100);
+    }
 
-    if (document.getElementById('quick_stats_container')) setTimeout(window.initAdminDashboard, 100);
+    if (document.getElementById('dashRoot')) setTimeout(window.initAdminDashboard, 120);
 })();
 </script>

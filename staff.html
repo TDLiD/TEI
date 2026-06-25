@@ -18,10 +18,8 @@
 
     <style>
         /* =====================================================
-           DAY-BASED THEME SYSTEM — REVOLUTIONARY EDITION
+           DAY-BASED THEME SYSTEM
            0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
-           
-           각 요일: 색상 + 고유한 배경 패턴 + 특수 효과
         ===================================================== */
 
         /* ── MON ── Deep Navy Steel : 격자 홀로그램 */
@@ -32,7 +30,6 @@
             --ds: rgba(12,20,40,0.95); --dc: rgba(10,18,36,0.82);
             --panel-bg: linear-gradient(150deg,#020812 0%,#050f26 55%,#03091e 100%);
             --aside-bg: linear-gradient(180deg,#020714 0%,#060d22 60%,#040a1e 100%);
-            /* MON 전용 — 청사진 격자 */
             --day-pattern: repeating-linear-gradient(
                 0deg, transparent, transparent 39px, rgba(59,130,246,0.12) 39px, rgba(59,130,246,0.12) 40px
             ), repeating-linear-gradient(
@@ -51,7 +48,6 @@
             --ds: rgba(2,14,10,0.95); --dc: rgba(2,12,9,0.82);
             --panel-bg: linear-gradient(150deg,#010d06 0%,#031a0c 55%,#021008 100%);
             --aside-bg: linear-gradient(180deg,#010905 0%,#041408 60%,#030e07 100%);
-            /* TUE 전용 — 매트릭스 사선 스캔 */
             --day-pattern: repeating-linear-gradient(
                 -45deg,
                 transparent 0px, transparent 8px,
@@ -70,7 +66,6 @@
             --ds: rgba(16,4,4,0.95); --dc: rgba(14,3,3,0.82);
             --panel-bg: linear-gradient(150deg,#0e0202 0%,#1c0404 55%,#130303 100%);
             --aside-bg: linear-gradient(180deg,#0b0202 0%,#160303 60%,#100202 100%);
-            /* WED 전용 — 위험 다이아몬드 격자 */
             --day-pattern: repeating-conic-gradient(
                 rgba(239,68,68,0.07) 0% 25%, transparent 0% 50%
             ) 0 0 / 28px 28px;
@@ -87,7 +82,6 @@
             --ds: rgba(9,3,17,0.95); --dc: rgba(8,3,16,0.82);
             --panel-bg: linear-gradient(150deg,#060112 0%,#0d031e 55%,#090216 100%);
             --aside-bg: linear-gradient(180deg,#04010e 0%,#0a021a 60%,#070112 100%);
-            /* THU 전용 — 허니콤 육각형 */
             --day-pattern: radial-gradient(circle at 50% 50%, rgba(168,85,247,0.06) 15%, transparent 16%) 0 0 / 26px 26px,
                            radial-gradient(circle at 0 100%, rgba(168,85,247,0.06) 15%, transparent 16%) 0 0 / 26px 26px;
             --day-label: "THU ✦ COSMOS";
@@ -103,7 +97,6 @@
             --ds: rgba(18,12,2,0.95); --dc: rgba(16,11,2,0.82);
             --panel-bg: linear-gradient(150deg,#0f0700 0%,#1a0e00 55%,#130b00 100%);
             --aside-bg: linear-gradient(180deg,#0c0600 0%,#160c00 60%,#100900 100%);
-            /* FRI 전용 — 불꽃 물결 */
             --day-pattern: repeating-radial-gradient(
                 ellipse at 50% 200%,
                 transparent 0%, transparent 20%,
@@ -115,7 +108,7 @@
             --day-letter-spacing: 0.08em;
         }
 
-        /* ── SAT ── Slate Void : 노이즈 점점이 성운 */
+        /* ── SAT ── Slate Void */
         body.day-6 {
             --da: #64748b; --da2: #475569; --da3: #94a3b8;
             --dg: rgba(100,116,139,0.14); --dg2: rgba(71,85,105,0.08);
@@ -129,7 +122,7 @@
             --day-letter-spacing: 0.25em;
         }
 
-        /* ── SUN ── Slate Void : 동심원 에너지 파동 */
+        /* ── SUN ── Slate Void : 동심원 파동 */
         body.day-0 {
             --da: #64748b; --da2: #475569; --da3: #94a3b8;
             --dg: rgba(100,116,139,0.14); --dg2: rgba(71,85,105,0.08);
@@ -147,7 +140,7 @@
         }
 
         /* =====================================================
-           요일별 ASIDE 특수 장식 (상단 바 스타일)
+           ASIDE TOP SHIMMER BAR — per day
         ===================================================== */
         body.day-1 aside::before { background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8); }
         body.day-2 aside::before { background: linear-gradient(90deg, #047857, #10b981, #34d399, #10b981, #047857); }
@@ -156,29 +149,194 @@
         body.day-5 aside::before { background: linear-gradient(90deg, #d97706, #f59e0b, #fcd34d, #f59e0b, #d97706); }
         body.day-0 aside::before, body.day-6 aside::before { background: linear-gradient(90deg, #475569, #64748b, #94a3b8, #64748b, #475569); }
 
-        /* 요일별 글로우 애니메이션 색상 */
-        body.day-1 .day-orb { background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%); }
-        body.day-2 .day-orb { background: radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%); }
-        body.day-3 .day-orb { background: radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%); }
-        body.day-4 .day-orb { background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%); }
-        body.day-5 .day-orb { background: radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%); }
+        body.day-1 #mobileHeader::before { background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+        body.day-2 #mobileHeader::before { background: linear-gradient(90deg, #047857, #10b981, #34d399, #10b981, #047857); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+        body.day-3 #mobileHeader::before { background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171, #ef4444, #b91c1c); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+        body.day-4 #mobileHeader::before { background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc, #a855f7, #7c3aed); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+        body.day-5 #mobileHeader::before { background: linear-gradient(90deg, #d97706, #f59e0b, #fcd34d, #f59e0b, #d97706); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+        body.day-0 #mobileHeader::before, body.day-6 #mobileHeader::before { background: linear-gradient(90deg, #475569, #64748b, #94a3b8, #64748b, #475569); background-size:200% 100%; animation: shimmer 3s linear infinite; }
+
+        /* ── Orbs ── */
+        body.day-1 .day-orb  { background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%); }
+        body.day-2 .day-orb  { background: radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%); }
+        body.day-3 .day-orb  { background: radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%); }
+        body.day-4 .day-orb  { background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%); }
+        body.day-5 .day-orb  { background: radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%); }
         body.day-0 .day-orb, body.day-6 .day-orb { background: radial-gradient(circle, rgba(100,116,139,0.2) 0%, transparent 70%); }
 
-        /* 요일별 BADGE 모양 */
-        body.day-1 .day-badge { border-radius: 4px; }            /* MON: 각진 사각형 */
-        body.day-2 .day-badge { border-radius: 0; clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }  /* TUE: 평행사변형 */
-        body.day-3 .day-badge { clip-path: polygon(8px 0%,100% 0%,100% 100%,0 100%,0 8px); border-radius:0; }          /* WED: 노치 코너 */
-        body.day-4 .day-badge { border-radius: 999px; }          /* THU: 풀 알약 */
-        body.day-5 .day-badge { border-radius: 2px 12px 2px 12px; } /* FRI: 대각 라운드 */
-        body.day-0 .day-badge, body.day-6 .day-badge { border-radius: 50%; width: 40px; height: 40px; display:inline-flex;align-items:center;justify-content:center; } /* SAT/SUN: 원 */
+        /* ── Badge shapes ── */
+        body.day-1 .day-badge { border-radius: 4px; }
+        body.day-2 .day-badge { border-radius: 0; clip-path: polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }
+        body.day-3 .day-badge { clip-path: polygon(8px 0%,100% 0%,100% 100%,0 100%,0 8px); border-radius:0; }
+        body.day-4 .day-badge { border-radius: 999px; }
+        body.day-5 .day-badge { border-radius: 2px 12px 2px 12px; }
+        body.day-0 .day-badge, body.day-6 .day-badge { border-radius: 50%; width: 40px; height: 40px; display:inline-flex;align-items:center;justify-content:center; }
 
-        /* 요일별 사이드바 특수 타이포 스타일 */
+        /* ── Brand title per-day ── */
         body.day-1 .brand-title { font-weight: 900; letter-spacing: -0.04em; font-style: normal; }
         body.day-2 .brand-title { font-weight: 900; letter-spacing: 0.02em; font-style: italic; text-transform: uppercase; }
         body.day-3 .brand-title { font-weight: 900; letter-spacing: 0.08em; font-style: normal; text-transform: uppercase; }
         body.day-4 .brand-title { font-weight: 900; letter-spacing: -0.02em; font-style: italic; }
         body.day-5 .brand-title { font-weight: 900; letter-spacing: 0.04em; font-style: italic; }
         body.day-0 .brand-title, body.day-6 .brand-title { font-weight: 400; letter-spacing: 0.15em; font-style: normal; }
+
+        /* ── WED special active tab ── */
+        body.day-3 .tab-active {
+            background: repeating-linear-gradient(
+                45deg, var(--dg), var(--dg) 3px, transparent 3px, transparent 8px
+            ) !important;
+        }
+        /* ── THU glow-enhanced tab ── */
+        body.day-4 .tab-active {
+            box-shadow: 0 0 20px var(--dg), inset 0 0 10px var(--dg2) !important;
+        }
+
+        /* =====================================================
+           SIDEBAR 3D DECORATIONS — per day
+        ===================================================== */
+
+        /* MON: three vertical lines on the right edge */
+        body.day-1 aside .deco-lines { position:absolute;right:6px;top:80px;bottom:80px;display:flex;gap:3px;pointer-events:none;z-index:0; }
+        body.day-1 aside .deco-lines span { display:block;width:1px;border-radius:999px;background:var(--db); }
+        body.day-1 aside .deco-lines span:nth-child(1){opacity:.8;}
+        body.day-1 aside .deco-lines span:nth-child(2){opacity:.4;}
+        body.day-1 aside .deco-lines span:nth-child(3){opacity:.15;}
+
+        /* WED: warning corner notches */
+        body.day-3 aside .deco-corner    { position:absolute;bottom:16px;left:16px;width:24px;height:24px;border-left:2px solid var(--da);border-bottom:2px solid var(--da);opacity:.4;pointer-events:none; }
+        body.day-3 aside .deco-corner-tr { position:absolute;top:16px;right:16px;width:24px;height:24px;border-right:2px solid var(--da);border-top:2px solid var(--da);opacity:.4;pointer-events:none; }
+
+        /* THU: star particles */
+        body.day-4 .star-particle { position:fixed;pointer-events:none;z-index:0;width:2px;height:2px;border-radius:50%;background:var(--da);animation:starFloat var(--dur,8s) ease-in-out infinite alternate; }
+
+        /* FRI: ember particles */
+        body.day-5 .ember-particle { position:fixed;pointer-events:none;z-index:0;width:3px;height:3px;border-radius:50%;background:var(--da);animation:emberRise var(--dur,6s) ease-out infinite;opacity:0; }
+        @keyframes emberRise {
+            0%   { opacity:0.8;transform:translateY(0) translateX(0) scale(1); }
+            100% { opacity:0;transform:translateY(-120px) translateX(var(--dx,20px)) scale(0.3); }
+        }
+
+        /* =====================================================
+           ★ SIDEBAR COLLAPSE SYSTEM ★
+        ===================================================== */
+
+        /* The sidebar itself: collapsible on desktop */
+        aside {
+            --aside-w: 20rem;      /* 320px open */
+            --aside-w-closed: 0px; /* fully hidden */
+            background: var(--aside-bg);
+            border-right: 1px solid var(--db);
+            box-shadow: 4px 0 32px rgba(0,0,0,0.6), inset 0 0 50px var(--dg2);
+            position: relative;
+            /* transition for slide */
+            transition:
+                width 0.45s cubic-bezier(0.4,0,0.2,1),
+                min-width 0.45s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.45s ease,
+                opacity 0.35s ease;
+            overflow: hidden;
+            will-change: width;
+        }
+
+        /* Desktop: open = 320px, closed = 0 */
+        @media (min-width: 1024px) {
+            aside {
+                width: var(--aside-w);
+                min-width: var(--aside-w);
+                height: 100vh;
+                position: sticky;
+                top: 0;
+                flex-shrink: 0;
+            }
+            aside.sidebar-collapsed {
+                width: var(--aside-w-closed) !important;
+                min-width: var(--aside-w-closed) !important;
+                opacity: 0;
+                pointer-events: none;
+                box-shadow: none;
+                border-right-color: transparent;
+            }
+        }
+
+        /* Desktop sidebar inner wrapper — prevent content from flashing during slide */
+        aside > .sidebar-inner {
+            width: var(--aside-w); /* fixed, not shrunk */
+            min-width: var(--aside-w);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* ── Hover-zone strip: invisible, always present on left edge ── */
+        #sidebarHoverZone {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 18px;
+            z-index: 1100;
+            cursor: pointer;
+            display: none; /* shown only on desktop via JS */
+        }
+
+        /* ── Toggle button (peek tab) shown when collapsed on desktop ── */
+        #sidebarToggleTab {
+            position: fixed;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            z-index: 1200;
+            background: var(--da2);
+            border: 1px solid var(--db);
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            padding: 12px 6px;
+            cursor: pointer;
+            box-shadow: 4px 0 16px var(--dg), 0 0 0 1px var(--db);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.2s;
+        }
+        #sidebarToggleTab.visible {
+            opacity: 1;
+        }
+        #sidebarToggleTab:hover {
+            background: var(--da);
+        }
+        #sidebarToggleTab .tab-chevron {
+            font-size: 11px;
+            color: white;
+            font-weight: 900;
+            line-height: 1;
+        }
+        #sidebarToggleTab .tab-label {
+            font-size: 8px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* ── Collapsed indicator line on left edge ── */
+        #sidebarEdgeLine {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--da), var(--da3), var(--da), transparent);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #sidebarEdgeLine.visible { opacity: 1; }
+
+        /* ── Main content expands when sidebar collapses ── */
+        main {
+            flex: 1;
+            min-width: 0;
+            transition: all 0.45s cubic-bezier(0.4,0,0.2,1);
+        }
 
         /* =====================================================
            GLOBAL BASE
@@ -196,7 +354,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 요일별 배경 패턴 레이어 */
+        /* Day pattern layer */
         body::before {
             content: '';
             position: fixed; inset: 0;
@@ -210,16 +368,10 @@
             0%   { background-position: 0 0, 0 0; }
             100% { background-position: 60px 60px, 60px 60px; }
         }
+        body.day-1::before { animation: patternDrift 45s linear infinite; }
+        body.day-2::before { animation: patternDrift 80s linear infinite; }
 
-        /* 보조 미세 격자 (MON 전용은 더 촘촘) */
-        body.day-1::before {
-            animation: patternDrift 45s linear infinite;
-        }
-        body.day-2::before {
-            animation: patternDrift 80s linear infinite;
-        }
-
-        /* 앰비언트 글로우 오브 */
+        /* Ambient orbs */
         .day-orb {
             position: fixed;
             top: -20%; left: -10%;
@@ -231,8 +383,6 @@
             0%   { transform: translate(0,0) scale(1) rotate(0deg); }
             100% { transform: translate(8%,5%) scale(1.12) rotate(3deg); }
         }
-
-        /* 보조 글로우 (우측 하단) */
         .day-orb-2 {
             position: fixed;
             bottom: -15%; right: -10%;
@@ -263,18 +413,8 @@
         }
 
         /* =====================================================
-           ASIDE / SIDEBAR
+           ASIDE :: before top shimmer
         ===================================================== */
-        aside {
-            background: var(--aside-bg);
-            border-right: 1px solid var(--db);
-            box-shadow:
-                4px 0 32px rgba(0,0,0,0.6),
-                inset 0 0 50px var(--dg2);
-            position: relative;
-        }
-
-        /* 요일별 상단 색상 바 */
         aside::before {
             content: '';
             position: absolute;
@@ -289,7 +429,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* 사이드바 nav 스크롤 */
+        /* sidebar nav scroll */
         aside .hidden.lg\:flex { min-height: 0; }
         aside .hidden.lg\:flex > nav.flex {
             overflow-y: auto;
@@ -319,17 +459,11 @@
             border-radius: 50%;
             border: 2px solid var(--da);
             object-fit: cover;
-            box-shadow:
-                0 0 0 3px var(--dg),
-                0 0 18px var(--dg),
-                0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 3px var(--dg), 0 0 18px var(--dg), 0 4px 12px rgba(0,0,0,0.5);
             transition: all 0.3s ease;
         }
         .nav-profile-img:hover {
-            box-shadow:
-                0 0 0 4px var(--da),
-                0 0 28px var(--dg),
-                0 4px 16px rgba(0,0,0,0.6);
+            box-shadow: 0 0 0 4px var(--da), 0 0 28px var(--dg), 0 4px 16px rgba(0,0,0,0.6);
             transform: scale(1.04);
         }
         @media (min-width: 1024px) {
@@ -347,7 +481,7 @@
         }
 
         /* =====================================================
-           DAY BADGE — 요일별 다른 모양
+           DAY BADGE
         ===================================================== */
         .day-badge {
             display: inline-flex; align-items: center; gap: 5px;
@@ -385,7 +519,7 @@
         #weatherTemp, #mobileWeatherTemp { color: var(--da3) !important; }
 
         /* =====================================================
-           NAV BUTTONS — 요일별 활성화 스타일
+           NAV BUTTONS
         ===================================================== */
         .btn-3d {
             transition: all 0.2s;
@@ -398,8 +532,6 @@
             border: 1px solid transparent !important;
             transition: all 0.2s ease;
         }
-
-        /* 요일별 좌측 액티브 바 */
         .pc-tab-btn::before {
             content: '';
             position: absolute; left: 0; top: 0; bottom: 0;
@@ -409,25 +541,11 @@
             transform: scaleY(0);
             transition: transform 0.2s ease;
         }
-
-        /* MON: 우측에도 미러 바 */
         body.day-1 .pc-tab-btn.tab-active::after {
             content: '';
             position: absolute; right: 0; top: 0; bottom: 0;
             width: 1px;
             background: var(--db);
-        }
-
-        /* WED: 활성시 배경에 위험 패턴 */
-        body.day-3 .tab-active {
-            background: repeating-linear-gradient(
-                45deg, var(--dg), var(--dg) 3px, transparent 3px, transparent 8px
-            ) !important;
-        }
-
-        /* THU: 활성시 글로우 강화 */
-        body.day-4 .tab-active {
-            box-shadow: 0 0 20px var(--dg), inset 0 0 10px var(--dg2) !important;
         }
 
         .tab-active {
@@ -474,13 +592,9 @@
             box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 30px var(--dg2), inset 0 -1px 0 var(--db);
             position: relative;
         }
-        /* 모바일 헤더도 상단 컬러 바 */
         #mobileHeader::before {
             content: '';
             position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, var(--da2), var(--da), var(--da3), var(--da), var(--da2));
-            background-size: 200% 100%;
-            animation: shimmer 3s linear infinite;
         }
 
         .mobile-bottom-nav {
@@ -553,11 +667,10 @@
         #mobileBirthdayAlert span:first-child { color: var(--da3) !important; }
 
         /* =====================================================
-           요일별 타이머 & 온라인 패널 테마
+           TIMER & ONLINE PANEL
         ===================================================== */
         .day-spin { border-color: var(--db); border-top-color: var(--da); }
 
-        /* 타이머 컨테이너 */
         .timer-wrapper {
             background: rgba(0,0,0,0.3);
             border: 1px solid var(--db);
@@ -580,9 +693,6 @@
             font-family: 'Courier New', monospace;
         }
 
-        /* =====================================================
-           ONLINE USERS PANEL — 요일 테마 완전 적용
-        ===================================================== */
         #onlineUsersPanel {
             border-radius: 0.875rem;
             border: 1px solid var(--db);
@@ -592,8 +702,6 @@
             box-shadow: 0 0 0 1px var(--db), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 20px var(--dg2);
             margin-bottom: 0.5rem;
         }
-
-        /* 스캔라인 효과 */
         #onlineUsersPanel::before {
             content: '';
             position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
@@ -601,9 +709,7 @@
             animation: onlineScan 5s linear infinite;
             pointer-events: none; z-index: 0;
         }
-        @keyframes onlineScan {
-            0% { left: -60%; } 100% { left: 160%; }
-        }
+        @keyframes onlineScan { 0%{left:-60%}100%{left:160%} }
 
         .online-panel-header {
             background: var(--dg2);
@@ -626,15 +732,13 @@
             box-shadow: 0 0 8px var(--dg);
             animation: countPop 0.3s ease;
         }
-        @keyframes countPop {
-            0% { transform: scale(0.7); } 60% { transform: scale(1.2); } 100% { transform: scale(1); }
-        }
+        @keyframes countPop { 0%{transform:scale(0.7)}60%{transform:scale(1.2)}100%{transform:scale(1)} }
 
         #onlineUsersList {
             position: relative; z-index: 1;
             max-height: 160px; overflow-y: auto; overflow-x: hidden;
-            scrollbar-width: none; padding: 5px; display: flex;
-            flex-direction: column; gap: 3px;
+            scrollbar-width: none; padding: 5px;
+            display: flex; flex-direction: column; gap: 3px;
         }
         #onlineUsersList::-webkit-scrollbar { display: none; }
 
@@ -646,98 +750,18 @@
             position: relative; overflow: hidden;
             animation: slideInUser 0.35s ease both;
         }
-        @keyframes slideInUser {
-            from { opacity: 0; transform: translateX(-8px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes slideInUser { from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)} }
         .online-user-item:hover { background: var(--dg); border-color: var(--db); transform: translateX(2px); }
         .online-user-item::before {
-            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-            background: var(--da); border-radius: 0 2px 2px 0;
-            box-shadow: 0 0 6px var(--dg);
+            content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+            background:var(--da); border-radius:0 2px 2px 0; box-shadow:0 0 6px var(--dg);
         }
-
-        .online-user-avatar {
-            width: 24px; height: 24px; border-radius: 50%;
-            border: 1.5px solid var(--db); object-fit: cover; flex-shrink: 0;
-            box-shadow: 0 0 8px var(--dg2);
-        }
-        .online-user-name {
-            font-size: 0.63rem; font-weight: 900; color: #e2e8f0;
-            text-transform: uppercase; letter-spacing: 0.05em; flex: 1;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .online-user-time {
-            font-size: 0.5rem; font-weight: 700; color: var(--da3);
-            letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
-        }
-        .online-live-dot {
-            width: 5px; height: 5px; border-radius: 50%;
-            background: var(--da); box-shadow: 0 0 5px var(--da); flex-shrink: 0;
-            animation: livePulse 1.8s ease-in-out infinite;
-        }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
-        }
-        .online-empty {
-            text-align: center; padding: 12px 8px;
-            font-size: 0.58rem; font-weight: 700; color: #334155;
-            letter-spacing: 0.1em; text-transform: uppercase;
-        }
-
-        /* =====================================================
-           요일별 사이드바 장식 요소
-        ===================================================== */
-
-        /* MON: 사이드바 좌측 세로 라인 3개 */
-        body.day-1 aside .deco-lines {
-            position: absolute; right: 6px; top: 80px; bottom: 80px;
-            display: flex; gap: 3px; pointer-events: none; z-index: 0;
-        }
-        body.day-1 aside .deco-lines span {
-            display: block; width: 1px; border-radius: 999px;
-            background: var(--db);
-        }
-        body.day-1 aside .deco-lines span:nth-child(1) { opacity: 0.8; }
-        body.day-1 aside .deco-lines span:nth-child(2) { opacity: 0.4; }
-        body.day-1 aside .deco-lines span:nth-child(3) { opacity: 0.15; }
-
-        /* WED: 경고 코너 노치 */
-        body.day-3 aside .deco-corner {
-            position: absolute; bottom: 16px; left: 16px;
-            width: 24px; height: 24px;
-            border-left: 2px solid var(--da);
-            border-bottom: 2px solid var(--da);
-            opacity: 0.4; pointer-events: none;
-        }
-        body.day-3 aside .deco-corner-tr {
-            position: absolute; top: 16px; right: 16px;
-            width: 24px; height: 24px;
-            border-right: 2px solid var(--da);
-            border-top: 2px solid var(--da);
-            opacity: 0.4; pointer-events: none;
-        }
-
-        /* THU: 떠다니는 별 파티클 */
-        body.day-4 .star-particle {
-            position: fixed; pointer-events: none; z-index: 0;
-            width: 2px; height: 2px;
-            border-radius: 50%; background: var(--da);
-            animation: starFloat var(--dur, 8s) ease-in-out infinite alternate;
-        }
-
-        /* FRI: 불꽃 파티클 */
-        body.day-5 .ember-particle {
-            position: fixed; pointer-events: none; z-index: 0;
-            width: 3px; height: 3px; border-radius: 50%;
-            background: var(--da);
-            animation: emberRise var(--dur, 6s) ease-out infinite;
-            opacity: 0;
-        }
-        @keyframes emberRise {
-            0%   { opacity: 0.8; transform: translateY(0) translateX(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-120px) translateX(var(--dx,20px)) scale(0.3); }
-        }
+        .online-user-avatar { width:24px;height:24px;border-radius:50%;border:1.5px solid var(--db);object-fit:cover;flex-shrink:0;box-shadow:0 0 8px var(--dg2); }
+        .online-user-name { font-size:0.63rem;font-weight:900;color:#e2e8f0;text-transform:uppercase;letter-spacing:0.05em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .online-user-time { font-size:0.5rem;font-weight:700;color:var(--da3);letter-spacing:0.04em;white-space:nowrap;flex-shrink:0; }
+        .online-live-dot { width:5px;height:5px;border-radius:50%;background:var(--da);box-shadow:0 0 5px var(--da);flex-shrink:0;animation:livePulse 1.8s ease-in-out infinite; }
+        @keyframes livePulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+        .online-empty { text-align:center;padding:12px 8px;font-size:0.58rem;font-weight:700;color:#334155;letter-spacing:0.1em;text-transform:uppercase; }
 
         /* =====================================================
            ANIMATIONS
@@ -755,8 +779,18 @@
         ===================================================== */
         @media (max-width: 1023px) {
             body { padding-top: 65px; padding-bottom: 90px; }
-            aside { width: 100% !important; height: 65px !important; position: fixed; top: 0; z-index: 1000; border-right: none !important; }
-            aside > div:not(.lg\:hidden) { display: none !important; }
+            aside {
+                width: 100% !important; height: 65px !important;
+                position: fixed; top: 0; z-index: 1000;
+                border-right: none !important;
+                transition: none !important; /* no slide on mobile */
+            }
+            aside.sidebar-collapsed {
+                width: 100% !important;
+                min-width: unset !important;
+                opacity: 1 !important;
+                pointer-events: all !important;
+            }
         }
         @media (min-width: 1024px) {
             body { padding-top: 0; padding-bottom: 0; }
@@ -765,179 +799,210 @@
 
         #mobile-birthday-dot.active { display: block !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* =====================================================
+           MAIN PAGE 3D RIPPLE CLICK EFFECT
+        ===================================================== */
+        .click-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--da) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            transform: scale(0);
+            opacity: 0.35;
+            animation: rippleExpand 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        @keyframes rippleExpand {
+            0%   { transform: scale(0); opacity: 0.35; }
+            100% { transform: scale(1); opacity: 0; }
+        }
     </style>
 </head>
 
 <body class="flex flex-col lg:flex-row min-h-screen">
 
-<!-- 앰비언트 글로우 오브 -->
+<!-- Ambient orbs -->
 <div class="day-orb"></div>
 <div class="day-orb-2" style="background:radial-gradient(circle, var(--dg2) 0%, transparent 70%);"></div>
+
+<!-- ── Sidebar collapse helpers ── -->
+<div id="sidebarHoverZone"></div>
+<div id="sidebarEdgeLine"></div>
+<div id="sidebarToggleTab">
+    <span class="tab-chevron">▶</span>
+    <span class="tab-label">Menu</span>
+</div>
 
 <!-- =====================================================
      ASIDE / SIDEBAR
 ===================================================== -->
-<aside class="w-full lg:w-80 lg:h-screen border-b lg:border-b-0 backdrop-blur-2xl sticky top-0 z-[1000] flex-shrink-0">
+<aside id="mainAside" class="w-full lg:w-80 lg:h-screen border-b lg:border-b-0 backdrop-blur-2xl sticky top-0 z-[1000] flex-shrink-0">
 
-    <!-- 요일별 장식 요소 -->
-    <div class="deco-lines lg:block hidden">
-        <span></span><span></span><span></span>
-    </div>
-    <div class="deco-corner lg:block hidden"></div>
-    <div class="deco-corner-tr lg:block hidden"></div>
+    <!-- sidebar inner: fixed-width container so content doesn't shrink -->
+    <div class="sidebar-inner">
 
-    <!-- MOBILE HEADER -->
-    <div id="mobileHeader" class="lg:hidden flex items-center justify-between w-full h-[65px] px-5 border-b border-white/5">
-        <div class="flex items-center gap-3">
-            <div id="mobileProfileImg"
-                 class="w-10 h-10 rounded-full overflow-hidden border bg-white/5 btn-3d relative cursor-pointer"
-                 style="border-color:var(--db)"
-                 onclick="openProfileImagePicker()"></div>
-            <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                    <h1 class="brand-title text-lg text-white leading-none">Daily <span class="brand-accent">System</span></h1>
-                    <div class="day-badge" id="mobileDayBadge">
-                        <span class="day-dot"></span>
-                        <span id="mobileDayLabel">MON</span>
-                    </div>
-                </div>
-
-                <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
-                    <span class="text-[9px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-                    <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
-                </div>
-
-                <div class="flex items-center gap-2 mt-1">
-                    <div id="mobileWeatherChip" class="flex items-center gap-1 px-1.5 py-0.5 rounded border">
-                        <span id="mobileWeatherIcon" class="text-[10px]">⏳</span>
-                        <span id="mobileWeatherTemp" class="text-[9px] font-black">--°C</span>
-                    </div>
-                    <span class="text-slate-600 text-[8px]">|</span>
-                    <span id="mobileUserName" class="text-[9px] font-black uppercase tracking-widest" style="color:var(--da3)">STAFF</span>
-                </div>
-            </div>
+        <!-- 요일별 장식 -->
+        <div class="deco-lines lg:block hidden">
+            <span></span><span></span><span></span>
         </div>
+        <div class="deco-corner lg:block hidden"></div>
+        <div class="deco-corner-tr lg:block hidden"></div>
 
-        <div class="flex items-center gap-3">
-            <button onclick="showAllStaffBirthdays()"
-                    class="relative p-2 rounded-xl border btn-3d"
-                    style="background:var(--dg2);border-color:var(--db)">
-                <span class="text-lg">🎂</span>
-                <div id="mobile-birthday-dot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 animate-pulse"
-                     style="background:var(--da)"></div>
-            </button>
-            <button onclick="logout()"
-                    class="p-2 bg-rose-600/10 rounded-xl border border-rose-500/20 text-rose-500 btn-3d">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- DESKTOP SIDEBAR -->
-    <div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden" style="position:relative;z-index:1;">
-
-        <!-- Brand + Day Badge -->
-        <div class="flex flex-col gap-4 mb-8">
-            <div class="flex items-center justify-between">
-                <h1 class="brand-title text-2xl text-white">Daily <span class="brand-accent">System</span></h1>
-                <div class="day-badge" id="desktopDayBadge">
-                    <span class="day-dot"></span>
-                    <span id="desktopDayLabel">MON</span>
-                </div>
-            </div>
-
-            <!-- Profile Row -->
-            <div class="flex items-center gap-4 mt-3">
-                <div id="navEmojiContainer"
-                     class="cursor-pointer relative group inline-block btn-3d"
+        <!-- MOBILE HEADER -->
+        <div id="mobileHeader" class="lg:hidden flex items-center justify-between w-full h-[65px] px-5 border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <div id="mobileProfileImg"
+                     class="w-10 h-10 rounded-full overflow-hidden border bg-white/5 btn-3d relative cursor-pointer"
+                     style="border-color:var(--db)"
                      onclick="openProfileImagePicker()"></div>
                 <div class="flex flex-col">
-                    <div id="jakartaWeather" class="flex items-center gap-2 mb-1.5 px-2.5 py-1 rounded-lg border w-fit">
-                        <span id="weatherIcon" class="text-sm">⏳</span>
-                        <span id="weatherTemp" class="text-[11px] font-black">--°C</span>
-                        <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
+                    <div class="flex items-center gap-2">
+                        <h1 class="brand-title text-lg text-white leading-none">Daily <span class="brand-accent">System</span></h1>
+                        <div class="day-badge" id="mobileDayBadge">
+                            <span class="day-dot"></span>
+                            <span id="mobileDayLabel">MON</span>
+                        </div>
                     </div>
 
-                    <button onclick="showAllStaffBirthdays()"
-                            class="mt-2 ml-1 text-[9px] font-bold transition-colors uppercase tracking-widest flex items-center gap-1"
-                            style="color:var(--da3)">
-                        <img src="images/gif/staff.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
-                    </button>
-
-                    <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
-                        <span class="text-[10px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-                        <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
+                    <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
+                        <span class="text-[9px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                        <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
                     </div>
 
-                    <p id="desktopUser" class="text-[11px] font-black uppercase tracking-widest mt-1" style="color:var(--da3)"></p>
-                    <span class="text-[9px] font-black flex items-center gap-1 mt-0.5 online-text">
-                        <span class="w-1.5 h-1.5 rounded-full animate-pulse online-dot"></span> ONLINE
-                    </span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div id="mobileWeatherChip" class="flex items-center gap-1 px-1.5 py-0.5 rounded border">
+                            <span id="mobileWeatherIcon" class="text-[10px]">⏳</span>
+                            <span id="mobileWeatherTemp" class="text-[9px] font-black">--°C</span>
+                        </div>
+                        <span class="text-slate-600 text-[8px]">|</span>
+                        <span id="mobileUserName" class="text-[9px] font-black uppercase tracking-widest" style="color:var(--da3)">STAFF</span>
+                    </div>
                 </div>
             </div>
 
-            <button onclick="logout()"
-                    class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-2">
-                🖐️ Logout 🔓
-            </button>
-
-            <!-- 타이머 -->
-            <div class="timer-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--da);flex-shrink:0">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
-                <span>Auto logout:</span>
-                <span id="logout-timer">10:00</span>
-            </div>
-
-            <!-- ★ 온라인 스태프 패널 ★ -->
-            <div id="onlineUsersPanel">
-                <div class="online-panel-header">
-                    <div class="online-panel-title">
-                        <span class="online-live-dot"></span>
-                        <span>CONNECTED NOW</span>
-                    </div>
-                    <span class="online-count-badge" id="onlineCountBadge">0</span>
-                </div>
-                <div id="onlineUsersList">
-                    <div class="online-empty">SCANNING...</div>
-                </div>
+            <div class="flex items-center gap-3">
+                <button onclick="showAllStaffBirthdays()"
+                        class="relative p-2 rounded-xl border btn-3d"
+                        style="background:var(--dg2);border-color:var(--db)">
+                    <span class="text-lg">🎂</span>
+                    <div id="mobile-birthday-dot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 animate-pulse"
+                         style="background:var(--da)"></div>
+                </button>
+                <button onclick="logout()"
+                        class="p-2 bg-rose-600/10 rounded-xl border border-rose-500/20 text-rose-500 btn-3d">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
-        <!-- Nav -->
-        <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
-            <button onclick="switchTab('dash')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
-            <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
-            <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
-            <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
-            <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
-            <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
-            <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
+        <!-- DESKTOP SIDEBAR -->
+        <div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden" style="position:relative;z-index:1;">
 
-            <div class="aside-divider mt-3"></div>
+            <!-- Brand + Day Badge -->
+            <div class="flex flex-col gap-4 mb-8">
+                <div class="flex items-center justify-between">
+                    <h1 class="brand-title text-2xl text-white">Daily <span class="brand-accent">System</span></h1>
+                    <div class="day-badge" id="desktopDayBadge">
+                        <span class="day-dot"></span>
+                        <span id="desktopDayLabel">MON</span>
+                    </div>
+                </div>
 
-            <button onclick="location.href='staff_main.html';"
-                    class="main-menu-btn w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest font-black rounded-2xl transition-all">
-                <span>⬅️</span> Main Menu
-            </button>
-        </nav>
+                <!-- Profile Row -->
+                <div class="flex items-center gap-4 mt-3">
+                    <div id="navEmojiContainer"
+                         class="cursor-pointer relative group inline-block btn-3d"
+                         onclick="openProfileImagePicker()"></div>
+                    <div class="flex flex-col">
+                        <div id="jakartaWeather" class="flex items-center gap-2 mb-1.5 px-2.5 py-1 rounded-lg border w-fit">
+                            <span id="weatherIcon" class="text-sm">⏳</span>
+                            <span id="weatherTemp" class="text-[11px] font-black">--°C</span>
+                            <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
+                        </div>
 
-        <!-- External -->
-        <div class="pt-5" style="border-top:1px solid var(--db)">
-            <p class="text-[9px] text-slate-600 font-black tracking-[0.2em] uppercase mb-3 ml-2">External Portal</p>
-            <a href="https://tdlid.github.io" target="_blank"
-               class="tdlid-link btn-3d flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors bg-white/3 rounded-2xl">
-                <span>🌐</span> TDLiD Homepage
-            </a>
+                        <button onclick="showAllStaffBirthdays()"
+                                class="mt-2 ml-1 text-[9px] font-bold transition-colors uppercase tracking-widest flex items-center gap-1"
+                                style="color:var(--da3)">
+                            <img src="images/gif/staff.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
+                        </button>
+
+                        <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
+                            <span class="text-[10px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                            <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
+                        </div>
+
+                        <p id="desktopUser" class="text-[11px] font-black uppercase tracking-widest mt-1" style="color:var(--da3)"></p>
+                        <span class="text-[9px] font-black flex items-center gap-1 mt-0.5 online-text">
+                            <span class="w-1.5 h-1.5 rounded-full animate-pulse online-dot"></span> ONLINE
+                        </span>
+                    </div>
+                </div>
+
+                <button onclick="logout()"
+                        class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-2">
+                    🖐️ Logout 🔓
+                </button>
+
+                <!-- Timer -->
+                <div class="timer-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--da);flex-shrink:0">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>Auto logout:</span>
+                    <span id="logout-timer">10:00</span>
+                </div>
+
+                <!-- Online Staff Panel -->
+                <div id="onlineUsersPanel">
+                    <div class="online-panel-header">
+                        <div class="online-panel-title">
+                            <span class="online-live-dot"></span>
+                            <span>CONNECTED NOW</span>
+                        </div>
+                        <span class="online-count-badge" id="onlineCountBadge">0</span>
+                    </div>
+                    <div id="onlineUsersList">
+                        <div class="online-empty">SCANNING...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
+                <button onclick="switchTab('dash')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
+                <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
+                <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
+                <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
+                <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
+                <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
+                <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
+
+                <div class="aside-divider mt-3"></div>
+
+                <button onclick="location.href='staff_main.html';"
+                        class="main-menu-btn w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest font-black rounded-2xl transition-all">
+                    <span>⬅️</span> Main Menu
+                </button>
+            </nav>
+
+            <!-- External -->
+            <div class="pt-5" style="border-top:1px solid var(--db)">
+                <p class="text-[9px] text-slate-600 font-black tracking-[0.2em] uppercase mb-3 ml-2">External Portal</p>
+                <a href="https://tdlid.github.io" target="_blank"
+                   class="tdlid-link btn-3d flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors bg-white/3 rounded-2xl">
+                    <span>🌐</span> TDLiD Homepage
+                </a>
+            </div>
         </div>
-    </div>
+
+    </div><!-- /sidebar-inner -->
 </aside>
 
 <!-- =====================================================
@@ -993,7 +1058,7 @@
      SCRIPTS
 ===================================================== -->
 <script>
-/* ── Day theme init + 요일별 특수 효과 ── */
+/* ── Day theme init ── */
 (function() {
     const day = new Date().getDay();
     document.body.classList.add('day-' + day);
@@ -1005,56 +1070,36 @@
             if (el) el.textContent = lbl;
         });
 
-        /* THU: 별 파티클 생성 */
+        /* THU: star particles */
         if (day === 4) {
             for (let i = 0; i < 12; i++) {
                 const star = document.createElement('div');
                 star.className = 'star-particle';
-                star.style.cssText = `
-                    left: ${Math.random()*100}%;
-                    top: ${Math.random()*100}%;
-                    --dur: ${6+Math.random()*8}s;
-                    opacity: ${0.3+Math.random()*0.5};
-                    width: ${1+Math.random()*2}px;
-                    height: ${1+Math.random()*2}px;
-                    animation: starFloat var(--dur) ease-in-out infinite alternate;
-                    animation-delay: ${Math.random()*5}s;
-                `;
+                star.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${6+Math.random()*8}s;opacity:${0.3+Math.random()*0.5};width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;animation:starFloat var(--dur) ease-in-out infinite alternate;animation-delay:${Math.random()*5}s;`;
                 document.body.appendChild(star);
             }
             const style = document.createElement('style');
-            style.textContent = `@keyframes starFloat {
-                0%   { transform: translate(0,0) scale(1); opacity:0.3; }
-                50%  { opacity: 0.8; }
-                100% { transform: translate(${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px,${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px) scale(1.5); opacity:0.2; }
-            }`;
+            style.textContent = `@keyframes starFloat{0%{transform:translate(0,0) scale(1);opacity:0.3}50%{opacity:0.8}100%{transform:translate(${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px,${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*20)}px) scale(1.5);opacity:0.2}}`;
             document.head.appendChild(style);
         }
 
-        /* FRI: 불꽃 파티클 생성 */
+        /* FRI: ember particles */
         if (day === 5) {
             for (let i = 0; i < 8; i++) {
                 const ember = document.createElement('div');
                 ember.className = 'ember-particle';
-                ember.style.cssText = `
-                    left: ${10+Math.random()*30}%;
-                    bottom: ${Math.random()*20}%;
-                    --dur: ${3+Math.random()*4}s;
-                    --dx: ${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*30)}px;
-                    animation-delay: ${Math.random()*3}s;
-                    background: ${Math.random()>0.5 ? '#f59e0b' : '#ef4444'};
-                `;
+                ember.style.cssText = `left:${10+Math.random()*30}%;bottom:${Math.random()*20}%;--dur:${3+Math.random()*4}s;--dx:${Math.random()>0.5?'':'-'}${10+Math.floor(Math.random()*30)}px;animation-delay:${Math.random()*3}s;background:${Math.random()>0.5?'#f59e0b':'#ef4444'};`;
                 document.body.appendChild(ember);
             }
         }
     });
 })();
 
-/* ── Auth check ── */
+/* ── Auth ── */
 const loggedInUser = sessionStorage.getItem('loggedInUser');
 if (!loggedInUser) { location.href = "index.html"; }
 
-/* ── Firebase init ── */
+/* ── Firebase ── */
 const firebaseConfig = {
     apiKey: "AIzaSyD7AmDGW7b03SHjvnH5YyAx4yyaHR0qWZQ",
     authDomain: "tdlid-dailyreport.firebaseapp.com",
@@ -1080,7 +1125,7 @@ db.ref('settings/config/GoogleCAPI').once('value').then(snap => {
     dynamicApiKey = snap.val();
 }).catch(e => console.error("Key Load Error:", e));
 
-/* ── Profile images list ── */
+/* ── Profile images ── */
 const PROFILE_IMAGES = [
     'image-001.webp','image-002.webp','image-003.webp','image-004.webp','image-005.webp',
     'image-01.gif','image-02.gif','image-03.gif','image-04.gif','image-05.gif',
@@ -1096,7 +1141,7 @@ const PROFILE_IMAGES = [
     'image-21.jfif','image-22.jpg','image-23.jfif','Yuda.png'
 ];
 
-/* ── Modal helpers ── */
+/* ── Modal ── */
 window.openProfileModal = function(title, bodyHtml) {
     const m = document.getElementById('profileCustomModal');
     document.getElementById('modalTitle').innerText = title;
@@ -1116,12 +1161,7 @@ window.openProfileImagePicker = function() {
     });
     gridHtml += `</div>`;
     document.getElementById('modalBody').innerHTML = gridHtml;
-
-    const footerHtml = `
-        <div class="modal-footer-btns px-8 pb-8">
-            <button class="btn-modal-cancel btn-3d" onclick="closeProfileModal()">Cancel</button>
-            <button id="btnConfirmProfile" class="btn-modal-save btn-3d" onclick="confirmSaveProfile()" disabled>Save Identity</button>
-        </div>`;
+    const footerHtml = `<div class="modal-footer-btns px-8 pb-8"><button class="btn-modal-cancel btn-3d" onclick="closeProfileModal()">Cancel</button><button id="btnConfirmProfile" class="btn-modal-save btn-3d" onclick="confirmSaveProfile()" disabled>Save Identity</button></div>`;
     const existingFooter = document.querySelector('.modal-footer-btns');
     if (existingFooter) existingFooter.remove();
     document.getElementById('modalBody').insertAdjacentHTML('afterend', footerHtml);
@@ -1167,16 +1207,13 @@ if (loggedInUser) {
         const ud = snap.val(); if (!ud) return;
         const pi = ud.profileImg || 'image-001.webp';
         const displayName = ud.displayName || loggedInUser;
-
         const ec = document.getElementById('navEmojiContainer');
         if (ec) ec.innerHTML = `<img src="images/profile/${pi}" class="nav-profile-img shadow-xl"><div class="edit-badge"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>`;
-
         const mpi = document.getElementById('mobileProfileImg');
         if (mpi) {
             mpi.style.position = 'relative';
             mpi.innerHTML = `<img src="images/profile/${pi}" class="w-full h-full object-cover"><div style="position:absolute;bottom:0;right:0;width:14px;height:14px;background:var(--da);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #000;font-size:8px;">✏️</div>`;
         }
-
         const du = document.getElementById('desktopUser'); if (du) du.innerText = displayName;
         const mu = document.getElementById('mobileUserName'); if (mu) mu.innerText = displayName;
     });
@@ -1202,13 +1239,11 @@ async function checkTodayBirthdays() {
             const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
             if (isSolarMatch || isLunarMatch) birthdayMessages.push(`${id}: ${bDateFull}`);
         });
-
-        const alertBox   = document.getElementById('birthdayAlert');
-        const nameText   = document.getElementById('birthdayNames');
-        const mAlertBox  = document.getElementById('mobileBirthdayAlert');
-        const mNameText  = document.getElementById('mobileBirthdayNames');
-        const mobileDot  = document.getElementById('mobile-birthday-dot');
-
+        const alertBox  = document.getElementById('birthdayAlert');
+        const nameText  = document.getElementById('birthdayNames');
+        const mAlertBox = document.getElementById('mobileBirthdayAlert');
+        const mNameText = document.getElementById('mobileBirthdayNames');
+        const mobileDot = document.getElementById('mobile-birthday-dot');
         if (birthdayMessages.length > 0) {
             const namesHtml = birthdayMessages.join('<br>');
             if (alertBox)  alertBox.classList.remove('hidden');
@@ -1225,6 +1260,99 @@ async function checkTodayBirthdays() {
 
 checkTodayBirthdays();
 fetchJakartaWeather();
+
+/* =====================================================
+   ★ SIDEBAR COLLAPSE LOGIC ★
+   Desktop only: click on main → sidebar slides left.
+   Hover over left edge → sidebar slides back.
+===================================================== */
+(function initSidebarCollapse() {
+    const aside       = document.getElementById('mainAside');
+    const hoverZone   = document.getElementById('sidebarHoverZone');
+    const toggleTab   = document.getElementById('sidebarToggleTab');
+    const edgeLine    = document.getElementById('sidebarEdgeLine');
+    let   collapsed   = false;
+    let   hoverTimer  = null;
+
+    function isDesktop() { return window.innerWidth >= 1024; }
+
+    function collapseSidebar() {
+        if (!isDesktop() || collapsed) return;
+        collapsed = true;
+        aside.classList.add('sidebar-collapsed');
+        hoverZone.style.display = 'block';
+        toggleTab.style.display = 'flex';
+        edgeLine.classList.add('visible');
+        /* small delay for visibility */
+        requestAnimationFrame(() => toggleTab.classList.add('visible'));
+    }
+
+    function expandSidebar() {
+        if (!isDesktop() || !collapsed) return;
+        collapsed = false;
+        aside.classList.remove('sidebar-collapsed');
+        hoverZone.style.display = 'none';
+        toggleTab.classList.remove('visible');
+        edgeLine.classList.remove('visible');
+        setTimeout(() => {
+            if (!collapsed) toggleTab.style.display = 'none';
+        }, 300);
+    }
+
+    /* Click on main content → collapse */
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+        mainEl.addEventListener('click', (e) => {
+            if (!isDesktop()) return;
+            /* only collapse, don't block the click */
+            collapseSidebar();
+        });
+    }
+
+    /* Hover on left-edge zone → expand */
+    hoverZone.addEventListener('mouseenter', () => {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(expandSidebar, 80);
+    });
+    hoverZone.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
+
+    /* Toggle tab click → expand */
+    toggleTab.addEventListener('click', expandSidebar);
+
+    /* Hover on aside itself → keep expanded / re-expand */
+    aside.addEventListener('mouseenter', () => {
+        if (!isDesktop()) return;
+        clearTimeout(hoverTimer);
+        expandSidebar();
+    });
+
+    /* Don't collapse when moving from main back to aside */
+    aside.addEventListener('mouseleave', () => { /* intentionally empty */ });
+
+    /* Click ripple effect on main area */
+    if (mainEl) {
+        mainEl.addEventListener('click', (e) => {
+            if (!isDesktop()) return;
+            const ripple = document.createElement('div');
+            ripple.className = 'click-ripple';
+            const size = 120;
+            ripple.style.cssText = `width:${size}px;height:${size}px;top:${e.clientY - size/2}px;left:${e.clientX - size/2}px;`;
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 650);
+        });
+    }
+
+    /* Restore on resize to mobile */
+    window.addEventListener('resize', () => {
+        if (!isDesktop()) {
+            aside.classList.remove('sidebar-collapsed');
+            hoverZone.style.display = 'none';
+            toggleTab.style.display = 'none';
+            edgeLine.classList.remove('visible');
+            collapsed = false;
+        }
+    });
+})();
 
 /* ── Tab switcher ── */
 window.switchTab = function(t) {
@@ -1348,7 +1476,7 @@ window.showAllStaffBirthdays = function() {
     }
 };
 
-/* ── renderBirthdayModal (kept for compatibility) ── */
+/* ── renderBirthdayModal (compat) ── */
 function renderBirthdayModal() {
     const users = cachedUsers;
     let html = `<div class="space-y-3">`;
@@ -1373,7 +1501,7 @@ function renderBirthdayModal() {
     openProfileModal('Staff Birthdays', html);
 }
 
-/* ── 온라인 스태프 패널 ── */
+/* ── Online Staff Panel ── */
 (function initOnlineTracker() {
     function formatElapsed(ms) {
         const s = Math.floor(ms / 1000);
@@ -1388,35 +1516,22 @@ function renderBirthdayModal() {
     }
 
     function renderOnlinePanel(userList) {
-        const listEl = document.getElementById('onlineUsersList');
+        const listEl  = document.getElementById('onlineUsersList');
         const countEl = document.getElementById('onlineCountBadge');
         if (!listEl) return;
-
         const now = Date.now();
-        // online_sts === 'ON' 인 유저 필터링 (5분 이내 lastSeen 또는 online_sts 기준)
         const online = userList.filter(u => u.online_sts === 'ON').sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
-
-        if (countEl) {
-            countEl.textContent = online.length;
-        }
-
-        if (online.length === 0) {
-            listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`;
-            return;
-        }
-
+        if (countEl) countEl.textContent = online.length;
+        if (online.length === 0) { listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`; return; }
         listEl.innerHTML = online.map((u, i) => {
             const lastSeen = u.lastSeen || now;
-            const elapsed = now - lastSeen;
-            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
+            const elapsed  = now - lastSeen;
+            const timeStr  = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
             const loginStr = u.loginTime ? formatHHMM(u.loginTime) : '—';
-            const imgSrc = u.profileImg
-                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b&size=64`;
-            const isLive = elapsed < 120000;
+            const imgSrc   = u.profileImg ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b&size=64`;
+            const isLive   = elapsed < 120000;
             return `<div class="online-user-item" style="animation-delay:${i*0.05}s">
-                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name || u.id}"
-                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b'">
+                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name || u.id}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.id)}&background=0D1A24&color=64748b'">
                 <div class="flex flex-col flex-1 min-w-0">
                     <span class="online-user-name">${u.displayName || u.name || u.id}</span>
                     <span style="font-size:0.46rem;color:#475569;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">${u.role || 'Staff'} · IN ${loginStr}</span>
@@ -1433,19 +1548,14 @@ function renderBirthdayModal() {
         if (typeof db === 'undefined') { setTimeout(startOnlineListener, 500); return; }
         db.ref('users').on('value', snap => {
             const usersData = snap.val() || {};
-            const userList = Object.keys(usersData).map(uid => ({
-                id: uid, ...usersData[uid]
-            }));
+            const userList = Object.keys(usersData).map(uid => ({ id: uid, ...usersData[uid] }));
             renderOnlinePanel(userList);
         });
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(startOnlineListener, 800);
-    });
+    document.addEventListener('DOMContentLoaded', () => { setTimeout(startOnlineListener, 800); });
 })();
 
-/* ── 10분 미활동 자동 로그아웃 ── */
+/* ── Auto-logout timer ── */
 (function() {
     const INACTIVE_TIMEOUT = 10 * 60 * 1000;
     let remainingTime = INACTIVE_TIMEOUT;
@@ -1458,7 +1568,6 @@ function renderBirthdayModal() {
         const minutes = Math.floor(remainingTime / 60000);
         const seconds = Math.floor((remainingTime % 60000) / 1000);
         timerEl.textContent = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-        /* 1분 이하: 경고색 */
         timerEl.style.color = remainingTime <= 60000 ? '#ef4444' : 'var(--da3)';
     }
 
@@ -1467,13 +1576,11 @@ function renderBirthdayModal() {
         updateTimerUI();
         if (logoutTimeout) clearTimeout(logoutTimeout);
         if (timerInterval) clearInterval(timerInterval);
-
         timerInterval = setInterval(() => {
             remainingTime -= 1000;
             if (remainingTime <= 0) clearInterval(timerInterval);
             updateTimerUI();
         }, 1000);
-
         logoutTimeout = setTimeout(() => {
             if (typeof window.logout === 'function') {
                 const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
@@ -1496,9 +1603,9 @@ function renderBirthdayModal() {
     document.addEventListener('DOMContentLoaded', () => { resetInactivityTimer(); });
 })();
 
-/* ── 브라우저 강제 종료 대응 ── */
+/* ── Browser close hook ── */
 function setupDisconnectHook() {
-    const name = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+    const name  = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
     const dbRef = typeof database !== 'undefined' ? database : (typeof firebase !== 'undefined' ? firebase.database() : null);
     if (name && dbRef) {
         dbRef.ref('users/' + name + '/online_sts').onDisconnect().set('OFF');
