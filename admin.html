@@ -22,142 +22,108 @@
 
         /* MON - Deep Navy Steel */
         body.day-1 {
-            --day-accent: #3b82f6;
-            --day-accent2: #1d4ed8;
-            --day-accent3: #60a5fa;
-            --day-glow: rgba(59,130,246,0.18);
-            --day-glow2: rgba(29,78,216,0.12);
+            --day-accent: #3b82f6; --day-accent2: #1d4ed8; --day-accent3: #60a5fa;
+            --day-glow: rgba(59,130,246,0.18); --day-glow2: rgba(29,78,216,0.12);
             --day-border: rgba(59,130,246,0.25);
-            --day-surface: rgba(15,23,42,0.95);
-            --day-card: rgba(15,23,42,0.8);
-            --panel-bg: linear-gradient(160deg, #050e1f 0%, #0a1628 50%, #07112a 100%);
-            --aside-bg: linear-gradient(180deg, #04091a 0%, #071022 60%, #060e1e 100%);
-            /* Online panel unique per day */
-            --online-bg: linear-gradient(135deg, rgba(5,14,31,0.98) 0%, rgba(10,22,40,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(59,130,246,0.15) 100%);
-            --online-item-bg: rgba(59,130,246,0.06);
-            --online-item-hover: rgba(59,130,246,0.12);
-            --online-pulse: #3b82f6;
-            --online-scan: rgba(59,130,246,0.08);
-            --online-dot-color: #22d3ee;
-            --online-time-color: #38bdf8;
-            --online-label: "NETWORK ONLINE";
-            --online-icon: "📡";
+            --day-surface: rgba(15,23,42,0.95); --day-card: rgba(15,23,42,0.8);
+            --panel-bg: linear-gradient(160deg,#050e1f 0%,#0a1628 50%,#07112a 100%);
+            --aside-bg: linear-gradient(180deg,#04091a 0%,#071022 60%,#060e1e 100%);
+            --online-bg: linear-gradient(135deg,rgba(5,14,31,.98) 0%,rgba(10,22,40,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(29,78,216,.3) 0%,rgba(59,130,246,.15) 100%);
+            --online-item-bg: rgba(59,130,246,.06); --online-item-hover: rgba(59,130,246,.12);
+            --online-pulse: #3b82f6; --online-scan: rgba(59,130,246,.08);
+            --online-dot-color: #22d3ee; --online-time-color: #38bdf8;
+            /* 3D extras */
+            --day-pattern: repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(59,130,246,.1) 39px,rgba(59,130,246,.1) 40px),
+                           repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(59,130,246,.1) 39px,rgba(59,130,246,.1) 40px);
+            --day-orb1: rgba(59,130,246,.22); --day-orb2: rgba(29,78,216,.10);
+            --aside-top-bar: linear-gradient(90deg,#1d4ed8,#3b82f6,#60a5fa,#3b82f6,#1d4ed8);
         }
         /* TUE - Dark Emerald Forge */
         body.day-2 {
-            --day-accent: #10b981;
-            --day-accent2: #047857;
-            --day-accent3: #34d399;
-            --day-glow: rgba(16,185,129,0.18);
-            --day-glow2: rgba(4,120,87,0.12);
-            --day-border: rgba(16,185,129,0.25);
-            --day-surface: rgba(2,20,14,0.95);
-            --day-card: rgba(3,16,12,0.8);
-            --panel-bg: linear-gradient(160deg, #021008 0%, #041a10 50%, #031410 100%);
-            --aside-bg: linear-gradient(180deg, #020c06 0%, #04140a 60%, #030e08 100%);
-            --online-bg: linear-gradient(135deg, rgba(2,10,8,0.98) 0%, rgba(4,26,16,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(4,120,87,0.3) 0%, rgba(16,185,129,0.15) 100%);
-            --online-item-bg: rgba(16,185,129,0.06);
-            --online-item-hover: rgba(16,185,129,0.12);
-            --online-pulse: #10b981;
-            --online-scan: rgba(16,185,129,0.08);
-            --online-dot-color: #6ee7b7;
-            --online-time-color: #34d399;
-            --online-label: "SYSTEM ACTIVE";
-            --online-icon: "🖥️";
+            --day-accent: #10b981; --day-accent2: #047857; --day-accent3: #34d399;
+            --day-glow: rgba(16,185,129,.18); --day-glow2: rgba(4,120,87,.12);
+            --day-border: rgba(16,185,129,.25);
+            --day-surface: rgba(2,20,14,.95); --day-card: rgba(3,16,12,.8);
+            --panel-bg: linear-gradient(160deg,#021008 0%,#041a10 50%,#031410 100%);
+            --aside-bg: linear-gradient(180deg,#020c06 0%,#04140a 60%,#030e08 100%);
+            --online-bg: linear-gradient(135deg,rgba(2,10,8,.98) 0%,rgba(4,26,16,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(4,120,87,.3) 0%,rgba(16,185,129,.15) 100%);
+            --online-item-bg: rgba(16,185,129,.06); --online-item-hover: rgba(16,185,129,.12);
+            --online-pulse: #10b981; --online-scan: rgba(16,185,129,.08);
+            --online-dot-color: #6ee7b7; --online-time-color: #34d399;
+            --day-pattern: repeating-linear-gradient(-45deg,transparent 0,transparent 8px,rgba(16,185,129,.05) 8px,rgba(16,185,129,.05) 9px);
+            --day-orb1: rgba(16,185,129,.20); --day-orb2: rgba(4,120,87,.10);
+            --aside-top-bar: linear-gradient(90deg,#047857,#10b981,#34d399,#10b981,#047857);
         }
         /* WED - Crimson Obsidian */
         body.day-3 {
-            --day-accent: #ef4444;
-            --day-accent2: #b91c1c;
-            --day-accent3: #f87171;
-            --day-glow: rgba(239,68,68,0.18);
-            --day-glow2: rgba(185,28,28,0.12);
-            --day-border: rgba(239,68,68,0.25);
-            --day-surface: rgba(20,5,5,0.95);
-            --day-card: rgba(18,4,4,0.8);
-            --panel-bg: linear-gradient(160deg, #100303 0%, #1a0505 50%, #140404 100%);
-            --aside-bg: linear-gradient(180deg, #0c0202 0%, #160404 60%, #100303 100%);
-            --online-bg: linear-gradient(135deg, rgba(16,3,3,0.98) 0%, rgba(26,5,5,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(185,28,28,0.3) 0%, rgba(239,68,68,0.15) 100%);
-            --online-item-bg: rgba(239,68,68,0.06);
-            --online-item-hover: rgba(239,68,68,0.12);
-            --online-pulse: #ef4444;
-            --online-scan: rgba(239,68,68,0.08);
-            --online-dot-color: #fca5a5;
-            --online-time-color: #f87171;
-            --online-label: "ALERT ACTIVE";
-            --online-icon: "🔴";
+            --day-accent: #ef4444; --day-accent2: #b91c1c; --day-accent3: #f87171;
+            --day-glow: rgba(239,68,68,.18); --day-glow2: rgba(185,28,28,.12);
+            --day-border: rgba(239,68,68,.25);
+            --day-surface: rgba(20,5,5,.95); --day-card: rgba(18,4,4,.8);
+            --panel-bg: linear-gradient(160deg,#100303 0%,#1a0505 50%,#140404 100%);
+            --aside-bg: linear-gradient(180deg,#0c0202 0%,#160404 60%,#100303 100%);
+            --online-bg: linear-gradient(135deg,rgba(16,3,3,.98) 0%,rgba(26,5,5,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(185,28,28,.3) 0%,rgba(239,68,68,.15) 100%);
+            --online-item-bg: rgba(239,68,68,.06); --online-item-hover: rgba(239,68,68,.12);
+            --online-pulse: #ef4444; --online-scan: rgba(239,68,68,.08);
+            --online-dot-color: #fca5a5; --online-time-color: #f87171;
+            --day-pattern: repeating-conic-gradient(rgba(239,68,68,.07) 0% 25%,transparent 0% 50%) 0 0/28px 28px;
+            --day-orb1: rgba(239,68,68,.20); --day-orb2: rgba(185,28,28,.10);
+            --aside-top-bar: linear-gradient(90deg,#b91c1c,#ef4444,#f87171,#ef4444,#b91c1c);
         }
         /* THU - Violet Abyss */
         body.day-4 {
-            --day-accent: #a855f7;
-            --day-accent2: #7c3aed;
-            --day-accent3: #c084fc;
-            --day-glow: rgba(168,85,247,0.18);
-            --day-glow2: rgba(124,58,237,0.12);
-            --day-border: rgba(168,85,247,0.25);
-            --day-surface: rgba(12,5,20,0.95);
-            --day-card: rgba(10,4,18,0.8);
-            --panel-bg: linear-gradient(160deg, #080313 0%, #0f0520 50%, #0a0418 100%);
-            --aside-bg: linear-gradient(180deg, #06020f 0%, #0d041a 60%, #090315 100%);
-            --online-bg: linear-gradient(135deg, rgba(8,3,19,0.98) 0%, rgba(15,5,32,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(124,58,237,0.3) 0%, rgba(168,85,247,0.15) 100%);
-            --online-item-bg: rgba(168,85,247,0.06);
-            --online-item-hover: rgba(168,85,247,0.12);
-            --online-pulse: #a855f7;
-            --online-scan: rgba(168,85,247,0.08);
-            --online-dot-color: #d8b4fe;
-            --online-time-color: #c084fc;
-            --online-label: "COSMIC LINK";
-            --online-icon: "🌌";
+            --day-accent: #a855f7; --day-accent2: #7c3aed; --day-accent3: #c084fc;
+            --day-glow: rgba(168,85,247,.18); --day-glow2: rgba(124,58,237,.12);
+            --day-border: rgba(168,85,247,.25);
+            --day-surface: rgba(12,5,20,.95); --day-card: rgba(10,4,18,.8);
+            --panel-bg: linear-gradient(160deg,#080313 0%,#0f0520 50%,#0a0418 100%);
+            --aside-bg: linear-gradient(180deg,#06020f 0%,#0d041a 60%,#090315 100%);
+            --online-bg: linear-gradient(135deg,rgba(8,3,19,.98) 0%,rgba(15,5,32,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(124,58,237,.3) 0%,rgba(168,85,247,.15) 100%);
+            --online-item-bg: rgba(168,85,247,.06); --online-item-hover: rgba(168,85,247,.12);
+            --online-pulse: #a855f7; --online-scan: rgba(168,85,247,.08);
+            --online-dot-color: #d8b4fe; --online-time-color: #c084fc;
+            --day-pattern: radial-gradient(circle at 50% 50%,rgba(168,85,247,.06) 15%,transparent 16%) 0 0/26px 26px,
+                           radial-gradient(circle at 0 100%,rgba(168,85,247,.06) 15%,transparent 16%) 0 0/26px 26px;
+            --day-orb1: rgba(168,85,247,.22); --day-orb2: rgba(124,58,237,.10);
+            --aside-top-bar: linear-gradient(90deg,#7c3aed,#a855f7,#c084fc,#a855f7,#7c3aed);
         }
         /* FRI - Amber Furnace */
         body.day-5 {
-            --day-accent: #f59e0b;
-            --day-accent2: #d97706;
-            --day-accent3: #fcd34d;
-            --day-glow: rgba(245,158,11,0.18);
-            --day-glow2: rgba(217,119,6,0.12);
-            --day-border: rgba(245,158,11,0.25);
-            --day-surface: rgba(20,14,2,0.95);
-            --day-card: rgba(18,12,2,0.8);
-            --panel-bg: linear-gradient(160deg, #100900 0%, #1a1000 50%, #140c00 100%);
-            --aside-bg: linear-gradient(180deg, #0c0700 0%, #160e00 60%, #100900 100%);
-            --online-bg: linear-gradient(135deg, rgba(16,9,0,0.98) 0%, rgba(26,16,0,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(217,119,6,0.3) 0%, rgba(245,158,11,0.15) 100%);
-            --online-item-bg: rgba(245,158,11,0.06);
-            --online-item-hover: rgba(245,158,11,0.12);
-            --online-pulse: #f59e0b;
-            --online-scan: rgba(245,158,11,0.08);
-            --online-dot-color: #fde68a;
-            --online-time-color: #fcd34d;
-            --online-label: "FORGE ONLINE";
-            --online-icon: "🔥";
+            --day-accent: #f59e0b; --day-accent2: #d97706; --day-accent3: #fcd34d;
+            --day-glow: rgba(245,158,11,.18); --day-glow2: rgba(217,119,6,.12);
+            --day-border: rgba(245,158,11,.25);
+            --day-surface: rgba(20,14,2,.95); --day-card: rgba(18,12,2,.8);
+            --panel-bg: linear-gradient(160deg,#100900 0%,#1a1000 50%,#140c00 100%);
+            --aside-bg: linear-gradient(180deg,#0c0700 0%,#160e00 60%,#100900 100%);
+            --online-bg: linear-gradient(135deg,rgba(16,9,0,.98) 0%,rgba(26,16,0,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(217,119,6,.3) 0%,rgba(245,158,11,.15) 100%);
+            --online-item-bg: rgba(245,158,11,.06); --online-item-hover: rgba(245,158,11,.12);
+            --online-pulse: #f59e0b; --online-scan: rgba(245,158,11,.08);
+            --online-dot-color: #fde68a; --online-time-color: #fcd34d;
+            --day-pattern: repeating-radial-gradient(ellipse at 50% 200%,transparent 0%,transparent 20%,rgba(245,158,11,.06) 21%,rgba(245,158,11,.06) 22%,transparent 23%);
+            --day-orb1: rgba(245,158,11,.20); --day-orb2: rgba(217,119,6,.10);
+            --aside-top-bar: linear-gradient(90deg,#d97706,#f59e0b,#fcd34d,#f59e0b,#d97706);
         }
         /* SAT/SUN - Slate Void */
         body.day-0, body.day-6 {
-            --day-accent: #64748b;
-            --day-accent2: #475569;
-            --day-accent3: #94a3b8;
-            --day-glow: rgba(100,116,139,0.15);
-            --day-glow2: rgba(71,85,105,0.10);
-            --day-border: rgba(100,116,139,0.2);
-            --day-surface: rgba(8,10,15,0.95);
-            --day-card: rgba(7,9,13,0.8);
-            --panel-bg: linear-gradient(160deg, #050709 0%, #080a0f 50%, #060809 100%);
-            --aside-bg: linear-gradient(180deg, #040508 0%, #070910 60%, #050709 100%);
-            --online-bg: linear-gradient(135deg, rgba(5,7,9,0.98) 0%, rgba(8,10,15,0.95) 100%);
-            --online-header-bg: linear-gradient(90deg, rgba(71,85,105,0.3) 0%, rgba(100,116,139,0.15) 100%);
-            --online-item-bg: rgba(100,116,139,0.06);
-            --online-item-hover: rgba(100,116,139,0.10);
-            --online-pulse: #64748b;
-            --online-scan: rgba(100,116,139,0.06);
-            --online-dot-color: #cbd5e1;
-            --online-time-color: #94a3b8;
-            --online-label: "STANDBY MODE";
-            --online-icon: "🌑";
+            --day-accent: #64748b; --day-accent2: #475569; --day-accent3: #94a3b8;
+            --day-glow: rgba(100,116,139,.15); --day-glow2: rgba(71,85,105,.10);
+            --day-border: rgba(100,116,139,.2);
+            --day-surface: rgba(8,10,15,.95); --day-card: rgba(7,9,13,.8);
+            --panel-bg: linear-gradient(160deg,#050709 0%,#080a0f 50%,#060809 100%);
+            --aside-bg: linear-gradient(180deg,#040508 0%,#070910 60%,#050709 100%);
+            --online-bg: linear-gradient(135deg,rgba(5,7,9,.98) 0%,rgba(8,10,15,.95) 100%);
+            --online-header-bg: linear-gradient(90deg,rgba(71,85,105,.3) 0%,rgba(100,116,139,.15) 100%);
+            --online-item-bg: rgba(100,116,139,.06); --online-item-hover: rgba(100,116,139,.10);
+            --online-pulse: #64748b; --online-scan: rgba(100,116,139,.06);
+            --online-dot-color: #cbd5e1; --online-time-color: #94a3b8;
+            --day-pattern: radial-gradient(circle,rgba(100,116,139,.12) 1px,transparent 1px) 0 0/18px 18px;
+            --day-orb1: rgba(100,116,139,.15); --day-orb2: rgba(71,85,105,.08);
+            --aside-top-bar: linear-gradient(90deg,#475569,#64748b,#94a3b8,#64748b,#475569);
         }
 
         /* =====================================================
@@ -175,39 +141,47 @@
             overflow-x: hidden;
         }
 
+        /* Day pattern layer */
         body::before {
             content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(var(--day-border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--day-border) 1px, transparent 1px);
-            background-size: 60px 60px;
-            opacity: 0.18;
-            pointer-events: none;
-            z-index: 0;
-            animation: gridShift 30s linear infinite;
+            position: fixed; inset: 0;
+            background: var(--day-pattern);
+            opacity: .85;
+            pointer-events: none; z-index: 0;
+            animation: patternDrift 50s linear infinite;
         }
-        @keyframes gridShift {
-            0% { background-position: 0 0; }
-            100% { background-position: 60px 60px; }
+        @keyframes patternDrift {
+            0%   { background-position: 0 0, 0 0; }
+            100% { background-position: 60px 60px, 60px 60px; }
         }
 
+        /* Ambient orb top-left */
         body::after {
             content: '';
             position: fixed;
-            top: -30%;
-            left: -20%;
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(ellipse, var(--day-glow) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+            top: -30%; left: -20%;
+            width: 80%; height: 80%;
+            background: radial-gradient(ellipse, var(--day-orb1) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
             animation: ambientFloat 12s ease-in-out infinite alternate;
         }
         @keyframes ambientFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(8%, 5%) scale(1.1); }
+            0%   { transform: translate(0,0) scale(1); }
+            100% { transform: translate(8%,5%) scale(1.1); }
+        }
+
+        /* Ambient orb bottom-right */
+        .orb-br {
+            position: fixed;
+            bottom: -20%; right: -15%;
+            width: 55%; height: 55%;
+            background: radial-gradient(ellipse, var(--day-orb2) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+            animation: orbBR 16s ease-in-out infinite alternate;
+        }
+        @keyframes orbBR {
+            0%   { transform: translate(0,0) scale(1); opacity: .6; }
+            100% { transform: translate(-5%,-5%) scale(1.08); opacity: 1; }
         }
 
         main, aside, header, nav { position: relative; z-index: 1; }
@@ -220,171 +194,216 @@
             border: 1px solid var(--day-border);
             box-shadow:
                 0 0 0 1px var(--day-border),
-                0 4px 8px rgba(0,0,0,0.4),
-                0 8px 24px rgba(0,0,0,0.5),
-                inset 0 1px 0 rgba(255,255,255,0.06),
-                inset 0 -1px 0 rgba(0,0,0,0.3);
+                0 4px 8px rgba(0,0,0,.4),
+                0 8px 24px rgba(0,0,0,.5),
+                inset 0 1px 0 rgba(255,255,255,.06),
+                inset 0 -1px 0 rgba(0,0,0,.3);
             transform: translateZ(0);
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            transition: box-shadow .3s ease, transform .3s ease;
         }
         .card-3d:hover {
             box-shadow:
                 0 0 0 1px var(--day-accent),
-                0 8px 16px rgba(0,0,0,0.5),
+                0 8px 16px rgba(0,0,0,.5),
                 0 16px 40px var(--day-glow),
-                inset 0 1px 0 rgba(255,255,255,0.08),
-                inset 0 -1px 0 rgba(0,0,0,0.3);
-            transform: translateY(-2px) translateZ(0);
+                inset 0 1px 0 rgba(255,255,255,.08),
+                inset 0 -1px 0 rgba(0,0,0,.3);
+            transform: translateY(-3px) rotateX(2deg) translateZ(0);
         }
 
         /* =====================================================
-           ASIDE / SIDEBAR
+           ★ SIDEBAR COLLAPSE SYSTEM ★
         ===================================================== */
         aside {
+            --aside-w: 18rem;
+            width: var(--aside-w);
+            min-width: var(--aside-w);
             background: var(--aside-bg);
             border-right: 1px solid var(--day-border);
-            box-shadow:
-                inset -1px 0 0 var(--day-border),
-                4px 0 30px rgba(0,0,0,0.6),
-                inset 0 0 60px var(--day-glow2);
+            box-shadow: inset -1px 0 0 var(--day-border), 4px 0 30px rgba(0,0,0,.6), inset 0 0 60px var(--day-glow2);
+            overflow: hidden;
+            position: relative;
+            /* collapse transition */
+            transition:
+                width .45s cubic-bezier(.4,0,.2,1),
+                min-width .45s cubic-bezier(.4,0,.2,1),
+                opacity .35s ease,
+                box-shadow .35s ease;
+            will-change: width;
+        }
+
+        /* Sidebar inner — fixed width so content never reflows */
+        aside > .sidebar-inner {
+            width: var(--aside-w);
+            min-width: var(--aside-w);
+            height: 100%;
             overflow: hidden;
         }
-        aside > div:first-child { flex-shrink: 0; }
+
+        @media (min-width: 768px) {
+            aside {
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+            aside.sidebar-collapsed {
+                width: 0 !important;
+                min-width: 0 !important;
+                opacity: 0;
+                pointer-events: none;
+                border-right-color: transparent;
+                box-shadow: none;
+            }
+        }
+
+        /* Shimmer top bar */
+        aside .sidebar-inner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--aside-top-bar);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+            z-index: 10;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Hover zone strip on left edge */
+        #sidebarHoverZone {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 18px;
+            z-index: 1100;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Peek tab shown when sidebar is collapsed */
+        #sidebarToggleTab {
+            position: fixed;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            z-index: 1200;
+            background: var(--day-accent2);
+            border: 1px solid var(--day-border);
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            padding: 14px 7px;
+            cursor: pointer;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity .3s ease, background .2s;
+            box-shadow: 4px 0 16px var(--day-glow), 0 0 0 1px var(--day-border);
+        }
+        #sidebarToggleTab.tab-visible { opacity: 1; }
+        #sidebarToggleTab:hover { background: var(--day-accent); }
+        #sidebarToggleTab .tab-chevron { font-size: 12px; color: white; font-weight: 900; }
+        #sidebarToggleTab .tab-label {
+            font-size: 8px; color: rgba(255,255,255,.75); font-weight: 900;
+            text-transform: uppercase; letter-spacing: .06em;
+            writing-mode: vertical-rl; text-orientation: mixed;
+        }
+
+        /* Accent edge line when collapsed */
+        #sidebarEdgeLine {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg,transparent,var(--day-accent),var(--day-accent3),var(--day-accent),transparent);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s ease;
+        }
+        #sidebarEdgeLine.el-visible { opacity: 1; }
+
         aside nav.flex {
-            overflow-y: auto;
-            overflow-x: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--day-accent) transparent;
-            min-height: 0;
-            padding-bottom: 0.5rem;
+            overflow-y: auto; overflow-x: hidden;
+            scrollbar-width: thin; scrollbar-color: var(--day-accent) transparent;
+            min-height: 0; padding-bottom: .5rem;
         }
         aside nav.flex::-webkit-scrollbar { width: 2px; }
-        aside nav.flex::-webkit-scrollbar-track { background: transparent; }
         aside nav.flex::-webkit-scrollbar-thumb { background: var(--day-accent); border-radius: 99px; }
-        aside > button:last-child { flex-shrink: 0; }
 
+        /* =====================================================
+           BRAND & PROFILE
+        ===================================================== */
         .brand-title {
-            font-size: 1.4rem;
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: -0.03em;
-            text-shadow: 0 0 20px var(--day-glow), 0 2px 4px rgba(0,0,0,0.5);
+            font-size: 1.4rem; font-weight: 900;
+            font-style: italic; letter-spacing: -.03em;
+            text-shadow: 0 0 20px var(--day-glow), 0 2px 4px rgba(0,0,0,.5);
         }
         .brand-accent { color: var(--day-accent); }
 
         .profile-card {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,.03);
             border: 1px solid var(--day-border);
             border-radius: 1.25rem;
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,0.06),
-                0 4px 20px rgba(0,0,0,0.4),
-                0 0 30px var(--day-glow2);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 20px rgba(0,0,0,.4), 0 0 30px var(--day-glow2);
         }
-
         .profile-img-wrap {
             border: 2px solid var(--day-accent);
-            box-shadow:
-                0 0 0 3px var(--day-glow),
-                0 0 20px var(--day-glow),
-                inset 0 0 10px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 0 3px var(--day-glow), 0 0 20px var(--day-glow), inset 0 0 10px rgba(0,0,0,.3);
+            transition: all .3s ease;
         }
         .profile-img-wrap:hover {
-            box-shadow:
-                0 0 0 4px var(--day-accent),
-                0 0 30px var(--day-glow),
-                0 0 60px var(--day-glow2);
+            box-shadow: 0 0 0 4px var(--day-accent), 0 0 30px var(--day-glow), 0 0 60px var(--day-glow2);
             transform: scale(1.05);
         }
-
-        .edit-badge {
-            background: var(--day-accent);
-            box-shadow: 0 0 10px var(--day-glow), 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .weather-chip {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--day-border);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-        }
+        .edit-badge { background: var(--day-accent); box-shadow: 0 0 10px var(--day-glow), 0 2px 4px rgba(0,0,0,.5); }
+        .weather-chip { background: rgba(0,0,0,.3); border: 1px solid var(--day-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
         .weather-temp { color: var(--day-accent3) !important; }
-
-        .online-dot {
-            background: var(--day-accent);
-            box-shadow: 0 0 6px var(--day-glow), 0 0 12px var(--day-glow);
-        }
+        .online-dot { background: var(--day-accent); box-shadow: 0 0 6px var(--day-glow), 0 0 12px var(--day-glow); }
         .online-text { color: var(--day-accent3) !important; }
 
         /* =====================================================
            NAV TABS
         ===================================================== */
         .tab-btn {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-radius: 0.75rem;
-            margin-bottom: 0.25rem;
-            font-weight: 700;
-            font-size: 0.78rem;
-            letter-spacing: 0.02em;
+            transition: all .2s ease; cursor: pointer;
+            border-radius: .75rem; margin-bottom: .25rem;
+            font-weight: 700; font-size: .78rem;
+            letter-spacing: .02em;
             border: 1px solid transparent;
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
         .tab-btn::before {
             content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 3px;
-            background: var(--day-accent);
-            border-radius: 0 2px 2px 0;
-            transform: scaleY(0);
-            transition: transform 0.2s ease;
+            position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--day-accent); border-radius: 0 2px 2px 0;
+            transform: scaleY(0); transition: transform .2s ease;
         }
         .tab-active {
-            color: var(--day-accent3);
-            font-weight: 900;
-            background: var(--day-glow);
-            border-color: var(--day-border);
-            box-shadow:
-                0 2px 8px var(--day-glow2),
-                inset 0 1px 0 rgba(255,255,255,0.05);
+            color: var(--day-accent3); font-weight: 900;
+            background: var(--day-glow); border-color: var(--day-border);
+            box-shadow: 0 2px 8px var(--day-glow2), inset 0 1px 0 rgba(255,255,255,.05);
             text-shadow: 0 0 10px var(--day-glow);
         }
         .tab-active::before { transform: scaleY(1); }
         .tab-inactive { color: #475569; }
-        .tab-inactive:hover {
-            color: #94a3b8;
-            background: rgba(255,255,255,0.04);
-            border-color: rgba(255,255,255,0.05);
-        }
+        .tab-inactive:hover { color: #94a3b8; background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.05); }
 
         .day-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: var(--day-glow);
-            border: 1px solid var(--day-border);
-            font-size: 0.65rem;
-            font-weight: 900;
-            letter-spacing: 0.1em;
-            color: var(--day-accent3);
-            text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px;
+            background: var(--day-glow); border: 1px solid var(--day-border);
+            font-size: .65rem; font-weight: 900; letter-spacing: .1em;
+            color: var(--day-accent3); text-transform: uppercase;
             box-shadow: 0 0 12px var(--day-glow2);
         }
         .day-badge-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--day-accent);
-            box-shadow: 0 0 6px var(--day-accent);
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--day-accent); box-shadow: 0 0 6px var(--day-accent);
             animation: pulse-dot 2s ease-in-out infinite;
         }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.7); }
-        }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.7)} }
 
         /* =====================================================
            MOBILE HEADER
@@ -392,10 +411,14 @@
         .mobile-header {
             background: var(--aside-bg);
             border-bottom: 1px solid var(--day-border);
-            box-shadow:
-                0 2px 20px rgba(0,0,0,0.5),
-                0 0 30px var(--day-glow2),
-                inset 0 -1px 0 var(--day-border);
+            box-shadow: 0 2px 20px rgba(0,0,0,.5), 0 0 30px var(--day-glow2), inset 0 -1px 0 var(--day-border);
+            position: relative;
+        }
+        .mobile-header::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--aside-top-bar); background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
         }
 
         /* =====================================================
@@ -404,114 +427,153 @@
         .mobile-nav {
             background: var(--aside-bg);
             border-top: 1px solid var(--day-border);
-            box-shadow:
-                0 -4px 20px rgba(0,0,0,0.6),
-                0 -1px 0 var(--day-border),
-                inset 0 1px 0 rgba(255,255,255,0.04);
+            box-shadow: 0 -4px 20px rgba(0,0,0,.6), 0 -1px 0 var(--day-border), inset 0 1px 0 rgba(255,255,255,.04);
         }
-        .mobile-tab-active {
-            color: var(--day-accent) !important;
-            font-weight: 900;
-            text-shadow: 0 0 8px var(--day-glow);
-        }
-        .mobile-nav button span:first-child {
-            filter: drop-shadow(0 0 4px var(--day-glow));
-        }
+        .mobile-tab-active { color: var(--day-accent) !important; font-weight: 900; text-shadow: 0 0 8px var(--day-glow); }
 
         /* =====================================================
-           MAIN CONTENT AREA
+           MAIN
         ===================================================== */
-        main { background: transparent; }
+        main {
+            flex: 1; background: transparent;
+            transition: all .45s cubic-bezier(.4,0,.2,1);
+        }
 
+        /* Click ripple on main */
+        .main-ripple {
+            position: fixed; border-radius: 50%;
+            background: radial-gradient(circle,var(--day-accent) 0%,transparent 70%);
+            pointer-events: none; z-index: 9999;
+            transform: scale(0); opacity: .25;
+            animation: rippleExpand .65s cubic-bezier(.22,1,.36,1) forwards;
+        }
+        @keyframes rippleExpand { 0%{transform:scale(0);opacity:.25} 100%{transform:scale(1);opacity:0} }
+
+        /* =====================================================
+           DAY STRIP
+        ===================================================== */
         .day-strip {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 20px;
-            margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px; margin-bottom: 1.5rem;
             border-radius: 1rem;
-            background: var(--day-glow2);
-            border: 1px solid var(--day-border);
-            box-shadow:
-                inset 0 1px 0 rgba(255,255,255,0.04),
-                0 2px 12px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
+            background: var(--day-glow2); border: 1px solid var(--day-border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 2px 12px rgba(0,0,0,.3);
+            position: relative; overflow: hidden;
         }
         .day-strip::after {
             content: '';
-            position: absolute;
-            right: -20px; top: -20px;
+            position: absolute; right: -20px; top: -20px;
             width: 80px; height: 80px;
-            border-radius: 50%;
-            background: var(--day-glow);
+            border-radius: 50%; background: var(--day-glow);
             filter: blur(20px);
         }
-        .day-strip-label {
-            font-size: 0.65rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            color: var(--day-accent);
-            text-transform: uppercase;
-        }
-        .day-strip-date {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #64748b;
-            letter-spacing: 0.05em;
-        }
-        .day-strip-divider {
-            width: 1px; height: 16px;
-            background: var(--day-border);
-        }
+        .day-strip-label { font-size: .65rem; font-weight: 900; letter-spacing: .15em; color: var(--day-accent); text-transform: uppercase; }
+        .day-strip-date  { font-size: .7rem;  font-weight: 700; color: #64748b; letter-spacing: .05em; }
+        .day-strip-divider { width: 1px; height: 16px; background: var(--day-border); }
 
         /* =====================================================
            MODAL
         ===================================================== */
         #adminCustomModal > div {
-            background: var(--day-surface);
-            border: 1px solid var(--day-border);
-            box-shadow:
-                0 0 0 1px var(--day-border),
-                0 20px 60px rgba(0,0,0,0.8),
-                0 0 80px var(--day-glow2),
-                inset 0 1px 0 rgba(255,255,255,0.06);
+            background: var(--day-surface); border: 1px solid var(--day-border);
+            box-shadow: 0 0 0 1px var(--day-border), 0 20px 60px rgba(0,0,0,.8), 0 0 80px var(--day-glow2), inset 0 1px 0 rgba(255,255,255,.06);
         }
-        #adminCustomModal > div > div:first-child {
-            background: var(--day-glow2);
-            border-bottom: 1px solid var(--day-border);
-        }
-        #modalTitle {
-            color: var(--day-accent3);
-            text-shadow: 0 0 12px var(--day-glow);
-        }
-        #adminCustomModal > div > div:first-child button {
-            color: #64748b;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        #adminCustomModal > div > div:first-child button:hover {
-            color: var(--day-accent);
-            background: var(--day-glow);
-        }
+        #adminCustomModal > div > div:first-child { background: var(--day-glow2); border-bottom: 1px solid var(--day-border); }
+        #modalTitle { color: var(--day-accent3); text-shadow: 0 0 12px var(--day-glow); }
+        #adminCustomModal > div > div:first-child button { color: #64748b; border-radius: 50%; transition: all .2s; }
+        #adminCustomModal > div > div:first-child button:hover { color: var(--day-accent); background: var(--day-glow); }
 
-        .logout-btn {
-            color: #475569;
-            transition: all 0.2s ease;
-            border-radius: 0.75rem;
-            border: 1px solid transparent;
-        }
-        .logout-btn:hover {
-            color: #ef4444;
-            background: rgba(239,68,68,0.08);
-            border-color: rgba(239,68,68,0.2);
-        }
+        .logout-btn { color: #475569; transition: all .2s ease; border-radius: .75rem; border: 1px solid transparent; }
+        .logout-btn:hover { color: #ef4444; background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.2); }
+        .aside-separator { height: 1px; background: linear-gradient(90deg,transparent,var(--day-border),transparent); margin: 1rem 0; }
+        .special-tab { color: var(--day-accent) !important; font-weight: 900; }
+        .tdlid-link { color: var(--day-accent3) !important; transition: all .2s; border-radius: .75rem; border: 1px solid transparent; }
+        .tdlid-link:hover { background: var(--day-glow); border-color: var(--day-border); }
+        .day-spinner { border-color: var(--day-border); border-top-color: var(--day-accent); }
 
-        .aside-separator {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--day-border), transparent);
-            margin: 1rem 0;
+        /* =====================================================
+           PROFILE PICKER
+        ===================================================== */
+        .profile-picker-item { transition: all .2s; border: 2px solid transparent; border-radius: .75rem; overflow: hidden; background: rgba(255,255,255,.05); }
+        .profile-picker-item:hover { transform: scale(1.06); border-color: var(--day-accent); box-shadow: 0 0 12px var(--day-glow); }
+        .admin-profile-img-container { width: 45px !important; height: 45px !important; transition: all .3s ease; }
+        @media (min-width: 1024px) { .admin-profile-img-container { width: 88px !important; height: 88px !important; } }
+
+        /* =====================================================
+           ONLINE USERS PANEL
+        ===================================================== */
+        #onlineUsersPanel {
+            background: var(--online-bg); border: 1px solid var(--day-border);
+            border-radius: 1rem; margin-bottom: .75rem; overflow: hidden;
+            box-shadow: 0 0 0 1px var(--day-border), 0 4px 20px rgba(0,0,0,.5), inset 0 0 30px var(--online-scan);
+            position: relative;
         }
+        #onlineUsersPanel::before {
+            content: '';
+            position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+            background: linear-gradient(90deg,transparent,var(--online-scan),transparent);
+            animation: scanline 4s linear infinite; pointer-events: none; z-index: 0;
+        }
+        @keyframes scanline { 0%{left:-60%} 100%{left:160%} }
+
+        .online-panel-header {
+            background: var(--online-header-bg); border-bottom: 1px solid var(--day-border);
+            padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;
+            position: relative; z-index: 1;
+        }
+        .online-panel-title {
+            font-size: .6rem; font-weight: 900; letter-spacing: .15em;
+            color: var(--day-accent3); text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .online-count-badge {
+            font-size: .55rem; font-weight: 900; padding: 2px 7px; border-radius: 999px;
+            background: var(--day-accent); color: #000; letter-spacing: .05em;
+            min-width: 18px; text-align: center; box-shadow: 0 0 8px var(--day-glow);
+            animation: countPop .3s ease;
+        }
+        @keyframes countPop { 0%{transform:scale(.7)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+        #onlineUsersList {
+            position: relative; z-index: 1; max-height: 180px;
+            overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+            padding: 6px; display: flex; flex-direction: column; gap: 3px;
+        }
+        #onlineUsersList::-webkit-scrollbar { display: none; }
+
+        .online-user-item {
+            display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+            border-radius: .6rem; background: var(--online-item-bg);
+            border: 1px solid transparent; transition: all .25s ease;
+            position: relative; overflow: hidden;
+            animation: slideInUser .35s ease both;
+        }
+        @keyframes slideInUser { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+        .online-user-item:hover { background: var(--online-item-hover); border-color: var(--day-border); transform: translateX(2px); }
+        .online-user-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--online-pulse); border-radius:0 2px 2px 0; box-shadow:0 0 6px var(--day-glow); }
+
+        .online-user-avatar { width:26px;height:26px;border-radius:50%;border:1.5px solid var(--day-border);object-fit:cover;flex-shrink:0;box-shadow:0 0 8px var(--day-glow2); }
+        .online-user-name { font-size:.65rem;font-weight:900;color:#e2e8f0;text-transform:uppercase;letter-spacing:.05em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .online-user-time { font-size:.52rem;font-weight:700;color:var(--online-time-color);letter-spacing:.04em;white-space:nowrap;flex-shrink:0; }
+        .online-user-dot { width:5px;height:5px;border-radius:50%;background:var(--online-dot-color);box-shadow:0 0 5px var(--online-dot-color);flex-shrink:0;animation:livePulse 1.8s ease-in-out infinite; }
+        @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 5px var(--online-dot-color)} 50%{opacity:.5;box-shadow:0 0 2px var(--online-dot-color)} }
+        .online-empty { text-align:center;padding:14px 8px;font-size:.6rem;font-weight:700;color:#334155;letter-spacing:.1em;text-transform:uppercase; }
+
+        /* =====================================================
+           MOBILE ONLINE PANEL
+        ===================================================== */
+        #mobileOnlinePanel { background:var(--online-bg);border-bottom:1px solid var(--day-border);border-top:1px solid var(--day-border);overflow:hidden;position:relative; }
+        #mobileOnlinePanel::before { content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,var(--online-scan),transparent);animation:scanline 5s linear infinite;pointer-events:none; }
+        .mobile-online-inner { position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:4px 12px;overflow-x:auto;scrollbar-width:none; }
+        .mobile-online-inner::-webkit-scrollbar { display:none; }
+        .mobile-online-label { font-size:.5rem;font-weight:900;color:var(--day-accent3);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px; }
+        .mobile-online-divider { width:1px;height:16px;background:var(--day-border);flex-shrink:0; }
+        .mobile-online-user { display:flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;background:var(--online-item-bg);border:1px solid var(--day-border);flex-shrink:0;white-space:nowrap;animation:fadeInChip .3s ease both; }
+        @keyframes fadeInChip { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+        .mobile-online-user img { width:16px;height:16px;border-radius:50%;object-fit:cover;border:1px solid var(--day-border); }
+        .mobile-online-user-name { font-size:.5rem;font-weight:900;color:#e2e8f0;text-transform:uppercase;letter-spacing:.04em; }
+        .mobile-online-user-time { font-size:.45rem;color:var(--online-time-color);font-weight:700; }
+        .mobile-online-dot { width:4px;height:4px;border-radius:50%;background:var(--online-dot-color);box-shadow:0 0 4px var(--online-dot-color);animation:livePulse 1.8s ease-in-out infinite;flex-shrink:0; }
 
         /* =====================================================
            RESPONSIVE
@@ -521,343 +583,37 @@
             main { padding: 1rem !important; padding-bottom: 85px !important; padding-top: 60px !important; }
             .mobile-header { display: flex !important; }
             .mobile-nav { display: grid !important; }
+            #sidebarHoverZone, #sidebarToggleTab, #sidebarEdgeLine { display: none !important; }
         }
 
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        ::-webkit-scrollbar { width: 0; background: transparent; }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in-up { animation: fadeInUp 0.4s ease both; }
-
-        .profile-picker-item {
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            background: rgba(255,255,255,0.05);
-        }
-        .profile-picker-item:hover {
-            transform: scale(1.06);
-            border-color: var(--day-accent);
-            box-shadow: 0 0 12px var(--day-glow);
-        }
-
-        .admin-profile-img-container {
-            width: 45px !important;
-            height: 45px !important;
-            transition: all 0.3s ease;
-        }
-        @media (min-width: 1024px) {
-            .admin-profile-img-container {
-                width: 88px !important;
-                height: 88px !important;
-            }
-        }
-
-        .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-        #mobile-birthday-dot.active { display: block !important; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        .fade-in-up { animation: fadeInUp .4s ease both; }
 
         #adminBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
         #mobileBirthdayAlert span:first-child { color: var(--day-accent3) !important; }
-
-        .special-tab {
-            color: var(--day-accent) !important;
-            font-weight: 900;
-        }
-
-        .tdlid-link {
-            color: var(--day-accent3) !important;
-            transition: all 0.2s;
-            border-radius: 0.75rem;
-            border: 1px solid transparent;
-        }
-        .tdlid-link:hover {
-            background: var(--day-glow);
-            border-color: var(--day-border);
-        }
-
-        .day-spinner {
-            border-color: var(--day-border);
-            border-top-color: var(--day-accent);
-        }
-
-        /* =====================================================
-           ONLINE USERS PANEL — day-themed
-        ===================================================== */
-        #onlineUsersPanel {
-            background: var(--online-bg);
-            border: 1px solid var(--day-border);
-            border-radius: 1rem;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-            box-shadow:
-                0 0 0 1px var(--day-border),
-                0 4px 20px rgba(0,0,0,0.5),
-                inset 0 0 30px var(--online-scan);
-            position: relative;
-        }
-
-        /* scanning line animation */
-        #onlineUsersPanel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 60%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--online-scan), transparent);
-            animation: scanline 4s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-        @keyframes scanline {
-            0% { left: -60%; }
-            100% { left: 160%; }
-        }
-
-        .online-panel-header {
-            background: var(--online-header-bg);
-            border-bottom: 1px solid var(--day-border);
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            z-index: 1;
-        }
-        .online-panel-title {
-            font-size: 0.6rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            color: var(--day-accent3);
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .online-count-badge {
-            font-size: 0.55rem;
-            font-weight: 900;
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: var(--day-accent);
-            color: #000;
-            letter-spacing: 0.05em;
-            min-width: 18px;
-            text-align: center;
-            box-shadow: 0 0 8px var(--day-glow);
-            animation: countPop 0.3s ease;
-        }
-        @keyframes countPop {
-            0% { transform: scale(0.7); }
-            60% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        #onlineUsersList {
-            position: relative;
-            z-index: 1;
-            max-height: 180px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scrollbar-width: none;
-            padding: 6px;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        #onlineUsersList::-webkit-scrollbar { display: none; }
-
-        .online-user-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 8px;
-            border-radius: 0.6rem;
-            background: var(--online-item-bg);
-            border: 1px solid transparent;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-            animation: slideInUser 0.35s ease both;
-        }
-        @keyframes slideInUser {
-            from { opacity: 0; transform: translateX(-8px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .online-user-item:hover {
-            background: var(--online-item-hover);
-            border-color: var(--day-border);
-            transform: translateX(2px);
-        }
-        .online-user-item::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 2px;
-            background: var(--online-pulse);
-            border-radius: 0 2px 2px 0;
-            box-shadow: 0 0 6px var(--day-glow);
-        }
-
-        .online-user-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 1.5px solid var(--day-border);
-            object-fit: cover;
-            flex-shrink: 0;
-            box-shadow: 0 0 8px var(--day-glow2);
-        }
-        .online-user-name {
-            font-size: 0.65rem;
-            font-weight: 900;
-            color: #e2e8f0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            flex: 1;
-            truncate: true;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .online-user-time {
-            font-size: 0.52rem;
-            font-weight: 700;
-            color: var(--online-time-color);
-            letter-spacing: 0.04em;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .online-user-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--online-dot-color);
-            box-shadow: 0 0 5px var(--online-dot-color);
-            flex-shrink: 0;
-            animation: livePulse 1.8s ease-in-out infinite;
-        }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--online-dot-color); }
-            50% { opacity: 0.5; box-shadow: 0 0 2px var(--online-dot-color); }
-        }
-
-        /* empty state */
-        .online-empty {
-            text-align: center;
-            padding: 14px 8px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            color: #334155;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        /* =====================================================
-           MOBILE ONLINE USERS PANEL
-        ===================================================== */
-        #mobileOnlinePanel {
-            background: var(--online-bg);
-            border-bottom: 1px solid var(--day-border);
-            border-top: 1px solid var(--day-border);
-            overflow: hidden;
-            position: relative;
-        }
-        #mobileOnlinePanel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--online-scan), transparent);
-            animation: scanline 5s linear infinite;
-            pointer-events: none;
-        }
-        .mobile-online-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 12px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .mobile-online-inner::-webkit-scrollbar { display: none; }
-        .mobile-online-label {
-            font-size: 0.5rem;
-            font-weight: 900;
-            color: var(--day-accent3);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            white-space: nowrap;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .mobile-online-divider {
-            width: 1px;
-            height: 16px;
-            background: var(--day-border);
-            flex-shrink: 0;
-        }
-        .mobile-online-user {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 7px;
-            border-radius: 999px;
-            background: var(--online-item-bg);
-            border: 1px solid var(--day-border);
-            flex-shrink: 0;
-            white-space: nowrap;
-            animation: fadeInChip 0.3s ease both;
-        }
-        @keyframes fadeInChip {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .mobile-online-user img {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid var(--day-border);
-        }
-        .mobile-online-user-name {
-            font-size: 0.5rem;
-            font-weight: 900;
-            color: #e2e8f0;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .mobile-online-user-time {
-            font-size: 0.45rem;
-            color: var(--online-time-color);
-            font-weight: 700;
-        }
-        .mobile-online-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--online-dot-color);
-            box-shadow: 0 0 4px var(--online-dot-color);
-            animation: livePulse 1.8s ease-in-out infinite;
-            flex-shrink: 0;
-        }
+        #mobile-birthday-dot.active { display: block !important; }
     </style>
 </head>
 
 <body class="flex min-h-screen">
 
-<!-- MOBILE HEADER -->
+<!-- Ambient orb bottom-right -->
+<div class="orb-br"></div>
+
+<!-- Sidebar helpers (desktop only) -->
+<div id="sidebarHoverZone"></div>
+<div id="sidebarEdgeLine"></div>
+<div id="sidebarToggleTab">
+    <span class="tab-chevron">▶</span>
+    <span class="tab-label">Menu</span>
+</div>
+
+<!-- =====================================================
+     MOBILE HEADER
+===================================================== -->
 <header class="mobile-header fixed top-0 left-0 right-0 z-40 hidden flex-col">
-    <!-- main header row -->
     <div class="flex items-center px-4 h-14 justify-between">
         <div class="flex items-center gap-3">
             <div class="relative cursor-pointer" onclick="openProfileImagePicker()">
@@ -867,15 +623,12 @@
                 </div>
                 <div class="absolute -bottom-1 -right-1 w-4 h-4 edit-badge rounded-full border border-slate-950 flex items-center justify-center text-[8px]">✏️</div>
             </div>
-
             <div class="flex flex-col">
                 <h1 class="brand-title text-sm leading-none">ADMIN <span class="brand-accent">SYSTEM</span></h1>
-
                 <div id="mobileBirthdayAlert" class="hidden flex flex-col mt-0.5">
                     <span class="text-[9px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
                     <span id="mobileBirthdayNames" class="text-[8px] font-bold text-white uppercase tracking-tight leading-tight"></span>
                 </div>
-
                 <div id="weather-mobile" class="flex items-center gap-1 mt-0.5 opacity-80">
                     <span class="weather-icon text-[10px]">☀️</span>
                     <span class="weather-temp text-[9px] font-bold">--°C</span>
@@ -883,7 +636,6 @@
                 </div>
             </div>
         </div>
-
         <div class="flex items-center gap-3">
             <div class="day-badge hidden md:flex" id="mobileDayBadge">
                 <span class="day-badge-dot"></span>
@@ -893,14 +645,9 @@
             <button onclick="adminLogout()" class="logout-btn px-2 py-1 text-lg">➡️</button>
         </div>
     </div>
-
-    <!-- mobile online users strip -->
     <div id="mobileOnlinePanel">
         <div class="mobile-online-inner">
-            <div class="mobile-online-label">
-                <span class="mobile-online-dot"></span>
-                <span>LIVE</span>
-            </div>
+            <div class="mobile-online-label"><span class="mobile-online-dot"></span><span>LIVE</span></div>
             <div class="mobile-online-divider"></div>
             <div id="mobileOnlineList" class="flex items-center gap-2">
                 <span class="text-[9px] text-slate-600 font-bold uppercase">Loading...</span>
@@ -909,7 +656,9 @@
     </div>
 </header>
 
-<!-- MOBILE BOTTOM NAV -->
+<!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== -->
 <nav class="mobile-nav fixed bottom-0 left-0 right-0 z-50 hidden grid-cols-8 h-[70px] px-1 shadow-2xl">
     <button onclick="switchAdminTab('dashboard')"  class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
     <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">👤</span><span>ATTEND</span></button>
@@ -921,132 +670,152 @@
     <button onclick="switchAdminTab('settings')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
 </nav>
 
-<!-- SIDEBAR -->
-<aside class="hidden md:flex w-72 p-6 sticky top-0 h-screen flex-col min-h-0">
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+<aside id="mainAside" class="hidden md:flex w-72 sticky top-0 h-screen flex-col min-h-0">
+    <div class="sidebar-inner flex flex-col p-6 h-full min-h-0" style="position:relative;overflow:hidden;">
 
-    <!-- Brand + Day Badge -->
-    <div class="mb-6">
-        <div class="flex items-center justify-between mb-5">
-            <h1 class="brand-title">ADMIN <span class="brand-accent">SYSTEM</span></h1>
-            <div class="day-badge" id="sidebarDayBadge">
-                <span class="day-badge-dot"></span>
-                <span id="sidebarDayLabel">MON</span>
+        <!-- Brand + Day Badge -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-5">
+                <h1 class="brand-title">ADMIN <span class="brand-accent">SYSTEM</span></h1>
+                <div class="day-badge" id="sidebarDayBadge">
+                    <span class="day-badge-dot"></span>
+                    <span id="sidebarDayLabel">MON</span>
+                </div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="profile-card p-4 flex items-center gap-4">
+                <div class="relative group cursor-pointer shrink-0" onclick="openProfileImagePicker()">
+                    <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
+                        <img src="images/profile/image-01.jfif" alt="Admin"
+                             class="w-full h-full object-cover admin-profile-img"
+                             onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+                    </div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 edit-badge rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px]">🎂</div>
+                </div>
+                <div class="overflow-hidden flex-1">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Administrator</div>
+                    <div class="text-sm font-black text-white truncate uppercase tracking-tight">Master Manager</div>
+                    <div class="weather-chip flex items-center gap-2 mt-2 py-1 px-2 rounded-lg w-fit">
+                        <span class="weather-icon text-xs">☀️</span>
+                        <span class="weather-temp text-[11px] font-bold tracking-tighter">--°C</span>
+                        <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
+                    </div>
+                    <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2">
+                        <span class="text-[10px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                        <span id="adminBirthdayNames" class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-0.5 leading-tight"></span>
+                    </div>
+                    <div class="inline-flex items-center gap-1.5 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full online-dot animate-pulse"></span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest online-text">Online</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Profile Card -->
-        <div class="profile-card p-4 flex items-center gap-4">
-            <div class="relative group cursor-pointer shrink-0" onclick="openProfileImagePicker()">
-                <div class="admin-profile-img-container rounded-full overflow-hidden bg-slate-900 profile-img-wrap">
-                    <img src="images/profile/image-01.jfif" alt="Admin"
-                         class="w-full h-full object-cover admin-profile-img"
-                         onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=0f172a&color=3b82f6'">
+        <!-- Nav -->
+        <nav class="flex flex-col gap-0.5 flex-1 min-h-0 overflow-y-auto">
+            <!-- Online Users Panel -->
+            <div id="onlineUsersPanel">
+                <div class="online-panel-header">
+                    <div class="online-panel-title">
+                        <span class="mobile-online-dot"></span>
+                        <span id="onlinePanelLabel">CONNECTED NOW</span>
+                    </div>
+                    <span class="online-count-badge" id="onlineCountBadge">0</span>
                 </div>
-                <div class="absolute -bottom-0.5 -right-0.5 w-6 h-6 edit-badge rounded-full border-2 border-slate-950 flex items-center justify-center text-[12px]">🎂</div>
+                <div id="onlineUsersList"><div class="online-empty">SCANNING...</div></div>
             </div>
 
-            <div class="overflow-hidden flex-1">
-                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Administrator</div>
-                <div class="text-sm font-black text-white truncate uppercase tracking-tight">Master Manager</div>
+            <button id="btn-dashboard"  onclick="switchAdminTab('dashboard')"  class="tab-btn tab-inactive px-4 py-3 text-left">📊 DASHBOARD</button>
+            <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn tab-inactive px-4 py-3 text-left">👤 ATTENDANCE</button>
+            <button id="btn-reports"    onclick="switchAdminTab('reports')"    class="tab-btn tab-inactive px-4 py-3 text-left">📝 WORK REPORT</button>
+            <button id="btn-workstat"   onclick="switchAdminTab('workstat')"   class="tab-btn tab-inactive special-tab px-4 py-3 text-left">📉 WORK ANALYSIS</button>
+            <button id="btn-vacation"   onclick="switchAdminTab('vacation')"   class="tab-btn tab-inactive px-4 py-3 text-left">🏖️ VACATION MGT</button>
+            <button id="btn-schedule"   onclick="switchAdminTab('schedule')"   class="tab-btn tab-inactive px-4 py-3 text-left">📅 CALENDAR</button>
+            <button id="btn-statistic"  onclick="switchAdminTab('statistic')"  class="tab-btn tab-inactive px-4 py-3 text-left">📈 ATTEND STAT</button>
+            <button id="btn-settings"   onclick="switchAdminTab('settings')"   class="tab-btn tab-inactive px-4 py-3 text-left">⚙️ SETTINGS</button>
 
-                <div class="weather-chip flex items-center gap-2 mt-2 py-1 px-2 rounded-lg w-fit">
-                    <span class="weather-icon text-xs">☀️</span>
-                    <span class="weather-temp text-[11px] font-bold tracking-tighter">--°C</span>
-                    <span class="text-[9px] text-slate-600 font-bold uppercase">JKT</span>
-                </div>
+            <div class="aside-separator"></div>
+            <a href="https://tdlid.github.io" target="_blank"
+               class="tdlid-link px-4 py-3 text-xs uppercase tracking-widest font-bold flex items-center gap-2">
+                🌐 TDLiD Homepage
+            </a>
+        </nav>
 
-                <div id="adminBirthdayAlert" class="hidden flex flex-col mt-2">
-                    <span class="text-[10px] font-black animate-pulse flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-                    <span id="adminBirthdayNames" class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-0.5 leading-tight"></span>
-                </div>
+        <button onclick="adminLogout()" class="logout-btn mt-4 flex items-center gap-2 px-4 py-3 font-bold text-sm">
+            ➡️ Logout System
+        </button>
 
-                <div class="inline-flex items-center gap-1.5 mt-2">
-                    <span class="w-1.5 h-1.5 rounded-full online-dot animate-pulse"></span>
-                    <span class="text-[10px] font-bold uppercase tracking-widest online-text">Online</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Nav -->
-    <nav class="flex flex-col gap-0.5 flex-1 min-h-0 overflow-y-auto">
-
-        <!-- ★ ONLINE USERS PANEL — above dashboard ★ -->
-        <div id="onlineUsersPanel">
-            <div class="online-panel-header">
-                <div class="online-panel-title">
-                    <span class="mobile-online-dot"></span>
-                    <span id="onlinePanelLabel">CONNECTED NOW</span>
-                </div>
-                <span class="online-count-badge" id="onlineCountBadge">0</span>
-            </div>
-            <div id="onlineUsersList">
-                <div class="online-empty">SCANNING...</div>
-            </div>
-        </div>
-        <!-- /ONLINE USERS PANEL -->
-
-        <button id="btn-dashboard"  onclick="switchAdminTab('dashboard')"  class="tab-btn tab-inactive px-4 py-3 text-left">📊 DASHBOARD</button>
-        <button id="btn-attendance" onclick="switchAdminTab('attendance')" class="tab-btn tab-inactive px-4 py-3 text-left">👤 ATTENDANCE</button>
-        <button id="btn-reports"    onclick="switchAdminTab('reports')"    class="tab-btn tab-inactive px-4 py-3 text-left">📝 WORK REPORT</button>
-        <button id="btn-workstat"   onclick="switchAdminTab('workstat')"   class="tab-btn tab-inactive special-tab px-4 py-3 text-left">📉 WORK ANALYSIS</button>
-        <button id="btn-vacation"   onclick="switchAdminTab('vacation')"   class="tab-btn tab-inactive px-4 py-3 text-left">🏖️ VACATION MGT</button>
-        <button id="btn-schedule"   onclick="switchAdminTab('schedule')"   class="tab-btn tab-inactive px-4 py-3 text-left">📅 CALENDAR</button>
-        <button id="btn-statistic"  onclick="switchAdminTab('statistic')"  class="tab-btn tab-inactive px-4 py-3 text-left">📈 ATTEND STAT</button>
-        <button id="btn-settings"   onclick="switchAdminTab('settings')"   class="tab-btn tab-inactive px-4 py-3 text-left">⚙️ SETTINGS</button>
-
-        <div class="aside-separator"></div>
-
-        <a href="https://tdlid.github.io" target="_blank"
-           class="tdlid-link px-4 py-3 text-xs uppercase tracking-widest font-bold flex items-center gap-2">
-            🌐 TDLiD Homepage
-        </a>
-    </nav>
-
-    <button onclick="adminLogout()" class="logout-btn mt-4 flex items-center gap-2 px-4 py-3 font-bold text-sm">
-        ➡️ Logout System
-    </button>
+    </div><!-- /sidebar-inner -->
 </aside>
 
-<!-- MAIN CONTENT -->
-<main class="flex-1 p-8 overflow-y-auto">
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+<main class="flex-1 p-8 overflow-y-auto" id="mainArea">
     <div id="adminContent" class="max-w-[1300px] mx-auto"></div>
 </main>
 
-<!-- MODAL -->
+<!-- =====================================================
+     MODAL
+===================================================== -->
 <div id="adminCustomModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
     <div class="w-full max-w-xl rounded-[2rem] overflow-hidden shadow-2xl animate-fadeIn">
-        <div class="p-6 border-b flex justify-between items-center" style="border-color: var(--day-border)">
+        <div class="p-6 border-b flex justify-between items-center" style="border-color:var(--day-border)">
             <h3 id="modalTitle" class="text-lg font-black uppercase tracking-widest italic"></h3>
-            <button onclick="closeAdminCustomModal()"
-                    class="w-10 h-10 flex items-center justify-center text-3xl transition-all">&times;</button>
+            <button onclick="closeAdminCustomModal()" class="w-10 h-10 flex items-center justify-center text-3xl transition-all">&times;</button>
         </div>
-        <div id="modalBody" class="p-8 max-h-[85vh] overflow-y-auto text-slate-300"
-             style="scrollbar-width:none;"></div>
+        <div id="modalBody" class="p-8 max-h-[85vh] overflow-y-auto text-slate-300" style="scrollbar-width:none;"></div>
     </div>
 </div>
 
 
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
 <script>
-/* ============================================================
-   DAY THEME INIT
-============================================================ */
+/* ── Day theme init ── */
 (function applyDayTheme() {
     const day = new Date().getDay();
     document.body.classList.add('day-' + day);
-    const dayNames = { 0:'SUN', 1:'MON', 2:'TUE', 3:'WED', 4:'THU', 5:'FRI', 6:'SAT' };
+    const dayNames = {0:'SUN',1:'MON',2:'TUE',3:'WED',4:'THU',5:'FRI',6:'SAT'};
     const label = dayNames[day] || 'MON';
     document.addEventListener('DOMContentLoaded', () => {
         ['sidebarDayLabel','mobileDayLabel'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = label;
+            const el = document.getElementById(id); if (el) el.textContent = label;
         });
+
+        /* THU: star particles */
+        if (day === 4) {
+            for (let i = 0; i < 10; i++) {
+                const s = document.createElement('div');
+                s.style.cssText = `position:fixed;pointer-events:none;z-index:0;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;border-radius:50%;background:var(--day-accent);left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${.3+Math.random()*.5};animation:starF ${6+Math.random()*8}s ease-in-out infinite alternate;animation-delay:${Math.random()*5}s;`;
+                document.body.appendChild(s);
+            }
+            const st = document.createElement('style');
+            st.textContent = `@keyframes starF{0%{transform:translate(0,0) scale(1);opacity:.3}50%{opacity:.8}100%{transform:translate(${Math.random()>0.5?'':'-'}${12+Math.floor(Math.random()*18)}px,${Math.random()>0.5?'':'-'}${12+Math.floor(Math.random()*18)}px) scale(1.5);opacity:.2}}`;
+            document.head.appendChild(st);
+        }
+        /* FRI: ember particles */
+        if (day === 5) {
+            for (let i = 0; i < 7; i++) {
+                const e = document.createElement('div');
+                const dx = (Math.random()>0.5?'':'-') + (10+Math.floor(Math.random()*30)) + 'px';
+                e.style.cssText = `position:fixed;pointer-events:none;z-index:0;width:3px;height:3px;border-radius:50%;background:${Math.random()>0.5?'#f59e0b':'#ef4444'};left:${10+Math.random()*30}%;bottom:${Math.random()*20}%;opacity:0;animation:emberR ${3+Math.random()*4}s ease-out infinite;animation-delay:${Math.random()*3}s;--dx:${dx};`;
+                document.body.appendChild(e);
+            }
+            const st = document.createElement('style');
+            st.textContent = `@keyframes emberR{0%{opacity:.8;transform:translateY(0) translateX(0) scale(1)}100%{opacity:0;transform:translateY(-110px) translateX(var(--dx,20px)) scale(.3)}}`;
+            document.head.appendChild(st);
+        }
     });
 })();
 
-/* ============================================================
-   FIREBASE INIT
-============================================================ */
+/* ── Firebase ── */
 (function () {
     if (!window.firebase) return;
     const firebaseConfig = {
@@ -1063,9 +832,7 @@
     if (!window.db) window.db = firebase.database();
 })();
 
-/* ============================================================
-   PROFILE IMAGES LIST
-============================================================ */
+/* ── Profile images ── */
 const PROFILE_IMAGES = [
     'image-001.webp','image-002.webp','image-003.webp','image-004.webp','image-005.webp',
     'image-01.gif','image-02.gif','image-03.gif','image-04.gif','image-05.gif',
@@ -1081,16 +848,13 @@ const PROFILE_IMAGES = [
     'image-21.jfif','image-22.jpg','image-23.jfif','Yuda.png'
 ];
 
-/* ============================================================
-   PROFILE IMAGE PICKER
-============================================================ */
+/* ── Profile picker ── */
 window.openProfileImagePicker = function() {
     let gridHtml = `<div class="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-8">`;
     PROFILE_IMAGES.forEach(img => {
         gridHtml += `<div onclick="saveAdminProfile('${img}')" class="profile-picker-item cursor-pointer"><img src="images/profile/${img}" class="w-full h-full object-cover aspect-square" alt="profile"></div>`;
     });
     gridHtml += `</div>`;
-
     gridHtml += `
         <div class="mt-6 pt-6 border-t" style="border-color:var(--day-border)">
             <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest">Admin Birthday Setting</h4>
@@ -1115,7 +879,6 @@ window.openProfileImagePicker = function() {
                 </div>
             </div>
         </div>
-
         <div class="mt-8 pt-6 border-t" style="border-color:var(--day-border)">
             <div class="flex items-center justify-between mb-4">
                 <h4 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color:var(--day-accent3)">
@@ -1126,9 +889,7 @@ window.openProfileImagePicker = function() {
                 <div class="text-[10px] text-slate-600 italic text-center py-4">Loading Staff Data...</div>
             </div>
         </div>`;
-
     openAdminCustomModal('Admin Profile & Birthday', gridHtml);
-
     setTimeout(() => {
         db.ref('users/Admin').once('value', snap => {
             const data = snap.val();
@@ -1137,20 +898,15 @@ window.openProfileImagePicker = function() {
                 if (data.birthType) { const el = document.getElementById('adminBirthType'); if (el) el.value = data.birthType; }
             }
         });
-
         db.ref('users').once('value', snap => {
             const users = snap.val() || {};
             const container = document.getElementById('birthdayListInModal');
             if (!container) return;
             const today = new Date();
             const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-            const list = Object.keys(users)
-                .filter(uid => users[uid].birthday)
+            const list = Object.keys(users).filter(uid => users[uid].birthday)
                 .sort((a,b) => users[a].birthday.substring(5).localeCompare(users[b].birthday.substring(5)));
-            if (list.length === 0) {
-                container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`;
-                return;
-            }
+            if (list.length === 0) { container.innerHTML = `<div class="text-[10px] text-slate-600 italic text-center py-4">No birthday records found.</div>`; return; }
             container.innerHTML = list.map(uid => {
                 const u = users[uid];
                 const bType = u.birthType || 'Solar';
@@ -1163,8 +919,7 @@ window.openProfileImagePicker = function() {
                 const typeColor = (bType === 'Lunar' || bType === '음력')
                     ? 'color:var(--day-accent3);background:var(--day-glow);border:1px solid var(--day-border)'
                     : 'color:var(--day-accent3);background:var(--day-glow2);border:1px solid var(--day-border)';
-                return `
-                <div class="flex items-center justify-between p-3 rounded-xl border transition-colors" style="${isToday ? 'border-color:var(--day-accent);background:var(--day-glow2)' : 'border-color:var(--day-border)'}">
+                return `<div class="flex items-center justify-between p-3 rounded-xl border transition-colors" style="${isToday?'border-color:var(--day-accent);background:var(--day-glow2)':'border-color:var(--day-border)'}">
                     <div class="flex items-center gap-3">
                         <img src="${imgSrc}" class="w-8 h-8 rounded-full border object-cover flex-shrink-0" style="border-color:var(--day-border)" onerror="this.src='https://ui-avatars.com/api/?name=${uid}&background=0D1A24&color=64748b'">
                         <div class="flex flex-col">
@@ -1182,46 +937,34 @@ window.openProfileImagePicker = function() {
     }, 100);
 };
 
-/* ============================================================
-   SAVE ADMIN BIRTHDAY
-============================================================ */
 window.saveAdminBirthday = function() {
     const birthDate = document.getElementById('adminBirthDate').value;
     const birthType = document.getElementById('adminBirthType').value;
     const saveBtn = document.getElementById('adminBirthSaveBtn');
     if (!birthDate) { alert("Please select a date."); return; }
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = `<span>SAVING...</span>`;
+    saveBtn.disabled = true; saveBtn.innerHTML = `<span>SAVING...</span>`;
     db.ref('users/Admin').update({ birthday: birthDate, birthType: birthType, updatedAt: firebase.database.ServerValue.TIMESTAMP })
     .then(() => {
-        alert("Birthday saved successfully!");
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
+        alert("Birthday saved!");
+        saveBtn.disabled = false; saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
         if (typeof checkStaffBirthdays === 'function') checkStaffBirthdays();
     }).catch(() => {
-        alert("Save failed");
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
+        alert("Save failed"); saveBtn.disabled = false; saveBtn.innerHTML = `<span>SAVE BIRTHDAY</span>`;
     });
 };
 
-/* ============================================================
-   SAVE ADMIN PROFILE IMAGE
-============================================================ */
 window.saveAdminProfile = function(imgName) {
     const path = `images/profile/${imgName}`;
-    if (!confirm("Would you like to change your admin profile to this image?")) return;
+    if (!confirm("Change admin profile to this image?")) return;
     db.ref('users/Admin').update({ profileImg: path, updatedAt: firebase.database.ServerValue.TIMESTAMP })
     .then(() => {
-        const ts = new Date().getTime();
+        const ts = Date.now();
         document.querySelectorAll('.admin-profile-img').forEach(img => { img.src = `${path}?t=${ts}`; });
         closeAdminCustomModal();
     }).catch(e => { console.error(e); alert("Save failed"); });
 };
 
-/* ============================================================
-   PROFILE SYNC
-============================================================ */
+/* Profile sync */
 (function initProfileSync() {
     const checkDB = setInterval(() => {
         if (window.db) {
@@ -1236,9 +979,7 @@ window.saveAdminProfile = function(imgName) {
     }, 100);
 })();
 
-/* ============================================================
-   WEATHER
-============================================================ */
+/* ── Weather ── */
 async function updateAdminWeather() {
     try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2088&longitude=106.8456&current_weather=true');
@@ -1253,66 +994,143 @@ async function updateAdminWeather() {
         const tempStr = `${Math.round(temperature)}°C`;
         document.querySelectorAll('.weather-icon').forEach(el => el.innerText = icon);
         document.querySelectorAll('.weather-temp').forEach(el => el.innerText = tempStr);
-    } catch (e) { console.error("Weather Update Failed", e); }
+    } catch(e) { console.error("Weather failed", e); }
 }
 
-/* ============================================================
-   BIRTHDAY CHECK
-============================================================ */
+/* ── Birthday check ── */
 async function checkStaffBirthdays() {
     const today = new Date();
     const tMonthDay = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const lunar = Lunar.fromDate(today);
     const lMonthDay = `${String(lunar.getMonth()).padStart(2,'0')}-${String(lunar.getDay()).padStart(2,'0')}`;
-
     db.ref('users').once('value', snap => {
-        const users = snap.val();
-        if (!users) return;
-        let birthdayMessages = [];
+        const users = snap.val(); if (!users) return;
+        let msgs = [];
         Object.keys(users).forEach(id => {
-            const u = users[id];
-            if (!u.birthday) return;
-            const bMonthDay = u.birthday.substring(5);
-            const type = u.birthType || "Solar";
+            const u = users[id]; if (!u.birthday) return;
+            const bMD = u.birthday.substring(5), type = u.birthType || 'Solar';
             const bDateFull = u.birthday.replace(/-/g, '.');
-            const isSolarMatch = (type === "Solar" || type === "양력") && bMonthDay === tMonthDay;
-            const isLunarMatch = (type === "Lunar" || type === "음력") && bMonthDay === lMonthDay;
-            if (isSolarMatch || isLunarMatch) birthdayMessages.push(`${id}: ${bDateFull}`);
+            const solar = (type === 'Solar' || type === '양력') && bMD === tMonthDay;
+            const lunar_ = (type === 'Lunar' || type === '음력') && bMD === lMonthDay;
+            if (solar || lunar_) msgs.push(`${id}: ${bDateFull}`);
         });
-
+        ['adminBirthdayAlert','adminBirthdayNames','mobileBirthdayAlert','mobileBirthdayNames'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+        });
+        const show = msgs.length > 0, namesHtml = msgs.join('<br>');
         const alertBox = document.getElementById('adminBirthdayAlert');
         const nameText = document.getElementById('adminBirthdayNames');
         const mobAlert = document.getElementById('mobileBirthdayAlert');
         const mobNames = document.getElementById('mobileBirthdayNames');
-
-        if (alertBox && nameText) {
-            if (birthdayMessages.length > 0) {
-                alertBox.classList.remove('hidden');
-                nameText.innerHTML = birthdayMessages.join('<br>');
-            } else { alertBox.classList.add('hidden'); }
-        }
-        if (mobAlert && mobNames) {
-            if (birthdayMessages.length > 0) {
-                mobAlert.classList.remove('hidden');
-                mobNames.innerHTML = birthdayMessages.join('<br>');
-            } else { mobAlert.classList.add('hidden'); }
-        }
+        if (alertBox) alertBox.classList.toggle('hidden', !show);
+        if (nameText && show) nameText.innerHTML = namesHtml;
+        if (mobAlert) mobAlert.classList.toggle('hidden', !show);
+        if (mobNames && show) mobNames.innerHTML = namesHtml;
     });
 }
 
-/* ============================================================
-   SHOW ALL STAFF BIRTHDAYS
-============================================================ */
+/* ── Modal restore ── */
+function restoreCoreModalFunctions() {
+    window._coreModalRestored = true;
+    window.openAdminCustomModal = function(title, bodyHtml) {
+        const ac = document.getElementById('adminContent');
+        if (ac) {
+            ['modalTitle','modalBody','adminCustomModal'].forEach(id => {
+                ac.querySelectorAll(`#${id}`).forEach(el => el.removeAttribute('id'));
+            });
+        }
+        const m = document.getElementById('adminCustomModal'); if (!m) return;
+        const tB = m.querySelector('#modalTitle'), bB = m.querySelector('#modalBody');
+        if (!tB || !bB) return;
+        tB.innerHTML = title; bB.innerHTML = bodyHtml;
+        m.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    };
+    window.closeAdminCustomModal = function() {
+        ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
+            if (window[key]) { window[key].destroy(); window[key] = null; }
+        });
+        document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
+        const m = document.getElementById('adminCustomModal');
+        if (m) { m.classList.add('hidden'); document.body.style.overflow = ''; }
+    };
+}
+
+/* ── Tab switcher ── */
+async function switchAdminTab(tab) {
+    ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
+        if (window[key]) { window[key].destroy(); window[key] = null; }
+    });
+    document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
+    const existingModal = document.getElementById('adminCustomModal');
+    if (existingModal) { existingModal.classList.add('hidden'); document.body.style.overflow = ''; }
+
+    const area = document.getElementById('adminContent'); if (!area) return;
+    area.innerHTML = `<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 day-spinner"></div></div>`;
+
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('tab-active'); b.classList.add('tab-inactive'); });
+    const activeBtn = document.getElementById(`btn-${tab}`);
+    if (activeBtn) { activeBtn.classList.remove('tab-inactive'); activeBtn.classList.add('tab-active'); }
+
+    const mBtns = document.querySelectorAll('.mobile-nav button');
+    mBtns.forEach(b => b.classList.remove('mobile-tab-active'));
+    const idxMap = {dashboard:0,attendance:1,reports:2,vacation:3,schedule:4,workstat:5,statistic:6,settings:7};
+    const idx = idxMap[tab];
+    if (idx !== undefined) mBtns[idx]?.classList.add('mobile-tab-active');
+
+    const fileMap = {
+        dashboard:'admin_dashboard.html', attendance:'admin_attendance.html',
+        reports:'admin_report.html', vacation:'admin_vacation.html',
+        schedule:'admin_calendar.html', statistic:'admin_statistic.html',
+        workstat:'work_statistic.html', settings:'admin_setting.html'
+    };
+
+    try {
+        const res = await fetch(fileMap[tab]);
+        const html = await res.text();
+        area.innerHTML = html;
+        document.querySelectorAll('script[data-dynamic="true"]').forEach(s => s.remove());
+        const scripts = Array.from(area.querySelectorAll('script'));
+        const externalScripts = scripts.filter(s => s.src);
+        const inlineScripts   = scripts.filter(s => !s.src);
+        await Promise.all(externalScripts.map(oldScript => new Promise(resolve => {
+            const ns = document.createElement('script');
+            ns.setAttribute('data-dynamic','true');
+            Array.from(oldScript.attributes).forEach(at => ns.setAttribute(at.name, at.value));
+            ns.onload = resolve; ns.onerror = resolve;
+            document.head.appendChild(ns);
+        })));
+        for (const oldScript of inlineScripts) {
+            const ns = document.createElement('script');
+            ns.setAttribute('data-dynamic','true');
+            Array.from(oldScript.attributes).forEach(at => ns.setAttribute(at.name, at.value));
+            ns.textContent = oldScript.textContent;
+            document.head.appendChild(ns);
+        }
+        setTimeout(() => restoreCoreModalFunctions(), 0);
+    } catch(e) {
+        area.innerHTML = `<div class="p-10 text-center font-bold" style="color:var(--day-accent)">Load Failed.</div>`;
+    }
+}
+window.switchAdminTab = switchAdminTab;
+
+/* ── Logout ── */
+window.adminLogout = function() {
+    if (!confirm("Logout?")) return;
+    const name = sessionStorage.getItem('loggedInUser');
+    const doLogout = () => { sessionStorage.clear(); window.location.replace("index.html"); };
+    if (name) { db.ref('users/' + name).update({ online_sts: 'OFF' }).then(doLogout).catch(doLogout); }
+    else doLogout();
+};
+
+/* ── Show all staff birthdays ── */
 window.showAllStaffBirthdays = function() {
     db.ref('users').once('value', snap => {
-        const users = snap.val();
-        if (!users) return;
+        const users = snap.val(); if (!users) return;
         let html = `<div class="space-y-3">`;
         Object.keys(users).sort().forEach(key => {
             const u = users[key];
             if (u.birthday) {
-                const bType = u.birthType || "Solar";
-                const bDate = u.birthday.replace(/-/g, '.');
+                const bType = u.birthType || 'Solar', bDate = u.birthday.replace(/-/g, '.');
                 const pImg = u.profileImg || 'image-001.webp';
                 const imgSrc = pImg.includes('/') ? pImg : `images/profile/${pImg}`;
                 html += `<div class="flex items-center justify-between p-3 rounded-2xl border transition-colors hover:opacity-90" style="border-color:var(--day-border);background:var(--day-glow2)">
@@ -1335,209 +1153,125 @@ window.showAllStaffBirthdays = function() {
     });
 };
 
-/* ============================================================
-   MODAL RESTORE
-============================================================ */
-function restoreCoreModalFunctions() {
-    window._coreModalRestored = true;
+/* =====================================================
+   ★ SIDEBAR COLLAPSE LOGIC ★
+   Desktop (≥768px):
+     • Click on main area  → sidebar slides left (collapse)
+     • Mouse over left edge zone OR aside itself → expand
+     • Toggle tab click → expand
+===================================================== */
+(function initSidebarCollapse() {
+    const aside      = document.getElementById('mainAside');
+    const hoverZone  = document.getElementById('sidebarHoverZone');
+    const toggleTab  = document.getElementById('sidebarToggleTab');
+    const edgeLine   = document.getElementById('sidebarEdgeLine');
+    const mainArea   = document.getElementById('mainArea');
+    let collapsed    = false;
+    let hoverTimer   = null;
 
-    window.openAdminCustomModal = function(title, bodyHtml) {
-        const ac = document.getElementById('adminContent');
-        if (ac) {
-            ['modalTitle','modalBody','adminCustomModal'].forEach(id => {
-                ac.querySelectorAll(`#${id}`).forEach(el => el.removeAttribute('id'));
-            });
-        }
-        const m = document.getElementById('adminCustomModal');
-        if (!m) { console.error('adminCustomModal not found'); return; }
-        const tB = m.querySelector('#modalTitle');
-        const bB = m.querySelector('#modalBody');
-        if (!tB || !bB) { console.error('Modal inner elements not found'); return; }
-        tB.innerHTML = title;
-        bB.innerHTML = bodyHtml;
-        m.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    };
+    function isDesktop() { return window.innerWidth >= 768; }
 
-    window.closeAdminCustomModal = function() {
-        ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
-            if (window[key]) { window[key].destroy(); window[key] = null; }
+    function collapseSidebar() {
+        if (!isDesktop() || collapsed) return;
+        collapsed = true;
+        aside.classList.add('sidebar-collapsed');
+        hoverZone.style.display = 'block';
+        toggleTab.style.display = 'flex';
+        edgeLine.classList.add('el-visible');
+        requestAnimationFrame(() => toggleTab.classList.add('tab-visible'));
+    }
+
+    function expandSidebar() {
+        if (!isDesktop() || !collapsed) return;
+        collapsed = false;
+        aside.classList.remove('sidebar-collapsed');
+        hoverZone.style.display = 'none';
+        toggleTab.classList.remove('tab-visible');
+        edgeLine.classList.remove('el-visible');
+        setTimeout(() => { if (!collapsed) toggleTab.style.display = 'none'; }, 320);
+    }
+
+    /* Click on main → collapse + ripple */
+    if (mainArea) {
+        mainArea.addEventListener('click', (e) => {
+            if (!isDesktop()) return;
+            collapseSidebar();
+            /* ripple */
+            const rpl = document.createElement('div');
+            rpl.className = 'main-ripple';
+            const sz = 100;
+            rpl.style.cssText = `width:${sz}px;height:${sz}px;top:${e.clientY-sz/2}px;left:${e.clientX-sz/2}px;`;
+            document.body.appendChild(rpl);
+            setTimeout(() => rpl.remove(), 700);
         });
-        document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
-        const m = document.getElementById('adminCustomModal');
-        if (m) { m.classList.add('hidden'); document.body.style.overflow = ''; }
-    };
-}
+    }
 
-/* ============================================================
-   TAB SWITCHER
-============================================================ */
-async function switchAdminTab(tab) {
-    ['attStartPicker','attEndPicker','editStartPicker','editEndPicker'].forEach(key => {
-        if (window[key]) { window[key].destroy(); window[key] = null; }
+    /* Hover zone (left-edge strip) → expand */
+    hoverZone.addEventListener('mouseenter', () => {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(expandSidebar, 60);
     });
-    document.querySelectorAll('.flatpickr-calendar').forEach(el => el.remove());
+    hoverZone.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
 
-    const existingModal = document.getElementById('adminCustomModal');
-    if (existingModal) { existingModal.classList.add('hidden'); document.body.style.overflow = ''; }
-
-    const area = document.getElementById('adminContent');
-    if (!area) return;
-    area.innerHTML = `<div class="flex justify-center items-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 day-spinner" style="border-color:var(--day-border);border-top-color:var(--day-accent)"></div></div>`;
-
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('tab-active');
-        b.classList.add('tab-inactive');
+    /* Aside hover → expand */
+    aside.addEventListener('mouseenter', () => {
+        if (!isDesktop()) return;
+        clearTimeout(hoverTimer);
+        expandSidebar();
     });
-    const activeBtn = document.getElementById(`btn-${tab}`);
-    if (activeBtn) {
-        activeBtn.classList.remove('tab-inactive');
-        activeBtn.classList.add('tab-active');
-    }
 
-    const mBtns = document.querySelectorAll('.mobile-nav button');
-    mBtns.forEach(b => b.classList.remove('mobile-tab-active'));
-    const idxMap = { dashboard:0, attendance:1, reports:2, vacation:3, schedule:4, workstat:5, statistic:6, settings:7 };
-    const idx = idxMap[tab];
-    if (idx !== undefined) mBtns[idx]?.classList.add('mobile-tab-active');
+    /* Toggle tab click → expand */
+    toggleTab.addEventListener('click', expandSidebar);
 
-    const fileMap = {
-        dashboard: 'admin_dashboard.html',
-        attendance: 'admin_attendance.html',
-        reports:    'admin_report.html',
-        vacation:   'admin_vacation.html',
-        schedule:   'admin_calendar.html',
-        statistic:  'admin_statistic.html',
-        workstat:   'work_statistic.html',
-        settings:   'admin_setting.html'
-    };
-
-    try {
-        const res  = await fetch(fileMap[tab]);
-        const html = await res.text();
-        area.innerHTML = html;
-
-        document.querySelectorAll('script[data-dynamic="true"]').forEach(s => s.remove());
-
-        const scripts = Array.from(area.querySelectorAll('script'));
-        const externalScripts = scripts.filter(s => s.src);
-        const inlineScripts   = scripts.filter(s => !s.src);
-
-        await Promise.all(externalScripts.map(oldScript => new Promise(resolve => {
-            const newScript = document.createElement('script');
-            newScript.setAttribute('data-dynamic', 'true');
-            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-            newScript.onload  = resolve;
-            newScript.onerror = resolve;
-            document.head.appendChild(newScript);
-        })));
-
-        for (const oldScript of inlineScripts) {
-            const newScript = document.createElement('script');
-            newScript.setAttribute('data-dynamic', 'true');
-            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-            newScript.textContent = oldScript.textContent;
-            document.head.appendChild(newScript);
+    /* Resize: reset on mobile */
+    window.addEventListener('resize', () => {
+        if (!isDesktop()) {
+            aside.classList.remove('sidebar-collapsed');
+            hoverZone.style.display = 'none';
+            toggleTab.style.display = 'none';
+            edgeLine.classList.remove('el-visible');
+            collapsed = false;
         }
+    });
+})();
 
-        setTimeout(() => restoreCoreModalFunctions(), 0);
-
-    } catch (e) {
-        area.innerHTML = `<div class="p-10 text-center font-bold" style="color:var(--day-accent)">Load Failed.</div>`;
-    }
-}
-
-/* ============================================================
-   LOGOUT
-============================================================ */
-window.adminLogout = function() {
-    if (confirm("Logout?")) {
-        const name = sessionStorage.getItem('loggedInUser');
-        const doLogout = () => {
-            sessionStorage.clear();
-            window.location.replace("index.html");
-        };
-        if (name) {
-            db.ref('users/' + name).update({ online_sts: 'OFF' })
-                .then(doLogout).catch(doLogout);
-        } else {
-            doLogout();
-        }
-    }
-};
-
-/* ============================================================
-   ONLINE USERS TRACKER
-   - Reads from Firebase: presence/{uid} = { name, lastSeen, profileImg, role }
-   - Falls back to users/{uid} if presence node absent
-   - Considers "online" = lastSeen within last 5 minutes
-============================================================ */
+/* ── Online Users Tracker ── */
 (function initOnlineTracker() {
-    const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
-
-    /* ---- day-specific panel labels ---- */
-    const DAY_LABELS = {
-        0: '🌑 STANDBY', 1: '📡 NETWORK', 2: '🖥️ ACTIVE',
-        3: '🔴 ALERT', 4: '🌌 COSMIC', 5: '🔥 FORGE', 6: '🌙 OFFLINE'
-    };
+    const THRESHOLD = 5 * 60 * 1000;
+    const DAY_LABELS = {0:'🌑 STANDBY',1:'📡 NETWORK',2:'🖥️ ACTIVE',3:'🔴 ALERT',4:'🌌 COSMIC',5:'🔥 FORGE',6:'🌙 OFFLINE'};
     const dayOfWeek = new Date().getDay();
 
-    /* Format elapsed time as short string */
-    function formatElapsed(ms) {
-        const s = Math.floor(ms / 1000);
-        if (s < 60) return `${s}s ago`;
-        const m = Math.floor(s / 60);
-        if (m < 60) return `${m}m ago`;
-        const h = Math.floor(m / 60);
-        return `${h}h ago`;
+    function fmtElapsed(ms) {
+        const s = Math.floor(ms/1000); if(s<60) return `${s}s ago`;
+        const m = Math.floor(s/60);   if(m<60) return `${m}m ago`;
+        return `${Math.floor(m/60)}h ago`;
     }
-
-    /* Format to HH:MM */
-    function formatHHMM(ts) {
+    function fmtHHMM(ts) {
         const d = new Date(ts);
         return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
 
-    /* Render sidebar panel */
-    function renderSidebarOnline(users) {
+    function renderSidebar(users) {
         const listEl = document.getElementById('onlineUsersList');
         const countEl = document.getElementById('onlineCountBadge');
         const labelEl = document.getElementById('onlinePanelLabel');
         if (!listEl) return;
-
         if (labelEl) labelEl.textContent = DAY_LABELS[dayOfWeek] || 'CONNECTED';
-
         const now = Date.now();
-        const online = users.filter(u => (now - u.lastSeen) < ONLINE_THRESHOLD_MS)
-                            .sort((a, b) => b.lastSeen - a.lastSeen);
-
-        if (countEl) {
-            countEl.textContent = online.length;
-            // re-trigger pop animation
-            countEl.classList.remove('countPop-trigger');
-            void countEl.offsetWidth;
-            countEl.classList.add('countPop-trigger');
-        }
-
-        if (online.length === 0) {
-            listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`;
-            return;
-        }
-
-        listEl.innerHTML = online.map((u, i) => {
-            const elapsed = now - u.lastSeen;
-            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
-            const loginStr = formatHHMM(u.loginTime || u.lastSeen);
-            const imgSrc = u.profileImg
-                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
+        const online = users.filter(u => (now - u.lastSeen) < THRESHOLD).sort((a,b) => b.lastSeen - a.lastSeen);
+        if (countEl) countEl.textContent = online.length;
+        if (!online.length) { listEl.innerHTML = `<div class="online-empty">NO ACTIVE SESSIONS</div>`; return; }
+        listEl.innerHTML = online.map((u,i) => {
+            const elapsed = now - u.lastSeen, timeStr = elapsed < 120000 ? 'LIVE' : fmtElapsed(elapsed);
+            const loginStr = fmtHHMM(u.loginTime || u.lastSeen);
+            const imgSrc = u.profileImg ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b&size=64`;
             const isLive = elapsed < 120000;
-            return `<div class="online-user-item" style="animation-delay:${i * 0.05}s">
-                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name}"
-                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
+            return `<div class="online-user-item" style="animation-delay:${i*.05}s">
+                <img src="${imgSrc}" class="online-user-avatar" alt="${u.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
                 <div class="flex flex-col flex-1 min-w-0">
                     <span class="online-user-name">${u.name}</span>
-                    <span style="font-size:0.48rem;color:#475569;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">${u.role || 'Staff'} · IN ${loginStr}</span>
+                    <span style="font-size:.48rem;color:#475569;font-weight:700;letter-spacing:.05em;text-transform:uppercase;">${u.role||'Staff'} · IN ${loginStr}</span>
                 </div>
                 <div class="flex flex-col items-end gap-0.5">
                     <span class="online-user-time">${timeStr}</span>
@@ -1547,29 +1281,17 @@ window.adminLogout = function() {
         }).join('');
     }
 
-    /* Render mobile strip */
-    function renderMobileOnline(users) {
-        const listEl = document.getElementById('mobileOnlineList');
-        if (!listEl) return;
-
+    function renderMobile(users) {
+        const listEl = document.getElementById('mobileOnlineList'); if (!listEl) return;
         const now = Date.now();
-        const online = users.filter(u => (now - u.lastSeen) < ONLINE_THRESHOLD_MS)
-                            .sort((a, b) => b.lastSeen - a.lastSeen);
-
-        if (online.length === 0) {
-            listEl.innerHTML = `<span class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">NO SESSIONS</span>`;
-            return;
-        }
-
-        listEl.innerHTML = online.map((u, i) => {
-            const elapsed = Date.now() - u.lastSeen;
-            const timeStr = elapsed < 120000 ? 'LIVE' : formatElapsed(elapsed);
-            const imgSrc = u.profileImg
-                ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
+        const online = users.filter(u => (now - u.lastSeen) < THRESHOLD).sort((a,b) => b.lastSeen - a.lastSeen);
+        if (!online.length) { listEl.innerHTML = `<span class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">NO SESSIONS</span>`; return; }
+        listEl.innerHTML = online.map((u,i) => {
+            const elapsed = Date.now() - u.lastSeen, timeStr = elapsed < 120000 ? 'LIVE' : fmtElapsed(elapsed);
+            const imgSrc = u.profileImg ? (u.profileImg.includes('/') ? u.profileImg : `images/profile/${u.profileImg}`)
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b&size=32`;
-            return `<div class="mobile-online-user" style="animation-delay:${i * 0.06}s">
-                <img src="${imgSrc}" alt="${u.name}"
-                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
+            return `<div class="mobile-online-user" style="animation-delay:${i*.06}s">
+                <img src="${imgSrc}" alt="${u.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0D1A24&color=64748b'">
                 <span class="mobile-online-user-name">${u.name}</span>
                 <span class="mobile-online-user-time">${timeStr}</span>
                 ${elapsed < 120000 ? '<span class="mobile-online-dot"></span>' : ''}
@@ -1577,90 +1299,34 @@ window.adminLogout = function() {
         }).join('');
     }
 
-/* Fetch and merge presence + user data -> Filter by users online_sts */
-    function fetchOnlineUsers() {
-        if (!window.db) return;
-
+    function buildUserList(usersData) {
         const now = Date.now();
-
-        // users 노드를 조회하여 online_sts가 'ON'인 유저만 필터링합니다.
-        db.ref('users').once('value').then(usersSnap => {
-            const usersData = usersSnap ? (usersSnap.val() || {}) : {};
-            let userList = [];
-
-            Object.keys(usersData).forEach(uid => {
-                const u = usersData[uid];
-                // online_sts가 'ON'인 스태프만 목록에 포함
-                if (u && u.online_sts === 'ON') {
-                    const lastSeen = u.lastSeen || u.lastOnline || u.updatedAt || now;
-                    userList.push({
-                        name: u.name || uid,
-                        role: u.role || 'Staff',
-                        profileImg: u.profileImg || '',
-                        lastSeen: typeof lastSeen === 'number' ? lastSeen : now,
-                        loginTime: u.loginTime || u.connectedAt || lastSeen
-                    });
-                }
-            });
-
-            renderSidebarOnline(userList);
-            renderMobileOnline(userList);
-        }).catch(err => console.error("Fetch online users error:", err));
-    }
-
-    /* Live listener on users node tracking online_sts */
-    function startPresenceListener() {
-        if (!window.db) return;
-
-        // 실시간으로 users 노드의 상태 변화를 감지합니다.
-        db.ref('users').on('value', snap => {
-            const usersData = snap.val() || {};
-            const now = Date.now();
-            let userList = [];
-
-            Object.keys(usersData).forEach(uid => {
-                const u = usersData[uid];
-                // online_sts가 'ON'인 스태프 실시간 필터링
-                if (u && u.online_sts === 'ON') {
-                    const lastSeen = u.lastSeen || u.lastOnline || u.updatedAt || now;
-                    userList.push({
-                        name: u.name || uid,
-                        role: u.role || 'Staff',
-                        profileImg: u.profileImg || '',
-                        lastSeen: typeof lastSeen === 'number' ? lastSeen : now,
-                        loginTime: u.loginTime || u.connectedAt || lastSeen
-                    });
-                }
-            });
-
-            renderSidebarOnline(userList);
-            renderMobileOnline(userList);
+        return Object.keys(usersData).filter(uid => usersData[uid]?.online_sts === 'ON').map(uid => {
+            const u = usersData[uid];
+            const lastSeen = u.lastSeen || u.lastOnline || u.updatedAt || now;
+            return { name: u.name || uid, role: u.role || 'Staff', profileImg: u.profileImg || '', lastSeen: typeof lastSeen === 'number' ? lastSeen : now, loginTime: u.loginTime || u.connectedAt || lastSeen };
         });
     }
 
-    /* Init with delay to ensure db is ready */
-    function initWhenReady() {
-        if (window.db) {
-            fetchOnlineUsers();
-            startPresenceListener();
-            // Refresh elapsed time labels every 30s
-            setInterval(() => {
-                if (!window.db) return;
-                fetchOnlineUsers();
-            }, 30000);
-        } else {
-            setTimeout(initWhenReady, 300);
-        }
+    function startListener() {
+        if (!window.db) { setTimeout(startListener, 300); return; }
+        db.ref('users').on('value', snap => {
+            const ul = buildUserList(snap.val() || {});
+            renderSidebar(ul); renderMobile(ul);
+        });
+        setInterval(() => {
+            if (!window.db) return;
+            db.ref('users').once('value').then(snap => {
+                const ul = buildUserList(snap.val() || {});
+                renderSidebar(ul); renderMobile(ul);
+            });
+        }, 30000);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(initWhenReady, 500);
-    });
+    document.addEventListener('DOMContentLoaded', () => { setTimeout(startListener, 500); });
 })();
 
-/* ============================================================
-   INIT
-============================================================ */
+/* ── Init ── */
 window.addEventListener('DOMContentLoaded', () => {
     restoreCoreModalFunctions();
     updateAdminWeather();
