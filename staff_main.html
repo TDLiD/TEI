@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<meta name="theme-color" content="#0a0e27">
+<meta name="theme-color" content="#05060d">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Daily System</title>
@@ -11,7 +11,7 @@
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Serif+JP:wght@300;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&family=DM+Serif+Display&family=Bungee&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Serif+JP:wght@300;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&family=DM+Serif+Display&family=Bungee&family=Inter:wght@400;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 
 <!-- Firebase -->
@@ -21,18 +21,17 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════
-   CSS CUSTOM PROPERTIES — injected per day via <body> class
+   ROOT — every day is dark. Shape + palette change per day.
 ══════════════════════════════════════════════════════════ */
 :root {
   --card-perspective: 900px;
   --card-hover-lift: -8px;
   --card-hover-scale: 1.03;
-  --anim-dur: 0.35s;
+  --anim-dur: 0.3s;
+  --grid-cols: 2;
+  --card-min-h: clamp(108px, 22vw, 150px);
 }
 
-/* ══════════════════════════════════════════════════════════
-   RESET
-══════════════════════════════════════════════════════════ */
 *, *::before, *::after {
   margin: 0; padding: 0;
   box-sizing: border-box;
@@ -47,12 +46,13 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: background 0.5s ease, color 0.5s ease;
+  background: #05060d;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
-/* ══════════════════════════════════════════════════════════
-   SCROLLABLE WRAPPER
-══════════════════════════════════════════════════════════ */
+/* Hidden SVG clip-path defs (heart shape, objectBoundingBox = fully responsive) */
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
 .content-wrapper {
   position: relative;
   z-index: 10;
@@ -65,13 +65,11 @@ body {
   padding: clamp(4.25rem, 12vw, 5.5rem) clamp(1rem, 4vw, 1.5rem) clamp(1rem, 3vw, 1.5rem);
   overflow-y: auto;
   scrollbar-width: none;
-  gap: clamp(0.65rem, 2.2vw, 1.1rem);
+  gap: clamp(0.7rem, 2.4vw, 1.2rem);
 }
 .content-wrapper::-webkit-scrollbar { display: none; }
 
-/* ══════════════════════════════════════════════════════════
-   BACKGROUND LAYER
-══════════════════════════════════════════════════════════ */
+/* Background layer — CPU-cheap: gradients + at most 1-2 static/CSS-animated nodes */
 #bg-layer {
   position: fixed;
   inset: 0;
@@ -95,16 +93,10 @@ body {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--topbar-border, rgba(255,255,255,0.08));
   background: var(--topbar-bg, rgba(0,0,0,0.6));
-  transition: background 0.5s, border-color 0.5s;
+  transition: background 0.4s, border-color 0.4s;
 }
 
-.profile-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-width: 0;
-  max-width: 58%;
-}
+.profile-pill { display: flex; align-items: center; gap: 0.55rem; min-width: 0; max-width: 58%; }
 
 .profile-img {
   width: clamp(1.85rem, 7.5vw, 2.35rem);
@@ -114,7 +106,7 @@ body {
   flex-shrink: 0;
   border: 2px solid var(--accent, #6366f1);
   box-shadow: 0 0 0 3px var(--accent-glow, rgba(99,102,241,0.2));
-  transition: border-color 0.5s, box-shadow 0.5s;
+  transition: border-color 0.4s, box-shadow 0.4s;
 }
 
 .profile-name {
@@ -127,13 +119,7 @@ body {
   font-family: var(--font-ui, 'Pretendard', sans-serif);
 }
 
-.day-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
-  flex-shrink: 0;
-}
+.day-chip { display: flex; flex-direction: column; align-items: flex-end; gap: 0; flex-shrink: 0; }
 .chip-label {
   font-size: clamp(0.5rem, 1.9vw, 0.62rem);
   font-weight: 700;
@@ -152,51 +138,31 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   HEADER SECTION
+   HEADER
 ══════════════════════════════════════════════════════════ */
-.header-section {
-  text-align: center;
-  width: 100%;
-  animation: fadeSlideDown 0.55s cubic-bezier(0.22,1,0.36,1) both;
-}
-
-@keyframes fadeSlideDown {
-  from { opacity: 0; transform: translateY(-14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.header-section { text-align: center; width: 100%; animation: fadeSlideDown 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
 
 .live-time-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: clamp(0.62rem, 2.4vw, 0.72rem);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   margin-bottom: clamp(0.45rem, 1.8vw, 0.75rem);
   color: var(--accent, #6366f1);
   font-family: var(--font-display, 'Inter', sans-serif);
 }
-
 .live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
+  width: 6px; height: 6px; border-radius: 50%;
   background: var(--accent, #6366f1);
   box-shadow: 0 0 8px var(--accent, #6366f1);
   animation: livePulse 2.4s ease-in-out infinite;
   flex-shrink: 0;
 }
-@keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.65); }
-}
+@keyframes livePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.65); } }
 
 .greeting {
   font-size: clamp(1.55rem, 6.5vw, 2.6rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: 800; letter-spacing: -0.02em; line-height: 1.1;
   margin-bottom: clamp(0.18rem, 0.8vw, 0.35rem);
   color: var(--text-primary, #fff);
   font-family: var(--font-display, 'Inter', sans-serif);
@@ -204,31 +170,28 @@ body {
 .greeting em {
   font-style: normal;
   background: var(--accent-gradient, linear-gradient(90deg, #6366f1, #a78bfa));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-
 .sub-label {
   font-size: clamp(0.58rem, 2.3vw, 0.68rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-muted, rgba(255,255,255,0.38));
   font-family: var(--font-ui, 'Pretendard', sans-serif);
 }
 
 /* ══════════════════════════════════════════════════════════
-   3D CARD GRID — Perspective container
+   GRID — device-aware column count via --grid-cols
 ══════════════════════════════════════════════════════════ */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: clamp(0.6rem, 2.4vw, 0.9rem);
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: clamp(0.65rem, 2.4vw, 1rem);
   width: 100%;
   max-width: 480px;
   perspective: var(--card-perspective);
-  animation: fadeSlideUp 0.6s 0.08s cubic-bezier(0.22,1,0.36,1) both;
+  animation: fadeSlideUp 0.55s 0.06s cubic-bezier(0.22,1,0.36,1) both;
 }
+body.is-desktop .menu-grid { max-width: 620px; }
 
 .bottom-actions {
   display: grid;
@@ -236,153 +199,146 @@ body {
   gap: clamp(0.5rem, 2vw, 0.72rem);
   width: 100%;
   max-width: 480px;
-  animation: fadeSlideUp 0.6s 0.16s cubic-bezier(0.22,1,0.36,1) both;
+  animation: fadeSlideUp 0.55s 0.12s cubic-bezier(0.22,1,0.36,1) both;
 }
+body.is-desktop .bottom-actions { max-width: 620px; }
 
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── 3D Card base ── */
+/* ── Card base — shape comes from per-day rules below ── */
 .menu-card, .action-btn {
   position: relative;
   border-radius: var(--card-radius, 14px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; text-decoration: none; color: inherit;
   overflow: hidden;
   border: 1px solid var(--card-border, rgba(255,255,255,0.12));
   background: var(--card-bg, rgba(255,255,255,0.05));
-  /* Multi-layer shadow = 3D floating depth */
   box-shadow:
     0 1px 0 0 var(--card-shine, rgba(255,255,255,0.07)) inset,
-    0 2px 4px rgba(0,0,0,0.12),
-    0 6px 14px rgba(0,0,0,0.18),
-    0 14px 32px var(--card-shadow-far, rgba(0,0,0,0.28));
+    0 2px 4px rgba(0,0,0,0.2),
+    0 8px 20px var(--card-shadow-far, rgba(0,0,0,0.4));
   transform: translateZ(0);
   will-change: transform;
-  transition:
-    transform var(--anim-dur) cubic-bezier(0.34,1.56,0.64,1),
-    box-shadow var(--anim-dur) ease,
-    border-color var(--anim-dur) ease;
-  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--anim-dur) cubic-bezier(0.34,1.56,0.64,1), box-shadow var(--anim-dur) ease, border-color var(--anim-dur) ease;
 }
 
 .menu-card {
   padding: clamp(0.9rem, 3.8vw, 1.4rem) clamp(0.7rem, 2.8vw, 1rem);
   gap: clamp(0.45rem, 1.8vw, 0.7rem);
-  min-height: clamp(105px, 21vw, 145px);
+  min-height: var(--card-min-h);
 }
-
 .action-btn {
   padding: clamp(0.6rem, 2.4vw, 0.85rem) clamp(0.35rem, 1.4vw, 0.5rem);
   gap: clamp(0.3rem, 1.3vw, 0.48rem);
   min-height: clamp(72px, 16vw, 100px);
-  background: var(--card-bg, rgba(255,255,255,0.05));
   font-family: inherit;
 }
 
-/* 3D lift on hover (desktop) */
 @media (hover: hover) {
   .menu-card:hover {
     transform: translateY(var(--card-hover-lift)) scale(var(--card-hover-scale)) translateZ(0);
     border-color: var(--accent, #6366f1);
     box-shadow:
       0 1px 0 0 var(--card-shine, rgba(255,255,255,0.12)) inset,
-      0 4px 8px rgba(0,0,0,0.18),
-      0 12px 28px rgba(0,0,0,0.22),
-      0 22px 50px var(--card-shadow-far, rgba(0,0,0,0.32)),
+      0 14px 32px rgba(0,0,0,0.4),
       0 0 0 1px var(--accent-glow, rgba(99,102,241,0.2)),
-      0 0 30px var(--accent-glow, rgba(99,102,241,0.12));
+      0 0 26px var(--accent-glow, rgba(99,102,241,0.14));
   }
   .action-btn:hover {
     transform: translateY(-4px) scale(1.04) translateZ(0);
     border-color: var(--accent, #6366f1);
-    box-shadow:
-      0 1px 0 0 var(--card-shine, rgba(255,255,255,0.1)) inset,
-      0 8px 20px rgba(0,0,0,0.22),
-      0 0 0 1px var(--accent-glow, rgba(99,102,241,0.2));
+    box-shadow: 0 1px 0 0 var(--card-shine, rgba(255,255,255,0.1)) inset, 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-glow, rgba(99,102,241,0.2));
   }
 }
-
-/* Active press */
 .menu-card:active { transform: scale(0.96) translateZ(0) !important; }
 .action-btn:active { transform: scale(0.94) translateZ(0) !important; }
 
-/* Card top-edge highlight (3D bevel illusion) */
 .menu-card::before, .action-btn::before {
   content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: var(--card-bevel, linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent));
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: var(--card-bevel, linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent));
   pointer-events: none;
 }
-
-/* Card face overlay */
 .menu-card::after {
   content: '';
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: var(--card-face, linear-gradient(155deg, rgba(255,255,255,0.04) 0%, transparent 55%));
   pointer-events: none;
   border-radius: inherit;
 }
 
-/* Icon */
 .card-icon-wrap {
   width: clamp(2.35rem, 8.5vw, 3.1rem);
   height: clamp(2.35rem, 8.5vw, 3.1rem);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
   transition: transform 0.3s ease, filter 0.3s ease;
 }
-.card-icon-wrap img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-  display: block;
-}
+.card-icon-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .action-icon {
   font-size: clamp(1.4rem, 5.5vw, 1.9rem);
-  line-height: 1;
-  display: block;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  line-height: 1; display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
   transition: transform 0.3s ease;
 }
-
 @media (hover: hover) {
-  .menu-card:hover .card-icon-wrap { transform: translateY(-2px) scale(1.08); filter: drop-shadow(0 6px 14px rgba(0,0,0,0.4)); }
+  .menu-card:hover .card-icon-wrap { transform: translateY(-2px) scale(1.08); }
   .action-btn:hover .action-icon { transform: scale(1.14) translateY(-1px); }
 }
 
 .card-label, .action-label {
   font-size: clamp(0.58rem, 2.3vw, 0.7rem);
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.2;
+  font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+  text-align: center; line-height: 1.2;
   color: var(--card-label, rgba(255,255,255,0.6));
   font-family: var(--font-ui, 'Pretendard', sans-serif);
   transition: color 0.25s ease;
 }
 @media (hover: hover) {
-  .menu-card:hover .card-label,
-  .action-btn:hover .action-label { color: var(--accent, #6366f1); }
+  .menu-card:hover .card-label, .action-btn:hover .action-label { color: var(--accent, #6366f1); }
 }
 
 /* ══════════════════════════════════════════════════════════
-   POPUP MODAL
+   SHAPE SYSTEM — applied per day via body.shape-* classes
+   square / circle / oval / heart — content re-centered so
+   clipping never eats the icon or label.
+══════════════════════════════════════════════════════════ */
+
+/* SQUARE — sharp, minor radius only */
+.shape-square .menu-card { border-radius: var(--card-radius, 10px); }
+
+/* CIRCLE — force 1:1 box then round fully */
+.shape-circle .menu-card {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  border-radius: 50%;
+  padding: clamp(0.8rem, 6vw, 1.6rem);
+}
+.shape-circle .menu-grid { align-items: start; }
+
+/* OVAL — rectangular box, fully rounded -> natural ellipse */
+.shape-oval .menu-card { border-radius: 50%; }
+
+/* HEART — SVG clip-path (objectBoundingBox = scales with element) */
+.shape-heart .menu-card {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  clip-path: url(#heartClip);
+  border-radius: 0;
+  padding: clamp(0.9rem, 6vw, 1.7rem) clamp(0.8rem, 5vw, 1.5rem) clamp(1.5rem, 8vw, 2.2rem);
+  justify-content: flex-start;
+  padding-top: clamp(1.6rem, 9vw, 2.6rem);
+}
+.shape-heart .menu-grid { align-items: start; }
+
+/* ══════════════════════════════════════════════════════════
+   POPUP MODAL (unchanged behaviour, dark styling)
 ══════════════════════════════════════════════════════════ */
 .popup-overlay {
   position: fixed; inset: 0;
-  background: rgba(5,8,20,0.92);
+  background: rgba(3,4,10,0.94);
   backdrop-filter: blur(10px);
   z-index: 9999;
   display: flex; align-items: center; justify-content: center;
@@ -393,14 +349,13 @@ body {
 
 .popup-container {
   position: relative;
-  background: linear-gradient(135deg, #1a1f3a 0%, #232d4d 100%);
-  border: 1px solid rgba(99,102,241,0.3);
+  background: linear-gradient(135deg, #12141f 0%, #1a1d2e 100%);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 16px;
-  max-width: 90vw;
-  max-height: 85vh;
+  max-width: 90vw; max-height: 85vh;
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-  animation: popIn 0.38s cubic-bezier(0.22,1,0.36,1);
+  animation: popIn 0.36s cubic-bezier(0.22,1,0.36,1);
 }
 @keyframes popIn { from { opacity:0; transform:scale(0.9) translateY(10px);} to {opacity:1;transform:scale(1) translateY(0);} }
 
@@ -417,41 +372,23 @@ body {
 
 .popup-content {
   padding: 28px 20px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
   max-height: calc(85vh - 80px);
   overflow-y: auto;
 }
-
-.popup-image {
-  max-width: 100%; max-height: 48vh;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-  object-fit: contain;
-}
-
+.popup-image { max-width: 100%; max-height: 48vh; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); object-fit: contain; }
 .popup-message {
-  font-size: clamp(1.05rem, 3vw, 1.4rem);
-  font-weight: 700;
-  text-align: center;
+  font-size: clamp(1.05rem, 3vw, 1.4rem); font-weight: 700; text-align: center;
   background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   padding: 8px 18px;
   animation: livePulse 2s ease-in-out infinite;
 }
-
 .popup-close-bottom {
-  display: block;
-  width: calc(100% - 40px);
-  margin: 0 20px 18px;
-  padding: 13px 20px;
+  display: block; width: calc(100% - 40px); margin: 0 20px 18px; padding: 13px 20px;
   background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-  border: none; border-radius: 8px;
-  color: white;
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.1em;
+  border: none; border-radius: 8px; color: white;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
   cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 4px 14px rgba(99,102,241,0.35);
@@ -459,399 +396,231 @@ body {
 .popup-close-bottom:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(99,102,241,0.45); }
 
 /* ══════════════════════════════════════════════════════════
-   ▌MON — DEEP SPACE  (dark navy · neon blue · holographic)
+   ▌MON — VOID CIRCUIT  (near-black · electric cyan) · SQUARE
 ══════════════════════════════════════════════════════════ */
 .day-mon {
-  --accent: #38bdf8;
-  --accent-muted: rgba(56,189,248,0.5);
-  --accent-glow: rgba(56,189,248,0.22);
+  --accent: #38bdf8; --accent-muted: rgba(56,189,248,0.5); --accent-glow: rgba(56,189,248,0.22);
   --accent-gradient: linear-gradient(90deg,#38bdf8,#818cf8,#c084fc);
-  --text-primary: #e2e8f0;
-  --text-muted: rgba(148,163,184,0.5);
-  --topbar-bg: rgba(3,6,20,0.85);
-  --topbar-border: rgba(56,189,248,0.18);
-  --card-bg: linear-gradient(160deg, rgba(15,23,42,0.96) 0%, rgba(8,14,32,0.94) 100%);
-  --card-border: rgba(56,189,248,0.18);
-  --card-shine: rgba(56,189,248,0.1);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(56,189,248,0.25), transparent);
-  --card-face: linear-gradient(155deg, rgba(56,189,248,0.05) 0%, transparent 55%);
-  --card-label: rgba(148,163,184,0.65);
-  --card-shadow-far: rgba(0,0,0,0.45);
-  --card-radius: 12px;
-  --font-display: 'Orbitron', sans-serif;
-  --font-ui: 'Pretendard', sans-serif;
-  font-family: 'Pretendard', sans-serif;
-  background: #030614;
-  color: #e2e8f0;
+  --text-primary: #e2e8f0; --text-muted: rgba(148,163,184,0.5);
+  --topbar-bg: rgba(2,4,12,0.85); --topbar-border: rgba(56,189,248,0.18);
+  --card-bg: linear-gradient(160deg, rgba(12,18,34,0.96) 0%, rgba(5,8,18,0.95) 100%);
+  --card-border: rgba(56,189,248,0.2); --card-shine: rgba(56,189,248,0.1);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(56,189,248,0.28), transparent);
+  --card-face: linear-gradient(155deg, rgba(56,189,248,0.06) 0%, transparent 55%);
+  --card-label: rgba(148,163,184,0.65); --card-shadow-far: rgba(0,0,0,0.55);
+  --card-radius: 8px;
+  --font-display: 'Orbitron', sans-serif; --font-ui: 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif; background: #02040a; color: #e2e8f0;
 }
 .day-mon .greeting { font-family: 'Orbitron', sans-serif; font-size: clamp(1.1rem, 4.8vw, 1.95rem); }
 .day-mon .chip-label, .day-mon .chip-num { font-family: 'Orbitron', sans-serif; }
-
-/* Mon BG — static gradient layers, NO animation loops */
 .mon-bg {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 70% 45% at 15% 20%, rgba(56,189,248,0.06) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 50% at 85% 75%, rgba(129,140,248,0.05) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(192,132,252,0.03) 0%, transparent 70%);
+    radial-gradient(ellipse 70% 45% at 15% 20%, rgba(56,189,248,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 50% at 85% 75%, rgba(129,140,248,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .mon-grid {
   position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(56,189,248,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.045) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
   pointer-events: none;
 }
-.mon-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-.mon-orb.o1 {
-  width: 480px; height: 480px;
-  top: -180px; left: -140px;
-  background: radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%);
-  animation: orbFloat 14s ease-in-out infinite;
-}
-.mon-orb.o2 {
-  width: 380px; height: 380px;
-  bottom: -130px; right: -100px;
-  background: radial-gradient(circle, rgba(192,132,252,0.06) 0%, transparent 70%);
-  animation: orbFloat 18s ease-in-out infinite reverse;
-}
-@keyframes orbFloat {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(18px, 14px); }
-}
+.mon-orb { position: absolute; border-radius: 50%; pointer-events: none; }
+.mon-orb.o1 { width: 460px; height: 460px; top: -170px; left: -130px; background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%); animation: orbFloat 16s ease-in-out infinite; }
+.mon-orb.o2 { width: 360px; height: 360px; bottom: -120px; right: -90px; background: radial-gradient(circle, rgba(192,132,252,0.06) 0%, transparent 70%); animation: orbFloat 20s ease-in-out infinite reverse; }
+@keyframes orbFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(16px, 12px); } }
 
 /* ══════════════════════════════════════════════════════════
-   ▌TUE — WABI-SABI PAPER  (warm ivory · ink wash · organic)
+   ▌TUE — SUMI-E NIGHT  (charcoal black · ink gold) · CIRCLE
 ══════════════════════════════════════════════════════════ */
 .day-tue {
-  --accent: #7c6652;
-  --accent-muted: rgba(124,102,82,0.5);
-  --accent-glow: rgba(124,102,82,0.18);
-  --accent-gradient: linear-gradient(90deg,#5c4a35,#a07850,#c8b89a);
-  --text-primary: #2d2621;
-  --text-muted: rgba(92,74,53,0.45);
-  --topbar-bg: rgba(245,239,230,0.88);
-  --topbar-border: rgba(124,102,82,0.18);
-  --card-bg: rgba(255,253,248,0.92);
-  --card-border: rgba(180,155,125,0.35);
-  --card-shine: rgba(255,255,255,0.9);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
-  --card-face: linear-gradient(155deg, rgba(255,255,255,0.45) 0%, transparent 55%);
-  --card-label: rgba(92,74,53,0.7);
-  --card-shadow-far: rgba(92,74,53,0.14);
-  --card-radius: 6px;
-  --font-display: 'Noto Serif JP', serif;
-  --font-ui: 'Noto Serif JP', serif;
-  font-family: 'Noto Serif JP', serif;
-  background: #f0e8dc;
-  color: #2d2621;
+  --accent: #d4b483; --accent-muted: rgba(212,180,131,0.5); --accent-glow: rgba(212,180,131,0.18);
+  --accent-gradient: linear-gradient(90deg,#a07850,#e8d0a0,#a07850);
+  --text-primary: #ece5d8; --text-muted: rgba(200,185,160,0.4);
+  --topbar-bg: rgba(10,9,7,0.88); --topbar-border: rgba(212,180,131,0.18);
+  --card-bg: linear-gradient(160deg, rgba(24,21,17,0.95) 0%, rgba(14,12,9,0.94) 100%);
+  --card-border: rgba(212,180,131,0.25); --card-shine: rgba(212,180,131,0.1);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(212,180,131,0.28), transparent);
+  --card-face: linear-gradient(155deg, rgba(212,180,131,0.05) 0%, transparent 55%);
+  --card-label: rgba(212,180,131,0.65); --card-shadow-far: rgba(0,0,0,0.5);
+  --card-radius: 50%;
+  --font-display: 'Noto Serif JP', serif; --font-ui: 'Noto Serif JP', serif;
+  font-family: 'Noto Serif JP', serif; background: #0c0a08; color: #ece5d8;
 }
 .day-tue .greeting { font-family: 'Noto Serif JP', serif; }
 .day-tue .chip-label, .day-tue .chip-num { font-family: 'Noto Serif JP', serif; }
-
 .tue-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 65% 50% at 10% 15%, rgba(124,102,82,0.06) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 40% at 88% 80%, rgba(92,74,53,0.05) 0%, transparent 65%);
+  background: radial-gradient(ellipse 65% 50% at 10% 15%, rgba(212,180,131,0.06) 0%, transparent 65%), radial-gradient(ellipse 55% 40% at 88% 80%, rgba(212,180,131,0.05) 0%, transparent 65%);
   pointer-events: none;
 }
-.tue-stroke {
-  position: absolute;
-  background: rgba(45,38,33,0.055);
-  border-radius: 2px;
-  pointer-events: none;
-}
-.tue-circle {
+.tue-ensou {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(45,38,33,0.055);
+  border: 2px solid rgba(212,180,131,0.14);
+  border-right-color: transparent;
   pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════════════════
-   ▌WED — ART DECO VAULT  (deep forest · muted gold · beveled)
+   ▌WED — OBSIDIAN VAULT  (black-green · muted gold) · OVAL
 ══════════════════════════════════════════════════════════ */
 .day-wed {
-  --accent: #c8a84b;
-  --accent-muted: rgba(200,168,75,0.5);
-  --accent-glow: rgba(200,168,75,0.18);
+  --accent: #c8a84b; --accent-muted: rgba(200,168,75,0.5); --accent-glow: rgba(200,168,75,0.18);
   --accent-gradient: linear-gradient(90deg,#a07830,#e8d48a,#a07830);
-  --text-primary: #f0e8d0;
-  --text-muted: rgba(210,185,120,0.4);
-  --topbar-bg: rgba(10,18,11,0.88);
-  --topbar-border: rgba(200,168,75,0.2);
-  --card-bg: linear-gradient(160deg, rgba(16,28,17,0.97) 0%, rgba(10,18,12,0.95) 100%);
-  --card-border: rgba(200,168,75,0.28);
-  --card-shine: rgba(200,168,75,0.1);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(200,168,75,0.3), transparent);
+  --text-primary: #f0e8d0; --text-muted: rgba(210,185,120,0.4);
+  --topbar-bg: rgba(6,10,7,0.88); --topbar-border: rgba(200,168,75,0.2);
+  --card-bg: linear-gradient(160deg, rgba(10,17,11,0.97) 0%, rgba(6,10,7,0.95) 100%);
+  --card-border: rgba(200,168,75,0.3); --card-shine: rgba(200,168,75,0.1);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(200,168,75,0.32), transparent);
   --card-face: linear-gradient(155deg, rgba(200,168,75,0.06) 0%, transparent 55%);
-  --card-label: rgba(200,168,75,0.6);
-  --card-shadow-far: rgba(0,0,0,0.5);
-  --card-radius: 0px;
-  --font-display: 'Cormorant Garamond', serif;
-  --font-ui: 'Cormorant Garamond', serif;
-  font-family: 'Cormorant Garamond', serif;
-  background: #080e09;
-  color: #f0e8d0;
+  --card-label: rgba(200,168,75,0.62); --card-shadow-far: rgba(0,0,0,0.55);
+  --card-radius: 50%;
+  --font-display: 'Cormorant Garamond', serif; --font-ui: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', serif; background: #04070a; color: #f0e8d0;
 }
 .day-wed .greeting { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(1.55rem, 6.3vw, 2.55rem); }
 .day-wed .chip-label, .day-wed .chip-num { font-family: 'Cormorant Garamond', serif; }
 .day-wed .chip-label { font-style: italic; letter-spacing: 0.22em; }
 .day-wed .card-label, .day-wed .action-label { font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0.12em; font-size: clamp(0.65rem, 2.5vw, 0.78rem); }
-
-/* Deco corners on cards */
-.day-wed .menu-card::before,
-.day-wed .action-btn::before {
-  background: none;
-}
-.day-wed .menu-card,
-.day-wed .action-btn {
-  outline: 1px solid rgba(200,168,75,0.12);
-  outline-offset: -4px;
-}
-
 .wed-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 60% 45% at 20% 20%, rgba(200,168,75,0.05) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 80% 78%, rgba(140,100,30,0.04) 0%, transparent 65%);
+  background: radial-gradient(ellipse 60% 45% at 20% 20%, rgba(200,168,75,0.06) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 80% 78%, rgba(140,100,30,0.05) 0%, transparent 65%);
   pointer-events: none;
 }
-.wed-diamond {
-  position: absolute;
-  border: 1px solid rgba(200,168,75,0.08);
-  transform: rotate(45deg);
-  pointer-events: none;
-}
-.wed-hline {
-  position: absolute; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200,168,75,0.14), transparent);
-  pointer-events: none;
-}
+.wed-diamond { position: absolute; border: 1px solid rgba(200,168,75,0.09); transform: rotate(45deg); pointer-events: none; }
+.wed-hline { position: absolute; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(200,168,75,0.16), transparent); pointer-events: none; }
 
 /* ══════════════════════════════════════════════════════════
-   ▌THU — TERRA VERDE  (warm sand · forest green · organic)
+   ▌THU — NIGHT TERRA  (black-forest · warm terra) · HEART
 ══════════════════════════════════════════════════════════ */
 .day-thu {
-  --accent: #4d8c44;
-  --accent-muted: rgba(77,140,68,0.5);
-  --accent-glow: rgba(77,140,68,0.18);
-  --accent-gradient: linear-gradient(90deg,#2d6124,#6aaa5f,#b46e46);
-  --text-primary: #2c2015;
-  --text-muted: rgba(88,72,50,0.45);
-  --topbar-bg: rgba(245,240,230,0.88);
-  --topbar-border: rgba(110,85,55,0.2);
-  --card-bg: rgba(255,253,245,0.93);
-  --card-border: rgba(140,105,70,0.22);
-  --card-shine: rgba(255,255,255,0.9);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
-  --card-face: linear-gradient(155deg, rgba(255,255,255,0.4) 0%, transparent 55%);
-  --card-label: rgba(88,72,50,0.7);
-  --card-shadow-far: rgba(88,72,50,0.12);
-  --card-radius: 18px 4px 18px 4px;
-  --font-display: 'DM Serif Display', serif;
-  --font-ui: 'Pretendard', sans-serif;
-  font-family: 'DM Serif Display', serif;
-  background: #f0ebe0;
-  color: #2c2015;
+  --accent: #6fbf5f; --accent-muted: rgba(111,191,95,0.5); --accent-glow: rgba(111,191,95,0.2);
+  --accent-gradient: linear-gradient(90deg,#4d8c44,#8fcf7f,#d99a5b);
+  --text-primary: #eef0e6; --text-muted: rgba(190,200,175,0.42);
+  --topbar-bg: rgba(6,10,6,0.88); --topbar-border: rgba(111,191,95,0.2);
+  --card-bg: linear-gradient(160deg, rgba(11,17,10,0.96) 0%, rgba(6,9,5,0.95) 100%);
+  --card-border: rgba(111,191,95,0.25); --card-shine: rgba(111,191,95,0.1);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(111,191,95,0.28), transparent);
+  --card-face: linear-gradient(155deg, rgba(111,191,95,0.06) 0%, transparent 55%);
+  --card-label: rgba(190,215,175,0.7); --card-shadow-far: rgba(0,0,0,0.55);
+  --card-radius: 14px;
+  --font-display: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif;
+  font-family: 'DM Serif Display', serif; background: #040603; color: #eef0e6;
 }
 .day-thu .greeting { font-family: 'DM Serif Display', serif; }
 .day-thu .chip-label, .day-thu .chip-num { font-family: 'DM Serif Display', serif; }
-
 .thu-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 60% 45% at 8% 10%, rgba(77,140,68,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 40% at 90% 85%, rgba(180,110,70,0.06) 0%, transparent 65%);
+  background: radial-gradient(ellipse 60% 45% at 8% 10%, rgba(111,191,95,0.08) 0%, transparent 65%), radial-gradient(ellipse 55% 40% at 90% 85%, rgba(217,154,91,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .thu-leaf {
-  position: absolute;
-  border: 1px solid rgba(77,140,68,0.1);
-  border-radius: 0 70% 0 70%;
-  pointer-events: none;
-  animation: leafSway 12s ease-in-out infinite;
+  position: absolute; border: 1px solid rgba(111,191,95,0.12); border-radius: 0 70% 0 70%;
+  pointer-events: none; animation: leafSway 13s ease-in-out infinite;
 }
-@keyframes leafSway {
-  0%, 100% { transform: var(--leaf-base, rotate(-20deg)) scale(1); }
-  50% { transform: var(--leaf-base, rotate(-20deg)) scale(1.03) rotate(4deg); }
-}
+@keyframes leafSway { 0%, 100% { transform: var(--leaf-base, rotate(-20deg)) scale(1); } 50% { transform: var(--leaf-base, rotate(-20deg)) scale(1.03) rotate(4deg); } }
 
 /* ══════════════════════════════════════════════════════════
-   ▌FRI — SYNTHWAVE ARCADE  (ultra-dark · hot pink · cyan)
+   ▌FRI — SYNTHWAVE ARCADE  (ultra-dark · pink · cyan) · SQUARE
 ══════════════════════════════════════════════════════════ */
 .day-fri {
-  --accent: #ff00cc;
-  --accent-muted: rgba(255,0,204,0.5);
-  --accent-glow: rgba(255,0,204,0.22);
+  --accent: #ff00cc; --accent-muted: rgba(255,0,204,0.5); --accent-glow: rgba(255,0,204,0.22);
   --accent-gradient: linear-gradient(90deg,#ff00cc,#ffee00,#00eeff);
-  --text-primary: #ffffff;
-  --text-muted: rgba(0,238,255,0.42);
-  --topbar-bg: rgba(8,3,22,0.9);
-  --topbar-border: rgba(255,0,204,0.22);
-  --card-bg: linear-gradient(160deg, rgba(24,5,50,0.97) 0%, rgba(12,2,30,0.95) 100%);
-  --card-border: rgba(255,0,204,0.28);
-  --card-shine: rgba(255,0,204,0.08);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(255,0,204,0.28), transparent);
+  --text-primary: #ffffff; --text-muted: rgba(0,238,255,0.42);
+  --topbar-bg: rgba(6,2,16,0.9); --topbar-border: rgba(255,0,204,0.22);
+  --card-bg: linear-gradient(160deg, rgba(20,4,42,0.97) 0%, rgba(9,2,22,0.95) 100%);
+  --card-border: rgba(255,0,204,0.3); --card-shine: rgba(255,0,204,0.08);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(255,0,204,0.3), transparent);
   --card-face: linear-gradient(155deg, rgba(255,0,204,0.05) 0%, transparent 55%);
-  --card-label: rgba(0,238,255,0.6);
-  --card-shadow-far: rgba(255,0,204,0.18);
+  --card-label: rgba(0,238,255,0.6); --card-shadow-far: rgba(255,0,204,0.2);
   --card-radius: 0px;
-  --font-display: 'Bungee', cursive;
-  --font-ui: 'Bungee', cursive;
-  font-family: 'Bungee', cursive;
-  background: #06021a;
-  color: #fff;
+  --font-display: 'Bungee', cursive; --font-ui: 'Bungee', cursive;
+  font-family: 'Bungee', cursive; background: #04010d; color: #fff;
 }
 .day-fri .greeting { font-family: 'Bungee', cursive; font-size: clamp(1.1rem, 4.8vw, 1.85rem); }
 .day-fri .chip-label, .day-fri .chip-num { font-family: 'Bungee', cursive; }
 .day-fri .chip-label { font-size: clamp(0.44rem, 1.7vw, 0.55rem); }
 .day-fri .card-label, .day-fri .action-label { font-family: 'Bungee', cursive; font-size: clamp(0.48rem, 1.9vw, 0.58rem); }
-.day-fri .greeting em { animation: friShift 3s linear infinite; }
-@keyframes friShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-.day-fri .greeting em {
-  background-size: 200% 100%;
-}
-
-/* Clipped card corners */
-.day-fri .menu-card,
+.day-fri .greeting em { background-size: 200% 100%; animation: friShift 3s linear infinite; }
+@keyframes friShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.day-fri.shape-square .menu-card,
 .day-fri .action-btn {
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 }
-.day-fri .action-btn {
-  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
-}
-
+.day-fri .action-btn { clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px)); }
 .fri-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 50% 40% at 50% 10%, rgba(255,0,204,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 35% at 20% 80%, rgba(0,238,255,0.06) 0%, transparent 65%);
+  background: radial-gradient(ellipse 50% 40% at 50% 10%, rgba(255,0,204,0.08) 0%, transparent 65%), radial-gradient(ellipse 45% 35% at 20% 80%, rgba(0,238,255,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .fri-grid {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 45%;
-  background:
-    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.065) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,238,255,0.055) 40px);
-  transform: perspective(320px) rotateX(34deg);
-  transform-origin: bottom center;
+  position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.07) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,238,255,0.06) 40px);
+  transform: perspective(320px) rotateX(34deg); transform-origin: bottom center;
   pointer-events: none;
 }
-.fri-star {
-  position: absolute;
-  background: #fff;
-  border-radius: 50%;
+/* Starfield = ONE element, many box-shadows, ONE opacity animation (not 40 DOM nodes / 40 timers) */
+.fri-stars {
+  position: absolute; width: 2px; height: 2px; background: transparent; top: 0; left: 0;
+  animation: starTwinkle 4s ease-in-out infinite;
   pointer-events: none;
-  animation: starTwinkle 3s ease-in-out infinite;
 }
-@keyframes starTwinkle {
-  0%, 100% { opacity: 0.12; }
-  50% { opacity: 0.85; }
-}
+@keyframes starTwinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.9; } }
 
 /* ══════════════════════════════════════════════════════════
-   ▌SAT — ARCTIC GLASS  (steel blue · silver · frost depth)
+   ▌SAT — GLACIAL VOID  (black-blue · frosted steel) · CIRCLE
 ══════════════════════════════════════════════════════════ */
 .day-sat {
-  --accent: #60a5fa;
-  --accent-muted: rgba(96,165,250,0.5);
-  --accent-glow: rgba(96,165,250,0.2);
+  --accent: #7db8ff; --accent-muted: rgba(125,184,255,0.5); --accent-glow: rgba(125,184,255,0.2);
   --accent-gradient: linear-gradient(90deg,#60a5fa,#a5c8ff,#c7d7f0);
-  --text-primary: #e8f0fe;
-  --text-muted: rgba(148,172,210,0.5);
-  --topbar-bg: rgba(10,18,38,0.85);
-  --topbar-border: rgba(96,165,250,0.18);
-  --card-bg: linear-gradient(160deg, rgba(188,213,250,0.18) 0%, rgba(140,180,240,0.1) 100%);
-  --card-border: rgba(188,213,250,0.35);
-  --card-shine: rgba(255,255,255,0.3);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  --card-face: linear-gradient(155deg, rgba(255,255,255,0.18) 0%, transparent 55%);
-  --card-label: rgba(148,172,210,0.75);
-  --card-shadow-far: rgba(10,30,80,0.3);
-  --card-radius: 16px;
-  --font-display: 'Inter', sans-serif;
-  --font-ui: 'Inter', sans-serif;
-  font-family: 'Inter', sans-serif;
-  background: #08122a;
-  color: #e8f0fe;
+  --text-primary: #e8f0fe; --text-muted: rgba(148,172,210,0.5);
+  --topbar-bg: rgba(4,7,15,0.85); --topbar-border: rgba(125,184,255,0.18);
+  --card-bg: linear-gradient(160deg, rgba(20,30,52,0.55) 0%, rgba(8,14,28,0.7) 100%);
+  --card-border: rgba(150,190,250,0.28); --card-shine: rgba(255,255,255,0.16);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(255,255,255,0.24), transparent);
+  --card-face: linear-gradient(155deg, rgba(255,255,255,0.08) 0%, transparent 55%);
+  --card-label: rgba(200,220,250,0.75); --card-shadow-far: rgba(0,10,40,0.4);
+  --card-radius: 50%;
+  --font-display: 'Inter', sans-serif; --font-ui: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif; background: #03050c; color: #e8f0fe;
 }
 .day-sat .greeting { font-family: 'Inter', sans-serif; font-weight: 800; }
-
 .sat-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 65% 50% at 20% 20%, rgba(96,165,250,0.09) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 45% at 80% 75%, rgba(167,202,250,0.07) 0%, transparent 65%);
+  background: radial-gradient(ellipse 65% 50% at 20% 20%, rgba(125,184,255,0.1) 0%, transparent 65%), radial-gradient(ellipse 55% 45% at 80% 75%, rgba(167,202,250,0.08) 0%, transparent 65%);
   pointer-events: none;
 }
-.sat-frost {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(188,213,250,0.1);
-  pointer-events: none;
-}
+.sat-frost { position: absolute; border-radius: 50%; border: 1px solid rgba(188,213,250,0.12); pointer-events: none; }
 
 /* ══════════════════════════════════════════════════════════
-   ▌SUN — SUNSET EMBER  (bordeaux · burnt orange · warm depth)
+   ▌SUN — EMBER NIGHT  (black-ember · rose-amber) · OVAL
 ══════════════════════════════════════════════════════════ */
 .day-sun {
-  --accent: #f97316;
-  --accent-muted: rgba(249,115,22,0.5);
-  --accent-glow: rgba(249,115,22,0.2);
+  --accent: #f97316; --accent-muted: rgba(249,115,22,0.5); --accent-glow: rgba(249,115,22,0.2);
   --accent-gradient: linear-gradient(90deg,#be185d,#f97316,#fbbf24);
-  --text-primary: #fdf0e8;
-  --text-muted: rgba(250,200,160,0.42);
-  --topbar-bg: rgba(22,6,4,0.88);
-  --topbar-border: rgba(249,115,22,0.2);
-  --card-bg: linear-gradient(160deg, rgba(48,14,8,0.96) 0%, rgba(32,6,4,0.94) 100%);
-  --card-border: rgba(249,115,22,0.25);
-  --card-shine: rgba(249,115,22,0.08);
-  --card-bevel: linear-gradient(90deg, transparent, rgba(249,115,22,0.28), transparent);
+  --text-primary: #fdf0e8; --text-muted: rgba(250,200,160,0.42);
+  --topbar-bg: rgba(14,4,3,0.88); --topbar-border: rgba(249,115,22,0.2);
+  --card-bg: linear-gradient(160deg, rgba(34,10,6,0.96) 0%, rgba(16,3,2,0.94) 100%);
+  --card-border: rgba(249,115,22,0.28); --card-shine: rgba(249,115,22,0.08);
+  --card-bevel: linear-gradient(90deg, transparent, rgba(249,115,22,0.3), transparent);
   --card-face: linear-gradient(155deg, rgba(249,115,22,0.06) 0%, transparent 55%);
-  --card-label: rgba(250,185,120,0.65);
-  --card-shadow-far: rgba(0,0,0,0.5);
-  --card-radius: 10px;
-  --font-display: 'DM Serif Display', serif;
-  --font-ui: 'Pretendard', sans-serif;
-  font-family: 'DM Serif Display', serif;
-  background: #160403;
-  color: #fdf0e8;
+  --card-label: rgba(250,185,120,0.65); --card-shadow-far: rgba(0,0,0,0.55);
+  --card-radius: 50%;
+  --font-display: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif;
+  font-family: 'DM Serif Display', serif; background: #0a0201; color: #fdf0e8;
 }
 .day-sun .greeting { font-family: 'DM Serif Display', serif; }
 .day-sun .chip-label, .day-sun .chip-num { font-family: 'DM Serif Display', serif; }
-
 .sun-bg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 55% 40% at 50% -5%, rgba(249,115,22,0.1) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 35% at 20% 85%, rgba(190,24,93,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 85% 70%, rgba(251,191,36,0.06) 0%, transparent 65%);
+  background: radial-gradient(ellipse 55% 40% at 50% -5%, rgba(249,115,22,0.1) 0%, transparent 65%), radial-gradient(ellipse 45% 35% at 20% 85%, rgba(190,24,93,0.08) 0%, transparent 65%), radial-gradient(ellipse 40% 30% at 85% 70%, rgba(251,191,36,0.06) 0%, transparent 65%);
   pointer-events: none;
 }
-.sun-ray {
-  position: absolute;
-  top: -40%;
-  left: 50%;
-  transform-origin: bottom center;
-  width: 1px;
-  height: 55%;
-  background: linear-gradient(to bottom, rgba(249,115,22,0.1), transparent);
-  pointer-events: none;
-}
+.sun-ray { position: absolute; top: -40%; left: 50%; transform-origin: bottom center; width: 1px; height: 55%; background: linear-gradient(to bottom, rgba(249,115,22,0.12), transparent); pointer-events: none; }
 
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
@@ -860,29 +629,16 @@ body {
   .bottom-actions { grid-template-columns: repeat(2, 1fr); }
   .action-btn { min-height: clamp(68px, 19vw, 85px); }
 }
-
-@media (min-width: 600px) {
-  .menu-grid, .bottom-actions { max-width: 500px; }
-}
-
-@media (min-width: 1024px) {
-  .menu-grid, .bottom-actions { max-width: 540px; }
-  :root { --card-hover-lift: -10px; }
-}
+body.is-desktop .menu-grid { --grid-cols: 4; }
+body.is-desktop .bottom-actions { grid-template-columns: repeat(4, 1fr); }
+@media (min-width: 1024px) { :root { --card-hover-lift: -10px; } }
 
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .menu-card, .action-btn { transition: none !important; }
-  .mon-orb.o1, .mon-orb.o2 { animation: none; }
-  .thu-leaf { animation: none; }
-  .fri-star { animation: none; }
-  .live-dot { animation: none; }
-  .day-fri .greeting em { animation: none; }
+  .mon-orb.o1, .mon-orb.o2, .thu-leaf, .fri-stars, .live-dot, .day-fri .greeting em { animation: none !important; }
 }
 
-/* ══════════════════════════════════════════════════════════
-   POPUP RESPONSIVE
-══════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   .popup-container { max-width: 95vw; max-height: 90vh; }
   .popup-image { max-height: 40vh; }
@@ -892,6 +648,15 @@ body {
 </head>
 
 <body>
+
+<!-- Responsive SVG clip-path defs (heart shape scales via objectBoundingBox) -->
+<svg class="svg-defs" aria-hidden="true">
+  <defs>
+    <clipPath id="heartClip" clipPathUnits="objectBoundingBox">
+      <path d="M0.5,0.92 C0.15,0.68 -0.02,0.42 0.06,0.22 C0.13,0.04 0.37,0.00 0.5,0.20 C0.63,0.00 0.87,0.04 0.94,0.22 C1.02,0.42 0.85,0.68 0.5,0.92 Z"/>
+    </clipPath>
+  </defs>
+</svg>
 
 <!-- Background layer -->
 <div id="bg-layer" aria-hidden="true"></div>
@@ -908,7 +673,6 @@ body {
 <!-- Main Content -->
 <main class="content-wrapper">
 
-  <!-- Header -->
   <section class="header-section" aria-label="Welcome header">
     <div class="live-time-row" role="timer" aria-live="off">
       <span class="live-dot" aria-hidden="true"></span>
@@ -918,54 +682,38 @@ body {
     <p class="sub-label" id="pageSub">Select a task to continue</p>
   </section>
 
-  <!-- Menu Cards -->
   <nav class="menu-grid" aria-label="Main menu">
     <div class="menu-card" onclick="navigateTo('staff_dashboard.html')" role="button" tabindex="0" aria-label="Attendance">
-      <div class="card-icon-wrap">
-        <img src="images/gif/staff_list/Attendance.gif" alt="" aria-hidden="true">
-      </div>
+      <div class="card-icon-wrap"><img src="images/gif/staff_list/Attendance.gif" alt="" aria-hidden="true"></div>
       <span class="card-label">Attendance</span>
     </div>
-
     <div class="menu-card" onclick="navigateTo('staff_report.html')" role="button" tabindex="0" aria-label="Work Report">
-      <div class="card-icon-wrap">
-        <img src="images/gif/staff_list/work-report.gif" alt="" aria-hidden="true">
-      </div>
+      <div class="card-icon-wrap"><img src="images/gif/staff_list/work-report.gif" alt="" aria-hidden="true"></div>
       <span class="card-label">Work Report</span>
     </div>
-
     <div class="menu-card" onclick="navigateTo('staff_calendar.html')" role="button" tabindex="0" aria-label="Calendar">
-      <div class="card-icon-wrap">
-        <img src="images/gif/staff_list/calendar.gif" alt="" aria-hidden="true">
-      </div>
+      <div class="card-icon-wrap"><img src="images/gif/staff_list/calendar.gif" alt="" aria-hidden="true"></div>
       <span class="card-label">Calendar</span>
     </div>
-
     <div class="menu-card" onclick="navigateTo('staff_vacation.html')" role="button" tabindex="0" aria-label="Vacation">
-      <div class="card-icon-wrap">
-        <img src="images/gif/staff_list/vacation.gif" alt="" aria-hidden="true">
-      </div>
+      <div class="card-icon-wrap"><img src="images/gif/staff_list/vacation.gif" alt="" aria-hidden="true"></div>
       <span class="card-label">Vacation</span>
     </div>
   </nav>
 
-  <!-- Bottom Actions -->
   <nav class="bottom-actions" aria-label="Quick actions">
     <button class="action-btn" onclick="navigateTo('staff_photos.html')">
       <span class="action-icon" aria-hidden="true">📸</span>
       <span class="action-label">Photos</span>
     </button>
-
     <button class="action-btn" onclick="navigateTo('staff_setting.html')">
       <span class="action-icon" aria-hidden="true">⚙️</span>
       <span class="action-label">Settings</span>
     </button>
-
     <button class="action-btn" onclick="handleLogout()">
       <span class="action-icon" aria-hidden="true">🚪</span>
       <span class="action-label">Logout</span>
     </button>
-
     <a href="https://tdlid.github.io" target="_blank" rel="noopener noreferrer" class="action-btn">
       <span class="action-icon" aria-hidden="true">🌐</span>
       <span class="action-label">Homepage</span>
@@ -988,106 +736,110 @@ body {
 
 <script>
 /* ══════════════════════════════════════════════════════════
-   DAY CONFIG — 0=Sun, 1=Mon … 6=Sat (all 7 days)
+   DEVICE DETECTION — runs once, before paint of layout-critical
+   parts, sets body.is-desktop / body.is-mobile. No resize
+   polling: a single matchMedia listener updates the class only
+   if the device class truly changes (crossing the breakpoint).
+══════════════════════════════════════════════════════════ */
+const _dvMQ = window.matchMedia('(hover:hover) and (pointer:fine) and (min-width:1025px)');
+function applyDeviceClass(isDesktop) {
+  document.body.classList.toggle('is-desktop', isDesktop);
+  document.body.classList.toggle('is-mobile', !isDesktop);
+}
+applyDeviceClass(_dvMQ.matches);
+_dvMQ.addEventListener('change', (e) => applyDeviceClass(e.matches));
+
+/* ══════════════════════════════════════════════════════════
+   DAY CONFIG — 0=Sun … 6=Sat. Each has its own palette class
+   (day-*) and shape class (shape-*). Backgrounds are cheap:
+   gradients + at most 2 CSS-animated nodes, no JS animation
+   loops, no per-frame DOM writes.
 ══════════════════════════════════════════════════════════ */
 const DAY_CONFIG = {
   0: {
-    cls: 'day-sun',
-    sub: 'Rest, reflect & recharge ☀️',
-    chipLabel: '☀ Sunday',
+    cls: 'day-sun', shape: 'shape-oval',
+    sub: 'Rest, reflect & recharge ☀️', chipLabel: '☀ Sunday',
     buildBg(el) {
-      const rays = Array.from({length: 12}, (_, i) => {
-        const deg = i * 30;
+      const rays = Array.from({length: 10}, (_, i) => {
+        const deg = i * 36;
         return `<div class="sun-ray" style="transform:rotate(${deg}deg) translateX(-50%);opacity:${0.5 + (i%3)*0.25};"></div>`;
       }).join('');
       el.innerHTML = `<div class="sun-bg"></div>${rays}`;
     }
   },
   1: {
-    cls: 'day-mon',
-    sub: 'New week. New energy. ⚡',
-    chipLabel: '⚡ Monday',
+    cls: 'day-mon', shape: 'shape-square',
+    sub: 'New week. New energy. ⚡', chipLabel: '⚡ Monday',
     buildBg(el) {
-      el.innerHTML = `
-        <div class="mon-bg"></div>
-        <div class="mon-grid"></div>
-        <div class="mon-orb o1"></div>
-        <div class="mon-orb o2"></div>`;
+      el.innerHTML = `<div class="mon-bg"></div><div class="mon-grid"></div><div class="mon-orb o1"></div><div class="mon-orb o2"></div>`;
     }
   },
   2: {
-    cls: 'day-tue',
-    sub: 'Select task to continue',
-    chipLabel: '◎ Tuesday',
+    cls: 'day-tue', shape: 'shape-circle',
+    sub: 'Breathe. Focus. Begin.', chipLabel: '◎ Tuesday',
     buildBg(el) {
       el.innerHTML = `
         <div class="tue-bg"></div>
-        <div class="tue-circle" style="width:480px;height:480px;top:-160px;right:-140px;"></div>
-        <div class="tue-circle" style="width:320px;height:320px;bottom:-110px;left:-110px;"></div>
-        <div class="tue-stroke" style="width:2px;height:60vh;top:8%;left:11%;transform:rotate(-5deg);"></div>
-        <div class="tue-stroke" style="width:1.5px;height:42vh;top:6%;right:17%;transform:rotate(4deg);"></div>`;
+        <div class="tue-ensou" style="width:480px;height:480px;top:-160px;right:-140px;transform:rotate(20deg);"></div>
+        <div class="tue-ensou" style="width:320px;height:320px;bottom:-110px;left:-110px;transform:rotate(-40deg);"></div>`;
     }
   },
   3: {
-    cls: 'day-wed',
-    sub: 'Enter a task to proceed',
-    chipLabel: '◆ Wednesday',
+    cls: 'day-wed', shape: 'shape-oval',
+    sub: 'Precision opens the vault.', chipLabel: '◆ Wednesday',
     buildBg(el) {
       el.innerHTML = `
         <div class="wed-bg"></div>
         <div class="wed-diamond" style="width:400px;height:400px;top:-120px;right:-120px;"></div>
         <div class="wed-diamond" style="width:540px;height:540px;bottom:-175px;left:-175px;"></div>
-        <div class="wed-diamond" style="width:190px;height:190px;top:28%;right:5%;"></div>
         <div class="wed-hline" style="top:16%;"></div>
         <div class="wed-hline" style="bottom:16%;"></div>`;
     }
   },
   4: {
-    cls: 'day-thu',
-    sub: 'Choose a task & begin 🌿',
-    chipLabel: '🌿 Thursday',
+    cls: 'day-thu', shape: 'shape-heart',
+    sub: 'Choose a task & begin 🌿', chipLabel: '🌿 Thursday',
     buildBg(el) {
       el.innerHTML = `
         <div class="thu-bg"></div>
         <div class="thu-leaf" style="width:170px;height:260px;top:3%;right:3%;--leaf-base:rotate(-20deg);animation-delay:0s;"></div>
-        <div class="thu-leaf" style="width:120px;height:190px;bottom:7%;left:2%;--leaf-base:rotate(15deg) scaleX(-1);animation-delay:-5s;"></div>
-        <div class="thu-leaf" style="width:85px;height:130px;top:44%;right:10%;--leaf-base:rotate(-34deg);animation-delay:-8s;"></div>`;
+        <div class="thu-leaf" style="width:120px;height:190px;bottom:7%;left:2%;--leaf-base:rotate(15deg) scaleX(-1);animation-delay:-5s;"></div>`;
     }
   },
   5: {
-    cls: 'day-fri',
-    sub: "TGIF — Let's go 🚀",
-    chipLabel: '🎉 Friday',
+    cls: 'day-fri', shape: 'shape-square',
+    sub: "TGIF — Let's go 🚀", chipLabel: '🎉 Friday',
     buildBg(el) {
-      const stars = Array.from({length: 40}, () => {
+      // Single-element starfield via box-shadow list — one paint, one animation, no 40x DOM nodes
+      const n = 46;
+      const shadows = Array.from({length: n}, () => {
         const x = (Math.random() * 100).toFixed(1);
         const y = (Math.random() * 52).toFixed(1);
-        const s = (Math.random() * 2.2 + 0.8).toFixed(1);
-        const d = (Math.random() * 3).toFixed(2);
-        return `<div class="fri-star" style="left:${x}%;top:${y}%;width:${s}px;height:${s}px;animation-delay:${d}s;"></div>`;
-      }).join('');
-      el.innerHTML = `<div class="fri-bg"></div>${stars}<div class="fri-grid"></div>`;
+        const s = (Math.random() * 1.6 + 0.6).toFixed(1);
+        return `${x}vw ${y}vh 0 ${s}px #fff`;
+      }).join(', ');
+      el.innerHTML = `<div class="fri-bg"></div><div class="fri-stars" style="box-shadow:${shadows};"></div><div class="fri-grid"></div>`;
     }
   },
   6: {
-    cls: 'day-sat',
-    sub: 'Take it easy today 🧊',
-    chipLabel: '🧊 Saturday',
+    cls: 'day-sat', shape: 'shape-circle',
+    sub: 'Take it easy today 🧊', chipLabel: '🧊 Saturday',
     buildBg(el) {
       el.innerHTML = `
         <div class="sat-bg"></div>
         <div class="sat-frost" style="width:460px;height:460px;top:-155px;right:-130px;"></div>
-        <div class="sat-frost" style="width:340px;height:340px;bottom:-115px;left:-115px;border-color:rgba(188,213,250,0.07);"></div>`;
+        <div class="sat-frost" style="width:340px;height:340px;bottom:-115px;left:-115px;border-color:rgba(188,213,250,0.08);"></div>`;
     }
   }
 };
 
 /* ══════════════════════════════════════════════════════════
-   APPLY DAY THEME
+   APPLY DAY THEME + SHAPE — before first paint of content
 ══════════════════════════════════════════════════════════ */
 const todayIdx = new Date().getDay();
+
 const cfg = DAY_CONFIG[todayIdx] || DAY_CONFIG[1];
-document.body.classList.add(cfg.cls);
+document.body.classList.add(cfg.cls, cfg.shape);
 
 /* ══════════════════════════════════════════════════════════
    FIREBASE
@@ -1118,15 +870,14 @@ function handleLogout() {
     location.replace('index.html');
   };
   if (name && database) {
-    database.ref('users/' + name).update({ online_sts: 'OFF' })
-      .then(doLogout).catch(doLogout);
+    database.ref('users/' + name).update({ online_sts: 'OFF' }).then(doLogout).catch(doLogout);
   } else {
     doLogout();
   }
 }
 
 /* ══════════════════════════════════════════════════════════
-   PROFILE
+   PROFILE — single .on() listener, reused DOM nodes
 ══════════════════════════════════════════════════════════ */
 let _profileRef = null;
 
@@ -1140,11 +891,9 @@ function loadProfile(userId) {
     const ud = snap.val() || {};
     const displayName = ud.displayName || userId;
 
-    // Greeting
     const ge = document.getElementById('userGreeting');
     if (ge) ge.textContent = displayName;
 
-    // Profile img
     let img = container.querySelector('.profile-img');
     if (!img) {
       img = document.createElement('img');
@@ -1153,11 +902,8 @@ function loadProfile(userId) {
       container.appendChild(img);
     }
     img.src = ud.profileImg ? `images/profile/${ud.profileImg}` : 'images/default-profile.png';
-    img.onerror = () => {
-      img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6366f1&color=fff`;
-    };
+    img.onerror = () => { img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6366f1&color=fff`; };
 
-    // Name
     let nm = container.querySelector('.profile-name');
     if (!nm) {
       nm = document.createElement('div');
@@ -1169,11 +915,10 @@ function loadProfile(userId) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CLOCK — single setInterval, no DOM query inside loop
+   CLOCK — single setInterval, cached element reference
 ══════════════════════════════════════════════════════════ */
 let _clockEl = null;
 let _clockTimer = null;
-
 function updateClock() {
   if (!_clockEl) _clockEl = document.getElementById('liveTime');
   if (_clockEl) _clockEl.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -1194,13 +939,11 @@ function initDate() {
    POPUP
 ══════════════════════════════════════════════════════════ */
 let _popupTimer = null;
-
 function closePopup() {
   const el = document.getElementById('popup_overlay');
   if (el) el.style.display = 'none';
   if (_popupTimer) { clearTimeout(_popupTimer); _popupTimer = null; }
 }
-
 function checkPopup() {
   if (!database) return;
   database.ref('settings/config/Popup').once('value', (snap) => {
@@ -1226,10 +969,11 @@ function checkPopup() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   3D POINTER TILT — Desktop only, passive RAF loop
+   3D POINTER TILT — desktop + hover only, event-driven RAF
+   (loop only runs while the pointer is actually over a card)
 ══════════════════════════════════════════════════════════ */
 function init3DTilt() {
-  if (!window.matchMedia('(hover:hover) and (min-width:1025px)').matches) return;
+  if (!document.body.classList.contains('is-desktop')) return;
   const lerp = (a, b, t) => a + (b - a) * t;
 
   document.querySelectorAll('.menu-card').forEach(card => {
@@ -1238,23 +982,18 @@ function init3DTilt() {
 
     const tick = () => {
       if (!active) return;
-      cx = lerp(cx, tx, 0.1);
-      cy = lerp(cy, ty, 0.1);
+      cx = lerp(cx, tx, 0.12);
+      cy = lerp(cy, ty, 0.12);
       card.style.transform = `perspective(900px) rotateX(${cx}deg) rotateY(${cy}deg) translateY(-6px) scale(1.03) translateZ(0)`;
       raf = requestAnimationFrame(tick);
     };
 
-    card.addEventListener('mouseenter', () => {
-      active = true;
-      raf = requestAnimationFrame(tick);
-    }, { passive: true });
-
+    card.addEventListener('mouseenter', () => { active = true; raf = requestAnimationFrame(tick); }, { passive: true });
     card.addEventListener('mousemove', (e) => {
       const r = card.getBoundingClientRect();
-      tx = -((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * 9;
-      ty =  ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 9;
+      tx = -((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * 8;
+      ty =  ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 8;
     }, { passive: true });
-
     card.addEventListener('mouseleave', () => {
       active = false;
       if (raf) cancelAnimationFrame(raf);
@@ -1265,7 +1004,7 @@ function init3DTilt() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   KEYBOARD NAVIGATION for menu cards
+   KEYBOARD NAVIGATION
 ══════════════════════════════════════════════════════════ */
 function initKeyboard() {
   document.querySelectorAll('.menu-card[role="button"]').forEach(card => {
@@ -1276,13 +1015,15 @@ function initKeyboard() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CLEANUP on page unload
+   CLEANUP — mirrors the established _leavePageCleanup pattern
 ══════════════════════════════════════════════════════════ */
-window.addEventListener('beforeunload', () => {
-  if (_clockTimer) clearInterval(_clockTimer);
-  if (_popupTimer) clearTimeout(_popupTimer);
-  if (_profileRef) _profileRef.off();
-});
+window._leavePageCleanup = function () {
+  if (_clockTimer) { clearInterval(_clockTimer); _clockTimer = null; }
+  if (_popupTimer) { clearTimeout(_popupTimer); _popupTimer = null; }
+  if (_profileRef) { _profileRef.off(); _profileRef = null; }
+};
+window.addEventListener('beforeunload', window._leavePageCleanup);
+window.addEventListener('pagehide', window._leavePageCleanup);
 
 /* ══════════════════════════════════════════════════════════
    INIT
@@ -1291,37 +1032,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const userId = sessionStorage.getItem('loggedInUser');
   if (!userId) { location.href = 'index.html'; return; }
 
-  // Background
   const bgEl = document.getElementById('bg-layer');
   if (bgEl && cfg.buildBg) cfg.buildBg(bgEl);
 
-  // Sub-label
   const subEl = document.getElementById('pageSub');
   if (subEl) subEl.textContent = cfg.sub;
 
-  // Firebase
   if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
   database = firebase.database();
   firebase.auth().onAuthStateChanged(() => loadProfile(userId));
 
-  // Clock — single interval, cached element
   updateClock();
   _clockTimer = setInterval(updateClock, 1000);
 
-  // Date
   initDate();
-
-  // 3D tilt (desktop)
   init3DTilt();
-
-  // Keyboard nav
   initKeyboard();
 
-  // Popup (delayed)
   setTimeout(checkPopup, 1200);
 });
 
-// Global exports for inline onclick handlers
+// bfcache restore: re-sync device class + redo cleanup registration guard
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) {
+    applyDeviceClass(_dvMQ.matches);
+  }
+});
+
 window.navigateTo = navigateTo;
 window.handleLogout = handleLogout;
 window.closePopup = closePopup;
