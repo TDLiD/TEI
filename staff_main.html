@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Daily System</title>
 
-<!-- Fonts -->
+<!-- Fonts (unchanged set — every day theme below reuses these, no extra font requests) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Serif+JP:wght@300;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&family=DM+Serif+Display&family=Bungee&family=Inter:wght@400;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -21,7 +21,10 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════
-   ROOT — every day is dark. Shape + palette change per day.
+   ROOT — every day is dark. Shape, palette AND signature 3D
+   scene change per day. Everything animated below is transform
+   / opacity only (compositor-only, GPU), so idle CPU stays low
+   even with several ambient elements running at once.
 ══════════════════════════════════════════════════════════ */
 :root {
   --card-perspective: 900px;
@@ -69,13 +72,54 @@ body {
 }
 .content-wrapper::-webkit-scrollbar { display: none; }
 
-/* Background layer — CPU-cheap: gradients + at most 1-2 static/CSS-animated nodes */
+/* Background layer — day gradients + the per-day signature 3D scene.
+   CPU-cheap: gradients + a small, fixed number of CSS-animated nodes,
+   never JS-driven, never per-frame DOM writes. */
 #bg-layer {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TDLiD WORDMARK — one element, styled purely from the active
+   day's CSS variables (--accent / --font-display), so every
+   day automatically gets its own huge drifting 3D wordmark
+   without any per-day duplication. Transform-only animation.
+══════════════════════════════════════════════════════════ */
+#wordmark-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+  perspective: 1400px;
+}
+.tdlid-wordmark {
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-weight: 900;
+  font-size: clamp(5rem, 34vw, 24rem);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(180deg, var(--accent, #6366f1) 0%, transparent 78%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-stroke: 1px var(--accent-glow, rgba(99,102,241,0.25));
+  opacity: 0.08;
+  will-change: transform;
+  transform-style: preserve-3d;
+  animation: wordmarkDrift 24s ease-in-out infinite;
+  user-select: none;
+}
+@keyframes wordmarkDrift {
+  0%   { transform: rotateY(-10deg) rotateX(4deg)  translateZ(0)   scale(1);    }
+  50%  { transform: rotateY(10deg)  rotateX(-4deg) translateZ(40px) scale(1.05); }
+  100% { transform: rotateY(-10deg) rotateX(4deg)  translateZ(0)   scale(1);    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -181,6 +225,7 @@ body {
 
 /* ══════════════════════════════════════════════════════════
    GRID — device-aware column count via --grid-cols
+   (mobile 2 / tablet 3 / desktop 4, no JS layout polling)
 ══════════════════════════════════════════════════════════ */
 .menu-grid {
   display: grid;
@@ -192,6 +237,10 @@ body {
   animation: fadeSlideUp 0.55s 0.06s cubic-bezier(0.22,1,0.36,1) both;
 }
 body.is-desktop .menu-grid { max-width: 620px; }
+
+@media (min-width: 620px) and (max-width: 1024px) {
+  :root { --grid-cols: 3; }
+}
 
 .bottom-actions {
   display: grid;
@@ -205,7 +254,8 @@ body.is-desktop .bottom-actions { max-width: 620px; }
 
 @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── Card base — shape comes from per-day rules below ── */
+/* ── Card base — shape comes from per-day rules below,
+   entrance choreography comes from --card-enter per day ── */
 .menu-card, .action-btn {
   position: relative;
   border-radius: var(--card-radius, 14px);
@@ -227,12 +277,54 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   padding: clamp(0.9rem, 3.8vw, 1.4rem) clamp(0.7rem, 2.8vw, 1rem);
   gap: clamp(0.45rem, 1.8vw, 0.7rem);
   min-height: var(--card-min-h);
+  animation: var(--card-enter, cardFadeUp) 0.7s cubic-bezier(0.22,1,0.36,1) both;
 }
+.menu-card:nth-child(1) { animation-delay: 0.05s; }
+.menu-card:nth-child(2) { animation-delay: 0.12s; }
+.menu-card:nth-child(3) { animation-delay: 0.19s; }
+.menu-card:nth-child(4) { animation-delay: 0.26s; }
+
 .action-btn {
   padding: clamp(0.6rem, 2.4vw, 0.85rem) clamp(0.35rem, 1.4vw, 0.5rem);
   gap: clamp(0.3rem, 1.3vw, 0.48rem);
   min-height: clamp(72px, 16vw, 100px);
   font-family: inherit;
+}
+
+/* Fallback / fair-default entrance if a day forgets to set --card-enter */
+@keyframes cardFadeUp { from { opacity: 0; transform: translateY(18px) translateZ(0); } to { opacity: 1; transform: translateY(0) translateZ(0); } }
+
+/* Per-day signature entrance choreography — CSS keyframes only,
+   run once on load, GPU compositor, no continuous JS cost */
+@keyframes cardFlipIn {      /* Mon — circuit boot-up */
+  from { opacity: 0; transform: perspective(700px) rotateY(-95deg) translateZ(0); }
+  to   { opacity: 1; transform: perspective(700px) rotateY(0deg) translateZ(0); }
+}
+@keyframes cardInkIn {       /* Tue — ink bleeding onto paper */
+  from { opacity: 0; transform: scale(0.85) translateZ(0); filter: blur(6px); }
+  to   { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0); }
+}
+@keyframes cardVaultOpen {   /* Wed — vault door swinging open */
+  from { opacity: 0; transform: perspective(800px) rotateY(-70deg) translateX(-10%) translateZ(0); }
+  to   { opacity: 1; transform: perspective(800px) rotateY(0deg) translateX(0) translateZ(0); }
+}
+@keyframes cardUnfurl {      /* Thu — a leaf unfurling */
+  from { opacity: 0; transform: scale(0.55) rotate(-18deg) translateZ(0); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg) translateZ(0); }
+}
+@keyframes cardGlitchIn {    /* Fri — arcade CRT power-on glitch */
+  0%   { opacity: 0; transform: translateX(-14px) skewX(8deg) translateZ(0); }
+  30%  { opacity: 0.5; transform: translateX(10px) skewX(-6deg) translateZ(0); }
+  55%  { opacity: 0.7; transform: translateX(-6px) skewX(3deg) translateZ(0); }
+  100% { opacity: 1; transform: translateX(0) skewX(0deg) translateZ(0); }
+}
+@keyframes cardFrostIn {     /* Sat — frost crystallizing into shape */
+  from { opacity: 0; transform: scale(1.18) translateZ(0); filter: blur(8px) brightness(1.4); }
+  to   { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0) brightness(1); }
+}
+@keyframes cardEmberRise {   /* Sun — an ember rising and cooling into place */
+  from { opacity: 0; transform: translateY(34px) translateZ(0); filter: brightness(1.6) saturate(1.4); }
+  to   { opacity: 1; transform: translateY(0) translateZ(0); filter: brightness(1) saturate(1); }
 }
 
 @media (hover: hover) {
@@ -396,6 +488,64 @@ body.is-desktop .bottom-actions { max-width: 620px; }
 .popup-close-bottom:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(99,102,241,0.45); }
 
 /* ══════════════════════════════════════════════════════════
+   SIGNATURE 3D SCENES — one small preserve-3d rig per day,
+   built from 1–6 lightweight divs. Purely decorative, sits in
+   #bg-layer behind the content, pointer-events:none, and is a
+   single CSS animation each — no JS, no layout thrash.
+══════════════════════════════════════════════════════════ */
+.sig-scene { position: absolute; pointer-events: none; }
+
+/* Mon — spinning wireframe cube (Void Circuit) */
+.sig-cube-scene { top: 8%; right: 6%; width: 120px; height: 120px; perspective: 600px; opacity: 0.4; }
+.sig-cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: cubeSpin 15s linear infinite; }
+.sig-cube-face { position: absolute; width: 120px; height: 120px; border: 1px solid var(--accent); background: linear-gradient(135deg, var(--accent-glow), transparent); }
+.sig-cube-face.f1 { transform: translateZ(60px); }
+.sig-cube-face.f2 { transform: rotateY(180deg) translateZ(60px); }
+.sig-cube-face.f3 { transform: rotateY(90deg) translateZ(60px); }
+.sig-cube-face.f4 { transform: rotateY(-90deg) translateZ(60px); }
+.sig-cube-face.f5 { transform: rotateX(90deg) translateZ(60px); }
+.sig-cube-face.f6 { transform: rotateX(-90deg) translateZ(60px); }
+@keyframes cubeSpin { from { transform: rotateX(-18deg) rotateY(0deg); } to { transform: rotateX(-18deg) rotateY(360deg); } }
+
+/* Tue — tumbling ensou ring (Sumi-e Night) */
+.sig-ensou-scene { top: 10%; right: 7%; width: 190px; height: 190px; perspective: 500px; opacity: 0.45; }
+.sig-ensou-ring { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--accent); border-right-color: transparent; border-bottom-color: transparent; transform-style: preserve-3d; animation: ensouTumble 18s ease-in-out infinite; }
+@keyframes ensouTumble { 0%, 100% { transform: rotateX(55deg) rotateZ(0deg); } 50% { transform: rotateX(55deg) rotateZ(180deg); } }
+
+/* Wed — spinning faceted gem (Obsidian Vault) */
+.sig-gem-scene { top: 9%; right: 7%; width: 108px; height: 138px; perspective: 600px; opacity: 0.42; }
+.sig-gem { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: gemSpin 17s linear infinite; }
+.sig-gem-facet { position: absolute; inset: 0; background: linear-gradient(135deg, var(--accent-glow), transparent 60%); clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%); border: 1px solid var(--accent); }
+.sig-gem-facet.f2 { transform: rotateY(60deg); }
+.sig-gem-facet.f3 { transform: rotateY(-60deg); }
+@keyframes gemSpin { from { transform: rotateY(0deg) rotateX(8deg); } to { transform: rotateY(360deg) rotateX(8deg); } }
+
+/* Thu — a leaf breathing in 3D (Night Terra) */
+.sig-leaf3d-scene { top: 6%; right: 5%; width: 150px; height: 150px; perspective: 500px; opacity: 0.45; }
+.sig-leaf3d { width: 100%; height: 100%; border: 1px solid var(--accent); border-radius: 0 80% 0 80%; background: linear-gradient(135deg, var(--accent-glow), transparent); transform-style: preserve-3d; animation: leafFloat3d 10s ease-in-out infinite; }
+@keyframes leafFloat3d { 0%, 100% { transform: rotateY(-15deg) rotateX(10deg) translateY(0); } 50% { transform: rotateY(15deg) rotateX(-6deg) translateY(-14px); } }
+
+/* Fri — retro perspective sun disc (Synthwave Arcade) */
+.sig-sun-scene { bottom: 20%; left: 50%; transform: translateX(-50%); width: 220px; height: 110px; overflow: hidden; opacity: 0.55; perspective: 400px; }
+.sig-sun-disc { width: 220px; height: 220px; border-radius: 50%; background: linear-gradient(0deg, var(--accent) 0%, transparent 70%); position: relative; animation: sunPulseTilt 6s ease-in-out infinite; }
+.sig-sun-disc::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 8px, #04010d 8px 12px); border-radius: 50%; }
+@keyframes sunPulseTilt { 0%, 100% { transform: rotateX(55deg) scale(1); filter: brightness(1); } 50% { transform: rotateX(55deg) scale(1.05); filter: brightness(1.3); } }
+
+/* Sat — spinning ice crystal (Glacial Void) */
+.sig-crystal-scene { top: 10%; right: 6%; width: 128px; height: 128px; perspective: 600px; opacity: 0.4; }
+.sig-crystal { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: crystalSpin 20s linear infinite; }
+.sig-crystal-face { position: absolute; inset: 0; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); border: 1px solid var(--accent); background: linear-gradient(160deg, rgba(255,255,255,0.14), transparent); }
+.sig-crystal-face.f2 { transform: rotateY(90deg); }
+@keyframes crystalSpin { from { transform: rotateY(0) rotateX(10deg); } to { transform: rotateY(360deg) rotateX(10deg); } }
+
+/* Sun — pulsing ember sphere with rising embers (Ember Night) */
+.sig-ember-scene { top: 8%; right: 6%; width: 128px; height: 128px; perspective: 500px; opacity: 0.55; }
+.sig-ember-orb { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fbbf24, #f97316 55%, #7c1d0e 100%); box-shadow: 0 0 40px var(--accent-glow); animation: emberPulse 5s ease-in-out infinite; }
+@keyframes emberPulse { 0%, 100% { transform: rotateY(0deg) scale(1); filter: brightness(1); } 50% { transform: rotateY(180deg) scale(1.06); filter: brightness(1.25); } }
+.sig-ember-particle { position: absolute; bottom: 0; width: 4px; height: 4px; border-radius: 50%; background: #fbbf24; animation: emberRise 4s ease-in infinite; }
+@keyframes emberRise { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-160px) scale(0.3); opacity: 0; } }
+
+/* ══════════════════════════════════════════════════════════
    ▌MON — VOID CIRCUIT  (near-black · electric cyan) · SQUARE
 ══════════════════════════════════════════════════════════ */
 .day-mon {
@@ -408,7 +558,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(56,189,248,0.28), transparent);
   --card-face: linear-gradient(155deg, rgba(56,189,248,0.06) 0%, transparent 55%);
   --card-label: rgba(148,163,184,0.65); --card-shadow-far: rgba(0,0,0,0.55);
-  --card-radius: 8px;
+  --card-radius: 8px; --card-enter: cardFlipIn;
   --font-display: 'Orbitron', sans-serif; --font-ui: 'Pretendard', sans-serif;
   font-family: 'Pretendard', sans-serif; background: #02040a; color: #e2e8f0;
 }
@@ -446,7 +596,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(212,180,131,0.28), transparent);
   --card-face: linear-gradient(155deg, rgba(212,180,131,0.05) 0%, transparent 55%);
   --card-label: rgba(212,180,131,0.65); --card-shadow-far: rgba(0,0,0,0.5);
-  --card-radius: 50%;
+  --card-radius: 50%; --card-enter: cardInkIn;
   --font-display: 'Noto Serif JP', serif; --font-ui: 'Noto Serif JP', serif;
   font-family: 'Noto Serif JP', serif; background: #0c0a08; color: #ece5d8;
 }
@@ -478,7 +628,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(200,168,75,0.32), transparent);
   --card-face: linear-gradient(155deg, rgba(200,168,75,0.06) 0%, transparent 55%);
   --card-label: rgba(200,168,75,0.62); --card-shadow-far: rgba(0,0,0,0.55);
-  --card-radius: 50%;
+  --card-radius: 50%; --card-enter: cardVaultOpen;
   --font-display: 'Cormorant Garamond', serif; --font-ui: 'Cormorant Garamond', serif;
   font-family: 'Cormorant Garamond', serif; background: #04070a; color: #f0e8d0;
 }
@@ -507,7 +657,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(111,191,95,0.28), transparent);
   --card-face: linear-gradient(155deg, rgba(111,191,95,0.06) 0%, transparent 55%);
   --card-label: rgba(190,215,175,0.7); --card-shadow-far: rgba(0,0,0,0.55);
-  --card-radius: 14px;
+  --card-radius: 14px; --card-enter: cardUnfurl;
   --font-display: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif;
   font-family: 'DM Serif Display', serif; background: #040603; color: #eef0e6;
 }
@@ -537,7 +687,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(255,0,204,0.3), transparent);
   --card-face: linear-gradient(155deg, rgba(255,0,204,0.05) 0%, transparent 55%);
   --card-label: rgba(0,238,255,0.6); --card-shadow-far: rgba(255,0,204,0.2);
-  --card-radius: 0px;
+  --card-radius: 0px; --card-enter: cardGlitchIn;
   --font-display: 'Bungee', cursive; --font-ui: 'Bungee', cursive;
   font-family: 'Bungee', cursive; background: #04010d; color: #fff;
 }
@@ -584,7 +734,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(255,255,255,0.24), transparent);
   --card-face: linear-gradient(155deg, rgba(255,255,255,0.08) 0%, transparent 55%);
   --card-label: rgba(200,220,250,0.75); --card-shadow-far: rgba(0,10,40,0.4);
-  --card-radius: 50%;
+  --card-radius: 50%; --card-enter: cardFrostIn;
   --font-display: 'Inter', sans-serif; --font-ui: 'Inter', sans-serif;
   font-family: 'Inter', sans-serif; background: #03050c; color: #e8f0fe;
 }
@@ -609,7 +759,7 @@ body.is-desktop .bottom-actions { max-width: 620px; }
   --card-bevel: linear-gradient(90deg, transparent, rgba(249,115,22,0.3), transparent);
   --card-face: linear-gradient(155deg, rgba(249,115,22,0.06) 0%, transparent 55%);
   --card-label: rgba(250,185,120,0.65); --card-shadow-far: rgba(0,0,0,0.55);
-  --card-radius: 50%;
+  --card-radius: 50%; --card-enter: cardEmberRise;
   --font-display: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif;
   font-family: 'DM Serif Display', serif; background: #0a0201; color: #fdf0e8;
 }
@@ -633,10 +783,16 @@ body.is-desktop .menu-grid { --grid-cols: 4; }
 body.is-desktop .bottom-actions { grid-template-columns: repeat(4, 1fr); }
 @media (min-width: 1024px) { :root { --card-hover-lift: -10px; } }
 
-/* Reduce motion */
+/* Reduce motion — kill every continuous / decorative animation,
+   keep only the essential one-shot fades */
 @media (prefers-reduced-motion: reduce) {
-  .menu-card, .action-btn { transition: none !important; }
-  .mon-orb.o1, .mon-orb.o2, .thu-leaf, .fri-stars, .live-dot, .day-fri .greeting em { animation: none !important; }
+  .menu-card, .action-btn { transition: none !important; animation: none !important; }
+  .mon-orb.o1, .mon-orb.o2, .thu-leaf, .fri-stars, .live-dot, .day-fri .greeting em,
+  .tdlid-wordmark, .sig-cube, .sig-ensou-ring, .sig-gem, .sig-leaf3d, .sig-sun-disc,
+  .sig-crystal, .sig-ember-orb, .sig-ember-particle {
+    animation: none !important;
+  }
+  .sig-scene { display: none !important; }
 }
 
 @media (max-width: 600px) {
@@ -658,7 +814,12 @@ body.is-desktop .bottom-actions { grid-template-columns: repeat(4, 1fr); }
   </defs>
 </svg>
 
-<!-- Background layer -->
+<!-- Giant animated TDLiD wordmark — one element, styled from the active day's CSS variables -->
+<div id="wordmark-layer" aria-hidden="true">
+  <span class="tdlid-wordmark">TDLiD</span>
+</div>
+
+<!-- Background layer (day gradients + signature 3D scene) -->
 <div id="bg-layer" aria-hidden="true"></div>
 
 <!-- Top Bar -->
@@ -751,9 +912,10 @@ _dvMQ.addEventListener('change', (e) => applyDeviceClass(e.matches));
 
 /* ══════════════════════════════════════════════════════════
    DAY CONFIG — 0=Sun … 6=Sat. Each has its own palette class
-   (day-*) and shape class (shape-*). Backgrounds are cheap:
-   gradients + at most 2 CSS-animated nodes, no JS animation
-   loops, no per-frame DOM writes.
+   (day-*), shape class (shape-*), and a signature 3D scene
+   markup fragment. Backgrounds stay cheap: gradients + a small
+   fixed set of CSS-animated nodes, no JS animation loops, no
+   per-frame DOM writes.
 ══════════════════════════════════════════════════════════ */
 const DAY_CONFIG = {
   0: {
@@ -764,14 +926,28 @@ const DAY_CONFIG = {
         const deg = i * 36;
         return `<div class="sun-ray" style="transform:rotate(${deg}deg) translateX(-50%);opacity:${0.5 + (i%3)*0.25};"></div>`;
       }).join('');
-      el.innerHTML = `<div class="sun-bg"></div>${rays}`;
+      const particles = Array.from({length: 3}, (_, i) =>
+        `<div class="sig-ember-particle" style="left:${20 + i*35}%;animation-delay:${i * 1.3}s;"></div>`
+      ).join('');
+      el.innerHTML = `<div class="sun-bg"></div>${rays}
+        <div class="sig-scene sig-ember-scene">
+          <div class="sig-ember-orb"></div>
+          ${particles}
+        </div>`;
     }
   },
   1: {
     cls: 'day-mon', shape: 'shape-square',
     sub: 'New week. New energy. ⚡', chipLabel: '⚡ Monday',
     buildBg(el) {
-      el.innerHTML = `<div class="mon-bg"></div><div class="mon-grid"></div><div class="mon-orb o1"></div><div class="mon-orb o2"></div>`;
+      el.innerHTML = `<div class="mon-bg"></div><div class="mon-grid"></div><div class="mon-orb o1"></div><div class="mon-orb o2"></div>
+        <div class="sig-scene sig-cube-scene">
+          <div class="sig-cube">
+            <div class="sig-cube-face f1"></div><div class="sig-cube-face f2"></div>
+            <div class="sig-cube-face f3"></div><div class="sig-cube-face f4"></div>
+            <div class="sig-cube-face f5"></div><div class="sig-cube-face f6"></div>
+          </div>
+        </div>`;
     }
   },
   2: {
@@ -781,7 +957,8 @@ const DAY_CONFIG = {
       el.innerHTML = `
         <div class="tue-bg"></div>
         <div class="tue-ensou" style="width:480px;height:480px;top:-160px;right:-140px;transform:rotate(20deg);"></div>
-        <div class="tue-ensou" style="width:320px;height:320px;bottom:-110px;left:-110px;transform:rotate(-40deg);"></div>`;
+        <div class="tue-ensou" style="width:320px;height:320px;bottom:-110px;left:-110px;transform:rotate(-40deg);"></div>
+        <div class="sig-scene sig-ensou-scene"><div class="sig-ensou-ring"></div></div>`;
     }
   },
   3: {
@@ -793,7 +970,12 @@ const DAY_CONFIG = {
         <div class="wed-diamond" style="width:400px;height:400px;top:-120px;right:-120px;"></div>
         <div class="wed-diamond" style="width:540px;height:540px;bottom:-175px;left:-175px;"></div>
         <div class="wed-hline" style="top:16%;"></div>
-        <div class="wed-hline" style="bottom:16%;"></div>`;
+        <div class="wed-hline" style="bottom:16%;"></div>
+        <div class="sig-scene sig-gem-scene">
+          <div class="sig-gem">
+            <div class="sig-gem-facet f1"></div><div class="sig-gem-facet f2"></div><div class="sig-gem-facet f3"></div>
+          </div>
+        </div>`;
     }
   },
   4: {
@@ -803,7 +985,8 @@ const DAY_CONFIG = {
       el.innerHTML = `
         <div class="thu-bg"></div>
         <div class="thu-leaf" style="width:170px;height:260px;top:3%;right:3%;--leaf-base:rotate(-20deg);animation-delay:0s;"></div>
-        <div class="thu-leaf" style="width:120px;height:190px;bottom:7%;left:2%;--leaf-base:rotate(15deg) scaleX(-1);animation-delay:-5s;"></div>`;
+        <div class="thu-leaf" style="width:120px;height:190px;bottom:7%;left:2%;--leaf-base:rotate(15deg) scaleX(-1);animation-delay:-5s;"></div>
+        <div class="sig-scene sig-leaf3d-scene"><div class="sig-leaf3d"></div></div>`;
     }
   },
   5: {
@@ -818,7 +1001,8 @@ const DAY_CONFIG = {
         const s = (Math.random() * 1.6 + 0.6).toFixed(1);
         return `${x}vw ${y}vh 0 ${s}px #fff`;
       }).join(', ');
-      el.innerHTML = `<div class="fri-bg"></div><div class="fri-stars" style="box-shadow:${shadows};"></div><div class="fri-grid"></div>`;
+      el.innerHTML = `<div class="fri-bg"></div><div class="fri-stars" style="box-shadow:${shadows};"></div><div class="fri-grid"></div>
+        <div class="sig-scene sig-sun-scene"><div class="sig-sun-disc"></div></div>`;
     }
   },
   6: {
@@ -828,7 +1012,10 @@ const DAY_CONFIG = {
       el.innerHTML = `
         <div class="sat-bg"></div>
         <div class="sat-frost" style="width:460px;height:460px;top:-155px;right:-130px;"></div>
-        <div class="sat-frost" style="width:340px;height:340px;bottom:-115px;left:-115px;border-color:rgba(188,213,250,0.08);"></div>`;
+        <div class="sat-frost" style="width:340px;height:340px;bottom:-115px;left:-115px;border-color:rgba(188,213,250,0.08);"></div>
+        <div class="sig-scene sig-crystal-scene">
+          <div class="sig-crystal"><div class="sig-crystal-face"></div><div class="sig-crystal-face f2"></div></div>
+        </div>`;
     }
   }
 };
@@ -836,7 +1023,8 @@ const DAY_CONFIG = {
 /* ══════════════════════════════════════════════════════════
    APPLY DAY THEME + SHAPE — before first paint of content
 ══════════════════════════════════════════════════════════ */
-const todayIdx = new Date().getDay();
+//const todayIdx = new Date().getDay();
+const todayIdx = 6;
 
 const cfg = DAY_CONFIG[todayIdx] || DAY_CONFIG[1];
 document.body.classList.add(cfg.cls, cfg.shape);
@@ -970,7 +1158,8 @@ function checkPopup() {
 
 /* ══════════════════════════════════════════════════════════
    3D POINTER TILT — desktop + hover only, event-driven RAF
-   (loop only runs while the pointer is actually over a card)
+   (loop only runs while the pointer is actually over a card,
+   never a background timer)
 ══════════════════════════════════════════════════════════ */
 function init3DTilt() {
   if (!document.body.classList.contains('is-desktop')) return;
