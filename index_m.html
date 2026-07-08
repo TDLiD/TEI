@@ -6,753 +6,816 @@
     <title>Login - Daily Report System</title>
 
     <script src="https://cdn.tailwindcss.com?hide-warnings=true"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
+
+    <!--
+        Day theme fonts:
+        MON Deep Space -> Orbitron | TUE Wabi-Sabi -> Noto Serif JP | WED Art Deco -> Cormorant Garamond
+        THU Biophilic -> DM Serif Display | FRI Synthwave -> Bungee | SAT Arctic Steel -> Rajdhani | SUN Sunset Ember -> Playfair Display
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Cormorant+Garamond:wght@400;600;700&family=DM+Serif+Display&family=Bungee&family=Rajdhani:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <link rel="icon" href="data:,">
 
 <script>
     (function(){
-        // 모바일 기기가 아닌 경우 (즉, PC 브라우저인 경우)
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (!isMobileDevice) {
-            // PC 접속자라면 index.html로 리다이렉트
-            window.location.href = "index.html";
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPCMode = urlParams.get('view_mode') === 'pc';
+        if (isMobileDevice && !isPCMode) {
+            let path = window.location.pathname;
+            let page = path.split("/").pop();
+            if (page === "" || page === "index.html") {
+                window.location.href = "index_m.html";
+            }
         }
     })();
 </script>
 
-
-
-    
 <style>
-:root{--bg:#03060f;--surface:rgba(8,18,36,0.7);--blue:#3b82f6;--cyan:#06b6d4}
-* {-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;box-sizing:border-box}
-body{font-family:"Pretendard",sans-serif;color:#f1f5f9;-webkit-tap-highlight-color:transparent;margin:0;overflow-x:hidden;background-color:var(--bg);
-opacity:0;perspective:1500px;min-height:100vh;min-height:-webkit-fill-available}
-body.loaded{opacity:1;transition:opacity .8s cubic-bezier(.16,1,.3,1)}
-
-/* ── 3D TDLiD Background ── */
-#tdlid-3d {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: clamp(8rem, 25vw, 20rem);
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    color: transparent;
-    z-index: -1;
-    pointer-events: none;
-    text-transform: uppercase;
-    user-select: none;
-    will-change: transform;
+/* ═══════════════════════════════════════════════════════════════
+   BASE RESET & LAYOUT
+   All animation below uses only transform / opacity so the browser
+   compositor handles it on the GPU -- no layout/paint thrash, no JS
+   rAF loops, so CPU load stays flat regardless of theme.
+═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-#tdlid-3d span {
-    display: inline-block;
-    background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.08) 0%, 
-        rgba(6, 182, 212, 0.12) 50%, 
-        rgba(59, 130, 246, 0.08) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 
-        0 0 40px rgba(59, 130, 246, 0.15),
-        0 0 80px rgba(6, 182, 212, 0.1);
-    animation: float3d 8s ease-in-out infinite;
-    transform-style: preserve-3d;
-}
+html, body { background: #05050a; }
 
-#tdlid-3d span:nth-child(1) { animation-delay: 0s; }
-#tdlid-3d span:nth-child(2) { animation-delay: 0.2s; }
-#tdlid-3d span:nth-child(3) { animation-delay: 0.4s; }
-#tdlid-3d span:nth-child(4) { animation-delay: 0.6s; }
-#tdlid-3d span:nth-child(5) { animation-delay: 0.8s; }
-
-@keyframes float3d {
-    0%, 100% {
-        transform: translateZ(0px) rotateY(0deg) translateY(0px);
-        opacity: 0.5;
-    }
-    25% {
-        transform: translateZ(30px) rotateY(5deg) translateY(-10px);
-        opacity: 0.7;
-    }
-    50% {
-        transform: translateZ(0px) rotateY(0deg) translateY(-20px);
-        opacity: 0.9;
-    }
-    75% {
-        transform: translateZ(-30px) rotateY(-5deg) translateY(-10px);
-        opacity: 0.7;
-    }
-}
-
-.video-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 0%,rgba(3,6,15,.5) 40%,rgba(3,6,15,.85) 100%);z-index:-1;animation:overlayPulse 10s ease-in-out infinite}
-@keyframes overlayPulse{0%,100%{opacity:1}50%{opacity:.85}}
-
-.particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;opacity:.3}
-
-.logo-container{animation:float 6s ease-in-out infinite;transform-style:preserve-3d}
-@keyframes float{0%,100%{transform:translateY(0px) translateZ(0px) rotateX(0deg)}50%{transform:translateY(-15px) translateZ(20px) rotateX(5deg)}}
-
-.logo-glow{position:absolute;inset:-2px;background:linear-gradient(135deg,rgba(59,130,246,.4),rgba(6,182,212,.4));border-radius:50%;filter:blur(20px);opacity:0;transition:opacity .6s ease;animation:pulse 3s ease-in-out infinite}
-.logo-container:hover .logo-glow{opacity:1}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:.9}}
-
-.login-card{background:linear-gradient(135deg,rgba(8,18,36,.9) 0%,rgba(8,18,36,.7) 100%);backdrop-filter:blur(30px) saturate(200%);border:1.5px solid rgba(255,255,255,.15);box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 15px 35px -10px rgba(0,0,0,.5),inset 0 2px 1px rgba(255,255,255,.15),inset 0 -2px 1px rgba(0,0,0,.3),0 0 80px rgba(59,130,246,.2);transition:all .3s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative;will-change:transform}
-
-.login-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(135deg,rgba(59,130,246,.3) 0%,rgba(6,182,212,.3) 50%,rgba(59,130,246,.3) 100%);border-radius:inherit;z-index:-1;opacity:0;transition:opacity .5s ease;filter:blur(15px)}
-.login-card:hover::before{opacity:1;animation:borderGlow 3s ease-in-out infinite}
-@keyframes borderGlow{0%,100%{opacity:.5}50%{opacity:1}}
-
-.card-layer-1{transform:translateZ(30px);transition:transform .3s ease}
-.card-layer-2{transform:translateZ(20px);transition:transform .3s ease}
-.card-layer-3{transform:translateZ(50px);transition:transform .3s ease}
-
-/* ── Enhanced Staff Member Selector ── */
-#staff-selector-container {
-    position: relative;
-}
-
-#selected-staff {
-    background: linear-gradient(135deg, rgba(15,23,42,.8) 0%, rgba(15,23,42,.6) 100%);
-    backdrop-filter: blur(15px);
-    color: #fff;
-    border: 1.5px solid rgba(255,255,255,.1);
-    transition: all .4s cubic-bezier(.4,0,.2,1);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,.3), 0 4px 8px rgba(0,0,0,.2);
-    cursor: pointer;
+body {
+    margin: 0;
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
-    font-size: 1rem;
-    min-height: 3.5rem;
+    padding: clamp(1rem, 4vw, 2rem);
+    overflow-x: hidden;
+    color: var(--text, #e2e8f0);
+    background-color: var(--bg-base, #05050a);
+    background-image: var(--bg-image, none);
+    font-family: var(--font-body, 'Pretendard', 'Inter', sans-serif);
+    transition: background-color 0.6s ease, color 0.6s ease;
+    position: relative;
+    perspective: 1200px;
 }
 
-#selected-staff:hover {
-    border-color: rgba(6,182,212,0.5);
-    box-shadow: 0 0 0 3px rgba(6,182,212,.1), 0 8px 20px rgba(6,182,212,.2);
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-#selected-staff.active {
-    border-color: var(--cyan);
-    box-shadow: 0 0 0 3px rgba(6,182,212,.2), 0 8px 20px rgba(6,182,212,.3);
-    background: linear-gradient(135deg, rgba(15,23,42,.95) 0%, rgba(15,23,42,.85) 100%);
+.page-wrapper {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+    position: relative;
+    z-index: 10;
 }
 
-#staff-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    right: 0;
-    max-height: 0;
+@media (min-width: 1024px) {
+    .page-wrapper { max-width: 520px; }
+    .login-card { padding: 3rem !important; }
+    body { padding: 2rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GENERIC COMPONENTS -- themed purely through CSS custom properties
+   set by each `body.day-*` rule further down. One ruleset, seven
+   looks; keeps the stylesheet small and cheap to parse.
+═══════════════════════════════════════════════════════════════ */
+.login-card {
+    width: 100%;
+    border-radius: var(--card-radius, 1.75rem);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(15,23,42,.95) 0%, rgba(15,23,42,.9) 100%);
-    backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,.1);
-    border-radius: 1rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,.5);
-    transition: all .4s cubic-bezier(.4,0,.2,1);
-    opacity: 0;
-    transform: translateY(-10px);
-    z-index: 100;
+    background: var(--card-bg);
+    border: var(--card-border);
+    box-shadow: var(--card-shadow);
+    transform-style: preserve-3d;
+    animation: cardUp3d 0.9s cubic-bezier(0.34,1.56,0.64,1) both, cardFloat 7s ease-in-out infinite 1s;
+}
+.login-card::before {
+    content: var(--card-frame, none);
+    position: absolute;
+    inset: 6px;
+    border: var(--card-frame-border, none);
+    pointer-events: none;
 }
 
-#staff-dropdown.active {
-    max-height: 320px;
-    opacity: 1;
-    transform: translateY(0);
-    overflow-y: auto;
+@keyframes cardUp3d {
+    from { opacity: 0; transform: translateY(60px) rotateX(12deg) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
 }
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0) rotateX(0deg); }
+    50%      { transform: translateY(-6px) rotateX(0.6deg); }
+}
+
+.field-label {
+    display: block;
+    font-size: clamp(0.6rem, 2vw, 0.7rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.5rem;
+    margin-left: 0.25rem;
+    font-family: var(--font-heading);
+    color: var(--label-color);
+}
+
+.field-wrap { margin-bottom: clamp(1rem, 3vw, 1.5rem); }
+
+.input-field, #selected-staff {
+    width: 100%;
+    padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+    font-size: 16px; /* prevent zoom on iOS */
+    border-radius: var(--input-radius, 1rem);
+    border: var(--input-border);
+    outline: none;
+    background: var(--input-bg);
+    color: var(--text);
+    box-shadow: var(--input-shadow);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    display: block;
+}
+.input-field::placeholder { color: var(--placeholder-color); }
+.input-field:focus, #selected-staff:hover, #selected-staff.active {
+    border-color: var(--accent) !important;
+    box-shadow: var(--input-shadow-focus) !important;
+}
+
+.password-wrap { position: relative; }
+.eye-btn {
+    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; padding: 0.25rem; line-height: 1;
+    color: var(--label-color); transition: color 0.2s, opacity 0.2s;
+    z-index: 5;
+}
+.eye-btn:hover { color: var(--accent); }
+
+.forgot-row { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+.forgot-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: clamp(0.6rem, 2vw, 0.7rem); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.15em; padding: 0.25rem 0;
+    color: var(--accent);
+}
+
+.login-btn {
+    width: 100%;
+    padding: clamp(0.875rem, 2.5vw, 1rem) 2rem;
+    border: none; cursor: pointer;
+    font-family: var(--font-heading);
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    font-weight: 900; letter-spacing: 0.2em;
+    border-radius: var(--input-radius, 1rem);
+    background: var(--btn-bg);
+    background-size: 220% 220%;
+    color: var(--btn-text, #000);
+    box-shadow: var(--btn-shadow);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease, background-position 0.6s ease;
+    margin-top: clamp(0.75rem, 2.5vw, 1rem);
+}
+.login-btn:hover { transform: translateY(-3px) scale(1.02); background-position: 100% 50%; box-shadow: var(--btn-shadow-hover); }
+.login-btn:active { transform: translateY(-1px) scale(0.98); }
+
+/* Staff selector dropdown */
+#staff-selector-container { position: relative; }
+#selected-staff { cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 3.25rem; }
+#staff-dropdown {
+    position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0;
+    max-height: 0; overflow-y: auto; overflow-x: hidden;
+    border-radius: var(--input-radius, 1rem);
+    background: var(--dropdown-bg);
+    border: var(--input-border);
+    box-shadow: var(--card-shadow);
+    transition: max-height 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+    opacity: 0; pointer-events: none; z-index: 10000;
+}
+#staff-dropdown.active { max-height: 240px; opacity: 1; pointer-events: auto; padding: 0.5rem; }
+#staff-dropdown::-webkit-scrollbar { width: 5px; }
+#staff-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+#staff-dropdown::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 .staff-option {
-    padding: 0.875rem 1.25rem;
-    cursor: pointer;
-    transition: all .2s ease;
-    border-bottom: 1px solid rgba(255,255,255,.05);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    padding: 0.875rem 1rem; cursor: pointer; border-radius: 0.75rem;
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;
+    transition: background-color 0.15s ease;
 }
-
-.staff-option:last-child {
-    border-bottom: none;
-}
-
-.staff-option:hover {
-    background: linear-gradient(90deg, rgba(6,182,212,.15) 0%, rgba(59,130,246,.1) 100%);
-    padding-left: 1.5rem;
-}
-
-.staff-option.selected {
-    background: linear-gradient(90deg, rgba(6,182,212,.25) 0%, rgba(59,130,246,.2) 100%);
-}
-
+.staff-option:hover { background: var(--option-hover); }
+.staff-option.selected { background: var(--option-selected); border-left: 3px solid var(--accent); }
 .staff-avatar {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--cyan));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
-    flex-shrink: 0;
+    width: 2.25rem; height: 2.25rem; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+    background: var(--avatar-bg); color: var(--avatar-text, #000);
+}
+.staff-name { flex: 1; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.staff-role-badge { font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.4rem; font-weight: 700; background: var(--badge-bg); color: var(--accent); border: 1px solid var(--badge-border); }
+#selected-text { color: var(--text-dim); }
+#selected-staff .dropdown-arrow { color: var(--accent); transition: transform 0.3s ease; flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
+#selected-staff .dropdown-arrow.rotated { transform: rotate(180deg); }
+
+.day-badge {
+    font-size: clamp(0.55rem, 2vw, 0.65rem); font-weight: 800; letter-spacing: 0.25em;
+    text-transform: uppercase; padding: 0.35rem 0.9rem; border-radius: 2rem; display: inline-block;
+    background: var(--badge-bg); color: var(--accent); border: 1px solid var(--badge-border);
+    font-family: var(--font-heading);
 }
 
-.staff-name {
-    flex: 1;
-    font-weight: 500;
+.logo-img { width: clamp(3.5rem, 10vw, 5rem); height: clamp(3.5rem, 10vw, 5rem); object-fit: contain; border-radius: 1.25rem; display: block; margin: 0 auto clamp(0.75rem, 2.5vw, 1rem); }
+
+.page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 5.5vw, 2.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 0.35rem;
+    background: var(--title-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: var(--title-glow, none);
 }
+.page-subtitle { font-size: clamp(0.6rem, 2vw, 0.7rem); font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; margin: 0; color: var(--subtitle-color); font-family: var(--font-heading); }
+.welcome-heading { font-size: clamp(1rem, 3.5vw, 1.35rem); font-weight: 900; margin: 0 0 0.35rem; color: var(--text); font-family: var(--font-heading); }
+.welcome-sub { font-size: clamp(0.75rem, 2.5vw, 0.85rem); margin: 0 0 clamp(1.25rem, 4vw, 2rem); color: var(--text-dim); }
 
-.staff-role {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    background: rgba(255,255,255,.05);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
+/* Card entrance for header */
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(50px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
+.animate-up { opacity: 0; animation: cardUp 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-up:nth-child(1) { animation-delay: 0.1s; }
+.animate-up:nth-child(2) { animation-delay: 0.25s; }
 
-.dropdown-arrow {
-    transition: transform .3s ease;
-}
-
-.dropdown-arrow.rotated {
-    transform: rotate(180deg);
-}
-
-/* Scrollbar for dropdown */
-#staff-dropdown::-webkit-scrollbar {
-    width: 6px;
-}
-
-#staff-dropdown::-webkit-scrollbar-track {
-    background: rgba(15,23,42,.3);
-    border-radius: 1rem;
-}
-
-#staff-dropdown::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--blue), var(--cyan));
-    border-radius: 1rem;
-}
-
-input{background:linear-gradient(135deg,rgba(15,23,42,.8) 0%,rgba(15,23,42,.6) 100%)!important;backdrop-filter:blur(15px)!important;color:#fff!important;border:1.5px solid rgba(255,255,255,.1)!important;font-size:16px!important;transition:all .4s cubic-bezier(.4,0,.2,1)!important;box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 4px 8px rgba(0,0,0,.2)!important;transform-style:preserve-3d!important}
-
-input:focus{border-color:var(--cyan)!important;box-shadow:0 0 0 3px rgba(6,182,212,.2),0 8px 20px rgba(6,182,212,.3),inset 0 2px 4px rgba(0,0,0,.2)!important;background:linear-gradient(135deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.85) 100%)!important;transform:translateZ(15px) scale(1.01)!important}
-
-label{transform-style:preserve-3d;transition:all .3s ease}
-.group:focus-within label{transform:translateZ(10px) translateY(-2px);text-shadow:0 2px 8px rgba(6,182,212,.5)}
-
-.gradient-text{background:linear-gradient(135deg,#fff 0%,#94a3b8 50%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 30px rgba(255,255,255,.3);animation:textShine 4s ease-in-out infinite}
-@keyframes textShine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-
-@keyframes fadeIn{from{opacity:0;transform:translateY(40px) translateZ(-80px) rotateX(10deg)}to{opacity:1;transform:translateY(0) translateZ(0) rotateX(0deg)}}
-.animate-fadeIn{animation:fadeIn 1s cubic-bezier(.16,1,.3,1) forwards;opacity:0}
-
-#loginBtn{background:linear-gradient(135deg,#3b82f6 0%,#06b6d4 50%,#3b82f6 100%);background-size:200% 200%;position:relative;overflow:hidden;transform-style:preserve-3d;box-shadow:0 10px 30px rgba(59,130,246,.4),0 5px 15px rgba(6,182,212,.3),inset 0 1px 0 rgba(255,255,255,.2);transition:all .4s cubic-bezier(.4,0,.2,1)}
-
-#loginBtn:hover{background-position:100% 50%;box-shadow:0 15px 40px rgba(59,130,246,.6),0 8px 20px rgba(6,182,212,.5),inset 0 1px 0 rgba(255,255,255,.3);transform:translateZ(10px) translateY(-2px)}
-
-#loginBtn:active{transform:translateZ(5px) translateY(0px) scale(.98)}
-
-#loginBtn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.3) 50%,transparent 70%);transform:rotate(45deg);transition:.6s}
-#loginBtn:hover::before{left:100%}
-
-#loginBtn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .3s ease}
-#loginBtn:active::after{opacity:1}
-
-.forgot-btn{position:relative;overflow:hidden}
-.forgot-btn::before{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transition:width .4s ease}
-.forgot-btn:hover::before{width:100%}
-
-/* ── Responsive ── */
-@media (max-width:640px){
-    body{perspective:1000px}
-    .login-card{max-width:100%;margin:0 16px}
-    .gradient-text{font-size:2rem;line-height:1.2}
-    #tdlid-3d {font-size:8rem}
-    .staff-option {padding: 0.75rem 1rem;}
-    .staff-avatar {width: 1.75rem; height: 1.75rem; font-size: 0.75rem;}
-}
-
-@media (min-width:641px) and (max-width:1024px){
-    body{perspective:1200px}
-    #tdlid-3d {font-size:12rem}
-}
-
-@media (min-width:1025px){
-    body{perspective:1500px}
-    .login-card:hover{box-shadow:0 50px 100px -25px rgba(0,0,0,.8),0 20px 45px -15px rgba(0,0,0,.6),inset 0 2px 1px rgba(255,255,255,.2),inset 0 -2px 1px rgba(0,0,0,.4),0 0 100px rgba(59,130,246,.3)}
-    #tdlid-3d {font-size:20rem}
-}
-
-@media (hover:none){
-    #loginBtn:active{transform:scale(.97)}
-    .login-card{box-shadow:0 30px 60px -15px rgba(0,0,0,.6),0 10px 25px -8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1),0 0 60px rgba(59,130,246,.15)}
-}
-
-*:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-track{background:rgba(15,23,42,.3)}
-::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--blue),var(--cyan));border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--cyan),var(--blue))}
-
-/* ── Noise grain ── */
-body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none}
-
-/* ── Optimized Star field ── */
-#bg-stars{position:fixed;width:100%;height:100%;top:0;left:0;z-index:0;transform-style:preserve-3d;pointer-events:none;will-change:transform}
-.star-dot{position:absolute;width:1.5px;height:1.5px;background:white;border-radius:50%;opacity:0.2;will-change:transform}
-
-/* ── Energy rings ── */
-.energy-ring{position:fixed;border-radius:50%;border:1px solid transparent;pointer-events:none;z-index:0;animation:ring-pulse 4s ease-in-out infinite;will-change:transform, opacity}
-.energy-ring:nth-child(1){width:520px;height:520px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(59,130,246,0.12);animation-delay:0s}
-.energy-ring:nth-child(2){width:780px;height:780px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(6,182,212,0.07);animation-delay:-1.5s}
-.energy-ring:nth-child(3){width:1060px;height:1060px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);border-color:rgba(59,130,246,0.04);animation-delay:-3s}
-@keyframes ring-pulse{0%,100%{opacity:0.4;transform:translate(-50%,-50%) rotateX(72deg) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) rotateX(72deg) scale(1.03)}}
-
-/* ── Scan beam ── */
-.scan-beam{position:fixed;left:0;right:0;height:1px;z-index:0;background:linear-gradient(90deg,transparent 0%,#06b6d4 50%,transparent 100%);opacity:0.2;animation:scan-v 10s ease-in-out infinite;pointer-events:none;will-change:top}
-@keyframes scan-v{0%{top:100%;opacity:0}5%{opacity:0.2}95%{opacity:0.1}100%{top:-2%;opacity:0}}
-
-#bg-image-overlay {
+/* ═══════════════════════════════════════════════════════════════
+   FLOATING 3D "TDLiD" BRAND TEXT
+   Pure CSS transform animation -- one element, GPU-composited only.
+═══════════════════════════════════════════════════════════════ */
+.brand-text3d {
     position: fixed;
-    inset: 0;
-    z-index: -3;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: opacity 1s ease-in-out;
+    top: 8%;
+    left: 50%;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+    z-index: 0;
+    transform-style: preserve-3d;
+    font-size: clamp(3.5rem, 16vw, 10rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    background: var(--brand-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    opacity: var(--brand-opacity, 0.14);
+    animation: var(--brand-anim, brandDriftMon) var(--brand-duration, 16s) ease-in-out infinite;
+}
+/* One distinct 3D drift style per day -- picked via --brand-anim in each body.day-* block */
+@keyframes brandDriftMon {
+    0%   { transform: translate(-50%, 0) rotateY(0deg) rotateX(4deg); }
+    25%  { transform: translate(-50%, 18px) rotateY(10deg) rotateX(-2deg); }
+    50%  { transform: translate(-50%, -8px) rotateY(0deg) rotateX(6deg); }
+    75%  { transform: translate(-50%, 14px) rotateY(-10deg) rotateX(-2deg); }
+    100% { transform: translate(-50%, 0) rotateY(0deg) rotateX(4deg); }
+}
+@keyframes brandSwayTue {
+    0%, 100% { transform: translate(-50%, 0) rotateZ(-1deg) rotateX(2deg); }
+    50%      { transform: translate(-50%, 10px) rotateZ(1deg) rotateX(-2deg); }
+}
+@keyframes brandSpinWed {
+    0%, 100% { transform: translate(-50%, 0) rotateY(0deg) scale(1); }
+    50%      { transform: translate(-50%, -6px) rotateY(180deg) scale(1.03); }
+}
+@keyframes brandWindThu {
+    0%, 100% { transform: translate(-50%, 0) rotateZ(0deg) skewX(0deg); }
+    30%      { transform: translate(-50%, 10px) rotateZ(-2deg) skewX(3deg); }
+    60%      { transform: translate(-50%, -6px) rotateZ(2deg) skewX(-3deg); }
+}
+@keyframes brandBounceFri {
+    0%, 100% { transform: translate(-50%, 0) rotateZ(-2deg) scale(1); }
+    25%      { transform: translate(-50%, -14px) rotateZ(2deg) scale(1.02); }
+    50%      { transform: translate(-50%, 6px) rotateZ(-3deg) scale(0.99); }
+    75%      { transform: translate(-50%, -10px) rotateZ(3deg) scale(1.03); }
+}
+@keyframes brandMechSat {
+    0%, 20%  { transform: translate(-50%, 0) rotateY(0deg); }
+    25%, 45% { transform: translate(-50%, 0) rotateY(8deg); }
+    50%, 70% { transform: translate(-50%, 0) rotateY(0deg); }
+    75%, 95% { transform: translate(-50%, 0) rotateY(-8deg); }
+    100%     { transform: translate(-50%, 0) rotateY(0deg); }
+}
+@keyframes brandRiseSun {
+    0%, 100% { transform: translate(-50%, 10px) rotateX(4deg) scale(1); opacity: 0.12; }
+    50%      { transform: translate(-50%, -14px) rotateX(-2deg) scale(1.03); opacity: 0.18; }
 }
 
-/* ── Loading animation ── */
-.loading-text {
-    position: relative;
-    color: #64748b;
+/* ═══════════════════════════════════════════════════════════════
+   BACKGROUND MONSTER
+   Single inline SVG, animated with transform only (translate/rotate).
+   One element on mobile, an optional second on desktop -- both are
+   pure CSS keyframes, no per-frame JS.
+═══════════════════════════════════════════════════════════════ */
+.bg-monster {
+    position: fixed;
+    bottom: -4%;
+    left: -20%;
+    width: clamp(120px, 22vw, 220px);
+    height: auto;
+    opacity: var(--monster-opacity, 0.22);
+    color: var(--accent);
+    filter: drop-shadow(0 0 18px var(--accent));
+    z-index: 0;
+    pointer-events: none;
+    animation: var(--monster-anim, monsterWalkMon) var(--monster-duration, 22s) linear infinite;
+}
+.bg-monster.second {
+    left: auto;
+    right: -25%;
+    bottom: 6%;
+    width: clamp(90px, 16vw, 160px);
+    color: var(--accent2, var(--accent));
+    filter: drop-shadow(0 0 14px var(--accent2, var(--accent)));
+    /* same per-day path as monster1, played in reverse at a different speed so the
+       pair never move in lockstep -- still just one keyframe set per theme */
+    animation: var(--monster-anim, monsterWalkMon) calc(var(--monster-duration, 22s) * 1.35) linear infinite reverse;
+    display: none;
+}
+@media (min-width: 1024px) {
+    .bg-monster.second { display: block; }
 }
 
-.loading-text::after {
-    content: '...';
-    position: absolute;
-    animation: dots 1.5s steps(4, end) infinite;
+/* Seven distinct movement personalities, one per day theme -- picked via --monster-anim */
+@keyframes monsterWalkMon {
+    0%   { transform: translate(0, 0) rotate(-3deg) scaleX(1); }
+    48%  { transform: translate(130vw, -6vh) rotate(3deg) scaleX(1); }
+    50%  { transform: translate(130vw, -6vh) rotate(3deg) scaleX(-1); }
+    98%  { transform: translate(0, -2vh) rotate(-3deg) scaleX(-1); }
+    100% { transform: translate(0, 0) rotate(-3deg) scaleX(1); }
+}
+@keyframes monsterFloatTue {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25%      { transform: translate(6vw, -3vh) rotate(2deg); }
+    50%      { transform: translate(-4vw, 2vh) rotate(-1deg); }
+    75%      { transform: translate(5vw, 3vh) rotate(1deg); }
+}
+@keyframes monsterGlideWed {
+    0%    { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(1); }
+    49%   { transform: translate(90vw, -14vh) rotate(4deg) scaleX(1); }
+    50%   { transform: translate(90vw, -14vh) rotate(4deg) scaleX(-1); }
+    99%   { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(-1); }
+    100%  { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(1); }
+}
+@keyframes monsterHopThu {
+    0%   { transform: translate(0, 0) rotate(-2deg) scaleX(1); }
+    10%  { transform: translate(10vw, -10vh) rotate(2deg) scaleX(1); }
+    20%  { transform: translate(20vw, 0) rotate(-2deg) scaleX(1); }
+    30%  { transform: translate(30vw, -10vh) rotate(2deg) scaleX(1); }
+    40%  { transform: translate(40vw, 0) rotate(-2deg) scaleX(1); }
+    50%  { transform: translate(50vw, -10vh) rotate(2deg) scaleX(-1); }
+    60%  { transform: translate(40vw, 0) rotate(-2deg) scaleX(-1); }
+    70%  { transform: translate(30vw, -10vh) rotate(2deg) scaleX(-1); }
+    80%  { transform: translate(20vw, 0) rotate(-2deg) scaleX(-1); }
+    90%  { transform: translate(10vw, -10vh) rotate(2deg) scaleX(-1); }
+    100% { transform: translate(0, 0) rotate(-2deg) scaleX(1); }
+}
+@keyframes monsterZigzagFri {
+    0%   { transform: translate(0, 0) rotate(-8deg) scaleX(1); }
+    20%  { transform: translate(40vw, -15vh) rotate(10deg) scaleX(1); }
+    40%  { transform: translate(20vw, 10vh) rotate(-10deg) scaleX(1); }
+    50%  { transform: translate(60vw, -5vh) rotate(8deg) scaleX(-1); }
+    70%  { transform: translate(40vw, 12vh) rotate(-8deg) scaleX(-1); }
+    90%  { transform: translate(10vw, -8vh) rotate(6deg) scaleX(-1); }
+    100% { transform: translate(0, 0) rotate(-8deg) scaleX(1); }
+}
+@keyframes monsterSlideSat {
+    0%    { transform: translate(0, 0) rotate(0deg) scaleX(1); }
+    49%   { transform: translate(120vw, 0) rotate(0deg) scaleX(1); }
+    50%   { transform: translate(120vw, 0) rotate(0deg) scaleX(-1); }
+    99%   { transform: translate(0, 0) rotate(0deg) scaleX(-1); }
+    100%  { transform: translate(0, 0) rotate(0deg) scaleX(1); }
+}
+@keyframes monsterRiseSun {
+    0%   { transform: translate(0, 0) rotate(-4deg) scale(1); opacity: 0.22; }
+    50%  { transform: translate(70vw, -30vh) rotate(4deg) scale(1.08); opacity: 0.3; }
+    100% { transform: translate(0, 0) rotate(-4deg) scale(1); opacity: 0.22; }
 }
 
-@keyframes dots {
-    0%, 20% { content: '.'; }
-    40% { content: '..'; }
-    60%, 100% { content: '...'; }
-}
-/* 등장 애니메이션: 소용돌이치며 확대 */
-@keyframes spiralIn {
-    0% { transform: scale(0) rotate(-720deg); opacity: 0; filter: blur(20px); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
-}
+/* Generic ambient orbs used by every theme's .bg-deco layer */
+.bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; border: 1px solid var(--orb-border, rgba(255,255,255,0.08)); animation: orbPulse 5s ease-in-out infinite; }
+@keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.12); opacity: 0.9; } }
+.scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.35; animation: scanMove 7s linear infinite; }
+@keyframes scanMove { 0% { top: -2px; opacity: 0; } 6% { opacity: 0.6; } 94% { opacity: 0.6; } 100% { top: 100%; opacity: 0; } }
 
-/* 퇴장 애니메이션: 안개처럼 흐릿하게 소멸 */
-@keyframes mistyOut {
-    0% { transform: scale(1); opacity: 1; filter: blur(0px); }
-    100% { transform: scale(1.1); opacity: 0; filter: blur(20px); }
-}
-
-.animate-spiral-in {
-    animation: spiralIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-misty-out {
-    animation: mistyOut 0.8s ease-in forwards;
-}
-/* ── Horrifying Ghost Profile Image Effect ── */
+/* ═══════════════════════════════════════════════════════════════
+   GHOST OVERLAY / BIRTHDAY POPUP (shared, theme accent injected)
+═══════════════════════════════════════════════════════════════ */
 #ghost-overlay {
-    animation: fadeInOverlay 0.3s ease-out forwards;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px) brightness(0.55);
+    pointer-events: none; animation: ghostFadeIn 0.3s ease forwards;
 }
-
-#ghost-overlay.hidden {
-    display: none !important;
-}
-
+#ghost-overlay.hidden { display: none !important; }
 #ghost-image {
-    animation: horrorGhostAppear 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    box-shadow: 
-        0 0 80px rgba(139, 0, 139, 0.9),
-        0 0 120px rgba(75, 0, 130, 0.7),
-        0 0 160px rgba(30, 144, 255, 0.5),
-        inset 0 0 50px rgba(255, 255, 255, 0.2),
-        0 0 200px rgba(255, 0, 0, 0.3);
-    border: 4px solid rgba(139, 0, 139, 0.8);
-    filter: grayscale(80%) contrast(1.2);
-    position: relative;
+    width: clamp(10rem, 30vw, 16rem); height: clamp(10rem, 30vw, 16rem);
+    object-fit: cover; border-radius: 50%;
+    animation: ghostPulse 2.2s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes ghostFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ghostPulse { 0% { opacity: 0; transform: scale(0.4) rotateY(-40deg); } 60% { opacity: 1; transform: scale(1.05) rotateY(10deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
+
+#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); }
+#birthday-popup.hidden { display: none !important; }
+.birthday-inner {
+    width: 90%; max-width: 340px; padding: clamp(1.5rem, 5vw, 2rem);
+    border-radius: 1.5rem; text-align: center;
+    background: var(--card-bg); border: 1.5px solid var(--accent); color: var(--text);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px var(--accent);
 }
 
-/* 귀신 아우라 효과 */
-#ghost-image::before {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    background: radial-gradient(circle, 
-        rgba(139, 0, 139, 0.4) 0%, 
-        rgba(75, 0, 130, 0.2) 40%,
-        transparent 70%);
-    border-radius: 50%;
-    filter: blur(15px);
-    animation: auraPulse 2s ease-in-out infinite;
-    z-index: -1;
+/* ═══════════════════════════════════════════════════════════════
+   DAY THEMES -- each sets custom properties only. 7 unique looks.
+═══════════════════════════════════════════════════════════════ */
+
+/* MON — DEEP SPACE (cyber neon cyan/magenta) */
+body.day-mon {
+    --font-heading: 'Orbitron', sans-serif; --font-body: 'Pretendard', 'Inter', sans-serif;
+    --bg-base: #060916;
+    --bg-image: radial-gradient(ellipse 80% 60% at 20% 15%, rgba(0,212,255,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 85% 85%, rgba(255,0,110,0.1) 0%, transparent 60%);
+    --text: #e2e8f0; --text-dim: #64748b; --label-color: rgba(0,212,255,0.7); --subtitle-color: rgba(0,212,255,0.55); --placeholder-color: #334155;
+    --accent: #00d4ff; --accent2: #ff006e;
+    --card-bg: linear-gradient(135deg, rgba(20,30,60,0.96) 0%, rgba(12,16,42,0.94) 100%);
+    --card-border: 1.5px solid rgba(0,212,255,0.3); --card-radius: 1.75rem;
+    --card-shadow: 0 0 60px rgba(0,212,255,0.14), 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+    --input-bg: rgba(8,12,35,0.8); --input-border: 1.5px solid rgba(0,212,255,0.2); --input-radius: 1rem;
+    --input-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 3px rgba(0,212,255,0.08);
+    --input-shadow-focus: 0 0 0 3px rgba(0,212,255,0.16), 0 8px 30px rgba(0,212,255,0.2);
+    --dropdown-bg: rgba(10,14,39,0.98); --option-hover: rgba(0,212,255,0.08); --option-selected: rgba(0,212,255,0.15);
+    --avatar-bg: linear-gradient(135deg, #00d4ff, #ffbe0b); --avatar-text: #000;
+    --badge-bg: rgba(0,212,255,0.14); --badge-border: rgba(0,212,255,0.3);
+    --btn-bg: linear-gradient(135deg, #00d4ff 0%, #ffbe0b 50%, #ff006e 100%); --btn-text: #000;
+    --btn-shadow: 0 0 30px rgba(0,212,255,0.35), 0 8px 25px rgba(255,0,110,0.25);
+    --btn-shadow-hover: 0 0 50px rgba(0,212,255,0.55), 0 12px 35px rgba(255,0,110,0.4);
+    --title-gradient: linear-gradient(90deg, #00d4ff, #ffbe0b, #ff006e);
+    --brand-gradient: linear-gradient(135deg, #00d4ff, #ff006e, #ffbe0b);
+    --orb-border: rgba(0,212,255,0.15);
+    --monster-anim: monsterWalkMon; --monster-duration: 22s;
+    --brand-anim: brandDriftMon; --brand-duration: 16s;
 }
 
-@keyframes fadeInOverlay {
-    from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-    }
-    to {
-        opacity: 1;
-        backdrop-filter: blur(8px) brightness(0.7);
-    }
+/* TUE — WABI-SABI (dark, gold-clay) */
+body.day-tue {
+    --font-heading: 'Noto Serif JP', serif; --font-body: 'Noto Serif JP', serif;
+    --bg-base: #100d0a;
+    --bg-image: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(201,168,76,0.12) 0%, transparent 60%), radial-gradient(ellipse 70% 70% at 10% 90%, rgba(140,90,60,0.1) 0%, transparent 60%);
+    --text: #efe6d8; --text-dim: #a08a70; --label-color: rgba(201,168,76,0.65); --subtitle-color: rgba(201,168,76,0.5); --placeholder-color: #4a3f34;
+    --accent: #c9a84c; --accent2: #a8623c;
+    --card-bg: linear-gradient(160deg, rgba(26,20,15,0.96) 0%, rgba(16,12,9,0.95) 100%);
+    --card-border: 1px solid rgba(201,168,76,0.28); --card-radius: 0.75rem;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(201,168,76,0.08);
+    --input-bg: rgba(10,8,6,0.7); --input-border: 1px solid rgba(201,168,76,0.25); --input-radius: 0.6rem;
+    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+    --input-shadow-focus: 0 0 0 3px rgba(201,168,76,0.14), inset 0 1px 4px rgba(0,0,0,0.3);
+    --dropdown-bg: rgba(16,12,9,0.98); --option-hover: rgba(201,168,76,0.08); --option-selected: rgba(201,168,76,0.14);
+    --avatar-bg: linear-gradient(135deg, #c9a84c, #a8623c); --avatar-text: #100d0a;
+    --badge-bg: rgba(201,168,76,0.1); --badge-border: rgba(201,168,76,0.3);
+    --btn-bg: linear-gradient(135deg, #c9a84c, #a8623c, #c9a84c); --btn-text: #100d0a;
+    --btn-shadow: 0 4px 25px rgba(201,168,76,0.28);
+    --btn-shadow-hover: 0 8px 35px rgba(201,168,76,0.42);
+    --title-gradient: linear-gradient(90deg, #c9a84c, #efe6d8, #a8623c);
+    --brand-gradient: linear-gradient(135deg, #c9a84c, #efe6d8, #a8623c);
+    --orb-border: rgba(201,168,76,0.12);
+    --monster-anim: monsterFloatTue; --monster-duration: 30s;
+    --brand-anim: brandSwayTue; --brand-duration: 22s;
 }
 
-@keyframes horrorGhostAppear {
-    /* 첫 번째 단계: 먼 곳에서 무섭게 나타남 */
-    0% {
-        opacity: 0;
-        transform: scale(0.1) translateY(80px) rotateX(-90deg) rotateZ(-30deg);
-        filter: blur(40px) brightness(0.3);
-        text-shadow: 0 0 20px rgba(139, 0, 139, 0.5);
-    }
-    
-    /* 두 번째 단계: 빠르게 떠오름 */
-    15% {
-        opacity: 0.4;
-        transform: scale(0.4) translateY(40px) rotateX(-45deg) rotateZ(-15deg);
-        filter: blur(30px) brightness(0.5);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.7);
-    }
-    
-    /* 세 번째 단계: 가까워지면서 무서워짐 */
-    35% {
-        opacity: 0.7;
-        transform: scale(0.8) translateY(10px) rotateX(-20deg) rotateZ(-5deg);
-        filter: blur(15px) brightness(0.7);
-        text-shadow: 0 0 60px rgba(255, 0, 0, 0.6);
-    }
-    
-    /* 네 번째 단계: 완전히 나타남 - 가장 무서운 순간 */
-    50% {
-        opacity: 1;
-        transform: scale(1.1) translateY(-10px) rotateX(-5deg) rotateZ(0deg);
-        filter: brightness(1.2) contrast(1.5) grayscale(80%);
-        text-shadow: 0 0 80px rgba(139, 0, 139, 0.9);
-    }
-    
-    /* 다섯 번째 단계: 떨림 효과 */
-    55% {
-        transform: scale(1.05) translateY(-15px) rotateX(2deg) rotateZ(2deg);
-    }
-    
-    60% {
-        transform: scale(1.08) translateY(-12px) rotateX(-2deg) rotateZ(-2deg);
-        filter: brightness(1.3) contrast(1.6) grayscale(70%);
-    }
-    
-    /* 여섯 번째 단계: 유지 */
-    65% {
-        opacity: 1;
-        transform: scale(1.1) translateY(-10px) rotateX(0deg) rotateZ(0deg);
-        filter: brightness(1.2) contrast(1.5) grayscale(80%);
-        box-shadow: 
-            0 0 80px rgba(139, 0, 139, 0.9),
-            0 0 120px rgba(75, 0, 130, 0.7),
-            0 0 160px rgba(30, 144, 255, 0.5),
-            inset 0 0 50px rgba(255, 255, 255, 0.2),
-            0 0 200px rgba(255, 0, 0, 0.4);
-    }
-    
-    /* 일곱 번째 단계: 깜박임 효과 */
-    72% {
-        opacity: 0.3;
-        filter: brightness(0.5) contrast(1.2) grayscale(100%);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.5);
-    }
-    
-    75% {
-        opacity: 1;
-        filter: brightness(1.3) contrast(1.7) grayscale(75%);
-    }
-    
-    /* 여덟 번째 단계: 사라짐 */
-    85% {
-        opacity: 0.5;
-        transform: scale(1.2) translateY(-30px) rotateX(30deg) rotateZ(10deg);
-        filter: blur(20px) brightness(0.4);
-        text-shadow: 0 0 40px rgba(139, 0, 139, 0.3);
-    }
-    
-    100% {
-        opacity: 0;
-        transform: scale(1.5) translateY(-80px) rotateX(90deg) rotateZ(45deg);
-        filter: blur(50px) brightness(0.1);
-        text-shadow: 0 0 0px rgba(139, 0, 139, 0);
-    }
+/* WED — ART DECO (dark olive-gold) */
+body.day-wed {
+    --font-heading: 'Cormorant Garamond', serif; --font-body: 'Cormorant Garamond', serif;
+    --bg-base: #0d1408;
+    --bg-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(154,163,60,0.16) 0%, transparent 60%);
+    --text: #ece6cf; --text-dim: #6f7a53; --label-color: rgba(190,199,100,0.55); --subtitle-color: rgba(190,199,100,0.5); --placeholder-color: #35401f;
+    --accent: #b4b43c; --accent2: #d8c26a;
+    --card-bg: linear-gradient(160deg, rgba(16,22,10,0.97) 0%, rgba(9,14,6,0.95) 100%);
+    --card-border: 1px solid rgba(180,180,60,0.32); --card-radius: 0.25rem;
+    --card-frame: ''; --card-frame-border: 1px solid rgba(180,180,60,0.12);
+    --card-shadow: 0 0 80px rgba(180,180,60,0.08), 0 25px 70px rgba(0,0,0,0.8), inset 0 1px 0 rgba(180,180,60,0.14);
+    --input-bg: rgba(6,10,4,0.7); --input-border: 1px solid rgba(180,180,60,0.25); --input-radius: 0.15rem;
+    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+    --input-shadow-focus: 0 0 0 2px rgba(180,180,60,0.1), inset 0 1px 4px rgba(0,0,0,0.3);
+    --dropdown-bg: rgba(6,10,4,0.98); --option-hover: rgba(180,180,60,0.08); --option-selected: rgba(180,180,60,0.14);
+    --avatar-bg: linear-gradient(135deg, #b4b43c, #d8c26a); --avatar-text: #0d1408;
+    --badge-bg: rgba(180,180,60,0.12); --badge-border: rgba(180,180,60,0.3);
+    --btn-bg: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c); --btn-text: #0d1408;
+    --btn-shadow: 0 4px 30px rgba(180,180,60,0.28);
+    --btn-shadow-hover: 0 8px 40px rgba(180,180,60,0.45);
+    --title-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c);
+    --brand-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c);
+    --orb-border: rgba(180,180,60,0.1);
+    --monster-anim: monsterGlideWed; --monster-duration: 24s;
+    --brand-anim: brandSpinWed; --brand-duration: 18s;
 }
 
-@keyframes auraPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.4;
-    }
-    50% {
-        transform: scale(1.3);
-        opacity: 0.7;
-    }
+/* THU — BIOPHILIC (dark forest green) */
+body.day-thu {
+    --font-heading: 'DM Serif Display', serif; --font-body: 'DM Serif Display', serif;
+    --bg-base: #081410;
+    --bg-image: radial-gradient(ellipse 80% 60% at 80% 15%, rgba(74,168,110,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(180,110,70,0.08) 0%, transparent 60%);
+    --text: #e3ece2; --text-dim: #6f9078; --label-color: rgba(90,200,130,0.55); --subtitle-color: rgba(90,200,130,0.5); --placeholder-color: #234030;
+    --accent: #4fbf7a; --accent2: #b46e46;
+    --card-bg: linear-gradient(150deg, rgba(10,24,17,0.96) 0%, rgba(6,16,11,0.95) 100%);
+    --card-border: 1.5px solid rgba(79,191,122,0.25); --card-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(79,191,122,0.08);
+    --input-bg: rgba(5,12,8,0.7); --input-border: 1.5px solid rgba(79,191,122,0.25); --input-radius: 1rem;
+    --input-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+    --input-shadow-focus: 0 0 0 3px rgba(79,191,122,0.16), inset 0 2px 6px rgba(0,0,0,0.3);
+    --dropdown-bg: rgba(6,16,11,0.99); --option-hover: rgba(79,191,122,0.08); --option-selected: rgba(79,191,122,0.14);
+    --avatar-bg: linear-gradient(135deg, #4fbf7a, #b46e46); --avatar-text: #06120c;
+    --badge-bg: rgba(79,191,122,0.12); --badge-border: rgba(79,191,122,0.3);
+    --btn-bg: linear-gradient(135deg, #2f8f52, #4fbf7a); --btn-text: #06120c;
+    --btn-shadow: 0 4px 25px rgba(79,191,122,0.3);
+    --btn-shadow-hover: 0 8px 35px rgba(79,191,122,0.48);
+    --title-gradient: linear-gradient(135deg, #4fbf7a, #e3ece2);
+    --brand-gradient: linear-gradient(135deg, #4fbf7a, #b46e46, #4fbf7a);
+    --orb-border: rgba(79,191,122,0.12);
+    --monster-anim: monsterHopThu; --monster-duration: 18s;
+    --brand-anim: brandWindThu; --brand-duration: 14s;
 }
 
-/* 배경 번쩍이는 효과 */
-@keyframes screenFlicker {
-    0%, 100% { opacity: 1; }
-    10% { opacity: 0.8; }
-    20% { opacity: 1; }
-    30% { opacity: 0.85; }
-    40% { opacity: 1; }
-    50% { opacity: 0.9; }
+/* FRI — SYNTHWAVE (pink-purple) */
+body.day-fri {
+    --font-heading: 'Bungee', cursive; --font-body: 'Inter', sans-serif;
+    --bg-base: #0a0520;
+    --bg-image: linear-gradient(180deg, #0a0520 0%, #1a0a3a 45%, #0a0520 100%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.06) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(140,0,255,0.05) 40px);
+    --text: #fdf6ff; --text-dim: rgba(200,150,255,0.55); --label-color: rgba(200,120,255,0.65); --subtitle-color: rgba(200,120,255,0.55); --placeholder-color: #3a1a4a;
+    --accent: #ff2ec4; --accent2: #8c3bff;
+    --card-bg: linear-gradient(135deg, rgba(26,10,45,0.97) 0%, rgba(15,5,30,0.95) 100%);
+    --card-border: 2px solid rgba(255,46,196,0.45); --card-radius: 0;
+    --card-shadow: 0 0 60px rgba(255,46,196,0.22), 0 0 100px rgba(140,59,255,0.14), 0 25px 60px rgba(0,0,0,0.8);
+    --input-bg: rgba(10,2,25,0.7); --input-border: 1.5px solid rgba(255,46,196,0.3); --input-radius: 0;
+    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,46,196,0.06);
+    --input-shadow-focus: 0 0 0 3px rgba(255,46,196,0.16), 0 0 20px rgba(255,46,196,0.2), inset 0 1px 4px rgba(0,0,0,0.4);
+    --dropdown-bg: rgba(10,2,25,0.98); --option-hover: rgba(255,46,196,0.08); --option-selected: rgba(255,46,196,0.15);
+    --avatar-bg: linear-gradient(135deg, #ff2ec4, #8c3bff); --avatar-text: #0a0520;
+    --badge-bg: rgba(255,46,196,0.14); --badge-border: rgba(255,46,196,0.4);
+    --btn-bg: linear-gradient(90deg, #ff2ec4, #8c3bff, #ff2ec4); --btn-text: #0a0520;
+    --btn-shadow: 0 0 40px rgba(255,46,196,0.4), 0 0 60px rgba(140,59,255,0.25);
+    --btn-shadow-hover: 0 0 60px rgba(255,46,196,0.6), 0 0 80px rgba(140,59,255,0.4);
+    --title-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff);
+    --brand-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff, #ff2ec4);
+    --orb-border: rgba(255,46,196,0.15);
+    --monster-anim: monsterZigzagFri; --monster-duration: 14s;
+    --brand-anim: brandBounceFri; --brand-duration: 9s;
 }
 
-#ghost-overlay.active {
-    animation: screenFlicker 3s ease-in-out;
+/* SAT — ARCTIC STEEL (steel blue) */
+body.day-sat {
+    --font-heading: 'Rajdhani', sans-serif; --font-body: 'Rajdhani', 'Inter', sans-serif;
+    --bg-base: #0a1218;
+    --bg-image: radial-gradient(ellipse 80% 60% at 25% 20%, rgba(120,170,210,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(70,110,150,0.12) 0%, transparent 60%);
+    --text: #e6f0f7; --text-dim: #6b8394; --label-color: rgba(140,190,225,0.6); --subtitle-color: rgba(140,190,225,0.5); --placeholder-color: #2b3d47;
+    --accent: #7fc4e8; --accent2: #4a6e96;
+    --card-bg: linear-gradient(135deg, rgba(18,32,42,0.96) 0%, rgba(10,20,28,0.95) 100%);
+    --card-border: 1.5px solid rgba(127,196,232,0.3); --card-radius: 1rem;
+    --card-shadow: 0 0 60px rgba(127,196,232,0.12), 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+    --input-bg: rgba(8,16,22,0.8); --input-border: 1.5px solid rgba(127,196,232,0.22); --input-radius: 0.75rem;
+    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+    --input-shadow-focus: 0 0 0 3px rgba(127,196,232,0.16), 0 8px 30px rgba(127,196,232,0.18);
+    --dropdown-bg: rgba(10,20,28,0.98); --option-hover: rgba(127,196,232,0.08); --option-selected: rgba(127,196,232,0.15);
+    --avatar-bg: linear-gradient(135deg, #7fc4e8, #4a6e96); --avatar-text: #0a1218;
+    --badge-bg: rgba(127,196,232,0.14); --badge-border: rgba(127,196,232,0.3);
+    --btn-bg: linear-gradient(135deg, #4a6e96, #7fc4e8, #a8dcf2); --btn-text: #0a1218;
+    --btn-shadow: 0 0 30px rgba(127,196,232,0.3), 0 8px 25px rgba(74,110,150,0.25);
+    --btn-shadow-hover: 0 0 50px rgba(127,196,232,0.5), 0 12px 35px rgba(74,110,150,0.4);
+    --title-gradient: linear-gradient(90deg, #7fc4e8, #e6f0f7, #4a6e96);
+    --brand-gradient: linear-gradient(135deg, #7fc4e8, #4a6e96, #a8dcf2);
+    --orb-border: rgba(127,196,232,0.16);
+    --monster-anim: monsterSlideSat; --monster-duration: 20s;
+    --brand-anim: brandMechSat; --brand-duration: 12s;
 }
 
-/* 공포 효과음 시각화 (선택) */
-@keyframes screamWave {
-    0% {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-    50% {
-        opacity: 0.8;
-    }
-    100% {
-        opacity: 0;
-        transform: scale(3);
-    }
+/* SUN — SUNSET EMBER (rose-amber) */
+body.day-sun {
+    --font-heading: 'Playfair Display', serif; --font-body: 'Playfair Display', 'Inter', serif;
+    --bg-base: #170a0d;
+    --bg-image: radial-gradient(ellipse 80% 60% at 70% 15%, rgba(230,120,90,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(200,70,90,0.12) 0%, transparent 60%);
+    --text: #f6e8e2; --text-dim: #a06858; --label-color: rgba(232,150,110,0.6); --subtitle-color: rgba(232,150,110,0.5); --placeholder-color: #4a2620;
+    --accent: #e8966e; --accent2: #c8465a;
+    --card-bg: linear-gradient(150deg, rgba(35,16,18,0.97) 0%, rgba(20,9,10,0.95) 100%);
+    --card-border: 1.5px solid rgba(232,150,110,0.3); --card-radius: 1.25rem;
+    --card-shadow: 0 0 60px rgba(232,150,110,0.14), 0 25px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
+    --input-bg: rgba(15,7,8,0.75); --input-border: 1.5px solid rgba(232,150,110,0.25); --input-radius: 0.9rem;
+    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+    --input-shadow-focus: 0 0 0 3px rgba(232,150,110,0.16), 0 8px 30px rgba(232,150,110,0.2);
+    --dropdown-bg: rgba(20,9,10,0.98); --option-hover: rgba(232,150,110,0.08); --option-selected: rgba(232,150,110,0.15);
+    --avatar-bg: linear-gradient(135deg, #e8966e, #c8465a); --avatar-text: #170a0d;
+    --badge-bg: rgba(232,150,110,0.14); --badge-border: rgba(232,150,110,0.3);
+    --btn-bg: linear-gradient(135deg, #c8465a, #e8966e, #f2c48a); --btn-text: #170a0d;
+    --btn-shadow: 0 0 30px rgba(232,150,110,0.32), 0 8px 25px rgba(200,70,90,0.25);
+    --btn-shadow-hover: 0 0 50px rgba(232,150,110,0.5), 0 12px 35px rgba(200,70,90,0.4);
+    --title-gradient: linear-gradient(90deg, #e8966e, #f2c48a, #c8465a);
+    --brand-gradient: linear-gradient(135deg, #e8966e, #c8465a, #f2c48a);
+    --orb-border: rgba(232,150,110,0.16);
+    --monster-anim: monsterRiseSun; --monster-duration: 26s;
+    --brand-anim: brandRiseSun; --brand-duration: 20s;
 }
+
 </style>
-
 </head>
-<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 md:p-8">
 
-<!-- 3D TDLiD Background -->
-<div id="tdlid-3d">
-    <span>T</span><span>D</span><span>L</span><span>i</span><span>D</span>
-</div>
+<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen">
 
-<!-- Background Effects -->
-<div id="bg-stars"></div>
-<div class="energy-ring"></div>
-<div class="energy-ring"></div>
-<div class="energy-ring"></div>
-<div class="scan-beam"></div>
+<!-- Background layers (z-index 0, behind the card) -->
+<div class="bg-deco" id="bg-deco"></div>
+<div class="brand-text3d" id="brand-text3d">TDLiD</div>
+<svg id="monster1" class="bg-monster" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+<svg id="monster2" class="bg-monster second" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
 
-<div class="video-overlay"></div>
+<!-- Main content -->
+<div class="page-wrapper">
 
-<!-- 로고 및 타이틀 섹션 -->
-<div class="text-center mb-6 sm:mb-8 md:mb-12 animate-fadeIn w-full max-w-lg px-4">
-    <div class="flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-8">
-        <div class="relative logo-container group">
-            <div class="logo-glow"></div>
-            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full blur-sm opacity-30 group-hover:opacity-60 transition duration-1000"></div>
-            <img src="images/login/login.gif" alt="Logo" class="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-contain rounded-full ring-2 ring-white/10">
-        </div>
-        <div class="text-center md:text-left">
-            <h2 class="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter leading-tight drop-shadow-2xl gradient-text">
-                Staff Login
-            </h2>
-            <p class="text-cyan-400/80 text-[9px] sm:text-[10px] md:text-xs font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase mt-1 sm:mt-2">
-                Daily Report System
-            </p>
-        </div>
+    <!-- Header -->
+    <div class="text-center animate-up w-full px-2">
+        <img src="images/login/login.gif" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+        <div id="day-badge-wrap" style="margin-bottom:0.75rem;"></div>
+        <h1 class="page-title" id="page-title">Staff Login</h1>
+        <p class="page-subtitle" id="page-subtitle">Daily Report System</p>
     </div>
-</div>
 
-<!-- 로그인 카드 -->
-<div id="tilt-card" class="login-card p-6 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[2.5rem] md:rounded-[3rem] w-full max-w-[400px] sm:max-w-[440px] md:max-w-[460px] animate-fadeIn" style="animation-delay: 0.2s;">
-    
-    <div class="mb-8 sm:mb-10 text-center md:text-left card-layer-1">
-        <p class="text-white text-xl sm:text-2xl md:text-3xl font-black tracking-tight">Welcome back</p>
-        <p class="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2 font-medium">Select your profile to continue</p>
-    </div>
-    
-    <div class="space-y-6 sm:space-y-8 card-layer-2">
-        
-        <!-- Enhanced Staff Member Selector -->
-        <div class="group">
-            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
-                Staff Member
-            </label>
-            <div id="staff-selector-container">
-                <div id="selected-staff" tabindex="0">
-                    <span id="selected-text" class="loading-text">Loading staff list</span>
-                    <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                    </svg>
+    <!-- Login Card -->
+    <div class="login-card animate-up w-full">
+        <div style="position:relative;z-index:10;">
+
+            <p class="welcome-heading" id="welcome-heading">Welcome back</p>
+            <p class="welcome-sub" id="welcome-sub">Select your profile to continue</p>
+
+            <!-- Staff Selector -->
+            <div class="field-wrap">
+                <label class="field-label">Staff Member</label>
+                <div id="staff-selector-container">
+                    <div id="selected-staff" tabindex="0">
+                        <span id="selected-text">Loading staff list...</span>
+                        <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor">
+                            <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/>
+                        </svg>
+                    </div>
+                    <div id="staff-dropdown"></div>
                 </div>
-                <div id="staff-dropdown"></div>
             </div>
-        </div>
 
-        <div class="group">
-            <label class="block text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-2 sm:mb-3 ml-1 transition-colors group-focus-within:text-cyan-400">
-                Secure Password
-            </label>
-            <div class="relative">
-                <input 
-                    type="password" 
-                    id="password" 
-                    class="w-full border p-4 sm:p-5 pr-12 sm:pr-14 rounded-xl sm:rounded-2xl outline-none shadow-2xl text-sm sm:text-base" 
-                    placeholder="••••••••"
-                >
-                <button 
-                    type="button"
-                    onclick="togglePassword()"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition-colors focus:outline-none"
-                    style="z-index: 10;"
-                >
-                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                </button>
+            <!-- Password -->
+            <div class="field-wrap">
+                <label class="field-label">Secure Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password" class="input-field" placeholder="••••••••">
+                    <button type="button" class="eye-btn" onclick="togglePassword()">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="forgot-row">
+                    <button onclick="findPassword()" class="forgot-btn">Forgot Password?</button>
+                </div>
             </div>
-            <div class="flex justify-end px-1 mt-2 sm:mt-3">
-                <button onclick="findPassword()" class="forgot-btn text-[9px] sm:text-[10px] text-slate-500 hover:text-cyan-400 transition-all font-black uppercase tracking-wider sm:tracking-widest">
-                    Forgot Password?
-                </button>
-            </div>
-        </div>
 
-        <div class="pt-3 sm:pt-4 card-layer-3">
-            <button id="loginBtn" onclick="handleLogin()" class="w-full text-white py-5 sm:py-6 rounded-[1.25rem] sm:rounded-[1.5rem] font-black shadow-2xl shadow-blue-900/40 transition-all active:scale-95 text-sm sm:text-base uppercase tracking-[0.25em] sm:tracking-[0.3em]">
-                AUTHENTICATE
-            </button>
+            <!-- Login Button -->
+            <button id="loginBtn" class="login-btn" onclick="handleLogin()">AUTHENTICATE</button>
         </div>
+    </div>
+
+</div><!-- /page-wrapper -->
+
+<!-- Birthday Popup -->
+<div id="birthday-popup" class="hidden">
+    <div class="birthday-inner">
+        <div style="font-size:3rem;margin-bottom:0.75rem;">🎂</div>
+        <h2 style="font-size:1.35rem;font-weight:700;color:var(--accent);margin:0 0 0.75rem;">Happy Birthday!</h2>
+        <div id="birthday-list" style="margin-bottom:1rem;"></div>
+        <div style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.5;margin-bottom:1rem;">
+            CLOSING IN <span id="timer-seconds" style="font-weight:900;">10</span>s
+        </div>
+        <button onclick="closePopup()" id="birthday-close-btn"
+            style="width:100%;padding:0.75rem;border:none;cursor:pointer;border-radius:0.75rem;font-weight:700;font-size:0.85rem;background:var(--btn-bg);color:var(--btn-text);transition:all 0.2s;">
+            Close
+        </button>
     </div>
 </div>
 
-<div id="birthday-popup" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-    <div id="popup-content" class="relative w-full max-w-sm p-8 mx-4 text-center bg-[#081224]/90 border border-blue-500/30 rounded-3xl shadow-2xl overflow-hidden">
-        <div class="relative z-10">
-            <div class="text-5xl mb-4 animate-bounce">🎂</div>
-            <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 italic">Happy Birthday!</h2>
-            
-            <div id="birthday-list" class="space-y-3 mb-6 text-white font-semibold"></div>
-            
-            <div id="countdown-timer" class="text-[11px] text-blue-400/60 font-mono mb-2 tracking-widest">
-                CLOSING IN <span id="timer-seconds" class="font-bold text-blue-400">5</span>s...
-            </div>
-            
-            <button onclick="closePopup()" 
-                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-blue-500/20">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Horrifying Ghost Profile Image Effect -->
-<div id="ghost-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none">
-    <div style="position: relative;">
-        <img id="ghost-image" src="" alt="Profile Ghost" class="w-48 h-48 sm:w-64 sm:h-64 object-cover rounded-full">
-    </div>
+<!-- Ghost Overlay -->
+<div id="ghost-overlay" class="hidden">
+    <img id="ghost-image" src="" alt="Profile">
 </div>
 
 <script>
 (function() {
     'use strict';
 
-    // ── Performance optimization: Reduce animation on low-end devices ──
-    const isLowEndDevice = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                           window.devicePixelRatio < 2;
-    
-    if (isLowEndDevice) {
-        document.body.style.perspective = '800px';
+    /* ── DAY THEMING (Sun=0 .. Sat=6, matches Date.getDay()) ── */
+    const DAY_CONFIG = {
+        0: { cls: 'day-sun', badge: '🌇 Sunday',   title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN' },
+        1: { cls: 'day-mon', badge: '⚡ Monday',    title: 'Staff Login', heading: 'Welcome back',    sub: 'Select your profile to continue', btnText: 'AUTHENTICATE' },
+        2: { cls: 'day-tue', badge: '◎ Tuesday',   title: 'Staff Login', heading: '안녕하세요 ^^*',   sub: 'Select your profile to continue', btnText: 'SIGN IN' },
+        3: { cls: 'day-wed', badge: '◆ Wednesday', title: 'Staff Login', heading: 'Welcome',         sub: 'Enter your credentials to proceed', btnText: 'ENTER' },
+        4: { cls: 'day-thu', badge: '🌿 Thursday',  title: 'Staff Login', heading: 'Good morning',    sub: 'Choose your name and sign in', btnText: 'SIGN IN' },
+        5: { cls: 'day-fri', badge: '🎉 Friday',    title: 'TGIF Login',  heading: "It's Friday!",   sub: 'Pick your name and let\'s go 🚀', btnText: "LET'S GO" },
+        6: { cls: 'day-sat', badge: '❄ Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN' }
+    };
+
+    const now = new Date();
+    const cfg = DAY_CONFIG[now.getDay()] || DAY_CONFIG[1];
+
+    document.body.classList.add(cfg.cls);
+    document.getElementById('day-badge-wrap').innerHTML = `<span class="day-badge">${cfg.badge}</span>`;
+    document.getElementById('page-title').textContent = cfg.title;
+    document.getElementById('welcome-heading').textContent = cfg.heading;
+    document.getElementById('welcome-sub').textContent = cfg.sub;
+    document.getElementById('loginBtn').textContent = cfg.btnText;
+
+    /* Seven distinct game-monster silhouettes, one per day theme.
+       Eyes/mouth use var(--bg-base) so they read as "cutouts" against the body color;
+       body/wings use currentColor so CSS (color: var(--accent)/--accent2) drives the tint. */
+    const MONSTER_SVGS = {
+        'day-mon': /* Deep Space -- boxy alien scout */
+            '<path d="M100 15 L150 70 L140 130 L60 130 L50 70 Z" fill="currentColor"/>' +
+            '<line x1="100" y1="6" x2="100" y2="18" stroke="currentColor" stroke-width="3"/>' +
+            '<circle cx="100" cy="6" r="6" fill="currentColor"/>' +
+            '<circle cx="100" cy="85" r="24" fill="var(--bg-base)"/>' +
+            '<circle cx="100" cy="85" r="11" fill="currentColor"/>' +
+            '<rect x="68" y="120" width="16" height="28" rx="4" fill="currentColor"/>' +
+            '<rect x="116" y="120" width="16" height="28" rx="4" fill="currentColor"/>',
+        'day-tue': /* Wabi-Sabi -- calm round mochi spirit */
+            '<ellipse cx="100" cy="100" rx="70" ry="55" fill="currentColor"/>' +
+            '<path d="M55 55 Q60 22 78 48 Z" fill="currentColor"/>' +
+            '<path d="M145 55 Q140 22 122 48 Z" fill="currentColor"/>' +
+            '<path d="M75 95 Q85 105 95 95" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+            '<path d="M105 95 Q115 105 125 95" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+            '<path d="M90 120 Q100 128 110 120" stroke="var(--bg-base)" stroke-width="4" fill="none" stroke-linecap="round"/>',
+        'day-wed': /* Art Deco -- sleek finned serpent */
+            '<path d="M25 112 Q60 58 100 82 Q140 58 175 112 Q140 132 100 122 Q60 132 25 112Z" fill="currentColor"/>' +
+            '<path d="M85 55 L100 12 L115 55Z" fill="currentColor"/>' +
+            '<path d="M62 62 L76 28 L90 60Z" fill="currentColor"/>' +
+            '<path d="M110 60 L124 28 L138 62Z" fill="currentColor"/>' +
+            '<rect x="86" y="86" width="12" height="12" fill="var(--bg-base)" transform="rotate(45 92 92)"/>' +
+            '<rect x="102" y="86" width="12" height="12" fill="var(--bg-base)" transform="rotate(45 108 92)"/>',
+        'day-thu': /* Biophilic -- mossy forest golem */
+            '<ellipse cx="100" cy="107" rx="68" ry="48" fill="currentColor"/>' +
+            '<path d="M58 62 Q46 24 74 44 Q70 58 58 62Z" fill="currentColor"/>' +
+            '<path d="M142 62 Q154 24 126 44 Q130 58 142 62Z" fill="currentColor"/>' +
+            '<circle cx="72" cy="72" r="7" fill="currentColor" opacity="0.55"/>' +
+            '<circle cx="132" cy="68" r="6" fill="currentColor" opacity="0.55"/>' +
+            '<circle cx="80" cy="100" r="8" fill="var(--bg-base)"/>' +
+            '<circle cx="120" cy="100" r="8" fill="var(--bg-base)"/>' +
+            '<path d="M85 128 Q100 138 115 128" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>',
+        'day-fri': /* Synthwave -- spiky night bat */
+            '<path d="M100 92 L58 40 L74 86 L18 54 L54 100 L100 132 L146 100 L182 54 L126 86 L142 40Z" fill="currentColor"/>' +
+            '<polygon points="84,96 94,80 100,96" fill="var(--bg-base)"/>' +
+            '<polygon points="106,96 112,80 122,96" fill="var(--bg-base)"/>',
+        'day-sat': /* Arctic Steel -- crystalline shard beast */
+            '<polygon points="100,18 142,70 126,142 74,142 58,70" fill="currentColor"/>' +
+            '<polygon points="100,44 122,80 111,120 89,120 78,80" fill="var(--bg-base)" opacity="0.55"/>' +
+            '<circle cx="84" cy="86" r="6" fill="var(--bg-base)"/>' +
+            '<circle cx="116" cy="86" r="6" fill="var(--bg-base)"/>',
+        'day-sun': /* Sunset Ember -- warm little phoenix */
+            '<path d="M100 132 Q58 122 48 80 Q70 90 80 68 Q74 48 96 38 Q100 54 104 38 Q126 48 120 68 Q130 90 152 80 Q142 122 100 132Z" fill="currentColor"/>' +
+            '<circle cx="87" cy="90" r="6" fill="var(--bg-base)"/>' +
+            '<circle cx="113" cy="90" r="6" fill="var(--bg-base)"/>' +
+            '<path d="M89 106 Q100 113 111 106" stroke="var(--bg-base)" stroke-width="4" fill="none" stroke-linecap="round"/>'
+    };
+    const monsterMarkup = MONSTER_SVGS[cfg.cls] || MONSTER_SVGS['day-mon'];
+    document.getElementById('monster1').innerHTML = monsterMarkup;
+    document.getElementById('monster2').innerHTML = monsterMarkup;
+
+    /* Ambient orbs + scanline -- built once per load, cheap fixed DOM (no JS animation loop) */
+    document.getElementById('bg-deco').innerHTML =
+        '<div class="orb" style="width:520px;height:520px;top:-12%;left:-12%;animation-delay:0s;"></div>' +
+        '<div class="orb" style="width:600px;height:600px;bottom:-16%;right:-10%;animation-delay:1.4s;"></div>' +
+        '<div class="orb" style="width:360px;height:360px;bottom:15%;left:35%;animation-delay:2.8s;"></div>' +
+        '<div class="scan-line"></div>';
+
+    /* Skip the heavier second monster + a couple of orbs on small/low-power screens to keep CPU flat */
+    if (window.matchMedia('(max-width: 640px)').matches) {
+        const m2 = document.getElementById('monster2');
+        if (m2) m2.remove();
     }
 
-    // ── 날짜 기반 배경 이미지 설정 ──
-    (function setBgImage() {
-        const totalImages = 10;
-        const day = new Date().getDate();
-        const imgIndex = ((day - 1) % totalImages) + 1;
-        const fileName = `image-${String(imgIndex).padStart(3, '0')}.gif`;
-        const imgPath = `images/gif/cats/${fileName}`;
-
-        const bgEl = document.createElement('div');
-        bgEl.id = 'bg-image-overlay';
-        bgEl.style.backgroundImage = `url('${imgPath}')`;
-        bgEl.style.opacity = '0.18';
-        document.body.prepend(bgEl);
-    })();
-
-    // ── 3D Tilt Effect (데스크톱에서만 활성화) ──
-    const card = document.getElementById('tilt-card');
-    if (window.matchMedia('(hover: hover) and (min-width: 1025px)').matches) {
-        let rafId = null;
-        let currentRotateX = 0;
-        let currentRotateY = 0;
-        let targetRotateX = 0;
-        let targetRotateY = 0;
-
-        const lerp = (start, end, factor) => start + (end - start) * factor;
-
-        const animate = () => {
-            currentRotateX = lerp(currentRotateX, targetRotateX, 0.1);
-            currentRotateY = lerp(currentRotateY, targetRotateY, 0.1);
-            
-            card.style.transform = `
-                perspective(1500px) 
-                rotateX(${currentRotateX}deg) 
-                rotateY(${currentRotateY}deg)
-                translateZ(0)
-            `;
-            
-            rafId = requestAnimationFrame(animate);
-        };
-
-        document.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            targetRotateX = ((y - centerY) / centerY) * 8;
-            targetRotateY = ((centerX - x) / centerX) * 8;
-        });
-
-        document.addEventListener('mouseleave', () => {
-            targetRotateX = 0;
-            targetRotateY = 0;
-        });
-
-        animate();
-    }
-
-    // ── 페이지 로드 완료 ──
-    window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('loaded');
-    });
-
-    // ── Firebase 설정 ──
+    /* ── FIREBASE ── */
     const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ── Staff Selector Variables ──
+    /* ── STAFF SELECTOR ── */
     let staffData = {};
     let selectedStaff = '';
     const selectedStaffEl = document.getElementById('selected-staff');
@@ -761,390 +824,208 @@ body::before{content:'';position:fixed;inset:0;z-index:1;background-image:url("d
     const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
     const passwordInput = document.getElementById('password');
 
-// 생일 체크 및 팝업 로직
-(function() {
-    const popup = document.getElementById('birthday-popup');
-    const content = document.getElementById('popup-content');
-    const timerDisplay = document.getElementById('timer-seconds');
-    let autoCloseTimer;
-    let countdownInterval;
-
-    // [함수] 팝업 닫기: 애니메이션 실행 후 hidden 처리
-    window.closePopup = () => {
-        clearTimeout(autoCloseTimer);
-        clearInterval(countdownInterval);
-        
-        content.classList.remove('animate-spiral-in');
-        content.classList.add('animate-misty-out');
-        
-        setTimeout(() => {
-            popup.classList.add('hidden');
-            content.classList.remove('animate-misty-out');
-        }, 800); // 0.8초 애니메이션 완료 후 제거
-    };
-
-    const checkTodayBirthdays = () => {
-        const now = new Date();
-        const todayMD = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        firebase.database().ref('users').once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            const winners = [];
-            Object.keys(data).forEach(name => {
-                if (data[name].birthday && data[name].birthday.slice(5, 10) === todayMD) {
-                    winners.push({ name: name, date: data[name].birthday });
-                }
-            });
-
-            if (winners.length > 0) {
-                // 상세 정보(메시지 + 이름 + 날짜) 렌더링
-                document.getElementById('birthday-list').innerHTML = winners.map(s => `
-                    <div class="p-4 bg-white/5 border border-blue-500/10 rounded-2xl">
-                        <div class="text-sm text-blue-300 mb-2">I sincerely congratulate you on your special day!<br>
-Have a happier day than anyone else.!</div>
-                        <div class="text-2xl text-white font-black">${s.name}</div>
-                        <div class="text-[10px] text-slate-500 mt-2 italic">Born on ${s.date}</div>
-                    </div>
-                `).join('');
-                
-                // 팝업 노출 및 등장 애니메이션
-                popup.classList.remove('hidden');
-                content.classList.add('animate-spiral-in');
-
-                // 카운트다운 및 자동 닫기 타이머 시작
-                let timeLeft = 10;
-                timerDisplay.innerText = timeLeft;
-                
-                countdownInterval = setInterval(() => {
-                    timeLeft -= 1;
-                    timerDisplay.innerText = timeLeft;
-                    if (timeLeft <= 0) clearInterval(countdownInterval);
-                }, 1000);
-
-                autoCloseTimer = setTimeout(closePopup, 10000);
-            }
-        });
-    };
-
-    // 초기 로드 1초 후 실행
-    setTimeout(checkTodayBirthdays, 1000);
-})();
-
-
-    // ── Enhanced Staff Member Selector ──
     function initStaffSelector() {
-        database.ref('users').limitToFirst(50).once('value', (snapshot) => {
-            const users = snapshot.val();
-            staffData = users || {};
-            
-            if (Object.keys(staffData).length === 0) {
+        database.ref('users').limitToFirst(50).once('value', (snap) => {
+            staffData = snap.val() || {};
+            if (!Object.keys(staffData).length) {
                 selectedTextEl.textContent = 'No staff available';
-                selectedTextEl.classList.remove('loading-text');
                 return;
             }
-
             selectedTextEl.textContent = 'Select Identity';
-            selectedTextEl.classList.remove('loading-text');
             renderStaffDropdown();
-        }).catch(err => {
-            console.error('Error loading staff:', err);
-            selectedTextEl.textContent = 'Error loading staff';
-            selectedTextEl.classList.remove('loading-text');
-        });
+        }).catch(() => { selectedTextEl.textContent = 'Error loading staff'; });
     }
 
     function renderStaffDropdown() {
-        const fragment = document.createDocumentFragment();
-        
+        const frag = document.createDocumentFragment();
         Object.keys(staffData).forEach(name => {
             const user = staffData[name];
-            const option = document.createElement('div');
-            option.className = 'staff-option';
-            option.dataset.name = name;
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'staff-avatar';
-            avatar.textContent = name.charAt(0).toUpperCase();
-            
-            const nameEl = document.createElement('div');
-            nameEl.className = 'staff-name';
-            nameEl.textContent = name;
-            
-            option.appendChild(avatar);
-            option.appendChild(nameEl);
-            
+            const opt = document.createElement('div');
+            opt.className = 'staff-option';
+            opt.dataset.name = name;
+
+            const av = document.createElement('div');
+            av.className = 'staff-avatar';
+            av.textContent = name.charAt(0).toUpperCase();
+
+            const nm = document.createElement('div');
+            nm.className = 'staff-name';
+            nm.textContent = name;
+
+            opt.appendChild(av);
+            opt.appendChild(nm);
+
             if (user.role === 'admin' || user.role === 'manager') {
-                const roleEl = document.createElement('div');
-                roleEl.className = 'staff-role';
-                roleEl.textContent = 'Manager';
-                option.appendChild(roleEl);
+                const rb = document.createElement('div');
+                rb.className = 'staff-role-badge';
+                rb.textContent = 'Manager';
+                opt.appendChild(rb);
             }
-            
-            option.addEventListener('click', () => selectStaff(name, option));
-            
-            fragment.appendChild(option);
+
+            opt.addEventListener('click', () => selectStaff(name, opt));
+            frag.appendChild(opt);
         });
-        
-        staffDropdown.appendChild(fragment);
+        staffDropdown.appendChild(frag);
     }
 
-    function selectStaff(name, optionEl) {
+    function selectStaff(name, optEl) {
         selectedStaff = name;
         selectedTextEl.textContent = name;
-        
-        // Update selected state
-        staffDropdown.querySelectorAll('.staff-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        if (optionEl) {
-            optionEl.classList.add('selected');
-        }
-        
+        staffDropdown.querySelectorAll('.staff-option').forEach(o => o.classList.remove('selected'));
+        if (optEl) optEl.classList.add('selected');
         closeDropdown();
         passwordInput.focus();
     }
 
     function toggleDropdown() {
-        const isActive = staffDropdown.classList.contains('active');
-        
-        if (isActive) {
-            closeDropdown();
-        } else {
-            openDropdown();
-        }
+        staffDropdown.classList.contains('active') ? closeDropdown() : openDropdown();
     }
-
     function openDropdown() {
         staffDropdown.classList.add('active');
         selectedStaffEl.classList.add('active');
         dropdownArrow.classList.add('rotated');
     }
-
     function closeDropdown() {
         staffDropdown.classList.remove('active');
         selectedStaffEl.classList.remove('active');
         dropdownArrow.classList.remove('rotated');
     }
 
-    // Event listeners for staff selector
     selectedStaffEl.addEventListener('click', toggleDropdown);
-    
-    selectedStaffEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleDropdown();
-        }
+    selectedStaffEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown(); }
+    });
+    document.addEventListener('click', e => {
+        if (!document.getElementById('staff-selector-container').contains(e.target)) closeDropdown();
+    });
+    passwordInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
     });
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!document.getElementById('staff-selector-container').contains(e.target)) {
-            closeDropdown();
-        }
-    });
+    /* ── LOGIN ── */
+    window.handleLogin = function() {
+        const name = selectedStaff;
+        const pw = passwordInput.value;
+        if (!name || !pw) return alert("Please enter your credentials.");
 
-    // Initialize staff selector
-    initStaffSelector();
+        database.ref('users/' + name).once('value', snap => {
+            const ud = snap.val();
+            if (!ud) return alert("User not found.");
+            if (ud.password === pw) {
+                sessionStorage.setItem('loggedInUser', name);
+                sessionStorage.setItem('userRole', ud.role);
+                database.ref('users/' + name).update({
+                    lastLogin: new Date().toISOString(),
+                    online_sts: 'ON'
+                });
+                showGhostEffect(ud.profileImg, name, ud.role);
+            } else {
+                alert("Incorrect password.");
+            }
+        });
+    };
 
-    // ── Enter 키 이벤트 ──
-    passwordInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { 
-            e.preventDefault(); 
-            handleLogin(); 
-        }
-    });
-
-    // ── 로그인 처리 ──
-window.handleLogin = function() {
-    const name = selectedStaff;
-    const pw = passwordInput.value;
-    
-    if(!name || !pw) {
-        return alert("Please enter your credentials.");
-    }
-    
-    database.ref('users/' + name).once('value', (snapshot) => {
-        const userData = snapshot.val();
-        if (!userData) {
-            return alert("User not found.");
-        }
-        
-        if (userData.password === pw) {
-            sessionStorage.setItem('loggedInUser', name);
-            sessionStorage.setItem('userRole', userData.role);
-            firebase.database().ref('users/' + name).update({
-                lastLogin: new Date().toISOString()
-            });
-            
-            // Ghost 프로필 이미지 효과
-            showGhostEffect(userData.profileImg, name, userData.role);
-            
-        } else { 
-            alert("Incorrect password."); 
-        }
-    });
-};
-
-// Ghost 효과 표시 함수 (호러 버전)
-function showGhostEffect(profileImg, name, role) {
-    const ghostOverlay = document.getElementById('ghost-overlay');
-    const ghostImage = document.getElementById('ghost-image');
-    
-    // 프로필 이미지 경로 설정 (중복 제거)
-    let imagePath;
-    
-    if (profileImg) {
-        // 이미 경로가 포함되어 있으면 그대로 사용, 아니면 경로 추가
-        if (profileImg.startsWith('images/') || profileImg.startsWith('http')) {
-            imagePath = profileImg;
+    function showGhostEffect(profileImg, name, role) {
+        const overlay = document.getElementById('ghost-overlay');
+        const img = document.getElementById('ghost-image');
+        let src;
+        if (profileImg) {
+            src = (profileImg.startsWith('images/') || profileImg.startsWith('http'))
+                ? profileImg : `images/profile/${profileImg}`;
         } else {
-            imagePath = `images/profile/${profileImg}`;
+            src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
         }
-    } else {
-        // 프로필 이미지가 없으면 기본 아바타 사용
-        imagePath = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
-    }
-    
-    ghostImage.src = imagePath;
-    
-    // 호러 음향 효과 (선택사항)
-    playHorrorSound();
-    
-    // Ghost 효과 시작
-    ghostOverlay.classList.remove('hidden');
-    ghostOverlay.classList.add('active');
-    
-    // 배경 화면 깜빡임 효과
-    document.body.style.animation = 'screenFlicker 3s ease-in-out';
-    
-// 3초 후 페이지 이동
-setTimeout(() => {
-    ghostOverlay.classList.add('hidden');
-    ghostOverlay.classList.remove('active');
-    document.body.style.animation = 'none';
-    
-    // 역할에 따라 페이지 이동
-    const userRole = (role || '').toLowerCase();
-    if (userRole === 'admin' || userRole === 'manager') {
-        location.href = "admin.html";
-    } else {
-        location.href = "staff_main.html";
-    }
-}, 3000);
-}
 
-// 호러 음향 효과 (선택사항)
-function playHorrorSound() {
-    try {
-        // Web Audio API를 사용한 으스스한 음향 생성
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // 으스스한 저주파 사운드
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(20, audioContext.currentTime + 0.5);
-        
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (err) {
-        console.log('Sound effect skipped:', err);
-    }
-}
+        const borders = { 'day-mon': '#00d4ff', 'day-tue': '#c9a84c', 'day-wed': '#b4b43c', 'day-thu': '#4fbf7a', 'day-fri': '#ff2ec4', 'day-sat': '#7fc4e8', 'day-sun': '#e8966e' };
+        const bColor = borders[cfg.cls] || '#00d4ff';
+        img.style.border = `3px solid ${bColor}`;
+        img.style.boxShadow = `0 0 60px ${bColor}88`;
 
-    // ── 비밀번호 보이기/숨기기 토글 ──
+        img.src = src;
+        overlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            const userRole = (role || '').toLowerCase();
+            if (userRole === 'admin' || userRole === 'manager') {
+                location.href = "admin.html";
+            } else {
+                location.href = "staff_main.html";
+            }
+        }, 2500);
+    }
+
+    /* ── TOGGLE PASSWORD ── */
     window.togglePassword = function() {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            eyeIcon.innerHTML = `
-                <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-            `;
+        const inp = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>`;
         } else {
-            passwordInput.type = 'password';
-            eyeIcon.innerHTML = `
-                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            `;
+            inp.type = 'password';
+            icon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
         }
     };
 
-    // ── 비밀번호 찾기 ──
+    /* ── FORGOT PASSWORD ── */
     window.findPassword = function() {
         const name = selectedStaff;
-        
-        if (!name) {
-            return alert("Please select your name from the list first.");
-        }
-        
+        if (!name) return alert("Please select your name from the list first.");
         if (confirm(`Request password hint for '${name}'?`)) {
-            database.ref('users/' + name).once('value', (snapshot) => {
-                const userData = snapshot.val();
-                if (userData && userData.password) {
-                    const pw = userData.password;
-                    const hint = pw.length > 2 ? pw.substring(0, 2) + "*".repeat(pw.length - 2) : pw;
+            database.ref('users/' + name).once('value', snap => {
+                const ud = snap.val();
+                if (ud && ud.password) {
+                    const pw = ud.password;
+                    const hint = pw.length > 2 ? pw.substring(0, 2) + '*'.repeat(pw.length - 2) : pw;
                     alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
-                } else { 
-                    alert("Data not found."); 
+                } else {
+                    alert("Data not found.");
                 }
             });
         }
     };
 
-    // ── Optimized Star field (reduced count for performance) ──
-    (function initStars() {
-        const container = document.getElementById('bg-stars');
-        if (!container) return;
-        
-        const starCount = isLowEndDevice ? 60 : 100;
-        const fragment = document.createDocumentFragment();
-        
-        for (let i = 0; i < starCount; i++) {
-            const d = document.createElement('div');
-            d.className = 'star-dot';
-            d.style.left = `${Math.random() * 100}%`;
-            d.style.top = `${Math.random() * 100}%`;
-            d.style.opacity = (Math.random() * 0.3 + 0.1).toFixed(2);
-            d.style.transform = `translateZ(${Math.random() * 400 - 200}px)`;
-            fragment.appendChild(d);
-        }
-        
-        container.appendChild(fragment);
+    /* ── BIRTHDAY POPUP ── */
+    (function() {
+        const popup = document.getElementById('birthday-popup');
+        const timerEl = document.getElementById('timer-seconds');
+        let autoClose, countdown;
+
+        window.closePopup = function() {
+            clearTimeout(autoClose);
+            clearInterval(countdown);
+            popup.classList.add('hidden');
+        };
+
+        const checkBirthdays = () => {
+            const n = new Date();
+            const todayMD = `${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+            database.ref('users').once('value', snap => {
+                const data = snap.val();
+                if (!data) return;
+                const winners = Object.keys(data).filter(nm => data[nm].birthday && data[nm].birthday.slice(5,10) === todayMD)
+                    .map(nm => ({ name: nm, date: data[nm].birthday }));
+                if (!winners.length) return;
+
+                document.getElementById('birthday-list').innerHTML = winners.map(s => `
+                    <div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.05);border:1px solid var(--accent);border-radius:0.75rem;margin-bottom:0.5rem;">
+                        <div style="font-size:0.75rem;font-weight:700;">🎂 ${s.name}</div>
+                        <div style="font-size:0.7rem;opacity:0.6;">${s.date}</div>
+                    </div>`).join('');
+
+                popup.classList.remove('hidden');
+                let t = 10;
+                timerEl.textContent = t;
+                countdown = setInterval(() => { timerEl.textContent = --t; if (t <= 0) clearInterval(countdown); }, 1000);
+                autoClose = setTimeout(window.closePopup, 10000);
+            });
+        };
+
+        setTimeout(checkBirthdays, 1000);
     })();
 
-    // ── 3D TDLiD Text Parallax Effect ──
-    if (!isLowEndDevice) {
-        const tdlidEl = document.getElementById('tdlid-3d');
-        let mouseMoveRaf = null;
-        
-        document.addEventListener('mousemove', (e) => {
-            if (mouseMoveRaf) return;
-            
-            mouseMoveRaf = requestAnimationFrame(() => {
-                const xPercent = (e.clientX / window.innerWidth - 0.5) * 20;
-                const yPercent = (e.clientY / window.innerHeight - 0.5) * 20;
-                
-                tdlidEl.style.transform = `
-                    translate(-50%, -50%) 
-                    rotateY(${xPercent}deg) 
-                    rotateX(${-yPercent}deg)
-                `;
-                
-                mouseMoveRaf = null;
-            });
-        });
-    }
+    initStaffSelector();
 
 })();
 </script>
