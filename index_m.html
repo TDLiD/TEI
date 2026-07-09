@@ -13,6 +13,10 @@
         Day theme fonts:
         MON Deep Space -> Orbitron | TUE Wabi-Sabi -> Noto Serif JP | WED Art Deco -> Cormorant Garamond
         THU Biophilic -> DM Serif Display | FRI Synthwave -> Bungee | SAT Arctic Steel -> Rajdhani | SUN Sunset Ember -> Playfair Display
+
+        NOTE ON CREATURES: the roaming background creatures are original, per-day designs
+        (not reproductions of any licensed characters). Each has its own multi-color
+        gradient fill so it reads as a distinct "monster" per weekday theme.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +25,11 @@
     <link rel="icon" href="data:,">
 
 <script>
+    /* ── DEVICE / ENVIRONMENT DETECTION ──────────────────────────────
+       Keeps the existing mobile-page redirect (index_m.html) intact,
+       but also exposes a finer-grained "viewport class" on <html> so
+       the CSS below can optimize tablets and small phones separately
+       from the redirect, without touching the redirect logic itself. */
     (function(){
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +41,22 @@
                 window.location.href = "index_m.html";
             }
         }
+
+        function applyViewportClass(){
+            const w = window.innerWidth;
+            let cls = 'vp-desktop';
+            if (w < 480) cls = 'vp-phone';
+            else if (w < 768) cls = 'vp-phone-lg';
+            else if (w < 1024) cls = 'vp-tablet';
+            else if (w < 1440) cls = 'vp-desktop';
+            else cls = 'vp-desktop-xl';
+            document.documentElement.classList.remove('vp-phone','vp-phone-lg','vp-tablet','vp-desktop','vp-desktop-xl');
+            document.documentElement.classList.add(cls);
+            document.documentElement.classList.toggle('vp-coarse', matchMedia('(pointer: coarse)').matches);
+        }
+        applyViewportClass();
+        window.addEventListener('resize', applyViewportClass, { passive: true });
+        window.addEventListener('orientationchange', applyViewportClass, { passive: true });
     })();
 </script>
 
@@ -48,11 +73,12 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-html, body { background: #05050a; }
+html, body { background: #030308; }
 
 body {
     margin: 0;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -60,16 +86,28 @@ body {
     padding: clamp(1rem, 4vw, 2rem);
     overflow-x: hidden;
     color: var(--text, #e2e8f0);
-    background-color: var(--bg-base, #05050a);
+    background-color: var(--bg-base, #030308);
     background-image: var(--bg-image, none);
     font-family: var(--font-body, 'Pretendard', 'Inter', sans-serif);
     transition: background-color 0.6s ease, color 0.6s ease;
     position: relative;
     perspective: 1200px;
+    isolation: isolate;
 }
 
 @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* Pause all ambient/compositor animation when the tab is hidden or the
+   browser flags a low-power / coarse-only context that struggles with
+   many concurrent GPU layers -- this is the main CPU/GPU cost lever. */
+body.anim-paused .bg-monster,
+body.anim-paused .brand-text3d,
+body.anim-paused .orb,
+body.anim-paused .scan-line,
+body.anim-paused .login-card {
+    animation-play-state: paused !important;
 }
 
 .page-wrapper {
@@ -83,10 +121,20 @@ body {
     z-index: 10;
 }
 
+@media (min-width: 768px) {
+    .page-wrapper { max-width: 500px; }
+}
 @media (min-width: 1024px) {
     .page-wrapper { max-width: 520px; }
     .login-card { padding: 3rem !important; }
     body { padding: 2rem; }
+}
+@media (min-width: 1440px) {
+    .page-wrapper { max-width: 560px; }
+}
+@media (max-width: 360px) {
+    .page-wrapper { gap: 1.1rem; }
+    .login-card { border-radius: 1.1rem !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -112,6 +160,20 @@ body {
     inset: 6px;
     border: var(--card-frame-border, none);
     pointer-events: none;
+}
+.login-card::after {
+    /* subtle holographic sweep across the card edge -- one element, one animation */
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: var(--card-sheen, linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%));
+    transform: translateX(-60%);
+    animation: sheenSweep 6s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes sheenSweep {
+    0%, 100% { transform: translateX(-60%); }
+    50% { transform: translateX(60%); }
 }
 
 @keyframes cardUp3d {
@@ -154,6 +216,10 @@ body {
 .input-field:focus, #selected-staff:hover, #selected-staff.active {
     border-color: var(--accent) !important;
     box-shadow: var(--input-shadow-focus) !important;
+}
+.input-field:focus-visible, #selected-staff:focus-visible, .login-btn:focus-visible, .eye-btn:focus-visible, .forgot-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .password-wrap { position: relative; }
@@ -269,15 +335,21 @@ body {
     pointer-events: none;
     z-index: 0;
     transform-style: preserve-3d;
-    font-size: clamp(3.5rem, 16vw, 10rem);
+    font-size: clamp(3rem, 17vw, 11rem);
     font-weight: 900;
     letter-spacing: 0.08em;
     white-space: nowrap;
     font-family: var(--font-heading);
     background: var(--brand-gradient);
+    background-size: 200% 200%;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    opacity: var(--brand-opacity, 0.14);
-    animation: var(--brand-anim, brandDriftMon) var(--brand-duration, 16s) ease-in-out infinite;
+    opacity: var(--brand-opacity, 0.16);
+    animation: var(--brand-anim, brandDriftMon) var(--brand-duration, 16s) ease-in-out infinite,
+               brandGradShift 9s ease-in-out infinite;
+}
+@keyframes brandGradShift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
 }
 /* One distinct 3D drift style per day -- picked via --brand-anim in each body.day-* block */
 @keyframes brandDriftMon {
@@ -314,99 +386,102 @@ body {
     100%     { transform: translate(-50%, 0) rotateY(0deg); }
 }
 @keyframes brandRiseSun {
-    0%, 100% { transform: translate(-50%, 10px) rotateX(4deg) scale(1); opacity: 0.12; }
-    50%      { transform: translate(-50%, -14px) rotateX(-2deg) scale(1.03); opacity: 0.18; }
+    0%, 100% { transform: translate(-50%, 10px) rotateX(4deg) scale(1); opacity: 0.14; }
+    50%      { transform: translate(-50%, -14px) rotateX(-2deg) scale(1.03); opacity: 0.2; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BACKGROUND MONSTER
-   Single inline SVG, animated with transform only (translate/rotate).
-   One element on mobile, an optional second on desktop -- both are
-   pure CSS keyframes, no per-frame JS.
+   BACKGROUND CREATURE
+   Single inline SVG, animated with transform only (translate/rotate/scale).
+   Sized and pathed to roam the FULL viewport (not just a corner strip).
+   Colorful per-day gradient fill, drawn once as static markup -- no
+   per-frame JS, no layout thrash, just compositor transforms.
 ═══════════════════════════════════════════════════════════════ */
 .bg-monster {
     position: fixed;
-    bottom: -4%;
-    left: -20%;
-    width: clamp(120px, 22vw, 220px);
+    top: 0; left: 0;
+    width: clamp(220px, 34vw, 480px);
     height: auto;
-    opacity: var(--monster-opacity, 0.22);
-    color: var(--accent);
-    filter: drop-shadow(0 0 18px var(--accent));
+    opacity: var(--monster-opacity, 0.5);
+    filter: var(--monster-glow);
     z-index: 0;
     pointer-events: none;
-    animation: var(--monster-anim, monsterWalkMon) var(--monster-duration, 22s) linear infinite;
+    animation: var(--monster-anim, monsterRoamMon) var(--monster-duration, 26s) ease-in-out infinite;
+    will-change: transform;
 }
 .bg-monster.second {
-    left: auto;
-    right: -25%;
-    bottom: 6%;
-    width: clamp(90px, 16vw, 160px);
-    color: var(--accent2, var(--accent));
-    filter: drop-shadow(0 0 14px var(--accent2, var(--accent)));
-    /* same per-day path as monster1, played in reverse at a different speed so the
-       pair never move in lockstep -- still just one keyframe set per theme */
-    animation: var(--monster-anim, monsterWalkMon) calc(var(--monster-duration, 22s) * 1.35) linear infinite reverse;
+    width: clamp(140px, 20vw, 320px);
+    opacity: calc(var(--monster-opacity, 0.5) * 0.75);
+    animation: var(--monster-anim, monsterRoamMon) calc(var(--monster-duration, 26s) * 1.4) ease-in-out infinite reverse;
     display: none;
 }
-@media (min-width: 1024px) {
+/* Tablet and up get the second, smaller companion creature.
+   Phones only render one to keep GPU layer count minimal. */
+@media (min-width: 768px) {
     .bg-monster.second { display: block; }
 }
+@media (min-width: 1440px) {
+    .bg-monster { width: clamp(280px, 30vw, 560px); }
+    .bg-monster.second { width: clamp(180px, 18vw, 380px); }
+}
 
-/* Seven distinct movement personalities, one per day theme -- picked via --monster-anim */
-@keyframes monsterWalkMon {
-    0%   { transform: translate(0, 0) rotate(-3deg) scaleX(1); }
-    48%  { transform: translate(130vw, -6vh) rotate(3deg) scaleX(1); }
-    50%  { transform: translate(130vw, -6vh) rotate(3deg) scaleX(-1); }
-    98%  { transform: translate(0, -2vh) rotate(-3deg) scaleX(-1); }
-    100% { transform: translate(0, 0) rotate(-3deg) scaleX(1); }
+/* Seven full-viewport roaming paths, one per day theme -- picked via --monster-anim.
+   Ranges use vw/vh so the creature genuinely traverses the whole screen. */
+@keyframes monsterRoamMon {
+    0%   { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
+    20%  { transform: translate(55vw, 10vh) rotate(3deg) scale(1.05); }
+    40%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96); }
+    50%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96) scaleX(-1); }
+    70%  { transform: translate(40vw, 78vh) rotate(4deg) scale(1.02) scaleX(-1); }
+    90%  { transform: translate(0vw, 30vh) rotate(-3deg) scale(1) scaleX(-1); }
+    100% { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
 }
-@keyframes monsterFloatTue {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25%      { transform: translate(6vw, -3vh) rotate(2deg); }
-    50%      { transform: translate(-4vw, 2vh) rotate(-1deg); }
-    75%      { transform: translate(5vw, 3vh) rotate(1deg); }
+@keyframes monsterRoamTue {
+    0%, 100% { transform: translate(4vw, 60vh) rotate(0deg) scale(1); }
+    25%      { transform: translate(60vw, 20vh) rotate(3deg) scale(1.06); }
+    50%      { transform: translate(30vw, 70vh) rotate(-2deg) scale(0.95); }
+    75%      { transform: translate(75vw, 45vh) rotate(2deg) scale(1.03); }
 }
-@keyframes monsterGlideWed {
-    0%    { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(1); }
-    49%   { transform: translate(90vw, -14vh) rotate(4deg) scaleX(1); }
-    50%   { transform: translate(90vw, -14vh) rotate(4deg) scaleX(-1); }
-    99%   { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(-1); }
-    100%  { transform: translate(-5vw, 10vh) rotate(-6deg) scaleX(1); }
+@keyframes monsterRoamWed {
+    0%    { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
+    49%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04); }
+    50%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04) scaleX(-1); }
+    99%   { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1) scaleX(-1); }
+    100%  { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
 }
-@keyframes monsterHopThu {
-    0%   { transform: translate(0, 0) rotate(-2deg) scaleX(1); }
-    10%  { transform: translate(10vw, -10vh) rotate(2deg) scaleX(1); }
-    20%  { transform: translate(20vw, 0) rotate(-2deg) scaleX(1); }
-    30%  { transform: translate(30vw, -10vh) rotate(2deg) scaleX(1); }
-    40%  { transform: translate(40vw, 0) rotate(-2deg) scaleX(1); }
-    50%  { transform: translate(50vw, -10vh) rotate(2deg) scaleX(-1); }
-    60%  { transform: translate(40vw, 0) rotate(-2deg) scaleX(-1); }
-    70%  { transform: translate(30vw, -10vh) rotate(2deg) scaleX(-1); }
-    80%  { transform: translate(20vw, 0) rotate(-2deg) scaleX(-1); }
-    90%  { transform: translate(10vw, -10vh) rotate(2deg) scaleX(-1); }
-    100% { transform: translate(0, 0) rotate(-2deg) scaleX(1); }
+@keyframes monsterRoamThu {
+    0%   { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
+    10%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02); }
+    20%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1); }
+    30%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03); }
+    40%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1); }
+    50%  { transform: translate(66vw, 36vh) rotate(2deg) scale(1.04) scaleX(-1); }
+    60%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
+    70%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03) scaleX(-1); }
+    80%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
+    90%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02) scaleX(-1); }
+    100% { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
 }
-@keyframes monsterZigzagFri {
-    0%   { transform: translate(0, 0) rotate(-8deg) scaleX(1); }
-    20%  { transform: translate(40vw, -15vh) rotate(10deg) scaleX(1); }
-    40%  { transform: translate(20vw, 10vh) rotate(-10deg) scaleX(1); }
-    50%  { transform: translate(60vw, -5vh) rotate(8deg) scaleX(-1); }
-    70%  { transform: translate(40vw, 12vh) rotate(-8deg) scaleX(-1); }
-    90%  { transform: translate(10vw, -8vh) rotate(6deg) scaleX(-1); }
-    100% { transform: translate(0, 0) rotate(-8deg) scaleX(1); }
+@keyframes monsterRoamFri {
+    0%   { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
+    20%  { transform: translate(48vw, 8vh) rotate(10deg) scale(1.08); }
+    40%  { transform: translate(20vw, 55vh) rotate(-10deg) scale(0.95); }
+    50%  { transform: translate(72vw, 20vh) rotate(8deg) scale(1.06) scaleX(-1); }
+    70%  { transform: translate(50vw, 68vh) rotate(-8deg) scale(1) scaleX(-1); }
+    90%  { transform: translate(10vw, 42vh) rotate(6deg) scale(1.03) scaleX(-1); }
+    100% { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
 }
-@keyframes monsterSlideSat {
-    0%    { transform: translate(0, 0) rotate(0deg) scaleX(1); }
-    49%   { transform: translate(120vw, 0) rotate(0deg) scaleX(1); }
-    50%   { transform: translate(120vw, 0) rotate(0deg) scaleX(-1); }
-    99%   { transform: translate(0, 0) rotate(0deg) scaleX(-1); }
-    100%  { transform: translate(0, 0) rotate(0deg) scaleX(1); }
+@keyframes monsterRoamSat {
+    0%    { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
+    49%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05); }
+    50%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05) scaleX(-1); }
+    99%   { transform: translate(-6vw, 50vh) rotate(0deg) scale(1) scaleX(-1); }
+    100%  { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
 }
-@keyframes monsterRiseSun {
-    0%   { transform: translate(0, 0) rotate(-4deg) scale(1); opacity: 0.22; }
-    50%  { transform: translate(70vw, -30vh) rotate(4deg) scale(1.08); opacity: 0.3; }
-    100% { transform: translate(0, 0) rotate(-4deg) scale(1); opacity: 0.22; }
+@keyframes monsterRoamSun {
+    0%   { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: var(--monster-opacity); }
+    50%  { transform: translate(60vw, 12vh) rotate(4deg) scale(1.12); opacity: calc(var(--monster-opacity) * 1.3); }
+    100% { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: var(--monster-opacity); }
 }
 
 /* Generic ambient orbs used by every theme's .bg-deco layer */
@@ -415,6 +490,12 @@ body {
 @keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.12); opacity: 0.9; } }
 .scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.35; animation: scanMove 7s linear infinite; }
 @keyframes scanMove { 0% { top: -2px; opacity: 0; } 6% { opacity: 0.6; } 94% { opacity: 0.6; } 100% { top: 100%; opacity: 0; } }
+
+/* Fewer/cheaper ambient elements on phones -- lowers concurrent GPU layers */
+@media (max-width: 479px) {
+    .orb:nth-child(3) { display: none; }
+    .bg-monster { width: clamp(180px, 46vw, 280px); }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    GHOST OVERLAY / BIRTHDAY POPUP (shared, theme accent injected)
@@ -444,14 +525,16 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DAY THEMES -- each sets custom properties only. 7 unique looks.
+   DAY THEMES -- each sets custom properties only. 7 unique, deep-dark
+   looks. Monster glow is now a two-tone stacked drop-shadow for a
+   richer, colorful halo instead of a single flat tint.
 ═══════════════════════════════════════════════════════════════ */
 
 /* MON — DEEP SPACE (cyber neon cyan/magenta) */
 body.day-mon {
     --font-heading: 'Orbitron', sans-serif; --font-body: 'Pretendard', 'Inter', sans-serif;
-    --bg-base: #060916;
-    --bg-image: radial-gradient(ellipse 80% 60% at 20% 15%, rgba(0,212,255,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 85% 85%, rgba(255,0,110,0.1) 0%, transparent 60%);
+    --bg-base: #04060f;
+    --bg-image: radial-gradient(ellipse 80% 60% at 20% 15%, rgba(0,212,255,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 85% 85%, rgba(255,0,110,0.12) 0%, transparent 60%);
     --text: #e2e8f0; --text-dim: #64748b; --label-color: rgba(0,212,255,0.7); --subtitle-color: rgba(0,212,255,0.55); --placeholder-color: #334155;
     --accent: #00d4ff; --accent2: #ff006e;
     --card-bg: linear-gradient(135deg, rgba(20,30,60,0.96) 0%, rgba(12,16,42,0.94) 100%);
@@ -467,17 +550,19 @@ body.day-mon {
     --btn-shadow: 0 0 30px rgba(0,212,255,0.35), 0 8px 25px rgba(255,0,110,0.25);
     --btn-shadow-hover: 0 0 50px rgba(0,212,255,0.55), 0 12px 35px rgba(255,0,110,0.4);
     --title-gradient: linear-gradient(90deg, #00d4ff, #ffbe0b, #ff006e);
-    --brand-gradient: linear-gradient(135deg, #00d4ff, #ff006e, #ffbe0b);
+    --brand-gradient: linear-gradient(135deg, #00d4ff, #ff006e, #ffbe0b, #00d4ff);
     --orb-border: rgba(0,212,255,0.15);
-    --monster-anim: monsterWalkMon; --monster-duration: 22s;
+    --monster-opacity: 0.55;
+    --monster-glow: drop-shadow(0 0 22px rgba(0,212,255,0.65)) drop-shadow(0 0 40px rgba(255,0,110,0.35));
+    --monster-anim: monsterRoamMon; --monster-duration: 28s;
     --brand-anim: brandDriftMon; --brand-duration: 16s;
 }
 
 /* TUE — WABI-SABI (dark, gold-clay) */
 body.day-tue {
     --font-heading: 'Noto Serif JP', serif; --font-body: 'Noto Serif JP', serif;
-    --bg-base: #100d0a;
-    --bg-image: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(201,168,76,0.12) 0%, transparent 60%), radial-gradient(ellipse 70% 70% at 10% 90%, rgba(140,90,60,0.1) 0%, transparent 60%);
+    --bg-base: #0c0906;
+    --bg-image: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(201,168,76,0.14) 0%, transparent 60%), radial-gradient(ellipse 70% 70% at 10% 90%, rgba(140,90,60,0.12) 0%, transparent 60%);
     --text: #efe6d8; --text-dim: #a08a70; --label-color: rgba(201,168,76,0.65); --subtitle-color: rgba(201,168,76,0.5); --placeholder-color: #4a3f34;
     --accent: #c9a84c; --accent2: #a8623c;
     --card-bg: linear-gradient(160deg, rgba(26,20,15,0.96) 0%, rgba(16,12,9,0.95) 100%);
@@ -493,17 +578,19 @@ body.day-tue {
     --btn-shadow: 0 4px 25px rgba(201,168,76,0.28);
     --btn-shadow-hover: 0 8px 35px rgba(201,168,76,0.42);
     --title-gradient: linear-gradient(90deg, #c9a84c, #efe6d8, #a8623c);
-    --brand-gradient: linear-gradient(135deg, #c9a84c, #efe6d8, #a8623c);
+    --brand-gradient: linear-gradient(135deg, #c9a84c, #efe6d8, #a8623c, #c9a84c);
     --orb-border: rgba(201,168,76,0.12);
-    --monster-anim: monsterFloatTue; --monster-duration: 30s;
+    --monster-opacity: 0.5;
+    --monster-glow: drop-shadow(0 0 20px rgba(201,168,76,0.55)) drop-shadow(0 0 36px rgba(168,98,60,0.35));
+    --monster-anim: monsterRoamTue; --monster-duration: 32s;
     --brand-anim: brandSwayTue; --brand-duration: 22s;
 }
 
 /* WED — ART DECO (dark olive-gold) */
 body.day-wed {
     --font-heading: 'Cormorant Garamond', serif; --font-body: 'Cormorant Garamond', serif;
-    --bg-base: #0d1408;
-    --bg-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(154,163,60,0.16) 0%, transparent 60%);
+    --bg-base: #0a1006;
+    --bg-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(154,163,60,0.18) 0%, transparent 60%);
     --text: #ece6cf; --text-dim: #6f7a53; --label-color: rgba(190,199,100,0.55); --subtitle-color: rgba(190,199,100,0.5); --placeholder-color: #35401f;
     --accent: #b4b43c; --accent2: #d8c26a;
     --card-bg: linear-gradient(160deg, rgba(16,22,10,0.97) 0%, rgba(9,14,6,0.95) 100%);
@@ -520,17 +607,19 @@ body.day-wed {
     --btn-shadow: 0 4px 30px rgba(180,180,60,0.28);
     --btn-shadow-hover: 0 8px 40px rgba(180,180,60,0.45);
     --title-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c);
-    --brand-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c);
+    --brand-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c, #b4b43c);
     --orb-border: rgba(180,180,60,0.1);
-    --monster-anim: monsterGlideWed; --monster-duration: 24s;
+    --monster-opacity: 0.5;
+    --monster-glow: drop-shadow(0 0 20px rgba(180,180,60,0.55)) drop-shadow(0 0 36px rgba(216,194,106,0.3));
+    --monster-anim: monsterRoamWed; --monster-duration: 26s;
     --brand-anim: brandSpinWed; --brand-duration: 18s;
 }
 
 /* THU — BIOPHILIC (dark forest green) */
 body.day-thu {
     --font-heading: 'DM Serif Display', serif; --font-body: 'DM Serif Display', serif;
-    --bg-base: #081410;
-    --bg-image: radial-gradient(ellipse 80% 60% at 80% 15%, rgba(74,168,110,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(180,110,70,0.08) 0%, transparent 60%);
+    --bg-base: #061109;
+    --bg-image: radial-gradient(ellipse 80% 60% at 80% 15%, rgba(74,168,110,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(180,110,70,0.1) 0%, transparent 60%);
     --text: #e3ece2; --text-dim: #6f9078; --label-color: rgba(90,200,130,0.55); --subtitle-color: rgba(90,200,130,0.5); --placeholder-color: #234030;
     --accent: #4fbf7a; --accent2: #b46e46;
     --card-bg: linear-gradient(150deg, rgba(10,24,17,0.96) 0%, rgba(6,16,11,0.95) 100%);
@@ -546,17 +635,19 @@ body.day-thu {
     --btn-shadow: 0 4px 25px rgba(79,191,122,0.3);
     --btn-shadow-hover: 0 8px 35px rgba(79,191,122,0.48);
     --title-gradient: linear-gradient(135deg, #4fbf7a, #e3ece2);
-    --brand-gradient: linear-gradient(135deg, #4fbf7a, #b46e46, #4fbf7a);
+    --brand-gradient: linear-gradient(135deg, #4fbf7a, #b46e46, #4fbf7a, #4fbf7a);
     --orb-border: rgba(79,191,122,0.12);
-    --monster-anim: monsterHopThu; --monster-duration: 18s;
+    --monster-opacity: 0.5;
+    --monster-glow: drop-shadow(0 0 20px rgba(79,191,122,0.55)) drop-shadow(0 0 34px rgba(180,110,70,0.3));
+    --monster-anim: monsterRoamThu; --monster-duration: 20s;
     --brand-anim: brandWindThu; --brand-duration: 14s;
 }
 
 /* FRI — SYNTHWAVE (pink-purple) */
 body.day-fri {
     --font-heading: 'Bungee', cursive; --font-body: 'Inter', sans-serif;
-    --bg-base: #0a0520;
-    --bg-image: linear-gradient(180deg, #0a0520 0%, #1a0a3a 45%, #0a0520 100%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.06) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(140,0,255,0.05) 40px);
+    --bg-base: #07031a;
+    --bg-image: linear-gradient(180deg, #07031a 0%, #170833 45%, #07031a 100%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.07) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(140,0,255,0.06) 40px);
     --text: #fdf6ff; --text-dim: rgba(200,150,255,0.55); --label-color: rgba(200,120,255,0.65); --subtitle-color: rgba(200,120,255,0.55); --placeholder-color: #3a1a4a;
     --accent: #ff2ec4; --accent2: #8c3bff;
     --card-bg: linear-gradient(135deg, rgba(26,10,45,0.97) 0%, rgba(15,5,30,0.95) 100%);
@@ -572,17 +663,19 @@ body.day-fri {
     --btn-shadow: 0 0 40px rgba(255,46,196,0.4), 0 0 60px rgba(140,59,255,0.25);
     --btn-shadow-hover: 0 0 60px rgba(255,46,196,0.6), 0 0 80px rgba(140,59,255,0.4);
     --title-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff);
-    --brand-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff, #ff2ec4);
+    --brand-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff, #00e5ff, #ff2ec4);
     --orb-border: rgba(255,46,196,0.15);
-    --monster-anim: monsterZigzagFri; --monster-duration: 14s;
+    --monster-opacity: 0.6;
+    --monster-glow: drop-shadow(0 0 26px rgba(255,46,196,0.65)) drop-shadow(0 0 44px rgba(140,59,255,0.4));
+    --monster-anim: monsterRoamFri; --monster-duration: 16s;
     --brand-anim: brandBounceFri; --brand-duration: 9s;
 }
 
 /* SAT — ARCTIC STEEL (steel blue) */
 body.day-sat {
     --font-heading: 'Rajdhani', sans-serif; --font-body: 'Rajdhani', 'Inter', sans-serif;
-    --bg-base: #0a1218;
-    --bg-image: radial-gradient(ellipse 80% 60% at 25% 20%, rgba(120,170,210,0.14) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(70,110,150,0.12) 0%, transparent 60%);
+    --bg-base: #060d12;
+    --bg-image: radial-gradient(ellipse 80% 60% at 25% 20%, rgba(120,170,210,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(70,110,150,0.14) 0%, transparent 60%);
     --text: #e6f0f7; --text-dim: #6b8394; --label-color: rgba(140,190,225,0.6); --subtitle-color: rgba(140,190,225,0.5); --placeholder-color: #2b3d47;
     --accent: #7fc4e8; --accent2: #4a6e96;
     --card-bg: linear-gradient(135deg, rgba(18,32,42,0.96) 0%, rgba(10,20,28,0.95) 100%);
@@ -598,17 +691,19 @@ body.day-sat {
     --btn-shadow: 0 0 30px rgba(127,196,232,0.3), 0 8px 25px rgba(74,110,150,0.25);
     --btn-shadow-hover: 0 0 50px rgba(127,196,232,0.5), 0 12px 35px rgba(74,110,150,0.4);
     --title-gradient: linear-gradient(90deg, #7fc4e8, #e6f0f7, #4a6e96);
-    --brand-gradient: linear-gradient(135deg, #7fc4e8, #4a6e96, #a8dcf2);
+    --brand-gradient: linear-gradient(135deg, #7fc4e8, #4a6e96, #a8dcf2, #7fc4e8);
     --orb-border: rgba(127,196,232,0.16);
-    --monster-anim: monsterSlideSat; --monster-duration: 20s;
+    --monster-opacity: 0.5;
+    --monster-glow: drop-shadow(0 0 22px rgba(127,196,232,0.6)) drop-shadow(0 0 38px rgba(74,110,150,0.35));
+    --monster-anim: monsterRoamSat; --monster-duration: 22s;
     --brand-anim: brandMechSat; --brand-duration: 12s;
 }
 
 /* SUN — SUNSET EMBER (rose-amber) */
 body.day-sun {
     --font-heading: 'Playfair Display', serif; --font-body: 'Playfair Display', 'Inter', serif;
-    --bg-base: #170a0d;
-    --bg-image: radial-gradient(ellipse 80% 60% at 70% 15%, rgba(230,120,90,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(200,70,90,0.12) 0%, transparent 60%);
+    --bg-base: #140609;
+    --bg-image: radial-gradient(ellipse 80% 60% at 70% 15%, rgba(230,120,90,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(200,70,90,0.14) 0%, transparent 60%);
     --text: #f6e8e2; --text-dim: #a06858; --label-color: rgba(232,150,110,0.6); --subtitle-color: rgba(232,150,110,0.5); --placeholder-color: #4a2620;
     --accent: #e8966e; --accent2: #c8465a;
     --card-bg: linear-gradient(150deg, rgba(35,16,18,0.97) 0%, rgba(20,9,10,0.95) 100%);
@@ -624,9 +719,11 @@ body.day-sun {
     --btn-shadow: 0 0 30px rgba(232,150,110,0.32), 0 8px 25px rgba(200,70,90,0.25);
     --btn-shadow-hover: 0 0 50px rgba(232,150,110,0.5), 0 12px 35px rgba(200,70,90,0.4);
     --title-gradient: linear-gradient(90deg, #e8966e, #f2c48a, #c8465a);
-    --brand-gradient: linear-gradient(135deg, #e8966e, #c8465a, #f2c48a);
+    --brand-gradient: linear-gradient(135deg, #e8966e, #c8465a, #f2c48a, #e8966e);
     --orb-border: rgba(232,150,110,0.16);
-    --monster-anim: monsterRiseSun; --monster-duration: 26s;
+    --monster-opacity: 0.55;
+    --monster-glow: drop-shadow(0 0 24px rgba(232,150,110,0.6)) drop-shadow(0 0 40px rgba(200,70,90,0.35));
+    --monster-anim: monsterRoamSun; --monster-duration: 26s;
     --brand-anim: brandRiseSun; --brand-duration: 20s;
 }
 
@@ -638,8 +735,8 @@ body.day-sun {
 <!-- Background layers (z-index 0, behind the card) -->
 <div class="bg-deco" id="bg-deco"></div>
 <div class="brand-text3d" id="brand-text3d">TDLiD</div>
-<svg id="monster1" class="bg-monster" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
-<svg id="monster2" class="bg-monster second" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+<svg id="monster1" class="bg-monster" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+<svg id="monster2" class="bg-monster second" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
 
 <!-- Main content -->
 <div class="page-wrapper">
@@ -733,8 +830,13 @@ body.day-sun {
         6: { cls: 'day-sat', badge: '❄ Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN' }
     };
 
+    /* ── Testing day themes without redeployment ──
+       ?day=0..6 forces a theme (e.g. index.html?day=5 previews Friday).
+       Falls back to the real current day when absent/invalid. */
+    const dayParam = new URLSearchParams(window.location.search).get('day');
+    const forcedDay = (dayParam !== null && /^[0-6]$/.test(dayParam)) ? Number(dayParam) : null;
     const now = new Date();
-    const cfg = DAY_CONFIG[now.getDay()] || DAY_CONFIG[1];
+    const cfg = DAY_CONFIG[forcedDay !== null ? forcedDay : now.getDay()] || DAY_CONFIG[1];
 
     document.body.classList.add(cfg.cls);
     document.getElementById('day-badge-wrap').innerHTML = `<span class="day-badge">${cfg.badge}</span>`;
@@ -743,55 +845,79 @@ body.day-sun {
     document.getElementById('welcome-sub').textContent = cfg.sub;
     document.getElementById('loginBtn').textContent = cfg.btnText;
 
-    /* Seven distinct game-monster silhouettes, one per day theme.
-       Eyes/mouth use var(--bg-base) so they read as "cutouts" against the body color;
-       body/wings use currentColor so CSS (color: var(--accent)/--accent2) drives the tint. */
+    /* ── ORIGINAL PER-DAY CREATURES ──
+       Each entry is fully original artwork (not a reproduction of any
+       licensed character): a <defs> radial/linear gradient for a
+       colorful body fill, plus simple silhouette paths. Rendered once
+       as static markup -- all movement comes from the CSS transform
+       animation on the parent <svg>, so there is zero per-frame JS cost. */
     const MONSTER_SVGS = {
-        'day-mon': /* Deep Space -- boxy alien scout */
-            '<path d="M100 15 L150 70 L140 130 L60 130 L50 70 Z" fill="currentColor"/>' +
-            '<line x1="100" y1="6" x2="100" y2="18" stroke="currentColor" stroke-width="3"/>' +
-            '<circle cx="100" cy="6" r="6" fill="currentColor"/>' +
-            '<circle cx="100" cy="85" r="24" fill="var(--bg-base)"/>' +
-            '<circle cx="100" cy="85" r="11" fill="currentColor"/>' +
-            '<rect x="68" y="120" width="16" height="28" rx="4" fill="currentColor"/>' +
-            '<rect x="116" y="120" width="16" height="28" rx="4" fill="currentColor"/>',
-        'day-tue': /* Wabi-Sabi -- calm round mochi spirit */
-            '<ellipse cx="100" cy="100" rx="70" ry="55" fill="currentColor"/>' +
-            '<path d="M55 55 Q60 22 78 48 Z" fill="currentColor"/>' +
-            '<path d="M145 55 Q140 22 122 48 Z" fill="currentColor"/>' +
-            '<path d="M75 95 Q85 105 95 95" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-            '<path d="M105 95 Q115 105 125 95" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-            '<path d="M90 120 Q100 128 110 120" stroke="var(--bg-base)" stroke-width="4" fill="none" stroke-linecap="round"/>',
-        'day-wed': /* Art Deco -- sleek finned serpent */
-            '<path d="M25 112 Q60 58 100 82 Q140 58 175 112 Q140 132 100 122 Q60 132 25 112Z" fill="currentColor"/>' +
-            '<path d="M85 55 L100 12 L115 55Z" fill="currentColor"/>' +
-            '<path d="M62 62 L76 28 L90 60Z" fill="currentColor"/>' +
-            '<path d="M110 60 L124 28 L138 62Z" fill="currentColor"/>' +
-            '<rect x="86" y="86" width="12" height="12" fill="var(--bg-base)" transform="rotate(45 92 92)"/>' +
-            '<rect x="102" y="86" width="12" height="12" fill="var(--bg-base)" transform="rotate(45 108 92)"/>',
-        'day-thu': /* Biophilic -- mossy forest golem */
-            '<ellipse cx="100" cy="107" rx="68" ry="48" fill="currentColor"/>' +
-            '<path d="M58 62 Q46 24 74 44 Q70 58 58 62Z" fill="currentColor"/>' +
-            '<path d="M142 62 Q154 24 126 44 Q130 58 142 62Z" fill="currentColor"/>' +
-            '<circle cx="72" cy="72" r="7" fill="currentColor" opacity="0.55"/>' +
-            '<circle cx="132" cy="68" r="6" fill="currentColor" opacity="0.55"/>' +
-            '<circle cx="80" cy="100" r="8" fill="var(--bg-base)"/>' +
-            '<circle cx="120" cy="100" r="8" fill="var(--bg-base)"/>' +
-            '<path d="M85 128 Q100 138 115 128" stroke="var(--bg-base)" stroke-width="5" fill="none" stroke-linecap="round"/>',
-        'day-fri': /* Synthwave -- spiky night bat */
-            '<path d="M100 92 L58 40 L74 86 L18 54 L54 100 L100 132 L146 100 L182 54 L126 86 L142 40Z" fill="currentColor"/>' +
-            '<polygon points="84,96 94,80 100,96" fill="var(--bg-base)"/>' +
-            '<polygon points="106,96 112,80 122,96" fill="var(--bg-base)"/>',
-        'day-sat': /* Arctic Steel -- crystalline shard beast */
-            '<polygon points="100,18 142,70 126,142 74,142 58,70" fill="currentColor"/>' +
-            '<polygon points="100,44 122,80 111,120 89,120 78,80" fill="var(--bg-base)" opacity="0.55"/>' +
-            '<circle cx="84" cy="86" r="6" fill="var(--bg-base)"/>' +
-            '<circle cx="116" cy="86" r="6" fill="var(--bg-base)"/>',
-        'day-sun': /* Sunset Ember -- warm little phoenix */
-            '<path d="M100 132 Q58 122 48 80 Q70 90 80 68 Q74 48 96 38 Q100 54 104 38 Q126 48 120 68 Q130 90 152 80 Q142 122 100 132Z" fill="currentColor"/>' +
-            '<circle cx="87" cy="90" r="6" fill="var(--bg-base)"/>' +
-            '<circle cx="113" cy="90" r="6" fill="var(--bg-base)"/>' +
-            '<path d="M89 106 Q100 113 111 106" stroke="var(--bg-base)" stroke-width="4" fill="none" stroke-linecap="round"/>'
+        'day-mon': /* "Voltling" -- crystalline neon scout */
+            '<defs><linearGradient id="gradMon" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '<stop offset="0%" stop-color="#00eaff"/><stop offset="50%" stop-color="#7b5bff"/><stop offset="100%" stop-color="#ff2e9e"/>' +
+            '</linearGradient></defs>' +
+            '<path d="M100 18 L156 78 L146 140 L54 140 L44 78 Z" fill="url(#gradMon)"/>' +
+            '<line x1="100" y1="6" x2="100" y2="20" stroke="#00eaff" stroke-width="4"/>' +
+            '<circle cx="100" cy="6" r="7" fill="#ffd23f"/>' +
+            '<circle cx="100" cy="90" r="26" fill="#050814"/>' +
+            '<circle cx="100" cy="90" r="12" fill="#ffd23f"/>' +
+            '<rect x="66" y="132" width="17" height="30" rx="5" fill="url(#gradMon)"/>' +
+            '<rect x="117" y="132" width="17" height="30" rx="5" fill="url(#gradMon)"/>',
+        'day-tue': /* "Claymoth" -- calm round gilded spirit */
+            '<defs><radialGradient id="gradTue" cx="35%" cy="30%" r="80%">' +
+            '<stop offset="0%" stop-color="#ffe8a3"/><stop offset="55%" stop-color="#d9a24a"/><stop offset="100%" stop-color="#8a5a2e"/>' +
+            '</radialGradient></defs>' +
+            '<ellipse cx="100" cy="112" rx="78" ry="62" fill="url(#gradTue)"/>' +
+            '<path d="M52 58 Q58 18 80 50 Z" fill="url(#gradTue)"/>' +
+            '<path d="M148 58 Q142 18 120 50 Z" fill="url(#gradTue)"/>' +
+            '<path d="M72 104 Q84 116 96 104" stroke="#050300" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+            '<path d="M104 104 Q116 116 128 104" stroke="#050300" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+            '<path d="M88 134 Q100 144 112 134" stroke="#050300" stroke-width="5" fill="none" stroke-linecap="round"/>',
+        'day-wed': /* "Decoserpent" -- sleek finned art-deco wyrm */
+            '<defs><linearGradient id="gradWed" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#e7e04a"/><stop offset="50%" stop-color="#9db93c"/><stop offset="100%" stop-color="#3f7d3a"/>' +
+            '</linearGradient></defs>' +
+            '<path d="M18 126 Q60 58 100 90 Q140 58 182 126 Q140 150 100 138 Q60 150 18 126Z" fill="url(#gradWed)"/>' +
+            '<path d="M83 60 L100 10 L117 60Z" fill="url(#gradWed)"/>' +
+            '<path d="M56 68 L72 28 L88 64Z" fill="url(#gradWed)"/>' +
+            '<path d="M112 64 L128 28 L144 68Z" fill="url(#gradWed)"/>' +
+            '<rect x="84" y="94" width="14" height="14" fill="#0a0e05" transform="rotate(45 91 101)"/>' +
+            '<rect x="102" y="94" width="14" height="14" fill="#0a0e05" transform="rotate(45 109 101)"/>',
+        'day-thu': /* "Mossgolem" -- mossy forest guardian */
+            '<defs><radialGradient id="gradThu" cx="40%" cy="25%" r="85%">' +
+            '<stop offset="0%" stop-color="#b8f2a0"/><stop offset="55%" stop-color="#4fbf7a"/><stop offset="100%" stop-color="#1f5c3c"/>' +
+            '</radialGradient></defs>' +
+            '<ellipse cx="100" cy="118" rx="76" ry="54" fill="url(#gradThu)"/>' +
+            '<path d="M54 66 Q40 22 72 46 Q66 60 54 66Z" fill="url(#gradThu)"/>' +
+            '<path d="M146 66 Q160 22 128 46 Q134 60 146 66Z" fill="url(#gradThu)"/>' +
+            '<circle cx="70" cy="78" r="8" fill="#ffd23f" opacity="0.7"/>' +
+            '<circle cx="134" cy="74" r="7" fill="#ffd23f" opacity="0.7"/>' +
+            '<circle cx="80" cy="110" r="9" fill="#0a1408"/>' +
+            '<circle cx="120" cy="110" r="9" fill="#0a1408"/>' +
+            '<path d="M84 140 Q100 152 116 140" stroke="#0a1408" stroke-width="6" fill="none" stroke-linecap="round"/>',
+        'day-fri': /* "Neonbat" -- spiky synthwave night flyer */
+            '<defs><linearGradient id="gradFri" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#00e5ff"/><stop offset="50%" stop-color="#ff2ec4"/><stop offset="100%" stop-color="#8c3bff"/>' +
+            '</linearGradient></defs>' +
+            '<path d="M100 98 L52 38 L70 90 L8 52 L48 106 L100 142 L152 106 L192 52 L130 90 L148 38Z" fill="url(#gradFri)"/>' +
+            '<polygon points="82,102 94,82 100,102" fill="#0a0320"/>' +
+            '<polygon points="106,102 112,82 124,102" fill="#0a0320"/>',
+        'day-sat': /* "Frostshard" -- crystalline ice beast */
+            '<defs><linearGradient id="gradSat" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '<stop offset="0%" stop-color="#dff6ff"/><stop offset="50%" stop-color="#7fc4e8"/><stop offset="100%" stop-color="#2c5c82"/>' +
+            '</linearGradient></defs>' +
+            '<polygon points="100,14 148,72 130,152 70,152 52,72" fill="url(#gradSat)"/>' +
+            '<polygon points="100,44 126,82 113,124 87,124 74,82" fill="#0a141c" opacity="0.55"/>' +
+            '<circle cx="82" cy="90" r="7" fill="#0a141c"/>' +
+            '<circle cx="118" cy="90" r="7" fill="#0a141c"/>',
+        'day-sun': /* "Emberphoenix" -- warm rising ember bird */
+            '<defs><radialGradient id="gradSun" cx="50%" cy="30%" r="80%">' +
+            '<stop offset="0%" stop-color="#ffd98a"/><stop offset="50%" stop-color="#e8966e"/><stop offset="100%" stop-color="#c8465a"/>' +
+            '</radialGradient></defs>' +
+            '<path d="M100 148 Q52 136 40 86 Q66 98 78 72 Q70 48 96 36 Q100 54 104 36 Q130 48 122 72 Q134 98 160 86 Q148 136 100 148Z" fill="url(#gradSun)"/>' +
+            '<circle cx="85" cy="98" r="7" fill="#170a09"/>' +
+            '<circle cx="115" cy="98" r="7" fill="#170a09"/>' +
+            '<path d="M87 118 Q100 128 113 118" stroke="#170a09" stroke-width="5" fill="none" stroke-linecap="round"/>'
     };
     const monsterMarkup = MONSTER_SVGS[cfg.cls] || MONSTER_SVGS['day-mon'];
     document.getElementById('monster1').innerHTML = monsterMarkup;
@@ -804,7 +930,16 @@ body.day-sun {
         '<div class="orb" style="width:360px;height:360px;bottom:15%;left:35%;animation-delay:2.8s;"></div>' +
         '<div class="scan-line"></div>';
 
-    /* Skip the heavier second monster + a couple of orbs on small/low-power screens to keep CPU flat */
+    /* ── CPU / GPU LOAD MANAGEMENT ──
+       Pause every ambient animation while the tab isn't visible, and
+       drop the companion creature + trim ambient orbs on small or
+       coarse-pointer (touch) devices where extra GPU layers cost more. */
+    function syncAnimState() {
+        document.body.classList.toggle('anim-paused', document.hidden);
+    }
+    document.addEventListener('visibilitychange', syncAnimState, { passive: true });
+    syncAnimState();
+
     if (window.matchMedia('(max-width: 640px)').matches) {
         const m2 = document.getElementById('monster2');
         if (m2) m2.remove();
