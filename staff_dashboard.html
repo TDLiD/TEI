@@ -57,9 +57,123 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ══════════════════════════════════════════════════════════
+   DASHBOARD WRAPPER + BIG ROAMING CREATURE LAYER
+   Two inline SVGs (primary + smaller companion), each an
+   original per-day creature design recoloured to match this
+   page's own --t-accent / --t-accent2 tokens, so it reads as
+   one consistent brand across login → main menu → dashboard.
+   Movement is a single transform keyframe per day, GPU-only
+   (translate/rotate/scale) -- zero per-frame JS cost. Sized and
+   kept at lower opacity than the lighter pages since this is a
+   data-dense screen (tables/calendar) that needs to stay readable.
+══════════════════════════════════════════════════════════ */
+.sm-dashboard-wrap { position: relative; }
+
+.bg-creature {
+  position: fixed;
+  top: 0; left: 0;
+  width: clamp(200px, 30vw, 420px);
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  will-change: transform;
+  animation: creatureRoamMon 26s ease-in-out infinite;
+}
+.bg-creature.second {
+  width: clamp(130px, 18vw, 260px);
+  opacity: 0.2;
+  animation-direction: reverse;
+  display: none;
+}
+@media (min-width: 768px) {
+  .bg-creature.second { display: block; }
+}
+@media (max-width: 479px) {
+  .bg-creature { width: clamp(150px, 42vw, 240px); opacity: 0.26; }
+}
+
+/* Pause every decorative animation while the tab is hidden --
+   the main CPU/GPU cost lever for a page with several loops. */
+.sm-dashboard-wrap.anim-paused .bg-creature,
+.sm-dashboard-wrap.anim-paused .fortune-bubble,
+.sm-dashboard-wrap.anim-paused .warning-pulse,
+.sm-dashboard-wrap.anim-paused .animate-blink,
+.sm-dashboard-wrap.anim-paused .animate-pulse-slow {
+  animation-play-state: paused !important;
+}
+
+/* Seven full-viewport roaming paths, one per day theme. */
+@keyframes creatureRoamMon {
+  0%   { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
+  20%  { transform: translate(55vw, 10vh) rotate(3deg) scale(1.05); }
+  40%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96); }
+  50%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96) scaleX(-1); }
+  70%  { transform: translate(40vw, 78vh) rotate(4deg) scale(1.02) scaleX(-1); }
+  90%  { transform: translate(0vw, 30vh) rotate(-3deg) scale(1) scaleX(-1); }
+  100% { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
+}
+@keyframes creatureRoamTue {
+  0%, 100% { transform: translate(4vw, 60vh) rotate(0deg) scale(1); }
+  25%      { transform: translate(60vw, 20vh) rotate(3deg) scale(1.06); }
+  50%      { transform: translate(30vw, 70vh) rotate(-2deg) scale(0.95); }
+  75%      { transform: translate(75vw, 45vh) rotate(2deg) scale(1.03); }
+}
+@keyframes creatureRoamWed {
+  0%    { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
+  49%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04); }
+  50%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04) scaleX(-1); }
+  99%   { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1) scaleX(-1); }
+  100%  { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
+}
+@keyframes creatureRoamThu {
+  0%   { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
+  10%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02); }
+  20%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1); }
+  30%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03); }
+  40%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1); }
+  50%  { transform: translate(66vw, 36vh) rotate(2deg) scale(1.04) scaleX(-1); }
+  60%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
+  70%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03) scaleX(-1); }
+  80%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
+  90%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02) scaleX(-1); }
+  100% { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
+}
+@keyframes creatureRoamFri {
+  0%   { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
+  20%  { transform: translate(48vw, 8vh) rotate(10deg) scale(1.08); }
+  40%  { transform: translate(20vw, 55vh) rotate(-10deg) scale(0.95); }
+  50%  { transform: translate(72vw, 20vh) rotate(8deg) scale(1.06) scaleX(-1); }
+  70%  { transform: translate(50vw, 68vh) rotate(-8deg) scale(1) scaleX(-1); }
+  90%  { transform: translate(10vw, 42vh) rotate(6deg) scale(1.03) scaleX(-1); }
+  100% { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
+}
+@keyframes creatureRoamSat {
+  0%    { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
+  49%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05); }
+  50%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05) scaleX(-1); }
+  99%   { transform: translate(-6vw, 50vh) rotate(0deg) scale(1) scaleX(-1); }
+  100%  { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
+}
+@keyframes creatureRoamSun {
+  0%   { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: 0.32; }
+  50%  { transform: translate(60vw, 12vh) rotate(4deg) scale(1.12); opacity: 0.42; }
+  100% { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: 0.32; }
+}
+.theme-day-1 .bg-creature { animation-name: creatureRoamMon; animation-duration: 28s; filter: drop-shadow(0 0 20px rgba(56,189,248,0.55)) drop-shadow(0 0 34px rgba(129,140,248,0.3)); }
+.theme-day-2 .bg-creature { animation-name: creatureRoamTue; animation-duration: 32s; filter: drop-shadow(0 0 18px rgba(212,180,131,0.5))  drop-shadow(0 0 30px rgba(138,106,62,0.28)); }
+.theme-day-3 .bg-creature { animation-name: creatureRoamWed; animation-duration: 26s; filter: drop-shadow(0 0 18px rgba(200,168,75,0.5))  drop-shadow(0 0 30px rgba(232,212,138,0.28)); }
+.theme-day-4 .bg-creature { animation-name: creatureRoamThu; animation-duration: 20s; filter: drop-shadow(0 0 18px rgba(111,191,95,0.5))  drop-shadow(0 0 30px rgba(217,154,91,0.28)); }
+.theme-day-5 .bg-creature { animation-name: creatureRoamFri; animation-duration: 16s; filter: drop-shadow(0 0 24px rgba(255,0,204,0.55)) drop-shadow(0 0 38px rgba(0,238,255,0.35)); }
+.theme-day-6 .bg-creature { animation-name: creatureRoamSat; animation-duration: 22s; filter: drop-shadow(0 0 20px rgba(96,165,250,0.55)) drop-shadow(0 0 32px rgba(165,200,255,0.3)); }
+.theme-day-0 .bg-creature { animation-name: creatureRoamSun; animation-duration: 26s; filter: drop-shadow(0 0 22px rgba(249,115,22,0.55)) drop-shadow(0 0 36px rgba(190,24,93,0.3)); }
+
+/* ══════════════════════════════════════════════════════════
    ROOT ELEMENT
 ══════════════════════════════════════════════════════════ */
 .sm-root {
+  position: relative;
+  z-index: 1;
   font-family: var(--t-font-ui);
   color: var(--t-text);
   /* Layout: two columns on tablet+, one column on mobile */
@@ -73,6 +187,9 @@
     grid-template-columns: minmax(0,1fr) minmax(0,1.55fr);
     align-items: start;
   }
+}
+@media (min-width: 1440px) {
+  .sm-root { max-width: 1400px; margin: 0 auto; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -546,7 +663,7 @@
 @media (prefers-reduced-motion:reduce) {
   .card-3d, .sm-today-strip, .sm-cal-table td, .sm-btn, .staff-row { transition:none !important; }
   .fortune-bubble { animation:none; }
-  .animate-blink, .animate-pulse-slow, .warning-pulse { animation:none; }
+  .animate-blink, .animate-pulse-slow, .warning-pulse, .bg-creature { animation:none; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -581,6 +698,11 @@
 <!-- ══════════════════════════════════════════════════════════
      7-DAY THEME INJECTION SCRIPT
      Runs immediately to avoid FOUC
+     NOTE: Tue previously duplicated Sun's tokens 1:1 and Thu
+     duplicated Sat's tokens 1:1 (copy-paste leftover), so only
+     5 of the 7 days actually looked different. Tue now has its
+     own Wabi-Sabi (ink-gold) set and Thu its own Terra Verde
+     (green) set, matching the names already in the comments.
 ══════════════════════════════════════════════════════════ -->
 <script>
 (function () {
@@ -632,28 +754,28 @@
       '--t-font-display': "'Orbitron', sans-serif",
       '--t-font-ui':      "'Pretendard', sans-serif",
     },
-    2: { /* TUE — Wabi-Sabi */
-      '--t-bg':        '#160403',
-      '--t-surface':   '#220605',
-      '--t-surface2':  '#2e0907',
-      '--t-surface3':  '#3a0d09',
-      '--t-border':    'rgba(249,115,22,0.1)',
-      '--t-border2':   'rgba(249,115,22,0.22)',
-      '--t-text':      '#fdf0e8',
-      '--t-muted':     '#7c4a30',
-      '--t-dim':       '#3a1a0e',
-      '--t-accent':    '#f97316',
-      '--t-accent2':   '#fbbf24',
-      '--t-accent-glow':     'rgba(249,115,22,0.2)',
-      '--t-accent-gradient': 'linear-gradient(90deg,#be185d,#f97316,#fbbf24)',
-      '--t-card-shine':  'rgba(249,115,22,0.07)',
-      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(249,115,22,0.28),transparent)',
-      '--t-card-face':   'linear-gradient(155deg,rgba(249,115,22,0.05) 0%,transparent 55%)',
+    2: { /* TUE — Wabi-Sabi (fixed: previously an exact copy of Sun) */
+      '--t-bg':        '#0c0906',
+      '--t-surface':   '#18120d',
+      '--t-surface2':  '#1e1710',
+      '--t-surface3':  '#251c13',
+      '--t-border':    'rgba(212,180,131,0.1)',
+      '--t-border2':   'rgba(212,180,131,0.22)',
+      '--t-text':      '#ece5d8',
+      '--t-muted':     '#7a6a52',
+      '--t-dim':       '#332a1e',
+      '--t-accent':    '#d4b483',
+      '--t-accent2':   '#c9a84c',
+      '--t-accent-glow':     'rgba(212,180,131,0.18)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#a07850,#e8d0a0,#a07850)',
+      '--t-card-shine':  'rgba(212,180,131,0.08)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(212,180,131,0.28),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(212,180,131,0.05) 0%,transparent 55%)',
       '--t-card-radius': '10px',
-      '--t-card-shadow-near': 'rgba(0,0,0,0.35)',
-      '--t-card-shadow-far':  'rgba(0,0,0,0.55)',
-      '--t-font-display': "'DM Serif Display', serif",
-      '--t-font-ui':      "'Pretendard', sans-serif",
+      '--t-card-shadow-near': 'rgba(0,0,0,0.3)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.5)',
+      '--t-font-display': "'Noto Serif JP', serif",
+      '--t-font-ui':      "'Noto Serif JP', serif",
     },
     3: { /* WED — Art Deco */
       '--t-bg':        '#080e09',
@@ -678,28 +800,28 @@
       '--t-font-display': "'Cormorant Garamond', serif",
       '--t-font-ui':      "'Cormorant Garamond', serif",
     },
-    4: { /* THU — Terra Verde */
-      '--t-bg':        '#08122a',
-      '--t-surface':   '#0c1a38',
-      '--t-surface2':  '#102044',
-      '--t-surface3':  '#142650',
-      '--t-border':    'rgba(96,165,250,0.12)',
-      '--t-border2':   'rgba(96,165,250,0.24)',
-      '--t-text':      '#e8f0fe',
-      '--t-muted':     '#4a6090',
-      '--t-dim':       '#1e3060',
-      '--t-accent':    '#60a5fa',
-      '--t-accent2':   '#a5c8ff',
-      '--t-accent-glow':     'rgba(96,165,250,0.2)',
-      '--t-accent-gradient': 'linear-gradient(90deg,#60a5fa,#a5c8ff,#c7d7f0)',
-      '--t-card-shine':  'rgba(188,213,250,0.12)',
-      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(188,213,250,0.32),transparent)',
-      '--t-card-face':   'linear-gradient(155deg,rgba(188,213,250,0.1) 0%,transparent 55%)',
+    4: { /* THU — Terra Verde (fixed: previously an exact copy of Sat) */
+      '--t-bg':        '#040603',
+      '--t-surface':   '#081109',
+      '--t-surface2':  '#0d180e',
+      '--t-surface3':  '#122012',
+      '--t-border':    'rgba(111,191,95,0.1)',
+      '--t-border2':   'rgba(111,191,95,0.22)',
+      '--t-text':      '#eef0e6',
+      '--t-muted':     '#4d6248',
+      '--t-dim':       '#1c2b1c',
+      '--t-accent':    '#6fbf5f',
+      '--t-accent2':   '#8fcf7f',
+      '--t-accent-glow':     'rgba(111,191,95,0.2)',
+      '--t-accent-gradient': 'linear-gradient(90deg,#4d8c44,#8fcf7f,#d99a5b)',
+      '--t-card-shine':  'rgba(111,191,95,0.09)',
+      '--t-card-bevel':  'linear-gradient(90deg,transparent,rgba(111,191,95,0.3),transparent)',
+      '--t-card-face':   'linear-gradient(155deg,rgba(111,191,95,0.06) 0%,transparent 55%)',
       '--t-card-radius': '16px',
-      '--t-card-shadow-near': 'rgba(0,0,0,0.28)',
-      '--t-card-shadow-far':  'rgba(10,30,80,0.38)',
-      '--t-font-display': "'Inter', sans-serif",
-      '--t-font-ui':      "'Inter', sans-serif",
+      '--t-card-shadow-near': 'rgba(0,0,0,0.3)',
+      '--t-card-shadow-far':  'rgba(0,0,0,0.5)',
+      '--t-font-display': "'DM Serif Display', serif",
+      '--t-font-ui':      "'Pretendard', sans-serif",
     },
     5: { /* FRI — Synthwave */
       '--t-bg':        '#06021a',
@@ -749,7 +871,11 @@
     },
   };
 
-  const idx = new Date().getDay();
+  /* ?day=0..6 lets you preview any theme without redeploying,
+     e.g. loading this dashboard tab with ?day=5 in the URL shows
+     Friday's theme. Falls back to the real current day otherwise. */
+  const _dayParam = new URLSearchParams(window.location.search).get('day');
+  const idx = (_dayParam !== null && /^[0-6]$/.test(_dayParam)) ? Number(_dayParam) : new Date().getDay();
 
   const tokens = THEMES[idx] || THEMES[1];
   const root = document.documentElement;
@@ -763,6 +889,14 @@
 <!-- ══════════════════════════════════════════════════════════
      HTML
 ══════════════════════════════════════════════════════════ -->
+<div class="sm-dashboard-wrap" id="smDashboardWrap">
+
+<!-- Big roaming per-day creature (original artwork, colorful gradient
+     fill, recoloured to this page's own theme tokens). Purely decorative,
+     sits behind the content (z-index:0) and never intercepts clicks. -->
+<svg id="dashCreature1" class="bg-creature" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+<svg id="dashCreature2" class="bg-creature second" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+
 <div class="sm-root">
 
   <!-- ══ LEFT PANEL ══ -->
@@ -941,10 +1075,13 @@
   </div>
 
 </div><!-- /sm-root -->
+</div><!-- /sm-dashboard-wrap -->
 
 
 <!-- ══════════════════════════════════════════════════════════
      JAVASCRIPT — All original logic, zero changes to behaviour
+     (plus the creature paint + tab-visibility pause additions,
+     both isolated to their own IIFE-scoped listeners/cleanup)
 ══════════════════════════════════════════════════════════ -->
 <script>
 /* ── Fortune ── */
@@ -976,6 +1113,115 @@ setTimeout(showFortune, 1000);
 function getJakartaDate() {
   return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 }
+
+/* ══════════════════════════════════════════════════════════
+   ORIGINAL PER-DAY CREATURES + CPU-saving pause
+   Each creature is original artwork (not a reproduction of any
+   licensed character), recoloured to this page's own per-day
+   --t-accent/--t-accent2 tokens above, matching the same
+   species already used on the login and main-menu screens.
+   Static markup only -- all movement/colour is CSS, so there is
+   zero per-frame JS cost. Listeners are tracked locally and torn
+   down in _leavePageCleanup below, since this fragment may be
+   re-inserted each time its tab is opened.
+══════════════════════════════════════════════════════════ */
+(function () {
+  const CREATURE_SVGS = {
+    0: /* Sun — "Emberwing", rose-amber */
+      '<defs><radialGradient id="dGradSun" cx="50%" cy="30%" r="80%">' +
+      '<stop offset="0%" stop-color="#fed398"/><stop offset="50%" stop-color="#f97316"/><stop offset="100%" stop-color="#be185d"/>' +
+      '</radialGradient></defs>' +
+      '<path d="M100 148 Q52 136 40 86 Q66 98 78 72 Q70 48 96 36 Q100 54 104 36 Q130 48 122 72 Q134 98 160 86 Q148 136 100 148Z" fill="url(#dGradSun)"/>' +
+      '<circle cx="85" cy="98" r="7" fill="#170a09"/><circle cx="115" cy="98" r="7" fill="#170a09"/>' +
+      '<path d="M87 118 Q100 128 113 118" stroke="#170a09" stroke-width="5" fill="none" stroke-linecap="round"/>',
+    1: /* Mon — "Circuitling", cyan/indigo/violet */
+      '<defs><linearGradient id="dGradMon" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#7dd8ff"/><stop offset="50%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/>' +
+      '</linearGradient></defs>' +
+      '<path d="M100 18 L156 78 L146 140 L54 140 L44 78 Z" fill="url(#dGradMon)"/>' +
+      '<line x1="100" y1="6" x2="100" y2="20" stroke="#7dd8ff" stroke-width="4"/>' +
+      '<circle cx="100" cy="6" r="7" fill="#fef08a"/>' +
+      '<circle cx="100" cy="90" r="26" fill="#02040a"/><circle cx="100" cy="90" r="12" fill="#fef08a"/>' +
+      '<rect x="66" y="132" width="17" height="30" rx="5" fill="url(#dGradMon)"/>' +
+      '<rect x="117" y="132" width="17" height="30" rx="5" fill="url(#dGradMon)"/>',
+    2: /* Tue — "Sumigoro", ink-gold */
+      '<defs><radialGradient id="dGradTue" cx="35%" cy="30%" r="80%">' +
+      '<stop offset="0%" stop-color="#f3e0b8"/><stop offset="55%" stop-color="#d4b483"/><stop offset="100%" stop-color="#8a6a3e"/>' +
+      '</radialGradient></defs>' +
+      '<ellipse cx="100" cy="112" rx="78" ry="62" fill="url(#dGradTue)"/>' +
+      '<path d="M52 58 Q58 18 80 50 Z" fill="url(#dGradTue)"/><path d="M148 58 Q142 18 120 50 Z" fill="url(#dGradTue)"/>' +
+      '<path d="M72 104 Q84 116 96 104" stroke="#0c0906" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M104 104 Q116 116 128 104" stroke="#0c0906" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M88 134 Q100 144 112 134" stroke="#0c0906" stroke-width="5" fill="none" stroke-linecap="round"/>',
+    3: /* Wed — "Vaultwyrm", olive-gold */
+      '<defs><linearGradient id="dGradWed" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="#f3dd8a"/><stop offset="50%" stop-color="#c8a84b"/><stop offset="100%" stop-color="#7a5f24"/>' +
+      '</linearGradient></defs>' +
+      '<path d="M18 126 Q60 58 100 90 Q140 58 182 126 Q140 150 100 138 Q60 150 18 126Z" fill="url(#dGradWed)"/>' +
+      '<path d="M83 60 L100 10 L117 60Z" fill="url(#dGradWed)"/>' +
+      '<path d="M56 68 L72 28 L88 64Z" fill="url(#dGradWed)"/>' +
+      '<path d="M112 64 L128 28 L144 68Z" fill="url(#dGradWed)"/>' +
+      '<rect x="84" y="94" width="14" height="14" fill="#080e09" transform="rotate(45 91 101)"/>' +
+      '<rect x="102" y="94" width="14" height="14" fill="#080e09" transform="rotate(45 109 101)"/>',
+    4: /* Thu — "Terraleaf", green */
+      '<defs><radialGradient id="dGradThu" cx="40%" cy="25%" r="85%">' +
+      '<stop offset="0%" stop-color="#c8f0a8"/><stop offset="55%" stop-color="#6fbf5f"/><stop offset="100%" stop-color="#2c6b2a"/>' +
+      '</radialGradient></defs>' +
+      '<ellipse cx="100" cy="118" rx="76" ry="54" fill="url(#dGradThu)"/>' +
+      '<path d="M54 66 Q40 22 72 46 Q66 60 54 66Z" fill="url(#dGradThu)"/>' +
+      '<path d="M146 66 Q160 22 128 46 Q134 60 146 66Z" fill="url(#dGradThu)"/>' +
+      '<circle cx="70" cy="78" r="8" fill="#d99a5b" opacity="0.75"/><circle cx="134" cy="74" r="7" fill="#d99a5b" opacity="0.75"/>' +
+      '<circle cx="80" cy="110" r="9" fill="#040603"/><circle cx="120" cy="110" r="9" fill="#040603"/>' +
+      '<path d="M84 140 Q100 152 116 140" stroke="#040603" stroke-width="6" fill="none" stroke-linecap="round"/>',
+    5: /* Fri — "Arcadebat", pink/cyan/yellow */
+      '<defs><linearGradient id="dGradFri" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="#00eeff"/><stop offset="50%" stop-color="#ff00cc"/><stop offset="100%" stop-color="#ffee00"/>' +
+      '</linearGradient></defs>' +
+      '<path d="M100 98 L52 38 L70 90 L8 52 L48 106 L100 142 L152 106 L192 52 L130 90 L148 38Z" fill="url(#dGradFri)"/>' +
+      '<polygon points="82,102 94,82 100,102" fill="#06021a"/><polygon points="106,102 112,82 124,102" fill="#06021a"/>',
+    6: /* Sat — "Glacyshard", steel blue-white */
+      '<defs><linearGradient id="dGradSat" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#eaf6ff"/><stop offset="50%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2f4f8a"/>' +
+      '</linearGradient></defs>' +
+      '<polygon points="100,14 148,72 130,152 70,152 52,72" fill="url(#dGradSat)"/>' +
+      '<polygon points="100,44 126,82 113,124 87,124 74,82" fill="#08122a" opacity="0.55"/>' +
+      '<circle cx="82" cy="90" r="7" fill="#08122a"/><circle cx="118" cy="90" r="7" fill="#08122a"/>'
+  };
+
+  const wrap = document.getElementById('smDashboardWrap');
+  const c1 = document.getElementById('dashCreature1');
+  const c2 = document.getElementById('dashCreature2');
+  if (!wrap || !c1) return; // fragment not present (shouldn't happen, but stay defensive)
+
+  const dayIdx = (typeof window._dashDayIdx === 'number') ? window._dashDayIdx : new Date().getDay();
+
+  const markup = CREATURE_SVGS[dayIdx] || CREATURE_SVGS[1];
+  c1.innerHTML = markup;
+  if (c2) c2.innerHTML = markup;
+
+  // Remove any stale theme-day-* class (in case this fragment gets
+  // re-inserted into the DOM by the host app's tab switcher) then tag
+  // the wrapper so the CSS above can pick the right roam/glow per day.
+  wrap.className = wrap.className.replace(/\btheme-day-\d\b/g, '').trim();
+  wrap.classList.add('sm-dashboard-wrap', `theme-day-${dayIdx}`);
+
+  // Phones: drop the companion creature to keep GPU layers minimal
+  if (window.matchMedia('(max-width: 640px)').matches && c2) c2.remove();
+
+  // Pause every ambient animation while the tab is hidden -- the main
+  // CPU/GPU cost lever for a page that already runs several loops
+  // (fortune bubble, warning pulse, blink, the creature roam).
+  const syncAnimState = () => wrap.classList.toggle('anim-paused', document.hidden);
+  document.addEventListener('visibilitychange', syncAnimState, { passive: true });
+  syncAnimState();
+
+  // Tear down on tab-leave, mirroring this file's existing cleanup pattern
+  const prevCleanup = window._leavePageCleanup;
+  window._leavePageCleanup = function () {
+    document.removeEventListener('visibilitychange', syncAnimState);
+    if (typeof prevCleanup === 'function') prevCleanup();
+  };
+})();
 
 (function () {
   const user = sessionStorage.getItem('loggedInUser');
@@ -1449,6 +1695,7 @@ function getJakartaDate() {
   renderCalendar();
 
   /* ── Page Cleanup ── */
+  const prevCleanup2 = window._leavePageCleanup;
   window._leavePageCleanup = function() {
     clearInterval(liveTimeTimer);
     clearInterval(lateWarnTimer);
@@ -1457,6 +1704,7 @@ function getJakartaDate() {
     db.ref('settings/config').off();
     db.ref('settings/config/stdAttendance').off();
     if (leaveStatusRef) { leaveStatusRef.off(); leaveStatusRef=null; }
+    if (typeof prevCleanup2 === 'function') prevCleanup2();
   };
 
 })();
