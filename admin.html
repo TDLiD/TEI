@@ -739,6 +739,11 @@
             <button id="btn-statistic"  onclick="switchAdminTab('statistic')"  class="tab-btn tab-inactive px-4 py-3 text-left">📈 ATTEND STAT</button>
             <button id="btn-settings"   onclick="switchAdminTab('settings')"   class="tab-btn tab-inactive px-4 py-3 text-left">⚙️ SETTINGS</button>
 
+<!-- KOSPI AI 메뉴 버튼 추가 -->
+<button id="btn-kospi_ai" onclick="switchAdminTab('kospi_ai')" class="tab-btn tab-inactive special-tab px-4 py-3 text-left">
+    🤖 KOSPI AI
+</button>
+
             <div class="aside-separator"></div>
             <a href="https://tdlid.github.io" target="_blank"
                class="tdlid-link px-4 py-3 text-xs uppercase tracking-widest font-bold flex items-center gap-2">
@@ -1081,7 +1086,7 @@ async function switchAdminTab(tab) {
         dashboard:'admin_dashboard.html', attendance:'admin_attendance.html',
         reports:'admin_report.html', vacation:'admin_vacation.html',
         schedule:'admin_calendar.html', statistic:'admin_statistic.html',
-        workstat:'work_statistic.html', settings:'admin_setting.html'
+        workstat:'work_statistic.html', settings:'admin_setting.html', kospi_ai: 'kospi_ai.html'
     };
 
     try {
