@@ -659,17 +659,20 @@
 <!-- =====================================================
      MOBILE BOTTOM NAV
 ===================================================== -->
-<nav class="mobile-nav fixed bottom-0 left-0 right-0 z-50 hidden grid-cols-8 h-[70px] px-1 shadow-2xl">
-    <button onclick="switchAdminTab('dashboard')"  class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📊</span><span>DASH</span></button>
-    <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">👤</span><span>ATTEND</span></button>
-    <button onclick="switchAdminTab('reports')"    class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📝</span><span>REPORTS</span></button>
-    <button onclick="switchAdminTab('vacation')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">🏖️</span><span>VACATION</span></button>
-    <button onclick="switchAdminTab('schedule')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📅</span><span>CAL</span></button>
-    <button onclick="switchAdminTab('workstat')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📉</span><span>W.ANIS</span></button>
-    <button onclick="switchAdminTab('statistic')"  class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">📈</span><span>A.STAT</span></button>
-    <button onclick="switchAdminTab('settings')"   class="flex flex-col items-center justify-center gap-1 text-[9px] font-bold text-slate-500"><span class="text-lg">⚙️</span><span>SET</span></button>
+<!-- =====================================================
+     MOBILE BOTTOM NAV (최종 수정본)
+===================================================== -->
+<nav class="mobile-nav fixed bottom-0 left-0 right-0 z-50 hidden grid-cols-9 h-[70px] px-0.5 shadow-2xl">
+    <button onclick="switchAdminTab('dashboard')"  class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">📊</span><span>DASH</span></button>
+    <button onclick="switchAdminTab('attendance')" class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">👤</span><span>ATTEND</span></button>
+    <button onclick="switchAdminTab('reports')"    class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">📝</span><span>REPORTS</span></button>
+    <button onclick="switchAdminTab('vacation')"   class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">🏖️</span><span>VACATION</span></button>
+    <button onclick="switchAdminTab('schedule')"   class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">📅</span><span>CAL</span></button>
+    <button onclick="switchAdminTab('workstat')"   class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">📉</span><span>W.ANIS</span></button>
+    <button onclick="switchAdminTab('statistic')"  class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">📈</span><span>A.STAT</span></button>
+    <button onclick="switchAdminTab('settings')"   class="flex flex-col items-center justify-center gap-1 text-[8px] font-bold text-slate-500"><span class="text-base">⚙️</span><span>SET</span></button>
+    <button onclick="switchAdminTab('kospi_ai')"   class="flex flex-col items-center justify-center gap-1 text-[8px] font-black text-amber-400"><span class="text-base leading-none">🤖</span><span>KOSPI</span></button>
 </nav>
-<button onclick="switchAdminTab('kospi_ai')"   class="w-full flex flex-col items-center justify-center text-[7.5px] font-bold text-amber-400 py-1"><span class="text-sm leading-none mb-0.5">🤖</span><span class="truncate max-w-full font-black">KOSPI</span></button>
 
 <!-- =====================================================
      SIDEBAR
