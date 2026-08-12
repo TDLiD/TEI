@@ -983,6 +983,7 @@
                 <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
                 <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
                 <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
+<button onclick="switchTab('promo')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📢</span> TEI Promo</button>
 
                 <div class="aside-divider mt-3"></div>
 
@@ -1035,6 +1036,7 @@
     <button onclick="switchTab('statistic')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📈</span><span class="text-[8px] font-bold">STAT</span></button>
     <button onclick="switchTab('setting')"   class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">⚙️</span><span class="text-[8px] font-bold">SET</span></button>
     <button onclick="switchTab('photos')"    class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📸</span><span class="text-[8px] font-bold">PHOTO</span></button>
+<button onclick="switchTab('promo')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📢</span><span class="text-[8px] font-bold">TEI PROMO</span></button>
     <a href="https://tdlid.github.io" target="_blank" class="flex flex-col items-center gap-1 transition-all text-slate-500">
         <span class="text-xl">🌐</span><span class="text-[8px] font-bold">HOME</span>
     </a>
@@ -1366,12 +1368,12 @@ window.switchTab = function(t) {
         dash: 'staff_dashboard.html', work: 'staff_report.html',
         schedule: 'staff_calendar.html', vacation: 'staff_vacation.html',
         statistic: 'staff_statistic.html', setting: 'staff_setting.html',
-        photos: 'staff_photos.html', all: 'staff_allatt.html'
+        photos: 'staff_photos.html', promo: 'staff_promo.html', all: 'staff_allatt.html'
     };
     const activeTab = tabMapping[t] ? t : 'dash';
     pB.forEach(b => b.classList.remove('tab-active'));
     mB.forEach(b => b.classList.remove('mobile-tab-active'));
-    const navIndex = { dash:0, work:1, schedule:2, vacation:3, statistic:4, setting:5, photos:6 };
+    const navIndex = { dash:0, work:1, schedule:2, vacation:3, statistic:4, setting:5, photos:6, promo:7 };
     const i = navIndex[activeTab];
     if (i !== undefined) {
         if (pB[i]) pB[i].classList.add('tab-active');

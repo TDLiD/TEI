@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📢 TEI Promo Resources - Cyberpunk Hub</title>
+    <style>
+        :root {
+            --neon-cyan: #00FFF0;
+            --neon-pink: #FF006E;
+            --neon-purple: #B500FF;
+            --neon-green: #39FF14;
+            --neon-yellow: #FFFF00;
+            --bg-darker: #050811;
+            --gradient-neon: linear-gradient(135deg, #00FFF0 0%, #B500FF 50%, #FF006E 100%);
+            --gradient-cyan-pink: linear-gradient(90deg, #00FFF0, #FF006E);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { color-scheme: dark; background: var(--bg-darker); }
+
+        body {
+            font-family: 'Orbitron', 'Courier New', monospace;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 18% 12%, rgba(0, 255, 240, 0.08), transparent 28rem),
+                radial-gradient(circle at 82% 8%, rgba(255, 0, 110, 0.07), transparent 24rem),
+                linear-gradient(135deg, #03050d 0%, #090d24 45%, #040611 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanlines Overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 240, 0.02),
+                rgba(0, 255, 240, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.7;
+        }
+
+        .header {
+            padding: 40px 20px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-title {
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            background: var(--gradient-neon);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 25px rgba(0, 255, 240, 0.3));
+        }
+
+        .header-subtitle {
+            font-size: clamp(0.75rem, 1.8vw, 1rem);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
+        }
+
+        /* Filter Controls */
+        .filter-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 18px;
+            border: 2px solid var(--neon-cyan);
+            background: rgba(0, 255, 240, 0.05);
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 255, 240, 0.1);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--neon-pink);
+            background: var(--gradient-cyan-pink);
+            color: #000;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.5);
+        }
+
+        /* Materials Grid */
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 25px;
+            width: min(1200px, 95%);
+            margin: 0 auto 60px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .promo-card {
+            background: linear-gradient(155deg, rgba(10, 14, 39, 0.94), rgba(2, 5, 17, 0.96));
+            border: 1px solid var(--neon-cyan);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .promo-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-pink);
+            box-shadow: 0 15px 30px rgba(255, 0, 110, 0.3), 0 0 20px rgba(0, 255, 240, 0.2);
+        }
+
+        .promo-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 255, 240, 0.15);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-size: 0.65rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .promo-title {
+            font-size: 1.05rem;
+            color: #fff;
+            margin-bottom: 12px;
+            font-weight: bold;
+            padding-right: 50px;
+            line-height: 1.4;
+        }
+
+        /* Layout with Thumbnail on Right */
+        .card-body-content {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .promo-info {
+            flex: 1;
+            font-size: 0.72rem;
+            color: #a0b9ff;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Small Image Thumbnail Style */
+        .promo-thumb-box {
+            width: 75px;
+            height: 75px;
+            border-radius: 8px;
+            border: 1px solid var(--neon-cyan);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            background: rgba(0, 255, 240, 0.05);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .promo-thumb-box:hover {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 12px rgba(255, 0, 110, 0.6);
+            transform: scale(1.05);
+        }
+
+        .promo-thumb-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumb-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .promo-thumb-box:hover .thumb-overlay {
+            opacity: 1;
+        }
+
+        /* Action Buttons Container */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 8px;
+            font-weight: 900;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-preview {
+            background: rgba(0, 255, 240, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn-preview:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 240, 0.6);
+        }
+
+        .btn-download {
+            background: var(--gradient-cyan-pink);
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 240, 0.3);
+        }
+
+        .btn-download:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.7);
+        }
+
+        /* ── Preview Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(3, 5, 13, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            width: min(1000px, 90vw);
+            height: 85vh;
+            background: #090d24;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0, 255, 240, 0.4);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background: rgba(0, 255, 240, 0.05);
+            border-bottom: 1px solid rgba(0, 255, 240, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--neon-pink);
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background: #1a1d2d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Image Preview Lightbox Specific */
+        .modal-body img {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 240, 0.3);
+            border-radius: 8px;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(0, 255, 240, 0.2);
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="header-title">📢 TEI PROMO HUB</h1>
+        <p class="header-subtitle">Promotional Materials & Brochure Downloads</p>
+    </div>
+
+    <!-- 필터 컨트롤 -->
+    <div class="filter-wrapper">
+        <div class="filter-group" id="yearFilter">
+            <button class="filter-btn active" onclick="filterYear('ALL')">ALL YEARS</button>
+            <button class="filter-btn" onclick="filterYear('2026')">2026</button>
+            <button class="filter-btn" onclick="filterYear('2025')">2025</button>
+        </div>
+        <div class="filter-group" id="monthFilter">
+            <button class="filter-btn active" onclick="filterMonth('ALL')">ALL MONTHS</button>
+            <button class="filter-btn" onclick="filterMonth('08')">AUG (08)</button>
+            <button class="filter-btn" onclick="filterMonth('07')">JUL (07)</button>
+            <button class="filter-btn" onclick="filterMonth('06')">JUN (06)</button>
+        </div>
+    </div>
+
+    <!-- 홍보자료 그리드 -->
+    <div class="promo-grid" id="promoGrid">
+        
+        <!-- 1. TEI Introduction 2026 (PDF + Image Preview) -->
+        <div class="promo-card" data-year="2026" data-month="08">
+            <span class="promo-badge">PDF</span>
+            <div class="promo-title">TEI Introduction 2026</div>
+            
+            <div class="card-body-content">
+                <div class="promo-info">
+                    <span>📅 Date: 2026-08-12</span>
+                    <span>💾 Size: 1.03 MB</span>
+                    <span>📂 Category: Brochure</span>
+                </div>
+                <!-- 우측 이미지 썸네일 (클릭 시 확대) -->
+                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/TEI_Intro.png', 'TEI Introduction Cover')">
+                    <img src="images/TEI/Brochure/TEI_Intro.png" alt="TEI Intro Thumbnail" onerror="this.src='https://via.placeholder.com/150/090d24/00FFF0?text=TEI'">
+                    <div class="thumb-overlay">🔍</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-action btn-preview" onclick="openPreview('images/TEI/Brochure/TEI_Introduction_2026.pdf', 'TEI Introduction 2026')">
+                    👁️ PREVIEW
+                </button>
+                <a href="images/TEI/Brochure/TEI_Introduction_2026.pdf" download="TEI_Introduction_2026.pdf" class="btn-action btn-download">
+                    ⚡ DOWNLOAD
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. TEI Brochure Image 1 -->
+        <div class="promo-card" data-year="2026" data-month="08">
+            <span class="promo-badge">PNG</span>
+            <div class="promo-title">TEI Brochure Page 1</div>
+            
+            <div class="card-body-content">
+                <div class="promo-info">
+                    <span>📅 Date: 2026-08-12</span>
+                    <span>💾 Size: 1.98 MB</span>
+                    <span>📂 Category: Image</span>
+                </div>
+                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure1.png', 'Brochure Page 1')">
+                    <img src="images/TEI/Brochure/Brochure1.png" alt="Brochure1 Thumbnail">
+                    <div class="thumb-overlay">🔍</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure1.png', 'Brochure Page 1')">
+                    🔍 ENLARGE
+                </button>
+                <a href="images/TEI/Brochure/Brochure1.png" download="Brochure1.png" class="btn-action btn-download">
+                    ⚡ DOWNLOAD
+                </a>
+            </div>
+        </div>
+
+        <!-- 3. TEI Brochure Image 2 -->
+        <div class="promo-card" data-year="2026" data-month="08">
+            <span class="promo-badge">PNG</span>
+            <div class="promo-title">TEI Brochure Page 2</div>
+            
+            <div class="card-body-content">
+                <div class="promo-info">
+                    <span>📅 Date: 2026-08-12</span>
+                    <span>💾 Size: 2.12 MB</span>
+                    <span>📂 Category: Image</span>
+                </div>
+                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure2.png', 'Brochure Page 2')">
+                    <img src="images/TEI/Brochure/Brochure2.png" alt="Brochure2 Thumbnail">
+                    <div class="thumb-overlay">🔍</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure2.png', 'Brochure Page 2')">
+                    🔍 ENLARGE
+                </button>
+                <a href="images/TEI/Brochure/Brochure2.png" download="Brochure2.png" class="btn-action btn-download">
+                    ⚡ DOWNLOAD
+                </a>
+            </div>
+        </div>
+
+        <!-- 4. TEI Brochure Image 3 -->
+        <div class="promo-card" data-year="2026" data-month="08">
+            <span class="promo-badge">PNG</span>
+            <div class="promo-title">TEI Brochure Page 3</div>
+            
+            <div class="card-body-content">
+                <div class="promo-info">
+                    <span>📅 Date: 2026-08-12</span>
+                    <span>💾 Size: 2.21 MB</span>
+                    <span>📂 Category: Image</span>
+                </div>
+                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure3.png', 'Brochure Page 3')">
+                    <img src="images/TEI/Brochure/Brochure3.png" alt="Brochure3 Thumbnail">
+                    <div class="thumb-overlay">🔍</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure3.png', 'Brochure Page 3')">
+                    🔍 ENLARGE
+                </button>
+                <a href="images/TEI/Brochure/Brochure3.png" download="Brochure3.png" class="btn-action btn-download">
+                    ⚡ DOWNLOAD
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 미리보기 / 이미지 확대 공용 모달 팝업 -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">Preview</span>
+                <button class="modal-close" onclick="closePreview()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <iframe id="pdfFrame" src=""></iframe>
+            </div>
+            <div class="modal-footer" id="modalFooter" style="display: none;">
+                <a id="modalDownloadBtn" href="" download class="btn-action btn-download" style="max-width: 200px;">
+                    ⚡ DOWNLOAD FILE
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        let currentYear = 'ALL';
+        let currentMonth = 'ALL';
+
+        // PDF 미리보기 모달 열기
+        window.openPreview = function(fileUrl, title) {
+            const modal = document.getElementById('previewModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalFooter = document.getElementById('modalFooter');
+
+            if (modal && modalBody && modalTitle) {
+                modalTitle.innerText = `👁️ PREVIEW: ${title}`;
+                modalBody.innerHTML = `<iframe src="${fileUrl}"></iframe>`;
+                if(modalFooter) modalFooter.style.display = 'none';
+                modal.style.display = 'flex';
+            }
+        };
+
+        // 이미지 확대(라이트박스) 모달 열기
+        window.openImagePreview = function(imageUrl, title) {
+            const modal = document.getElementById('previewModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalFooter = document.getElementById('modalFooter');
+            const downloadBtn = document.getElementById('modalDownloadBtn');
+
+            if (modal && modalBody && modalTitle) {
+                modalTitle.innerText = `🔍 IMAGE ENLARGE: ${title}`;
+                modalBody.innerHTML = `<img src="${imageUrl}" alt="${title}">`;
+                
+                if (modalFooter && downloadBtn) {
+                    downloadBtn.href = imageUrl;
+                    downloadBtn.download = imageUrl.split('/').pop();
+                    modalFooter.style.display = 'flex';
+                }
+                modal.style.display = 'flex';
+            }
+        };
+
+        // 모달 닫기
+        window.closePreview = function() {
+            const modal = document.getElementById('previewModal');
+            const modalBody = document.getElementById('modalBody');
+
+            if (modal && modalBody) {
+                modal.style.display = 'none';
+                modalBody.innerHTML = ''; // 리소스 해제
+            }
+        };
+
+        // 년도 필터
+        window.filterYear = function(year) {
+            currentYear = year;
+            updateFilterButtons('yearFilter', year);
+            applyFilters();
+        };
+
+        // 월별 필터
+        window.filterMonth = function(month) {
+            currentMonth = month;
+            updateFilterButtons('monthFilter', month);
+            applyFilters();
+        };
+
+        function updateFilterButtons(groupId, value) {
+            const container = document.getElementById(groupId);
+            if (!container) return;
+            
+            const btns = container.getElementsByClassName('filter-btn');
+            for (let btn of btns) {
+                if (btn.innerText.includes(value) || (value === 'ALL' && btn.innerText.includes('ALL'))) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            }
+        }
+
+        function applyFilters() {
+            const cards = document.querySelectorAll('.promo-card');
+            cards.forEach(card => {
+                const cardYear = card.getAttribute('data-year');
+                const cardMonth = card.getAttribute('data-month');
+
+                const matchYear = (currentYear === 'ALL' || cardYear === currentYear);
+                const matchMonth = (currentMonth === 'ALL' || cardMonth === currentMonth);
+
+                if (matchYear && matchMonth) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

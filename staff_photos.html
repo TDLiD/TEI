@@ -667,13 +667,143 @@
     border-radius: 8px;
     backdrop-filter: blur(10px);
 }
+/* ==========================================
+   수정: 통일된 중앙 정렬 모달 레이아웃 & EXIT 버튼
+   ========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(5, 8, 17, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 5000;
+    animation: modalFadeIn 0.3s ease-out;
+    overflow: hidden;
+}
 
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 이미지 및 정보를 정중앙에 고정 배치 */
+.modal-content {
+    position: relative;
+    width: clamp(300px, 85vw, 900px);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-image-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 3px solid var(--neon-cyan);
+    box-shadow: 
+        0 0 40px rgba(0, 255, 240, 0.4),
+        0 0 80px rgba(181, 0, 255, 0.2),
+        inset 0 0 30px rgba(0, 255, 240, 0.1);
+    cursor: pointer; /* 이미지 클릭 시 닫기 가능 안내 */
+}
+
+/* 상단 "X EXIT" 버튼 스타일 */
+.modal-close {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    padding: 6px 18px;
+    background: rgba(255, 0, 110, 0.2);
+    border: 2px solid var(--neon-pink);
+    color: var(--neon-pink);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(255, 0, 110, 0.3);
+}
+
+.modal-close:hover {
+    background: var(--neon-pink);
+    color: #000;
+    box-shadow: 0 0 30px rgba(255, 0, 110, 0.8);
+    transform: translateY(-2px);
+}
+
+/* 좌/우 화살표 버튼 */
+.modal-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px; height: 46px;
+    background: rgba(0, 255, 240, 0.1);
+    border: 2px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    box-shadow: 0 0 15px rgba(0, 255, 240, 0.2);
+}
+
+.modal-nav-btn:hover {
+    background: var(--neon-cyan);
+    color: #000;
+    box-shadow: 0 0 25px rgba(0, 255, 240, 0.8);
+}
+
+.modal-prev { left: -65px; }
+.modal-next { right: -65px; }
+
+.modal-info {
+    margin-top: 16px;
+    padding: 12px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, rgba(0, 255, 240, 0.05), rgba(181, 0, 255, 0.05));
+    border: 2px solid rgba(0, 255, 240, 0.2);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+/* 반응형 예외 처리 */
+@media (max-width: 768px) {
+    .modal-prev { left: 10px; }
+    .modal-next { right: 10px; }
+    .modal-close { top: -45px; }
+}
     </style>
 </head>
 <body>
     <header class="header">
         <h1 class="header-title">🌌 Staff <span style="color: var(--neon-pink);">Photos</span></h1>
         <p class="header-subtitle">▸ Memories & Moments from Our Team ◂</p>
+
     </header>
 
     <div class="filter-container">
@@ -689,24 +819,28 @@
 
     <div class="gallery" id="gallery"></div>
 
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <div style="position: relative; display: inline-block; width: 100%;">
-                <button class="modal-nav-btn modal-prev" onclick="previousPhoto()">◀</button>
-                <img class="modal-image" id="modalImage" src="" alt="" />
-                <button class="modal-nav-btn modal-next" onclick="nextPhoto()">▶</button>
-            </div>
-            <div class="modal-info">
-                <div class="modal-title" id="modalTitle"></div>
-                <div class="modal-meta">
-                    <span class="modal-date" id="modalDate"></span>
-                    <span class="modal-category" id="modalCategory"></span>
-                    <span class="modal-counter" id="modalCounter"></span>
-                </div>
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <!-- 상단 EXIT 버튼 -->
+        <button class="modal-close" onclick="closeModal()">✕ EXIT</button>
+        
+        <div class="modal-image-wrapper">
+            <button class="modal-nav-btn modal-prev" onclick="previousPhoto()">◀</button>
+            <!-- 이미지 클릭 시 목록으로 복귀 (closeModal) -->
+            <img class="modal-image" id="modalImage" src="" alt="" onclick="closeModal()" title="클릭하면 닫힙니다" />
+            <button class="modal-nav-btn modal-next" onclick="nextPhoto()">▶</button>
+        </div>
+
+        <div class="modal-info">
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-meta">
+                <span class="modal-date" id="modalDate"></span>
+                <span class="modal-category" id="modalCategory"></span>
+                <span class="modal-counter" id="modalCounter"></span>
             </div>
         </div>
     </div>
+</div>
 
 <script>
     (function () {
@@ -802,18 +936,28 @@ window.openModal = function (index) {
     const photo = state.filteredPhotos[index];
     if (!photo) return;
 
-    document.getElementById('modalImage').src = `images/TEI/${photo.filename}`;
-    document.getElementById('modalTitle').innerText = photo.title;
-    document.getElementById('modalDate').innerText = `📅 ${photo.date} · ${photo.dayLabel}요일`;
-    document.getElementById('modalCategory').innerText = `🏷️ ${photo.category.toUpperCase()}`;
+    // 이미지 및 텍스트 정보 설정
+    const modalImg = document.getElementById('modalImage');
+    if (modalImg) {
+        modalImg.src = `images/TEI/${photo.filename}`;
+        modalImg.alt = photo.title || '';
+    }
 
-    // [수정된 부분] 카운터 숫자 옆에 메인 메뉴로 가는 버튼을 추가합니다.
+    document.getElementById('modalTitle').innerText = photo.title || '';
+    document.getElementById('modalDate').innerText = `📅 ${photo.date || ''} · ${photo.dayLabel || ''}요일`;
+    document.getElementById('modalCategory').innerText = `🏷️ ${(photo.category || '').toUpperCase()}`;
+
+    // 카운터 및 메인 메뉴 버튼 업데이트
     document.getElementById('modalCounter').innerHTML = `
         <span style="margin-right: 15px;">${index + 1} / ${state.filteredPhotos.length}</span>
         <a href="staff.html" class="modal-home-btn" style="text-decoration: none;">🏠 MAIN MENU</a>
     `;
 
-    document.getElementById('modal').classList.add('active');
+    // 모달 활성화 및 배경 스크롤 방지
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.classList.add('active');
+    }
     document.body.style.overflow = 'hidden';
 };
 
