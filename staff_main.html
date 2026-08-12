@@ -15,9 +15,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
     /* ── FINE-GRAINED VIEWPORT CLASS ──────────────────────────────
@@ -949,6 +949,36 @@ body.is-desktop .bottom-actions { grid-template-columns: repeat(4, 1fr); }
   .popup-image { max-height: 40vh; }
   .popup-close-top { width: 30px; height: 30px; font-size: 15px; }
 }
+/* 기존 grid-template-columns: repeat(4, 1fr); 라인을 아래와 같이 변경 */
+.bottom-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.5rem, 2vw, 0.72rem);
+  width: 100%;
+  max-width: 480px;
+  animation: fadeSlideUp 0.55s 0.12s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* 데스크톱 모드에서도 3열을 유지하도록 수정 */
+body.is-desktop .bottom-actions { 
+  max-width: 620px; 
+  grid-template-columns: repeat(3, 1fr); 
+}
+.menu-grid {
+  display: grid;
+  /* 핵심: 한 줄에 3개씩(3열) 균등 배치 */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 1rem; /* 카드 사이 간격 */
+  width: 100%;
+  max-width: 480px; /* 화면 크기에 맞게 조절 가능 */
+  margin: 0 auto;
+}
+
+/* a 태그 형태의 menu-card 밑줄 제거 및 기본 카드 스타일 적용 */
+a.menu-card {
+  text-decoration: none;
+  color: inherit;
+}
 </style>
 </head>
 
@@ -996,43 +1026,51 @@ body.is-desktop .bottom-actions { grid-template-columns: repeat(4, 1fr); }
     <p class="sub-label" id="pageSub">Select a task to continue</p>
   </section>
 
-  <nav class="menu-grid" aria-label="Main menu">
-    <div class="menu-card" onclick="navigateTo('staff_dashboard.html')" role="button" tabindex="0" aria-label="Attendance">
-      <div class="card-icon-wrap"><img src="images/gif/staff_list/Attendance.gif" alt="" aria-hidden="true"></div>
-      <span class="card-label">Attendance</span>
-    </div>
-    <div class="menu-card" onclick="navigateTo('staff_report.html')" role="button" tabindex="0" aria-label="Work Report">
-      <div class="card-icon-wrap"><img src="images/gif/staff_list/work-report.gif" alt="" aria-hidden="true"></div>
-      <span class="card-label">Work Report</span>
-    </div>
-    <div class="menu-card" onclick="navigateTo('staff_calendar.html')" role="button" tabindex="0" aria-label="Calendar">
-      <div class="card-icon-wrap"><img src="images/gif/staff_list/calendar.gif" alt="" aria-hidden="true"></div>
-      <span class="card-label">Calendar</span>
-    </div>
-    <div class="menu-card" onclick="navigateTo('staff_vacation.html')" role="button" tabindex="0" aria-label="Vacation">
-      <div class="card-icon-wrap"><img src="images/gif/staff_list/vacation.gif" alt="" aria-hidden="true"></div>
-      <span class="card-label">Vacation</span>
-    </div>
-  </nav>
+<nav class="menu-grid" aria-label="Main menu">
+  <!-- 줄 1 -->
+  <div class="menu-card" onclick="navigateTo('staff_dashboard.html')" role="button" tabindex="0" aria-label="Attendance">
+    <div class="card-icon-wrap"><img src="images/gif/staff_list/Attendance.gif" alt="" aria-hidden="true"></div>
+    <span class="card-label">Attendance</span>
+  </div>
+  <div class="menu-card" onclick="navigateTo('staff_report.html')" role="button" tabindex="0" aria-label="Work Report">
+    <div class="card-icon-wrap"><img src="images/gif/staff_list/work-report.gif" alt="" aria-hidden="true"></div>
+    <span class="card-label">Work Report</span>
+  </div>
+  <div class="menu-card" onclick="navigateTo('staff_calendar.html')" role="button" tabindex="0" aria-label="Calendar">
+    <div class="card-icon-wrap"><img src="images/gif/staff_list/calendar.gif" alt="" aria-hidden="true"></div>
+    <span class="card-label">Calendar</span>
+  </div>
 
-  <nav class="bottom-actions" aria-label="Quick actions">
-    <button class="action-btn" onclick="navigateTo('staff_photos.html')">
-      <span class="action-icon" aria-hidden="true">📸</span>
-      <span class="action-label">Photos</span>
-    </button>
-    <button class="action-btn" onclick="navigateTo('staff_setting.html')">
-      <span class="action-icon" aria-hidden="true">⚙️</span>
-      <span class="action-label">Settings</span>
-    </button>
-    <button class="action-btn" onclick="handleLogout()">
-      <span class="action-icon" aria-hidden="true">🚪</span>
-      <span class="action-label">Logout</span>
-    </button>
-    <a href="https://tdlid.github.io" target="_blank" rel="noopener noreferrer" class="action-btn">
-      <span class="action-icon" aria-hidden="true">🌐</span>
-      <span class="action-label">Homepage</span>
-    </a>
-  </nav>
+  <!-- 줄 2 -->
+  <div class="menu-card" onclick="navigateTo('staff_vacation.html')" role="button" tabindex="0" aria-label="Vacation">
+    <div class="card-icon-wrap"><img src="images/gif/staff_list/vacation.gif" alt="" aria-hidden="true"></div>
+    <span class="card-label">Vacation</span>
+  </div>
+  <div class="menu-card" onclick="navigateTo('staff_photos.html')" role="button" tabindex="0" aria-label="Photos">
+    <div class="card-icon-wrap"><span class="action-icon" aria-hidden="true">📸</span></div>
+    <span class="card-label">Photos</span>
+  </div>
+  <!-- ★ TEI Promo 버튼 수정됨 ★ -->
+  <div class="menu-card" onclick="navigateTo('staff_promo.html')" role="button" tabindex="0" aria-label="TEI Promo">
+    <div class="card-icon-wrap"><span class="action-icon" aria-hidden="true">📣</span></div>
+    <span class="card-label">TEI Promo</span>
+  </div>
+
+  <!-- 줄 3 -->
+  <div class="menu-card" onclick="navigateTo('staff_setting.html')" role="button" tabindex="0" aria-label="Settings">
+    <div class="card-icon-wrap"><span class="action-icon" aria-hidden="true">⚙️</span></div>
+    <span class="card-label">Settings</span>
+  </div>
+  <div class="menu-card" onclick="handleLogout()" role="button" tabindex="0" aria-label="Logout">
+    <div class="card-icon-wrap"><span class="action-icon" aria-hidden="true">🚪</span></div>
+    <span class="card-label">Logout</span>
+  </div>
+  <a href="https://tdlid.github.io" target="_blank" rel="noopener noreferrer" class="menu-card" aria-label="Homepage">
+    <div class="card-icon-wrap"><span class="action-icon" aria-hidden="true">🌐</span></div>
+    <span class="card-label">Homepage</span>
+  </a>
+</nav>
+
 
 </main>
 
@@ -1461,15 +1499,34 @@ function initKeyboard() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   CLEANUP — mirrors the established _leavePageCleanup pattern
+    CLEANUP & RECONNECT — BFCache 대응 로직
 ══════════════════════════════════════════════════════════ */
 window._leavePageCleanup = function () {
   if (_clockTimer) { clearInterval(_clockTimer); _clockTimer = null; }
   if (_popupTimer) { clearTimeout(_popupTimer); _popupTimer = null; }
   if (_profileRef) { _profileRef.off(); _profileRef = null; }
+
+  // [추가된 부분] 페이지 떠날 때 Firebase 오프라인 처리 (에러 방지)
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    firebase.database().goOffline();
+  }
 };
-window.addEventListener('beforeunload', window._leavePageCleanup);
+
+// 페이지를 떠날 때 리소스 정리
 window.addEventListener('pagehide', window._leavePageCleanup);
+
+// 뒤로가기/앞으로가기로 페이지에 다시 돌아왔을 때 처리
+window.addEventListener('pageshow', function (event) {
+  // event.persisted가 true이면 BFCache에서 복원된 상태임
+  if (event.persisted) {
+    // Firebase 실시간 수신 재연결 (필요시 호출)
+    if (typeof firebase !== 'undefined' && firebase.database) {
+      firebase.database().goOnline(); 
+    }
+    // 페이지 새로고침이 필요한 경우 아래 주석을 해제하세요.
+    // window.location.reload();
+  }
+});
 
 /* ══════════════════════════════════════════════════════════
    INIT
