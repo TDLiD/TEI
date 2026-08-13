@@ -51,7 +51,8 @@ body {
 #bg-photo-wrap { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 #bg-photo {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: contain; object-position: center;
+    object-fit: contain;
+    object-position: left center;
 }
 #bg-shade {
   position: absolute; inset: 0;
@@ -480,13 +481,13 @@ _dvMQ.addEventListener('change', (e) => applyDeviceClass(e.matches));
    월~금: bg1.jpg ~ bg5.jpg / 토,일: bg6.jpg, bg7.jpg
 ══════════════════════════════════════════════════════════ */
 const DAY_CONFIG = {
-  0: { cls: 'day-sun', bg: 'images/bg/bg7.jpg', chipLabel: '☀ Sunday',    sub: 'Rest, reflect & recharge', marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY' },
-  1: { cls: 'day-mon', bg: 'images/bg/bg5.jpg', chipLabel: '⚡ Monday',    sub: 'New week, new energy',      marquee: 'MONDAY · NEW WEEK · NEW ENERGY' },
-  2: { cls: 'day-tue', bg: 'images/bg/bg4.jpg', chipLabel: '◎ Tuesday',   sub: 'Breathe. Focus. Begin.',    marquee: 'TUESDAY · BREATHE · FOCUS · BEGIN' },
+  0: { cls: 'day-sun', bg: 'images/bg/bg2.png', chipLabel: '☀ Sunday',    sub: 'Rest, reflect & recharge', marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY' },
+  1: { cls: 'day-mon', bg: 'images/bg/bg1.jpg', chipLabel: '⚡ Monday',    sub: 'New week, new energy',      marquee: 'MONDAY · NEW WEEK · NEW ENERGY' },
+  2: { cls: 'day-tue', bg: 'images/bg/bg2.png', chipLabel: '◎ Tuesday',   sub: 'Breathe. Focus. Begin.',    marquee: 'TUESDAY · BREATHE · FOCUS · BEGIN' },
   3: { cls: 'day-wed', bg: 'images/bg/bg3.jpg', chipLabel: '◆ Wednesday', sub: 'Precision opens the vault', marquee: 'WEDNESDAY · MIDWEEK · STAY PRECISE' },
-  4: { cls: 'day-thu', bg: 'images/bg/bg2.png', chipLabel: '🌿 Thursday',  sub: 'Choose a task & begin',     marquee: 'THURSDAY · ALMOST THERE · KEEP GOING' },
-  5: { cls: 'day-fri', bg: 'images/bg/bg1.jpg', chipLabel: '🎉 Friday',    sub: "TGIF — let's go",           marquee: 'FRIDAY · WRAP IT UP · WELL DONE' },
-  6: { cls: 'day-sat', bg: 'images/bg/bg6.jpg', chipLabel: '🧊 Saturday',  sub: 'Take it easy today',        marquee: 'SATURDAY · TAKE IT EASY · REST UP' }
+  4: { cls: 'day-thu', bg: 'images/bg/bg5.jpg', chipLabel: '🌿 Thursday',  sub: 'Choose a task & begin',     marquee: 'THURSDAY · ALMOST THERE · KEEP GOING' },
+  5: { cls: 'day-fri', bg: 'images/bg/bg2.png', chipLabel: '🎉 Friday',    sub: "TGIF — let's go",           marquee: 'FRIDAY · WRAP IT UP · WELL DONE' },
+  6: { cls: 'day-sat', bg: 'images/bg/bg2.png', chipLabel: '🧊 Saturday',  sub: 'Take it easy today',        marquee: 'SATURDAY · TAKE IT EASY · REST UP' }
 };
 
 const _dayParam = new URLSearchParams(window.location.search).get('day');
