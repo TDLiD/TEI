@@ -794,13 +794,13 @@ html.is-mobile #birthday-close-btn {
        ?day=0..6 still forces a preview theme, same as before. */
     /* `bg` maps Mon→bg1.jpg … Sun→bg7.jpg, per the files in images/bg/ */
     const DAY_CONFIG = {
-        0: { cls: 'day-sun', badge: '☀ Sunday',    title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY', bg: 'bg7.jpg' },
+        0: { cls: 'day-sun', badge: '☀ Sunday',    title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY', bg: 'bg2.png' },
         1: { cls: 'day-mon', badge: '⚡ Monday',    title: 'Staff Login', heading: 'Welcome back',    sub: 'Select your profile to continue', btnText: 'AUTHENTICATE', marquee: 'MONDAY · NEW WEEK · NEW ENERGY', bg: 'bg1.jpg' },
         2: { cls: 'day-tue', badge: '◎ Tuesday',   title: 'Staff Login', heading: '안녕하세요 ^^*',   sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'TUESDAY · BREATHE · FOCUS · BEGIN', bg: 'bg2.png' },
         3: { cls: 'day-wed', badge: '◆ Wednesday', title: 'Staff Login', heading: 'Welcome',         sub: 'Enter your credentials to proceed', btnText: 'ENTER',    marquee: 'WEDNESDAY · MIDWEEK · STAY PRECISE', bg: 'bg3.jpg' },
-        4: { cls: 'day-thu', badge: '🌿 Thursday',  title: 'Staff Login', heading: 'Good morning',    sub: 'Choose your name and sign in', btnText: 'SIGN IN',      marquee: 'THURSDAY · ALMOST THERE · KEEP GOING', bg: 'bg4.jpg' },
-        5: { cls: 'day-fri', badge: '🎉 Friday',    title: 'TGIF Login',  heading: "It's Friday!",   sub: 'Pick your name and let\'s go 🚀', btnText: "LET'S GO",   marquee: 'FRIDAY · WRAP IT UP · WELL DONE', bg: 'bg5.jpg' },
-        6: { cls: 'day-sat', badge: '🧊 Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SATURDAY · TAKE IT EASY · REST UP', bg: 'bg6.jpg' }
+        4: { cls: 'day-thu', badge: '🌿 Thursday',  title: 'Staff Login', heading: 'Good morning',    sub: 'Choose your name and sign in', btnText: 'SIGN IN',      marquee: 'THURSDAY · ALMOST THERE · KEEP GOING', bg: 'bg5.jpg' },
+        5: { cls: 'day-fri', badge: '🎉 Friday',    title: 'TGIF Login',  heading: "It's Friday!",   sub: 'Pick your name and let\'s go 🚀', btnText: "LET'S GO",   marquee: 'FRIDAY · WRAP IT UP · WELL DONE', bg: 'bg2.png' },
+        6: { cls: 'day-sat', badge: '🧊 Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SATURDAY · TAKE IT EASY · REST UP', bg: 'bg2.png' }
     };
 
     const dayParam = new URLSearchParams(window.location.search).get('day');
