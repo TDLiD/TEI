@@ -10,26 +10,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
 
     <!--
-        Day theme fonts:
-        MON Deep Space -> Orbitron | TUE Wabi-Sabi -> Noto Serif JP | WED Art Deco -> Cormorant Garamond
-        THU Biophilic -> DM Serif Display | FRI Synthwave -> Bungee | SAT Arctic Steel -> Rajdhani | SUN Sunset Ember -> Playfair Display
+        Day theme fonts (aligned with staff_main.html's family):
+        MON -> Orbitron | TUE -> Noto Serif JP | WED -> Cormorant Garamond (italic)
+        THU -> DM Serif Display | FRI -> Bungee | SAT -> Inter | SUN -> DM Serif Display
 
-        NOTE ON CREATURES: the roaming background creatures are original, per-day designs
-        (not reproductions of any licensed characters). Each has its own multi-color
-        gradient fill so it reads as a distinct "monster" per weekday theme.
+        Design language matches staff_main.html: one fixed photograph as the
+        whole background (grayscale + day-accent duotone wash), a looping
+        marquee signature line, and quiet editorial typography instead of
+        heavy glow/gradient chrome. All original functionality (mobile
+        redirect, Firebase auth, staff selector, password toggle, forgot
+        password, birthday popup, ghost overlay) is unchanged.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Cormorant+Garamond:wght@400;600;700&family=DM+Serif+Display&family=Bungee&family=Rajdhani:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Serif+JP:wght@300;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&family=DM+Serif+Display&family=Bungee&family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <link rel="icon" href="data:,">
 
 <script>
     /* ── DEVICE / ENVIRONMENT DETECTION ──────────────────────────────
-       Keeps the existing mobile-page redirect (index_m.html) intact,
-       but also exposes a finer-grained "viewport class" on <html> so
-       the CSS below can optimize tablets and small phones separately
-       from the redirect, without touching the redirect logic itself. */
+       Mobile redirect to index_m.html is unchanged. */
     (function(){
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const urlParams = new URLSearchParams(window.location.search);
@@ -42,30 +42,19 @@
             }
         }
 
-        function applyViewportClass(){
-            const w = window.innerWidth;
-            let cls = 'vp-desktop';
-            if (w < 480) cls = 'vp-phone';
-            else if (w < 768) cls = 'vp-phone-lg';
-            else if (w < 1024) cls = 'vp-tablet';
-            else if (w < 1440) cls = 'vp-desktop';
-            else cls = 'vp-desktop-xl';
-            document.documentElement.classList.remove('vp-phone','vp-phone-lg','vp-tablet','vp-desktop','vp-desktop-xl');
-            document.documentElement.classList.add(cls);
-            document.documentElement.classList.toggle('vp-coarse', matchMedia('(pointer: coarse)').matches);
+        function applyDeviceClass(){
+            const isDesktop = window.matchMedia('(hover:hover) and (pointer:fine) and (min-width:1025px)').matches;
+            document.documentElement.classList.toggle('is-desktop', isDesktop);
         }
-        applyViewportClass();
-        window.addEventListener('resize', applyViewportClass, { passive: true });
-        window.addEventListener('orientationchange', applyViewportClass, { passive: true });
+        applyDeviceClass();
+        window.addEventListener('resize', applyDeviceClass, { passive: true });
+        window.addEventListener('orientationchange', applyDeviceClass, { passive: true });
     })();
 </script>
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
    BASE RESET & LAYOUT
-   All animation below uses only transform / opacity so the browser
-   compositor handles it on the GPU -- no layout/paint thrash, no JS
-   rAF loops, so CPU load stays flat regardless of theme.
 ═══════════════════════════════════════════════════════════════ */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -73,7 +62,7 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-html, body { background: #030308; }
+html, body { background: #05060d; height: 100%; }
 
 body {
     margin: 0;
@@ -85,189 +74,223 @@ body {
     align-items: center;
     padding: clamp(1rem, 4vw, 2rem);
     overflow-x: hidden;
-    color: var(--text, #e2e8f0);
-    background-color: var(--bg-base, #030308);
-    background-image: var(--bg-image, none);
+    color: var(--text, #f5f5f7);
     font-family: var(--font-body, 'Pretendard', 'Inter', sans-serif);
-    transition: background-color 0.6s ease, color 0.6s ease;
+    transition: color 0.4s ease;
     position: relative;
-    perspective: 1200px;
     isolation: isolate;
 }
 
 @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-
-/* Pause all ambient/compositor animation when the tab is hidden or the
-   browser flags a low-power / coarse-only context that struggles with
-   many concurrent GPU layers -- this is the main CPU/GPU cost lever. */
-body.anim-paused .bg-monster,
-body.anim-paused .brand-text3d,
-body.anim-paused .orb,
-body.anim-paused .scan-line,
-body.anim-paused .login-card {
+body.anim-paused #bg-photo,
+body.anim-paused .marquee-track,
+body.anim-paused .live-dot {
     animation-play-state: paused !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   BACKGROUND — one photograph PER DAY OF WEEK (images/bg/bg1..7.jpg),
+   shown at its ORIGINAL size/aspect ratio — no crop, no upscale, no
+   zoom. object-fit:contain guarantees the browser never draws the
+   photo larger than its native resolution; any leftover space is
+   letterboxed with the base background colour. Only the accent
+   duotone wash on top still exists (flat colour, costs nothing,
+   never blurs) — the photo itself is fully static.
+═══════════════════════════════════════════════════════════════ */
+#bg-photo-wrap {
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden; pointer-events: none;
+    background: #05060d; /* letterbox colour when the photo's aspect ratio doesn't match the screen */
+}
+#bg-photo {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain;              /* never crops, never upscales past native resolution */
+    object-position: center center;
+    filter: grayscale(1) contrast(1.14) brightness(0.6);
+    /* no transform, no animation — the photo is shown exactly as-is */
+}
+#bg-wash { position: absolute; inset: 0; background: var(--accent, #6366f1); mix-blend-mode: color; opacity: 0.85; }
+#bg-shade {
+    position: absolute; inset: 0;
+    background:
+        linear-gradient(180deg, rgba(2,3,8,0.74) 0%, rgba(2,3,8,0.32) 32%, rgba(2,3,8,0.44) 62%, rgba(2,3,8,0.88) 100%),
+        radial-gradient(ellipse 90% 70% at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%);
+}
+#bg-grain {
+    position: absolute; inset: 0; opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Signature scrolling marquee, same construction as staff_main.html ── */
+#marquee-layer {
+    position: fixed; left: 0; right: 0; top: 14%;
+    z-index: 1; overflow: hidden; pointer-events: none;
+    white-space: nowrap; mix-blend-mode: screen;
+}
+.marquee-track { display: inline-flex; animation: marqueeScroll var(--marquee-dur, 26s) linear infinite; will-change: transform; }
+.marquee-track span {
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    font-weight: 900; font-size: clamp(2rem, 11vw, 5.2rem);
+    letter-spacing: 0.01em; color: transparent;
+    -webkit-text-stroke: 1px var(--accent, #6366f1);
+    opacity: 0.2; padding-right: clamp(2rem, 6vw, 4rem);
+    text-transform: uppercase;
+}
+@keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
 .page-wrapper {
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(1.5rem, 4vw, 2.5rem);
+    gap: clamp(1.5rem, 5vw, 2.25rem);
     position: relative;
     z-index: 10;
 }
+@media (min-width: 768px)  { .page-wrapper { max-width: 480px; } }
+@media (min-width: 1024px) { .page-wrapper { max-width: 500px; } body { padding: 2rem; } }
+@media (min-width: 1440px) { .page-wrapper { max-width: 520px; } }
+@media (max-width: 360px)  { .page-wrapper { gap: 1.1rem; } }
 
-@media (min-width: 768px) {
-    .page-wrapper { max-width: 500px; }
+/* ═══════════════════════════════════════════════════════════════
+   BRAND HEADER — editorial masthead, mirrors staff_main.html's
+   .brand-header (logo replaces the day-of-week wordmark here since
+   this screen has no signed-in identity yet).
+═══════════════════════════════════════════════════════════════ */
+.brand-header { text-align: center; animation: fadeSlideDown 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+
+.logo-img {
+    width: clamp(3rem, 9vw, 4rem); height: clamp(3rem, 9vw, 4rem);
+    object-fit: contain; border-radius: 1rem; display: block; margin: 0 auto clamp(0.85rem, 3vw, 1.15rem);
+    border: 1px solid rgba(255,255,255,0.14);
 }
-@media (min-width: 1024px) {
-    .page-wrapper { max-width: 520px; }
-    .login-card { padding: 3rem !important; }
-    body { padding: 2rem; }
+.day-badge {
+    font-size: clamp(0.56rem, 2vw, 0.66rem); font-weight: 700; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--accent, #6366f1);
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    display: inline-block; margin-bottom: clamp(0.6rem, 2.4vw, 0.9rem);
 }
-@media (min-width: 1440px) {
-    .page-wrapper { max-width: 560px; }
+.page-title {
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    font-weight: 900; letter-spacing: -0.01em; line-height: 1.06;
+    font-size: clamp(1.9rem, 8vw, 2.9rem);
+    color: #fdfdfd; text-transform: uppercase;
+    margin: 0 0 0.5rem;
 }
-@media (max-width: 360px) {
-    .page-wrapper { gap: 1.1rem; }
-    .login-card { border-radius: 1.1rem !important; }
+.page-subtitle {
+    font-size: clamp(0.58rem, 2.1vw, 0.68rem); font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(255,255,255,0.42);
+    font-family: var(--font-ui, 'Pretendard', sans-serif);
+    margin: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GENERIC COMPONENTS -- themed purely through CSS custom properties
-   set by each `body.day-*` rule further down. One ruleset, seven
-   looks; keeps the stylesheet small and cheap to parse.
+   LOGIN CARD — quiet glass panel over the photo. No glow blobs;
+   identity now lives in the accent hairline, the type, and the
+   duotone wash behind it.
 ═══════════════════════════════════════════════════════════════ */
 .login-card {
     width: 100%;
-    border-radius: var(--card-radius, 1.75rem);
-    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border-radius: 1.1rem;
+    padding: clamp(1.6rem, 5.5vw, 2.35rem);
     position: relative;
-    overflow: hidden;
-    background: var(--card-bg);
-    border: var(--card-border);
-    box-shadow: var(--card-shadow);
-    transform-style: preserve-3d;
-    animation: cardUp3d 0.9s cubic-bezier(0.34,1.56,0.64,1) both, cardFloat 7s ease-in-out infinite 1s;
+    background: linear-gradient(160deg, rgba(10,11,17,0.74) 0%, rgba(5,6,10,0.84) 100%);
+    border: 1px solid var(--accent-soft, rgba(255,255,255,0.14));
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    animation: cardUp 0.7s 0.08s cubic-bezier(0.22,1,0.36,1) both;
 }
-.login-card::before {
-    content: var(--card-frame, none);
-    position: absolute;
-    inset: 6px;
-    border: var(--card-frame-border, none);
-    pointer-events: none;
-}
-.login-card::after {
-    /* subtle holographic sweep across the card edge -- one element, one animation */
-    content: '';
-    position: absolute;
-    inset: -40%;
-    background: var(--card-sheen, linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%));
-    transform: translateX(-60%);
-    animation: sheenSweep 6s ease-in-out infinite;
-    pointer-events: none;
-}
-@keyframes sheenSweep {
-    0%, 100% { transform: translateX(-60%); }
-    50% { transform: translateX(60%); }
-}
+@keyframes cardUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes cardUp3d {
-    from { opacity: 0; transform: translateY(60px) rotateX(12deg) scale(0.94); }
-    to   { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+.welcome-heading {
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    font-weight: 800; font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+    color: var(--text); margin: 0 0 0.3rem;
 }
-@keyframes cardFloat {
-    0%, 100% { transform: translateY(0) rotateX(0deg); }
-    50%      { transform: translateY(-6px) rotateX(0.6deg); }
-}
+.welcome-sub { font-size: clamp(0.74rem, 2.4vw, 0.84rem); color: rgba(255,255,255,0.4); margin: 0 0 clamp(1.4rem, 4.5vw, 2rem); }
 
+.field-wrap { margin-bottom: clamp(1.1rem, 3.4vw, 1.5rem); }
 .field-label {
-    display: block;
-    font-size: clamp(0.6rem, 2vw, 0.7rem);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: 0.5rem;
-    margin-left: 0.25rem;
-    font-family: var(--font-heading);
-    color: var(--label-color);
+    display: block; font-size: clamp(0.58rem, 1.9vw, 0.66rem);
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em;
+    margin-bottom: 0.55rem;
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    color: rgba(255,255,255,0.42);
 }
 
-.field-wrap { margin-bottom: clamp(1rem, 3vw, 1.5rem); }
-
+/* underline-style fields — quiet, editorial, no filled boxes */
 .input-field, #selected-staff {
     width: 100%;
-    padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.25rem);
-    font-size: 16px; /* prevent zoom on iOS */
-    border-radius: var(--input-radius, 1rem);
-    border: var(--input-border);
+    padding: clamp(0.7rem, 2.4vw, 0.85rem) 0.15rem;
+    font-size: 16px; /* prevent iOS zoom */
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(255,255,255,0.16);
+    border-radius: 0;
     outline: none;
-    background: var(--input-bg);
     color: var(--text);
-    box-shadow: var(--input-shadow);
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: border-color 0.25s ease;
     display: block;
 }
-.input-field::placeholder { color: var(--placeholder-color); }
-.input-field:focus, #selected-staff:hover, #selected-staff.active {
-    border-color: var(--accent) !important;
-    box-shadow: var(--input-shadow-focus) !important;
-}
+.input-field::placeholder { color: rgba(255,255,255,0.28); }
+.input-field:focus, #selected-staff:hover, #selected-staff.active { border-color: var(--accent) !important; }
 .input-field:focus-visible, #selected-staff:focus-visible, .login-btn:focus-visible, .eye-btn:focus-visible, .forgot-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: 2px solid var(--accent); outline-offset: 2px;
 }
 
 .password-wrap { position: relative; }
 .eye-btn {
-    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+    position: absolute; right: 0; bottom: 0.75rem;
     background: none; border: none; cursor: pointer; padding: 0.25rem; line-height: 1;
-    color: var(--label-color); transition: color 0.2s, opacity 0.2s;
-    z-index: 5;
+    color: rgba(255,255,255,0.4); transition: color 0.2s;
 }
 .eye-btn:hover { color: var(--accent); }
 
-.forgot-row { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+.forgot-row { display: flex; justify-content: flex-end; margin-top: 0.6rem; }
 .forgot-btn {
     background: none; border: none; cursor: pointer;
-    font-size: clamp(0.6rem, 2vw, 0.7rem); font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.15em; padding: 0.25rem 0;
-    color: var(--accent);
+    font-size: clamp(0.58rem, 1.9vw, 0.66rem); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em; padding: 0.25rem 0;
+    color: rgba(255,255,255,0.4); transition: color 0.2s;
 }
+.forgot-btn:hover { color: var(--accent); }
 
+/* login button — bordered, fills with accent on hover; mirrors the
+   menu-link hover language on staff_main.html (colour + letter-spacing) */
 .login-btn {
     width: 100%;
-    padding: clamp(0.875rem, 2.5vw, 1rem) 2rem;
-    border: none; cursor: pointer;
-    font-family: var(--font-heading);
-    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
-    font-weight: 900; letter-spacing: 0.2em;
-    border-radius: var(--input-radius, 1rem);
-    background: var(--btn-bg);
-    background-size: 220% 220%;
-    color: var(--btn-text, #000);
-    box-shadow: var(--btn-shadow);
-    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease, background-position 0.6s ease;
-    margin-top: clamp(0.75rem, 2.5vw, 1rem);
+    padding: clamp(0.9rem, 2.6vw, 1.05rem) 2rem;
+    cursor: pointer;
+    font-family: var(--font-heading, 'Inter', sans-serif);
+    font-size: clamp(0.72rem, 2.3vw, 0.85rem);
+    font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase;
+    border-radius: 0.6rem;
+    background: transparent;
+    border: 1.5px solid var(--accent, #6366f1);
+    color: var(--accent, #6366f1);
+    transition: background 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease;
+    margin-top: clamp(0.8rem, 2.6vw, 1.1rem);
 }
-.login-btn:hover { transform: translateY(-3px) scale(1.02); background-position: 100% 50%; box-shadow: var(--btn-shadow-hover); }
-.login-btn:active { transform: translateY(-1px) scale(0.98); }
+.login-btn:hover { background: var(--accent, #6366f1); color: #08090d; letter-spacing: 0.26em; }
+.login-btn:active { transform: scale(0.98); }
 
 /* Staff selector dropdown */
 #staff-selector-container { position: relative; }
-#selected-staff { cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 3.25rem; }
+#selected-staff { cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 2.6rem; }
 #staff-dropdown {
     position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0;
     max-height: 0; overflow-y: auto; overflow-x: hidden;
-    border-radius: var(--input-radius, 1rem);
-    background: var(--dropdown-bg);
-    border: var(--input-border);
-    box-shadow: var(--card-shadow);
-    transition: max-height 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+    border-radius: 0.85rem;
+    background: rgba(8,9,15,0.97);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    transition: max-height 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
     opacity: 0; pointer-events: none; z-index: 10000;
 }
 #staff-dropdown.active { max-height: 240px; opacity: 1; pointer-events: auto; padding: 0.5rem; }
@@ -276,481 +299,106 @@ body.anim-paused .login-card {
 #staff-dropdown::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 .staff-option {
-    padding: 0.875rem 1rem; cursor: pointer; border-radius: 0.75rem;
-    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;
+    padding: 0.8rem 0.85rem; cursor: pointer; border-radius: 0.6rem;
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.2rem;
     transition: background-color 0.15s ease;
 }
-.staff-option:hover { background: var(--option-hover); }
-.staff-option.selected { background: var(--option-selected); border-left: 3px solid var(--accent); }
+.staff-option:hover { background: rgba(255,255,255,0.06); }
+.staff-option.selected { background: rgba(255,255,255,0.08); border-left: 2px solid var(--accent); }
 .staff-avatar {
-    width: 2.25rem; height: 2.25rem; border-radius: 50%;
+    width: 2.1rem; height: 2.1rem; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
-    background: var(--avatar-bg); color: var(--avatar-text, #000);
+    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+    background: var(--accent); color: #08090d;
 }
-.staff-name { flex: 1; font-weight: 600; font-size: 0.9rem; color: var(--text); }
-.staff-role-badge { font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.4rem; font-weight: 700; background: var(--badge-bg); color: var(--accent); border: 1px solid var(--badge-border); }
-#selected-text { color: var(--text-dim); }
-#selected-staff .dropdown-arrow { color: var(--accent); transition: transform 0.3s ease; flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
+.staff-name { flex: 1; font-weight: 600; font-size: 0.88rem; color: var(--text); }
+.staff-role-badge { font-size: 0.62rem; padding: 0.22rem 0.5rem; border-radius: 0.4rem; font-weight: 700; background: var(--accent-soft, rgba(255,255,255,0.1)); color: var(--accent); border: 1px solid var(--accent-soft, rgba(255,255,255,0.2)); }
+#selected-text { color: rgba(255,255,255,0.42); }
+#selected-staff .dropdown-arrow { color: var(--accent); transition: transform 0.3s ease; flex-shrink: 0; width: 1.05rem; height: 1.05rem; }
 #selected-staff .dropdown-arrow.rotated { transform: rotate(180deg); }
 
-.day-badge {
-    font-size: clamp(0.55rem, 2vw, 0.65rem); font-weight: 800; letter-spacing: 0.25em;
-    text-transform: uppercase; padding: 0.35rem 0.9rem; border-radius: 2rem; display: inline-block;
-    background: var(--badge-bg); color: var(--accent); border: 1px solid var(--badge-border);
-    font-family: var(--font-heading);
-}
-
-.logo-img { width: clamp(3.5rem, 10vw, 5rem); height: clamp(3.5rem, 10vw, 5rem); object-fit: contain; border-radius: 1.25rem; display: block; margin: 0 auto clamp(0.75rem, 2.5vw, 1rem); }
-
-.page-title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.6rem, 5.5vw, 2.5rem); font-weight: 900; line-height: 1.1; margin: 0 0 0.35rem;
-    background: var(--title-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    filter: var(--title-glow, none);
-}
-.page-subtitle { font-size: clamp(0.6rem, 2vw, 0.7rem); font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; margin: 0; color: var(--subtitle-color); font-family: var(--font-heading); }
-.welcome-heading { font-size: clamp(1rem, 3.5vw, 1.35rem); font-weight: 900; margin: 0 0 0.35rem; color: var(--text); font-family: var(--font-heading); }
-.welcome-sub { font-size: clamp(0.75rem, 2.5vw, 0.85rem); margin: 0 0 clamp(1.25rem, 4vw, 2rem); color: var(--text-dim); }
-
-/* Card entrance for header */
-@keyframes cardUp {
-    from { opacity: 0; transform: translateY(50px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.animate-up { opacity: 0; animation: cardUp 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-.animate-up:nth-child(1) { animation-delay: 0.1s; }
-.animate-up:nth-child(2) { animation-delay: 0.25s; }
-
 /* ═══════════════════════════════════════════════════════════════
-   FLOATING 3D "TDLiD" BRAND TEXT
-   Pure CSS transform animation -- one element, GPU-composited only.
-═══════════════════════════════════════════════════════════════ */
-.brand-text3d {
-    position: fixed;
-    top: 8%;
-    left: 50%;
-    width: 100%;
-    text-align: center;
-    pointer-events: none;
-    z-index: 0;
-    transform-style: preserve-3d;
-    font-size: clamp(3rem, 17vw, 11rem);
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    white-space: nowrap;
-    font-family: var(--font-heading);
-    background: var(--brand-gradient);
-    background-size: 200% 200%;
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    opacity: var(--brand-opacity, 0.16);
-    animation: var(--brand-anim, brandDriftMon) var(--brand-duration, 16s) ease-in-out infinite,
-               brandGradShift 9s ease-in-out infinite;
-}
-@keyframes brandGradShift {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
-}
-/* One distinct 3D drift style per day -- picked via --brand-anim in each body.day-* block */
-@keyframes brandDriftMon {
-    0%   { transform: translate(-50%, 0) rotateY(0deg) rotateX(4deg); }
-    25%  { transform: translate(-50%, 18px) rotateY(10deg) rotateX(-2deg); }
-    50%  { transform: translate(-50%, -8px) rotateY(0deg) rotateX(6deg); }
-    75%  { transform: translate(-50%, 14px) rotateY(-10deg) rotateX(-2deg); }
-    100% { transform: translate(-50%, 0) rotateY(0deg) rotateX(4deg); }
-}
-@keyframes brandSwayTue {
-    0%, 100% { transform: translate(-50%, 0) rotateZ(-1deg) rotateX(2deg); }
-    50%      { transform: translate(-50%, 10px) rotateZ(1deg) rotateX(-2deg); }
-}
-@keyframes brandSpinWed {
-    0%, 100% { transform: translate(-50%, 0) rotateY(0deg) scale(1); }
-    50%      { transform: translate(-50%, -6px) rotateY(180deg) scale(1.03); }
-}
-@keyframes brandWindThu {
-    0%, 100% { transform: translate(-50%, 0) rotateZ(0deg) skewX(0deg); }
-    30%      { transform: translate(-50%, 10px) rotateZ(-2deg) skewX(3deg); }
-    60%      { transform: translate(-50%, -6px) rotateZ(2deg) skewX(-3deg); }
-}
-@keyframes brandBounceFri {
-    0%, 100% { transform: translate(-50%, 0) rotateZ(-2deg) scale(1); }
-    25%      { transform: translate(-50%, -14px) rotateZ(2deg) scale(1.02); }
-    50%      { transform: translate(-50%, 6px) rotateZ(-3deg) scale(0.99); }
-    75%      { transform: translate(-50%, -10px) rotateZ(3deg) scale(1.03); }
-}
-@keyframes brandMechSat {
-    0%, 20%  { transform: translate(-50%, 0) rotateY(0deg); }
-    25%, 45% { transform: translate(-50%, 0) rotateY(8deg); }
-    50%, 70% { transform: translate(-50%, 0) rotateY(0deg); }
-    75%, 95% { transform: translate(-50%, 0) rotateY(-8deg); }
-    100%     { transform: translate(-50%, 0) rotateY(0deg); }
-}
-@keyframes brandRiseSun {
-    0%, 100% { transform: translate(-50%, 10px) rotateX(4deg) scale(1); opacity: 0.14; }
-    50%      { transform: translate(-50%, -14px) rotateX(-2deg) scale(1.03); opacity: 0.2; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   BACKGROUND CREATURE
-   Single inline SVG, animated with transform only (translate/rotate/scale).
-   Sized and pathed to roam the FULL viewport (not just a corner strip).
-   Colorful per-day gradient fill, drawn once as static markup -- no
-   per-frame JS, no layout thrash, just compositor transforms.
-═══════════════════════════════════════════════════════════════ */
-.bg-monster {
-    position: fixed;
-    top: 0; left: 0;
-    width: clamp(220px, 34vw, 480px);
-    height: auto;
-    opacity: var(--monster-opacity, 0.5);
-    filter: var(--monster-glow);
-    z-index: 0;
-    pointer-events: none;
-    animation: var(--monster-anim, monsterRoamMon) var(--monster-duration, 26s) ease-in-out infinite;
-    will-change: transform;
-}
-.bg-monster.second {
-    width: clamp(140px, 20vw, 320px);
-    opacity: calc(var(--monster-opacity, 0.5) * 0.75);
-    animation: var(--monster-anim, monsterRoamMon) calc(var(--monster-duration, 26s) * 1.4) ease-in-out infinite reverse;
-    display: none;
-}
-/* Tablet and up get the second, smaller companion creature.
-   Phones only render one to keep GPU layer count minimal. */
-@media (min-width: 768px) {
-    .bg-monster.second { display: block; }
-}
-@media (min-width: 1440px) {
-    .bg-monster { width: clamp(280px, 30vw, 560px); }
-    .bg-monster.second { width: clamp(180px, 18vw, 380px); }
-}
-
-/* Seven full-viewport roaming paths, one per day theme -- picked via --monster-anim.
-   Ranges use vw/vh so the creature genuinely traverses the whole screen. */
-@keyframes monsterRoamMon {
-    0%   { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
-    20%  { transform: translate(55vw, 10vh) rotate(3deg) scale(1.05); }
-    40%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96); }
-    50%  { transform: translate(85vw, 55vh) rotate(-2deg) scale(0.96) scaleX(-1); }
-    70%  { transform: translate(40vw, 78vh) rotate(4deg) scale(1.02) scaleX(-1); }
-    90%  { transform: translate(0vw, 30vh) rotate(-3deg) scale(1) scaleX(-1); }
-    100% { transform: translate(-6vw, 65vh) rotate(-4deg) scale(1); }
-}
-@keyframes monsterRoamTue {
-    0%, 100% { transform: translate(4vw, 60vh) rotate(0deg) scale(1); }
-    25%      { transform: translate(60vw, 20vh) rotate(3deg) scale(1.06); }
-    50%      { transform: translate(30vw, 70vh) rotate(-2deg) scale(0.95); }
-    75%      { transform: translate(75vw, 45vh) rotate(2deg) scale(1.03); }
-}
-@keyframes monsterRoamWed {
-    0%    { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
-    49%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04); }
-    50%   { transform: translate(78vw, 60vh) rotate(4deg) scale(1.04) scaleX(-1); }
-    99%   { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1) scaleX(-1); }
-    100%  { transform: translate(-8vw, 20vh) rotate(-6deg) scale(1); }
-}
-@keyframes monsterRoamThu {
-    0%   { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
-    10%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02); }
-    20%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1); }
-    30%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03); }
-    40%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1); }
-    50%  { transform: translate(66vw, 36vh) rotate(2deg) scale(1.04) scaleX(-1); }
-    60%  { transform: translate(52vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
-    70%  { transform: translate(38vw, 40vh) rotate(2deg) scale(1.03) scaleX(-1); }
-    80%  { transform: translate(24vw, 66vh) rotate(-2deg) scale(1) scaleX(-1); }
-    90%  { transform: translate(12vw, 46vh) rotate(2deg) scale(1.02) scaleX(-1); }
-    100% { transform: translate(0vw, 66vh) rotate(-2deg) scale(1); }
-}
-@keyframes monsterRoamFri {
-    0%   { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
-    20%  { transform: translate(48vw, 8vh) rotate(10deg) scale(1.08); }
-    40%  { transform: translate(20vw, 55vh) rotate(-10deg) scale(0.95); }
-    50%  { transform: translate(72vw, 20vh) rotate(8deg) scale(1.06) scaleX(-1); }
-    70%  { transform: translate(50vw, 68vh) rotate(-8deg) scale(1) scaleX(-1); }
-    90%  { transform: translate(10vw, 42vh) rotate(6deg) scale(1.03) scaleX(-1); }
-    100% { transform: translate(-4vw, 30vh) rotate(-8deg) scale(1); }
-}
-@keyframes monsterRoamSat {
-    0%    { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
-    49%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05); }
-    50%   { transform: translate(88vw, 25vh) rotate(0deg) scale(1.05) scaleX(-1); }
-    99%   { transform: translate(-6vw, 50vh) rotate(0deg) scale(1) scaleX(-1); }
-    100%  { transform: translate(-6vw, 50vh) rotate(0deg) scale(1); }
-}
-@keyframes monsterRoamSun {
-    0%   { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: var(--monster-opacity); }
-    50%  { transform: translate(60vw, 12vh) rotate(4deg) scale(1.12); opacity: calc(var(--monster-opacity) * 1.3); }
-    100% { transform: translate(10vw, 70vh) rotate(-4deg) scale(1); opacity: var(--monster-opacity); }
-}
-
-/* Generic ambient orbs used by every theme's .bg-deco layer */
-.bg-deco { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; border: 1px solid var(--orb-border, rgba(255,255,255,0.08)); animation: orbPulse 5s ease-in-out infinite; }
-@keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.12); opacity: 0.9; } }
-.scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.35; animation: scanMove 7s linear infinite; }
-@keyframes scanMove { 0% { top: -2px; opacity: 0; } 6% { opacity: 0.6; } 94% { opacity: 0.6; } 100% { top: 100%; opacity: 0; } }
-
-/* Fewer/cheaper ambient elements on phones -- lowers concurrent GPU layers */
-@media (max-width: 479px) {
-    .orb:nth-child(3) { display: none; }
-    .bg-monster { width: clamp(180px, 46vw, 280px); }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GHOST OVERLAY / BIRTHDAY POPUP (shared, theme accent injected)
+   GHOST OVERLAY / BIRTHDAY POPUP (functionality unchanged, restyled
+   to the quieter editorial palette)
 ═══════════════════════════════════════════════════════════════ */
 #ghost-overlay {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(8px) brightness(0.55);
+    backdrop-filter: blur(8px) brightness(0.5);
     pointer-events: none; animation: ghostFadeIn 0.3s ease forwards;
 }
 #ghost-overlay.hidden { display: none !important; }
 #ghost-image {
-    width: clamp(10rem, 30vw, 16rem); height: clamp(10rem, 30vw, 16rem);
+    width: clamp(9rem, 28vw, 14rem); height: clamp(9rem, 28vw, 14rem);
     object-fit: cover; border-radius: 50%;
     animation: ghostPulse 2.2s cubic-bezier(0.34,1.56,0.64,1) forwards;
 }
 @keyframes ghostFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ghostPulse { 0% { opacity: 0; transform: scale(0.4) rotateY(-40deg); } 60% { opacity: 1; transform: scale(1.05) rotateY(10deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
 
-#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); }
+#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.82); backdrop-filter: blur(6px); }
 #birthday-popup.hidden { display: none !important; }
 .birthday-inner {
-    width: 90%; max-width: 340px; padding: clamp(1.5rem, 5vw, 2rem);
-    border-radius: 1.5rem; text-align: center;
-    background: var(--card-bg); border: 1.5px solid var(--accent); color: var(--text);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px var(--accent);
+    width: 90%; max-width: 320px; padding: clamp(1.5rem, 5vw, 2rem);
+    border-radius: 1.1rem; text-align: center;
+    background: linear-gradient(160deg, rgba(12,13,20,0.96), rgba(6,7,11,0.98));
+    border: 1px solid var(--accent); color: var(--text);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DAY THEMES -- each sets custom properties only. 7 unique, deep-dark
-   looks. Monster glow is now a two-tone stacked drop-shadow for a
-   richer, colorful halo instead of a single flat tint.
+   DAY ACCENT TOKENS — same seven hexes/typefaces as staff_main.html
+   so the whole suite reads as one family; only the accent colour +
+   type shifts, the photo and layout stay constant.
 ═══════════════════════════════════════════════════════════════ */
+body.day-mon { --accent: #38bdf8; --accent-soft: rgba(56,189,248,0.22); --font-heading: 'Orbitron', sans-serif; --font-ui: 'Pretendard', sans-serif; --font-body: 'Pretendard', sans-serif; }
+body.day-tue { --accent: #d4b483; --accent-soft: rgba(212,180,131,0.22); --font-heading: 'Noto Serif JP', serif; --font-ui: 'Noto Serif JP', serif; --font-body: 'Noto Serif JP', serif; }
+body.day-wed { --accent: #c8a84b; --accent-soft: rgba(200,168,75,0.24); --font-heading: 'Cormorant Garamond', serif; --font-ui: 'Cormorant Garamond', serif; --font-body: 'Cormorant Garamond', serif; }
+body.day-thu { --accent: #6fbf5f; --accent-soft: rgba(111,191,95,0.22); --font-heading: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif; --font-body: 'Pretendard', sans-serif; }
+body.day-fri { --accent: #ff2fc0; --accent-soft: rgba(255,47,192,0.22); --font-heading: 'Bungee', cursive; --font-ui: 'Bungee', cursive; --font-body: 'Inter', sans-serif; }
+body.day-sat { --accent: #7db8ff; --accent-soft: rgba(125,184,255,0.22); --font-heading: 'Inter', sans-serif; --font-ui: 'Inter', sans-serif; --font-body: 'Inter', sans-serif; }
+body.day-sun { --accent: #f97316; --accent-soft: rgba(249,115,22,0.22); --font-heading: 'DM Serif Display', serif; --font-ui: 'Pretendard', sans-serif; --font-body: 'Pretendard', sans-serif; }
 
-/* MON — DEEP SPACE (cyber neon cyan/magenta) */
-body.day-mon {
-    --font-heading: 'Orbitron', sans-serif; --font-body: 'Pretendard', 'Inter', sans-serif;
-    --bg-base: #04060f;
-    --bg-image: radial-gradient(ellipse 80% 60% at 20% 15%, rgba(0,212,255,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 85% 85%, rgba(255,0,110,0.12) 0%, transparent 60%);
-    --text: #e2e8f0; --text-dim: #64748b; --label-color: rgba(0,212,255,0.7); --subtitle-color: rgba(0,212,255,0.55); --placeholder-color: #334155;
-    --accent: #00d4ff; --accent2: #ff006e;
-    --card-bg: linear-gradient(135deg, rgba(20,30,60,0.96) 0%, rgba(12,16,42,0.94) 100%);
-    --card-border: 1.5px solid rgba(0,212,255,0.3); --card-radius: 1.75rem;
-    --card-shadow: 0 0 60px rgba(0,212,255,0.14), 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
-    --input-bg: rgba(8,12,35,0.8); --input-border: 1.5px solid rgba(0,212,255,0.2); --input-radius: 1rem;
-    --input-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 3px rgba(0,212,255,0.08);
-    --input-shadow-focus: 0 0 0 3px rgba(0,212,255,0.16), 0 8px 30px rgba(0,212,255,0.2);
-    --dropdown-bg: rgba(10,14,39,0.98); --option-hover: rgba(0,212,255,0.08); --option-selected: rgba(0,212,255,0.15);
-    --avatar-bg: linear-gradient(135deg, #00d4ff, #ffbe0b); --avatar-text: #000;
-    --badge-bg: rgba(0,212,255,0.14); --badge-border: rgba(0,212,255,0.3);
-    --btn-bg: linear-gradient(135deg, #00d4ff 0%, #ffbe0b 50%, #ff006e 100%); --btn-text: #000;
-    --btn-shadow: 0 0 30px rgba(0,212,255,0.35), 0 8px 25px rgba(255,0,110,0.25);
-    --btn-shadow-hover: 0 0 50px rgba(0,212,255,0.55), 0 12px 35px rgba(255,0,110,0.4);
-    --title-gradient: linear-gradient(90deg, #00d4ff, #ffbe0b, #ff006e);
-    --brand-gradient: linear-gradient(135deg, #00d4ff, #ff006e, #ffbe0b, #00d4ff);
-    --orb-border: rgba(0,212,255,0.15);
-    --monster-opacity: 0.55;
-    --monster-glow: drop-shadow(0 0 22px rgba(0,212,255,0.65)) drop-shadow(0 0 40px rgba(255,0,110,0.35));
-    --monster-anim: monsterRoamMon; --monster-duration: 28s;
-    --brand-anim: brandDriftMon; --brand-duration: 16s;
+body.day-wed .page-title, body.day-wed .welcome-heading { font-style: italic; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════════ */
+html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
+@media (max-width: 600px) {
+    .birthday-inner { max-width: 95vw; }
 }
-
-/* TUE — WABI-SABI (dark, gold-clay) */
-body.day-tue {
-    --font-heading: 'Noto Serif JP', serif; --font-body: 'Noto Serif JP', serif;
-    --bg-base: #0c0906;
-    --bg-image: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(201,168,76,0.14) 0%, transparent 60%), radial-gradient(ellipse 70% 70% at 10% 90%, rgba(140,90,60,0.12) 0%, transparent 60%);
-    --text: #efe6d8; --text-dim: #a08a70; --label-color: rgba(201,168,76,0.65); --subtitle-color: rgba(201,168,76,0.5); --placeholder-color: #4a3f34;
-    --accent: #c9a84c; --accent2: #a8623c;
-    --card-bg: linear-gradient(160deg, rgba(26,20,15,0.96) 0%, rgba(16,12,9,0.95) 100%);
-    --card-border: 1px solid rgba(201,168,76,0.28); --card-radius: 0.75rem;
-    --card-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(201,168,76,0.08);
-    --input-bg: rgba(10,8,6,0.7); --input-border: 1px solid rgba(201,168,76,0.25); --input-radius: 0.6rem;
-    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
-    --input-shadow-focus: 0 0 0 3px rgba(201,168,76,0.14), inset 0 1px 4px rgba(0,0,0,0.3);
-    --dropdown-bg: rgba(16,12,9,0.98); --option-hover: rgba(201,168,76,0.08); --option-selected: rgba(201,168,76,0.14);
-    --avatar-bg: linear-gradient(135deg, #c9a84c, #a8623c); --avatar-text: #100d0a;
-    --badge-bg: rgba(201,168,76,0.1); --badge-border: rgba(201,168,76,0.3);
-    --btn-bg: linear-gradient(135deg, #c9a84c, #a8623c, #c9a84c); --btn-text: #100d0a;
-    --btn-shadow: 0 4px 25px rgba(201,168,76,0.28);
-    --btn-shadow-hover: 0 8px 35px rgba(201,168,76,0.42);
-    --title-gradient: linear-gradient(90deg, #c9a84c, #efe6d8, #a8623c);
-    --brand-gradient: linear-gradient(135deg, #c9a84c, #efe6d8, #a8623c, #c9a84c);
-    --orb-border: rgba(201,168,76,0.12);
-    --monster-opacity: 0.5;
-    --monster-glow: drop-shadow(0 0 20px rgba(201,168,76,0.55)) drop-shadow(0 0 36px rgba(168,98,60,0.35));
-    --monster-anim: monsterRoamTue; --monster-duration: 32s;
-    --brand-anim: brandSwayTue; --brand-duration: 22s;
-}
-
-/* WED — ART DECO (dark olive-gold) */
-body.day-wed {
-    --font-heading: 'Cormorant Garamond', serif; --font-body: 'Cormorant Garamond', serif;
-    --bg-base: #0a1006;
-    --bg-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(154,163,60,0.18) 0%, transparent 60%);
-    --text: #ece6cf; --text-dim: #6f7a53; --label-color: rgba(190,199,100,0.55); --subtitle-color: rgba(190,199,100,0.5); --placeholder-color: #35401f;
-    --accent: #b4b43c; --accent2: #d8c26a;
-    --card-bg: linear-gradient(160deg, rgba(16,22,10,0.97) 0%, rgba(9,14,6,0.95) 100%);
-    --card-border: 1px solid rgba(180,180,60,0.32); --card-radius: 0.25rem;
-    --card-frame: ''; --card-frame-border: 1px solid rgba(180,180,60,0.12);
-    --card-shadow: 0 0 80px rgba(180,180,60,0.08), 0 25px 70px rgba(0,0,0,0.8), inset 0 1px 0 rgba(180,180,60,0.14);
-    --input-bg: rgba(6,10,4,0.7); --input-border: 1px solid rgba(180,180,60,0.25); --input-radius: 0.15rem;
-    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
-    --input-shadow-focus: 0 0 0 2px rgba(180,180,60,0.1), inset 0 1px 4px rgba(0,0,0,0.3);
-    --dropdown-bg: rgba(6,10,4,0.98); --option-hover: rgba(180,180,60,0.08); --option-selected: rgba(180,180,60,0.14);
-    --avatar-bg: linear-gradient(135deg, #b4b43c, #d8c26a); --avatar-text: #0d1408;
-    --badge-bg: rgba(180,180,60,0.12); --badge-border: rgba(180,180,60,0.3);
-    --btn-bg: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c); --btn-text: #0d1408;
-    --btn-shadow: 0 4px 30px rgba(180,180,60,0.28);
-    --btn-shadow-hover: 0 8px 40px rgba(180,180,60,0.45);
-    --title-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c);
-    --brand-gradient: linear-gradient(135deg, #b4b43c, #d8c26a, #b4b43c, #b4b43c);
-    --orb-border: rgba(180,180,60,0.1);
-    --monster-opacity: 0.5;
-    --monster-glow: drop-shadow(0 0 20px rgba(180,180,60,0.55)) drop-shadow(0 0 36px rgba(216,194,106,0.3));
-    --monster-anim: monsterRoamWed; --monster-duration: 26s;
-    --brand-anim: brandSpinWed; --brand-duration: 18s;
-}
-
-/* THU — BIOPHILIC (dark forest green) */
-body.day-thu {
-    --font-heading: 'DM Serif Display', serif; --font-body: 'DM Serif Display', serif;
-    --bg-base: #061109;
-    --bg-image: radial-gradient(ellipse 80% 60% at 80% 15%, rgba(74,168,110,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(180,110,70,0.1) 0%, transparent 60%);
-    --text: #e3ece2; --text-dim: #6f9078; --label-color: rgba(90,200,130,0.55); --subtitle-color: rgba(90,200,130,0.5); --placeholder-color: #234030;
-    --accent: #4fbf7a; --accent2: #b46e46;
-    --card-bg: linear-gradient(150deg, rgba(10,24,17,0.96) 0%, rgba(6,16,11,0.95) 100%);
-    --card-border: 1.5px solid rgba(79,191,122,0.25); --card-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
-    --card-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(79,191,122,0.08);
-    --input-bg: rgba(5,12,8,0.7); --input-border: 1.5px solid rgba(79,191,122,0.25); --input-radius: 1rem;
-    --input-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
-    --input-shadow-focus: 0 0 0 3px rgba(79,191,122,0.16), inset 0 2px 6px rgba(0,0,0,0.3);
-    --dropdown-bg: rgba(6,16,11,0.99); --option-hover: rgba(79,191,122,0.08); --option-selected: rgba(79,191,122,0.14);
-    --avatar-bg: linear-gradient(135deg, #4fbf7a, #b46e46); --avatar-text: #06120c;
-    --badge-bg: rgba(79,191,122,0.12); --badge-border: rgba(79,191,122,0.3);
-    --btn-bg: linear-gradient(135deg, #2f8f52, #4fbf7a); --btn-text: #06120c;
-    --btn-shadow: 0 4px 25px rgba(79,191,122,0.3);
-    --btn-shadow-hover: 0 8px 35px rgba(79,191,122,0.48);
-    --title-gradient: linear-gradient(135deg, #4fbf7a, #e3ece2);
-    --brand-gradient: linear-gradient(135deg, #4fbf7a, #b46e46, #4fbf7a, #4fbf7a);
-    --orb-border: rgba(79,191,122,0.12);
-    --monster-opacity: 0.5;
-    --monster-glow: drop-shadow(0 0 20px rgba(79,191,122,0.55)) drop-shadow(0 0 34px rgba(180,110,70,0.3));
-    --monster-anim: monsterRoamThu; --monster-duration: 20s;
-    --brand-anim: brandWindThu; --brand-duration: 14s;
-}
-
-/* FRI — SYNTHWAVE (pink-purple) */
-body.day-fri {
-    --font-heading: 'Bungee', cursive; --font-body: 'Inter', sans-serif;
-    --bg-base: #07031a;
-    --bg-image: linear-gradient(180deg, #07031a 0%, #170833 45%, #07031a 100%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,0,204,0.07) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(140,0,255,0.06) 40px);
-    --text: #fdf6ff; --text-dim: rgba(200,150,255,0.55); --label-color: rgba(200,120,255,0.65); --subtitle-color: rgba(200,120,255,0.55); --placeholder-color: #3a1a4a;
-    --accent: #ff2ec4; --accent2: #8c3bff;
-    --card-bg: linear-gradient(135deg, rgba(26,10,45,0.97) 0%, rgba(15,5,30,0.95) 100%);
-    --card-border: 2px solid rgba(255,46,196,0.45); --card-radius: 0;
-    --card-shadow: 0 0 60px rgba(255,46,196,0.22), 0 0 100px rgba(140,59,255,0.14), 0 25px 60px rgba(0,0,0,0.8);
-    --input-bg: rgba(10,2,25,0.7); --input-border: 1.5px solid rgba(255,46,196,0.3); --input-radius: 0;
-    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,46,196,0.06);
-    --input-shadow-focus: 0 0 0 3px rgba(255,46,196,0.16), 0 0 20px rgba(255,46,196,0.2), inset 0 1px 4px rgba(0,0,0,0.4);
-    --dropdown-bg: rgba(10,2,25,0.98); --option-hover: rgba(255,46,196,0.08); --option-selected: rgba(255,46,196,0.15);
-    --avatar-bg: linear-gradient(135deg, #ff2ec4, #8c3bff); --avatar-text: #0a0520;
-    --badge-bg: rgba(255,46,196,0.14); --badge-border: rgba(255,46,196,0.4);
-    --btn-bg: linear-gradient(90deg, #ff2ec4, #8c3bff, #ff2ec4); --btn-text: #0a0520;
-    --btn-shadow: 0 0 40px rgba(255,46,196,0.4), 0 0 60px rgba(140,59,255,0.25);
-    --btn-shadow-hover: 0 0 60px rgba(255,46,196,0.6), 0 0 80px rgba(140,59,255,0.4);
-    --title-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff);
-    --brand-gradient: linear-gradient(90deg, #ff2ec4, #8c3bff, #00e5ff, #ff2ec4);
-    --orb-border: rgba(255,46,196,0.15);
-    --monster-opacity: 0.6;
-    --monster-glow: drop-shadow(0 0 26px rgba(255,46,196,0.65)) drop-shadow(0 0 44px rgba(140,59,255,0.4));
-    --monster-anim: monsterRoamFri; --monster-duration: 16s;
-    --brand-anim: brandBounceFri; --brand-duration: 9s;
-}
-
-/* SAT — ARCTIC STEEL (steel blue) */
-body.day-sat {
-    --font-heading: 'Rajdhani', sans-serif; --font-body: 'Rajdhani', 'Inter', sans-serif;
-    --bg-base: #060d12;
-    --bg-image: radial-gradient(ellipse 80% 60% at 25% 20%, rgba(120,170,210,0.16) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(70,110,150,0.14) 0%, transparent 60%);
-    --text: #e6f0f7; --text-dim: #6b8394; --label-color: rgba(140,190,225,0.6); --subtitle-color: rgba(140,190,225,0.5); --placeholder-color: #2b3d47;
-    --accent: #7fc4e8; --accent2: #4a6e96;
-    --card-bg: linear-gradient(135deg, rgba(18,32,42,0.96) 0%, rgba(10,20,28,0.95) 100%);
-    --card-border: 1.5px solid rgba(127,196,232,0.3); --card-radius: 1rem;
-    --card-shadow: 0 0 60px rgba(127,196,232,0.12), 0 25px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
-    --input-bg: rgba(8,16,22,0.8); --input-border: 1.5px solid rgba(127,196,232,0.22); --input-radius: 0.75rem;
-    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
-    --input-shadow-focus: 0 0 0 3px rgba(127,196,232,0.16), 0 8px 30px rgba(127,196,232,0.18);
-    --dropdown-bg: rgba(10,20,28,0.98); --option-hover: rgba(127,196,232,0.08); --option-selected: rgba(127,196,232,0.15);
-    --avatar-bg: linear-gradient(135deg, #7fc4e8, #4a6e96); --avatar-text: #0a1218;
-    --badge-bg: rgba(127,196,232,0.14); --badge-border: rgba(127,196,232,0.3);
-    --btn-bg: linear-gradient(135deg, #4a6e96, #7fc4e8, #a8dcf2); --btn-text: #0a1218;
-    --btn-shadow: 0 0 30px rgba(127,196,232,0.3), 0 8px 25px rgba(74,110,150,0.25);
-    --btn-shadow-hover: 0 0 50px rgba(127,196,232,0.5), 0 12px 35px rgba(74,110,150,0.4);
-    --title-gradient: linear-gradient(90deg, #7fc4e8, #e6f0f7, #4a6e96);
-    --brand-gradient: linear-gradient(135deg, #7fc4e8, #4a6e96, #a8dcf2, #7fc4e8);
-    --orb-border: rgba(127,196,232,0.16);
-    --monster-opacity: 0.5;
-    --monster-glow: drop-shadow(0 0 22px rgba(127,196,232,0.6)) drop-shadow(0 0 38px rgba(74,110,150,0.35));
-    --monster-anim: monsterRoamSat; --monster-duration: 22s;
-    --brand-anim: brandMechSat; --brand-duration: 12s;
-}
-
-/* SUN — SUNSET EMBER (rose-amber) */
-body.day-sun {
-    --font-heading: 'Playfair Display', serif; --font-body: 'Playfair Display', 'Inter', serif;
-    --bg-base: #140609;
-    --bg-image: radial-gradient(ellipse 80% 60% at 70% 15%, rgba(230,120,90,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 15% 85%, rgba(200,70,90,0.14) 0%, transparent 60%);
-    --text: #f6e8e2; --text-dim: #a06858; --label-color: rgba(232,150,110,0.6); --subtitle-color: rgba(232,150,110,0.5); --placeholder-color: #4a2620;
-    --accent: #e8966e; --accent2: #c8465a;
-    --card-bg: linear-gradient(150deg, rgba(35,16,18,0.97) 0%, rgba(20,9,10,0.95) 100%);
-    --card-border: 1.5px solid rgba(232,150,110,0.3); --card-radius: 1.25rem;
-    --card-shadow: 0 0 60px rgba(232,150,110,0.14), 0 25px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
-    --input-bg: rgba(15,7,8,0.75); --input-border: 1.5px solid rgba(232,150,110,0.25); --input-radius: 0.9rem;
-    --input-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
-    --input-shadow-focus: 0 0 0 3px rgba(232,150,110,0.16), 0 8px 30px rgba(232,150,110,0.2);
-    --dropdown-bg: rgba(20,9,10,0.98); --option-hover: rgba(232,150,110,0.08); --option-selected: rgba(232,150,110,0.15);
-    --avatar-bg: linear-gradient(135deg, #e8966e, #c8465a); --avatar-text: #170a0d;
-    --badge-bg: rgba(232,150,110,0.14); --badge-border: rgba(232,150,110,0.3);
-    --btn-bg: linear-gradient(135deg, #c8465a, #e8966e, #f2c48a); --btn-text: #170a0d;
-    --btn-shadow: 0 0 30px rgba(232,150,110,0.32), 0 8px 25px rgba(200,70,90,0.25);
-    --btn-shadow-hover: 0 0 50px rgba(232,150,110,0.5), 0 12px 35px rgba(200,70,90,0.4);
-    --title-gradient: linear-gradient(90deg, #e8966e, #f2c48a, #c8465a);
-    --brand-gradient: linear-gradient(135deg, #e8966e, #c8465a, #f2c48a, #e8966e);
-    --orb-border: rgba(232,150,110,0.16);
-    --monster-opacity: 0.55;
-    --monster-glow: drop-shadow(0 0 24px rgba(232,150,110,0.6)) drop-shadow(0 0 40px rgba(200,70,90,0.35));
-    --monster-anim: monsterRoamSun; --monster-duration: 26s;
-    --brand-anim: brandRiseSun; --brand-duration: 20s;
-}
-
 </style>
 </head>
 
-<body id="loginBody" class="flex flex-col justify-center items-center min-h-screen">
+<body id="loginBody">
 
-<!-- Background layers (z-index 0, behind the card) -->
-<div class="bg-deco" id="bg-deco"></div>
-<div class="brand-text3d" id="brand-text3d">TDLiD</div>
-<svg id="monster1" class="bg-monster" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
-<svg id="monster2" class="bg-monster second" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+<!-- Background photograph + day-accent duotone wash (matches staff_main.html) -->
+<div id="bg-photo-wrap" aria-hidden="true">
+    <img id="bg-photo" src="" alt="">
+    <div id="bg-wash"></div>
+    <div id="bg-shade"></div>
+    <div id="bg-grain"></div>
+</div>
+
+<!-- Signature scrolling marquee, behind the login card -->
+<div id="marquee-layer" aria-hidden="true">
+    <div class="marquee-track" id="marqueeTrack"></div>
+</div>
 
 <!-- Main content -->
 <div class="page-wrapper">
 
     <!-- Header -->
-    <div class="text-center animate-up w-full px-2">
+    <div class="brand-header w-full px-2">
         <img src="images/login/login.gif" alt="Logo" class="logo-img" onerror="this.style.display='none'">
-        <div id="day-badge-wrap" style="margin-bottom:0.75rem;"></div>
+        <span class="day-badge" id="day-badge"></span>
         <h1 class="page-title" id="page-title">Staff Login</h1>
         <p class="page-subtitle" id="page-subtitle">Daily Report System</p>
     </div>
 
     <!-- Login Card -->
-    <div class="login-card animate-up w-full">
+    <div class="login-card w-full">
         <div style="position:relative;z-index:10;">
 
             <p class="welcome-heading" id="welcome-heading">Welcome back</p>
@@ -804,7 +452,7 @@ body.day-sun {
             CLOSING IN <span id="timer-seconds" style="font-weight:900;">10</span>s
         </div>
         <button onclick="closePopup()" id="birthday-close-btn"
-            style="width:100%;padding:0.75rem;border:none;cursor:pointer;border-radius:0.75rem;font-weight:700;font-size:0.85rem;background:var(--btn-bg);color:var(--btn-text);transition:all 0.2s;">
+            style="width:100%;padding:0.75rem;border:1.5px solid var(--accent);cursor:pointer;border-radius:0.6rem;font-weight:700;font-size:0.85rem;background:transparent;color:var(--accent);transition:all 0.2s;">
             Close
         </button>
     </div>
@@ -819,131 +467,47 @@ body.day-sun {
 (function() {
     'use strict';
 
-    /* ── DAY THEMING (Sun=0 .. Sat=6, matches Date.getDay()) ── */
+    /* ── DAY THEMING (Sun=0 .. Sat=6, matches Date.getDay()) ──
+       ?day=0..6 still forces a preview theme, same as before. */
+    /* `bg` maps Mon→bg1.jpg … Sun→bg7.jpg, per the files in images/bg/ */
     const DAY_CONFIG = {
-        0: { cls: 'day-sun', badge: '🌇 Sunday',   title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN' },
-        1: { cls: 'day-mon', badge: '⚡ Monday',    title: 'Staff Login', heading: 'Welcome back',    sub: 'Select your profile to continue', btnText: 'AUTHENTICATE' },
-        2: { cls: 'day-tue', badge: '◎ Tuesday',   title: 'Staff Login', heading: '안녕하세요 ^^*',   sub: 'Select your profile to continue', btnText: 'SIGN IN' },
-        3: { cls: 'day-wed', badge: '◆ Wednesday', title: 'Staff Login', heading: 'Welcome',         sub: 'Enter your credentials to proceed', btnText: 'ENTER' },
-        4: { cls: 'day-thu', badge: '🌿 Thursday',  title: 'Staff Login', heading: 'Good morning',    sub: 'Choose your name and sign in', btnText: 'SIGN IN' },
-        5: { cls: 'day-fri', badge: '🎉 Friday',    title: 'TGIF Login',  heading: "It's Friday!",   sub: 'Pick your name and let\'s go 🚀', btnText: "LET'S GO" },
-        6: { cls: 'day-sat', badge: '❄ Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN' }
+        0: { cls: 'day-sun', badge: '☀ Sunday',    title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY', bg: 'bg7.jpg' },
+        1: { cls: 'day-mon', badge: '⚡ Monday',    title: 'Staff Login', heading: 'Welcome back',    sub: 'Select your profile to continue', btnText: 'AUTHENTICATE', marquee: 'MONDAY · NEW WEEK · NEW ENERGY', bg: 'bg1.jpg' },
+        2: { cls: 'day-tue', badge: '◎ Tuesday',   title: 'Staff Login', heading: '안녕하세요 ^^*',   sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'TUESDAY · BREATHE · FOCUS · BEGIN', bg: 'bg2.png' },
+        3: { cls: 'day-wed', badge: '◆ Wednesday', title: 'Staff Login', heading: 'Welcome',         sub: 'Enter your credentials to proceed', btnText: 'ENTER',    marquee: 'WEDNESDAY · MIDWEEK · STAY PRECISE', bg: 'bg3.jpg' },
+        4: { cls: 'day-thu', badge: '🌿 Thursday',  title: 'Staff Login', heading: 'Good morning',    sub: 'Choose your name and sign in', btnText: 'SIGN IN',      marquee: 'THURSDAY · ALMOST THERE · KEEP GOING', bg: 'bg4.jpg' },
+        5: { cls: 'day-fri', badge: '🎉 Friday',    title: 'TGIF Login',  heading: "It's Friday!",   sub: 'Pick your name and let\'s go 🚀', btnText: "LET'S GO",   marquee: 'FRIDAY · WRAP IT UP · WELL DONE', bg: 'bg5.jpg' },
+        6: { cls: 'day-sat', badge: '🧊 Saturday',  title: 'Staff Login', heading: 'Easy Saturday',   sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SATURDAY · TAKE IT EASY · REST UP', bg: 'bg6.jpg' }
     };
 
-    /* ── Testing day themes without redeployment ──
-       ?day=0..6 forces a theme (e.g. index.html?day=5 previews Friday).
-       Falls back to the real current day when absent/invalid. */
     const dayParam = new URLSearchParams(window.location.search).get('day');
     const forcedDay = (dayParam !== null && /^[0-6]$/.test(dayParam)) ? Number(dayParam) : null;
     const now = new Date();
     const cfg = DAY_CONFIG[forcedDay !== null ? forcedDay : now.getDay()] || DAY_CONFIG[1];
 
     document.body.classList.add(cfg.cls);
-    document.getElementById('day-badge-wrap').innerHTML = `<span class="day-badge">${cfg.badge}</span>`;
+    const bgPhotoEl = document.getElementById('bg-photo');
+    if (bgPhotoEl) bgPhotoEl.src = 'images/bg/' + cfg.bg;
+    document.getElementById('day-badge').textContent = cfg.badge;
     document.getElementById('page-title').textContent = cfg.title;
     document.getElementById('welcome-heading').textContent = cfg.heading;
     document.getElementById('welcome-sub').textContent = cfg.sub;
     document.getElementById('loginBtn').textContent = cfg.btnText;
 
-    /* ── ORIGINAL PER-DAY CREATURES ──
-       Each entry is fully original artwork (not a reproduction of any
-       licensed character): a <defs> radial/linear gradient for a
-       colorful body fill, plus simple silhouette paths. Rendered once
-       as static markup -- all movement comes from the CSS transform
-       animation on the parent <svg>, so there is zero per-frame JS cost. */
-    const MONSTER_SVGS = {
-        'day-mon': /* "Voltling" -- crystalline neon scout */
-            '<defs><linearGradient id="gradMon" x1="0%" y1="0%" x2="100%" y2="100%">' +
-            '<stop offset="0%" stop-color="#00eaff"/><stop offset="50%" stop-color="#7b5bff"/><stop offset="100%" stop-color="#ff2e9e"/>' +
-            '</linearGradient></defs>' +
-            '<path d="M100 18 L156 78 L146 140 L54 140 L44 78 Z" fill="url(#gradMon)"/>' +
-            '<line x1="100" y1="6" x2="100" y2="20" stroke="#00eaff" stroke-width="4"/>' +
-            '<circle cx="100" cy="6" r="7" fill="#ffd23f"/>' +
-            '<circle cx="100" cy="90" r="26" fill="#050814"/>' +
-            '<circle cx="100" cy="90" r="12" fill="#ffd23f"/>' +
-            '<rect x="66" y="132" width="17" height="30" rx="5" fill="url(#gradMon)"/>' +
-            '<rect x="117" y="132" width="17" height="30" rx="5" fill="url(#gradMon)"/>',
-        'day-tue': /* "Claymoth" -- calm round gilded spirit */
-            '<defs><radialGradient id="gradTue" cx="35%" cy="30%" r="80%">' +
-            '<stop offset="0%" stop-color="#ffe8a3"/><stop offset="55%" stop-color="#d9a24a"/><stop offset="100%" stop-color="#8a5a2e"/>' +
-            '</radialGradient></defs>' +
-            '<ellipse cx="100" cy="112" rx="78" ry="62" fill="url(#gradTue)"/>' +
-            '<path d="M52 58 Q58 18 80 50 Z" fill="url(#gradTue)"/>' +
-            '<path d="M148 58 Q142 18 120 50 Z" fill="url(#gradTue)"/>' +
-            '<path d="M72 104 Q84 116 96 104" stroke="#050300" stroke-width="6" fill="none" stroke-linecap="round"/>' +
-            '<path d="M104 104 Q116 116 128 104" stroke="#050300" stroke-width="6" fill="none" stroke-linecap="round"/>' +
-            '<path d="M88 134 Q100 144 112 134" stroke="#050300" stroke-width="5" fill="none" stroke-linecap="round"/>',
-        'day-wed': /* "Decoserpent" -- sleek finned art-deco wyrm */
-            '<defs><linearGradient id="gradWed" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#e7e04a"/><stop offset="50%" stop-color="#9db93c"/><stop offset="100%" stop-color="#3f7d3a"/>' +
-            '</linearGradient></defs>' +
-            '<path d="M18 126 Q60 58 100 90 Q140 58 182 126 Q140 150 100 138 Q60 150 18 126Z" fill="url(#gradWed)"/>' +
-            '<path d="M83 60 L100 10 L117 60Z" fill="url(#gradWed)"/>' +
-            '<path d="M56 68 L72 28 L88 64Z" fill="url(#gradWed)"/>' +
-            '<path d="M112 64 L128 28 L144 68Z" fill="url(#gradWed)"/>' +
-            '<rect x="84" y="94" width="14" height="14" fill="#0a0e05" transform="rotate(45 91 101)"/>' +
-            '<rect x="102" y="94" width="14" height="14" fill="#0a0e05" transform="rotate(45 109 101)"/>',
-        'day-thu': /* "Mossgolem" -- mossy forest guardian */
-            '<defs><radialGradient id="gradThu" cx="40%" cy="25%" r="85%">' +
-            '<stop offset="0%" stop-color="#b8f2a0"/><stop offset="55%" stop-color="#4fbf7a"/><stop offset="100%" stop-color="#1f5c3c"/>' +
-            '</radialGradient></defs>' +
-            '<ellipse cx="100" cy="118" rx="76" ry="54" fill="url(#gradThu)"/>' +
-            '<path d="M54 66 Q40 22 72 46 Q66 60 54 66Z" fill="url(#gradThu)"/>' +
-            '<path d="M146 66 Q160 22 128 46 Q134 60 146 66Z" fill="url(#gradThu)"/>' +
-            '<circle cx="70" cy="78" r="8" fill="#ffd23f" opacity="0.7"/>' +
-            '<circle cx="134" cy="74" r="7" fill="#ffd23f" opacity="0.7"/>' +
-            '<circle cx="80" cy="110" r="9" fill="#0a1408"/>' +
-            '<circle cx="120" cy="110" r="9" fill="#0a1408"/>' +
-            '<path d="M84 140 Q100 152 116 140" stroke="#0a1408" stroke-width="6" fill="none" stroke-linecap="round"/>',
-        'day-fri': /* "Neonbat" -- spiky synthwave night flyer */
-            '<defs><linearGradient id="gradFri" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#00e5ff"/><stop offset="50%" stop-color="#ff2ec4"/><stop offset="100%" stop-color="#8c3bff"/>' +
-            '</linearGradient></defs>' +
-            '<path d="M100 98 L52 38 L70 90 L8 52 L48 106 L100 142 L152 106 L192 52 L130 90 L148 38Z" fill="url(#gradFri)"/>' +
-            '<polygon points="82,102 94,82 100,102" fill="#0a0320"/>' +
-            '<polygon points="106,102 112,82 124,102" fill="#0a0320"/>',
-        'day-sat': /* "Frostshard" -- crystalline ice beast */
-            '<defs><linearGradient id="gradSat" x1="0%" y1="0%" x2="100%" y2="100%">' +
-            '<stop offset="0%" stop-color="#dff6ff"/><stop offset="50%" stop-color="#7fc4e8"/><stop offset="100%" stop-color="#2c5c82"/>' +
-            '</linearGradient></defs>' +
-            '<polygon points="100,14 148,72 130,152 70,152 52,72" fill="url(#gradSat)"/>' +
-            '<polygon points="100,44 126,82 113,124 87,124 74,82" fill="#0a141c" opacity="0.55"/>' +
-            '<circle cx="82" cy="90" r="7" fill="#0a141c"/>' +
-            '<circle cx="118" cy="90" r="7" fill="#0a141c"/>',
-        'day-sun': /* "Emberphoenix" -- warm rising ember bird */
-            '<defs><radialGradient id="gradSun" cx="50%" cy="30%" r="80%">' +
-            '<stop offset="0%" stop-color="#ffd98a"/><stop offset="50%" stop-color="#e8966e"/><stop offset="100%" stop-color="#c8465a"/>' +
-            '</radialGradient></defs>' +
-            '<path d="M100 148 Q52 136 40 86 Q66 98 78 72 Q70 48 96 36 Q100 54 104 36 Q130 48 122 72 Q134 98 160 86 Q148 136 100 148Z" fill="url(#gradSun)"/>' +
-            '<circle cx="85" cy="98" r="7" fill="#170a09"/>' +
-            '<circle cx="115" cy="98" r="7" fill="#170a09"/>' +
-            '<path d="M87 118 Q100 128 113 118" stroke="#170a09" stroke-width="5" fill="none" stroke-linecap="round"/>'
-    };
-    const monsterMarkup = MONSTER_SVGS[cfg.cls] || MONSTER_SVGS['day-mon'];
-    document.getElementById('monster1').innerHTML = monsterMarkup;
-    document.getElementById('monster2').innerHTML = monsterMarkup;
+    /* Looping marquee text — same construction as staff_main.html:
+       one long duplicated string so the translateX(-50%) loop is seamless. */
+    (function initMarquee() {
+        const track = document.getElementById('marqueeTrack');
+        if (!track) return;
+        const phrase = `TDLiD · ${cfg.marquee} · `;
+        const repeated = phrase.repeat(6);
+        track.innerHTML = `<span>${repeated}</span><span>${repeated}</span>`;
+    })();
 
-    /* Ambient orbs + scanline -- built once per load, cheap fixed DOM (no JS animation loop) */
-    document.getElementById('bg-deco').innerHTML =
-        '<div class="orb" style="width:520px;height:520px;top:-12%;left:-12%;animation-delay:0s;"></div>' +
-        '<div class="orb" style="width:600px;height:600px;bottom:-16%;right:-10%;animation-delay:1.4s;"></div>' +
-        '<div class="orb" style="width:360px;height:360px;bottom:15%;left:35%;animation-delay:2.8s;"></div>' +
-        '<div class="scan-line"></div>';
-
-    /* ── CPU / GPU LOAD MANAGEMENT ──
-       Pause every ambient animation while the tab isn't visible, and
-       drop the companion creature + trim ambient orbs on small or
-       coarse-pointer (touch) devices where extra GPU layers cost more. */
-    function syncAnimState() {
-        document.body.classList.toggle('anim-paused', document.hidden);
-    }
+    /* Pause ambient animation while the tab is hidden */
+    function syncAnimState() { document.body.classList.toggle('anim-paused', document.hidden); }
     document.addEventListener('visibilitychange', syncAnimState, { passive: true });
     syncAnimState();
-
-    if (window.matchMedia('(max-width: 640px)').matches) {
-        const m2 = document.getElementById('monster2');
-        if (m2) m2.remove();
-    }
 
     /* ── FIREBASE ── */
     const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
@@ -1071,8 +635,8 @@ body.day-sun {
             src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=3b82f6&color=fff&size=256';
         }
 
-        const borders = { 'day-mon': '#00d4ff', 'day-tue': '#c9a84c', 'day-wed': '#b4b43c', 'day-thu': '#4fbf7a', 'day-fri': '#ff2ec4', 'day-sat': '#7fc4e8', 'day-sun': '#e8966e' };
-        const bColor = borders[cfg.cls] || '#00d4ff';
+        const borders = { 'day-mon': '#38bdf8', 'day-tue': '#d4b483', 'day-wed': '#c8a84b', 'day-thu': '#6fbf5f', 'day-fri': '#ff2fc0', 'day-sat': '#7db8ff', 'day-sun': '#f97316' };
+        const bColor = borders[cfg.cls] || '#38bdf8';
         img.style.border = `3px solid ${bColor}`;
         img.style.boxShadow = `0 0 60px ${bColor}88`;
 
