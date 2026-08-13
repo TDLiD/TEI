@@ -9,18 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database-compat.js"></script>
 
-    <!--
-        Day theme fonts (aligned with staff_main.html's family):
-        MON -> Orbitron | TUE -> Noto Serif JP | WED -> Cormorant Garamond (italic)
-        THU -> DM Serif Display | FRI -> Bungee | SAT -> Inter | SUN -> DM Serif Display
-
-        Design language matches staff_main.html: one fixed photograph as the
-        whole background (grayscale + day-accent duotone wash), a looping
-        marquee signature line, and quiet editorial typography instead of
-        heavy glow/gradient chrome. All original functionality (mobile
-        redirect, Firebase auth, staff selector, password toggle, forgot
-        password, birthday popup, ghost overlay) is unchanged.
-    -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Serif+JP:wght@300;700&family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&family=DM+Serif+Display&family=Bungee&family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
@@ -28,8 +16,6 @@
     <link rel="icon" href="data:,">
 
 <script>
-    /* ── DEVICE / ENVIRONMENT DETECTION ──────────────────────────────
-       Mobile redirect to index_m.html is unchanged. */
     (function(){
         const isMobileDevice = /iPhone|iPod|Android|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const urlParams = new URLSearchParams(window.location.search);
@@ -53,9 +39,7 @@
 </script>
 
 <style>
-/* ═══════════════════════════════════════════════════════════════
-   BASE RESET & LAYOUT
-═══════════════════════════════════════════════════════════════ */
+/* BASE RESET */
 *, *::before, *::after {
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
@@ -90,26 +74,17 @@ body.anim-paused .live-dot {
     animation-play-state: paused !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BACKGROUND — one photograph PER DAY OF WEEK (images/bg/bg1..7.jpg),
-   shown at its ORIGINAL size/aspect ratio — no crop, no upscale, no
-   zoom. object-fit:contain guarantees the browser never draws the
-   photo larger than its native resolution; any leftover space is
-   letterboxed with the base background colour. Only the accent
-   duotone wash on top still exists (flat colour, costs nothing,
-   never blurs) — the photo itself is fully static.
-═══════════════════════════════════════════════════════════════ */
+/* BACKGROUND */
 #bg-photo-wrap {
     position: fixed; inset: 0; z-index: 0;
     overflow: hidden; pointer-events: none;
-    background: #05060d; /* letterbox colour when the photo's aspect ratio doesn't match the screen */
+    background: #05060d;
 }
 #bg-photo {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: contain;              /* never crops, never upscales past native resolution */
+    object-fit: contain;
     object-position: center center;
     filter: grayscale(1) contrast(1.14) brightness(0.6);
-    /* no transform, no animation — the photo is shown exactly as-is */
 }
 #bg-wash { position: absolute; inset: 0; background: var(--accent, #6366f1); mix-blend-mode: color; opacity: 0.85; }
 #bg-shade {
@@ -123,7 +98,7 @@ body.anim-paused .live-dot {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ── Signature scrolling marquee, same construction as staff_main.html ── */
+/* MARQUEE */
 #marquee-layer {
     position: fixed; left: 0; right: 0; top: 14%;
     z-index: 1; overflow: hidden; pointer-events: none;
@@ -155,11 +130,7 @@ body.anim-paused .live-dot {
 @media (min-width: 1440px) { .page-wrapper { max-width: 520px; } }
 @media (max-width: 360px)  { .page-wrapper { gap: 1.1rem; } }
 
-/* ═══════════════════════════════════════════════════════════════
-   BRAND HEADER — editorial masthead, mirrors staff_main.html's
-   .brand-header (logo replaces the day-of-week wordmark here since
-   this screen has no signed-in identity yet).
-═══════════════════════════════════════════════════════════════ */
+/* BRAND HEADER */
 .brand-header { text-align: center; animation: fadeSlideDown 0.6s cubic-bezier(0.22,1,0.36,1) both; }
 @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -189,11 +160,7 @@ body.anim-paused .live-dot {
     margin: 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LOGIN CARD — quiet glass panel over the photo. No glow blobs;
-   identity now lives in the accent hairline, the type, and the
-   duotone wash behind it.
-═══════════════════════════════════════════════════════════════ */
+/* LOGIN CARD */
 .login-card {
     width: 100%;
     border-radius: 1.1rem;
@@ -224,11 +191,10 @@ body.anim-paused .live-dot {
     color: rgba(255,255,255,0.42);
 }
 
-/* underline-style fields — quiet, editorial, no filled boxes */
 .input-field, #selected-staff {
     width: 100%;
     padding: clamp(0.7rem, 2.4vw, 0.85rem) 0.15rem;
-    font-size: 16px; /* prevent iOS zoom */
+    font-size: 16px;
     background: transparent;
     border: none;
     border-bottom: 1.5px solid rgba(255,255,255,0.16);
@@ -240,9 +206,6 @@ body.anim-paused .live-dot {
 }
 .input-field::placeholder { color: rgba(255,255,255,0.28); }
 .input-field:focus, #selected-staff:hover, #selected-staff.active { border-color: var(--accent) !important; }
-.input-field:focus-visible, #selected-staff:focus-visible, .login-btn:focus-visible, .eye-btn:focus-visible, .forgot-btn:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 2px;
-}
 
 .password-wrap { position: relative; }
 .eye-btn {
@@ -261,8 +224,6 @@ body.anim-paused .live-dot {
 }
 .forgot-btn:hover { color: var(--accent); }
 
-/* login button — bordered, fills with accent on hover; mirrors the
-   menu-link hover language on staff_main.html (colour + letter-spacing) */
 .login-btn {
     width: 100%;
     padding: clamp(0.9rem, 2.6vw, 1.05rem) 2rem;
@@ -280,7 +241,6 @@ body.anim-paused .live-dot {
 .login-btn:hover { background: var(--accent, #6366f1); color: #08090d; letter-spacing: 0.26em; }
 .login-btn:active { transform: scale(0.98); }
 
-/* Staff selector dropdown */
 #staff-selector-container { position: relative; }
 #selected-staff { cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 2.6rem; }
 #staff-dropdown {
@@ -294,9 +254,6 @@ body.anim-paused .live-dot {
     opacity: 0; pointer-events: none; z-index: 10000;
 }
 #staff-dropdown.active { max-height: 240px; opacity: 1; pointer-events: auto; padding: 0.5rem; }
-#staff-dropdown::-webkit-scrollbar { width: 5px; }
-#staff-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
-#staff-dropdown::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 .staff-option {
     padding: 0.8rem 0.85rem; cursor: pointer; border-radius: 0.6rem;
@@ -317,17 +274,14 @@ body.anim-paused .live-dot {
 #selected-staff .dropdown-arrow { color: var(--accent); transition: transform 0.3s ease; flex-shrink: 0; width: 1.05rem; height: 1.05rem; }
 #selected-staff .dropdown-arrow.rotated { transform: rotate(180deg); }
 
-/* ═══════════════════════════════════════════════════════════════
-   GHOST OVERLAY / BIRTHDAY POPUP (functionality unchanged, restyled
-   to the quieter editorial palette)
-═══════════════════════════════════════════════════════════════ */
+/* GHOST OVERLAY */
 #ghost-overlay {
     position: fixed; inset: 0; z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
+    display: none; align-items: center; justify-content: center;
     backdrop-filter: blur(8px) brightness(0.5);
-    pointer-events: none; animation: ghostFadeIn 0.3s ease forwards;
+    pointer-events: none;
 }
-#ghost-overlay.hidden { display: none !important; }
+#ghost-overlay.active-popup { display: flex !important; animation: ghostFadeIn 0.3s ease forwards; }
 #ghost-image {
     width: clamp(9rem, 28vw, 14rem); height: clamp(9rem, 28vw, 14rem);
     object-fit: cover; border-radius: 50%;
@@ -336,21 +290,86 @@ body.anim-paused .live-dot {
 @keyframes ghostFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ghostPulse { 0% { opacity: 0; transform: scale(0.4) rotateY(-40deg); } 60% { opacity: 1; transform: scale(1.05) rotateY(10deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
 
-#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.82); backdrop-filter: blur(6px); }
-#birthday-popup.hidden { display: none !important; }
-.birthday-inner {
-    width: 90%; max-width: 320px; padding: clamp(1.5rem, 5vw, 2rem);
-    border-radius: 1.1rem; text-align: center;
-    background: linear-gradient(160deg, rgba(12,13,20,0.96), rgba(6,7,11,0.98));
-    border: 1px solid var(--accent); color: var(--text);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+/* ═══════════════════════════════════════════════════════════════
+   BIRTHDAY POPUP & CONFETTI (수정: Tailwind 무력화 및 강제 노출)
+═══════════════════════════════════════════════════════════════ */
+#birthday-popup {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100vw !important; height: 100vh !important;
+    z-index: 999999 !important;
+    display: none !important; /* 기본 숨김 */
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DAY ACCENT TOKENS — same seven hexes/typefaces as staff_main.html
-   so the whole suite reads as one family; only the accent colour +
-   type shifts, the photo and layout stay constant.
-═══════════════════════════════════════════════════════════════ */
+/* JS로 active-popup 클래스가 붙으면 무조건 화면 전체 표시 */
+#birthday-popup.active-popup {
+    display: flex !important;
+}
+
+#confetti-canvas {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    width: 100% !important; height: 100% !important;
+    pointer-events: none !important;
+    z-index: 1000000 !important;
+}
+
+.birthday-inner {
+    width: 90%; max-width: 340px; padding: clamp(1.8rem, 5vw, 2.2rem);
+    border-radius: 1.25rem; text-align: center;
+    background: linear-gradient(160deg, rgba(20, 21, 33, 0.98), rgba(8, 9, 14, 0.99)) !important;
+    color: var(--text, #fff);
+    position: relative; z-index: 1000001 !important;
+    overflow: hidden;
+    animation: popupPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               bdayGlow 3s infinite alternate ease-in-out;
+}
+
+.bday-icon {
+    font-size: 3.5rem; margin-bottom: 0.5rem;
+    display: inline-block;
+    animation: floatIcon 2s ease-in-out infinite;
+    position: relative; z-index: 2;
+}
+
+.bday-title {
+    font-size: 1.5rem; font-weight: 800;
+    color: var(--accent, #ff2fc0);
+    margin: 0 0 0.85rem;
+    text-shadow: 0 0 12px var(--accent, #ff2fc0);
+    position: relative; z-index: 2;
+}
+
+@keyframes popupPop {
+    0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+@keyframes bdayGlow {
+    0% {
+        border: 1.5px solid var(--accent, #6366f1);
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), inset 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+    50% {
+        border: 1.5px solid #ff2fc0;
+        box-shadow: 0 0 35px rgba(255, 47, 192, 0.6), inset 0 0 25px rgba(255, 47, 192, 0.3);
+    }
+    100% {
+        border: 1.5px solid #38bdf8;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+}
+
+/* DAY TOKENS */
 body.day-mon { --accent: #38bdf8; --accent-soft: rgba(56,189,248,0.22); --font-heading: 'Orbitron', sans-serif; --font-ui: 'Pretendard', sans-serif; --font-body: 'Pretendard', sans-serif; }
 body.day-tue { --accent: #d4b483; --accent-soft: rgba(212,180,131,0.22); --font-heading: 'Noto Serif JP', serif; --font-ui: 'Noto Serif JP', serif; --font-body: 'Noto Serif JP', serif; }
 body.day-wed { --accent: #c8a84b; --accent-soft: rgba(200,168,75,0.24); --font-heading: 'Cormorant Garamond', serif; --font-ui: 'Cormorant Garamond', serif; --font-body: 'Cormorant Garamond', serif; }
@@ -361,9 +380,6 @@ body.day-sun { --accent: #f97316; --accent-soft: rgba(249,115,22,0.22); --font-h
 
 body.day-wed .page-title, body.day-wed .welcome-heading { font-style: italic; }
 
-/* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════════════════════════ */
 html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 @media (max-width: 600px) {
     .birthday-inner { max-width: 95vw; }
@@ -373,7 +389,6 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
 <body id="loginBody">
 
-<!-- Background photograph + day-accent duotone wash (matches staff_main.html) -->
 <div id="bg-photo-wrap" aria-hidden="true">
     <img id="bg-photo" src="" alt="">
     <div id="bg-wash"></div>
@@ -381,15 +396,11 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     <div id="bg-grain"></div>
 </div>
 
-<!-- Signature scrolling marquee, behind the login card -->
 <div id="marquee-layer" aria-hidden="true">
     <div class="marquee-track" id="marqueeTrack"></div>
 </div>
 
-<!-- Main content -->
 <div class="page-wrapper">
-
-    <!-- Header -->
     <div class="brand-header w-full px-2">
         <img src="images/login/login.gif" alt="Logo" class="logo-img" onerror="this.style.display='none'">
         <span class="day-badge" id="day-badge"></span>
@@ -397,14 +408,11 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         <p class="page-subtitle" id="page-subtitle">Daily Report System</p>
     </div>
 
-    <!-- Login Card -->
     <div class="login-card w-full">
         <div style="position:relative;z-index:10;">
-
             <p class="welcome-heading" id="welcome-heading">Welcome back</p>
             <p class="welcome-sub" id="welcome-sub">Select your profile to continue</p>
 
-            <!-- Staff Selector -->
             <div class="field-wrap">
                 <label class="field-label">Staff Member</label>
                 <div id="staff-selector-container">
@@ -418,7 +426,6 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
                 </div>
             </div>
 
-            <!-- Password -->
             <div class="field-wrap">
                 <label class="field-label">Secure Password</label>
                 <div class="password-wrap">
@@ -435,31 +442,30 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
                 </div>
             </div>
 
-            <!-- Login Button -->
             <button id="loginBtn" class="login-btn" onclick="handleLogin()">AUTHENTICATE</button>
         </div>
     </div>
-
-</div><!-- /page-wrapper -->
+</div>
 
 <!-- Birthday Popup -->
-<div id="birthday-popup" class="hidden">
+<div id="birthday-popup">
+    <canvas id="confetti-canvas"></canvas>
     <div class="birthday-inner">
-        <div style="font-size:3rem;margin-bottom:0.75rem;">🎂</div>
-        <h2 style="font-size:1.35rem;font-weight:700;color:var(--accent);margin:0 0 0.75rem;">Happy Birthday!</h2>
-        <div id="birthday-list" style="margin-bottom:1rem;"></div>
-        <div style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.5;margin-bottom:1rem;">
-            CLOSING IN <span id="timer-seconds" style="font-weight:900;">10</span>s
+        <div class="bday-icon">🎂</div>
+        <h2 class="bday-title">Happy Birthday!</h2>
+        <div id="birthday-list" style="margin-bottom:1rem; position:relative; z-index:2;"></div>
+        <div style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.7;margin-bottom:1rem; position:relative; z-index:2;">
+            CLOSING IN <span id="timer-seconds" style="font-weight:900; color:var(--accent);">10</span>s
         </div>
         <button onclick="closePopup()" id="birthday-close-btn"
-            style="width:100%;padding:0.75rem;border:1.5px solid var(--accent);cursor:pointer;border-radius:0.6rem;font-weight:700;font-size:0.85rem;background:transparent;color:var(--accent);transition:all 0.2s;">
+            style="width:100%;padding:0.75rem;border:1.5px solid var(--accent);cursor:pointer;border-radius:0.6rem;font-weight:700;font-size:0.85rem;background:rgba(0,0,0,0.4);color:var(--accent);transition:all 0.2s; position:relative; z-index:2;">
             Close
         </button>
     </div>
 </div>
 
 <!-- Ghost Overlay -->
-<div id="ghost-overlay" class="hidden">
+<div id="ghost-overlay">
     <img id="ghost-image" src="" alt="Profile">
 </div>
 
@@ -467,9 +473,7 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 (function() {
     'use strict';
 
-    /* ── DAY THEMING (Sun=0 .. Sat=6, matches Date.getDay()) ──
-       ?day=0..6 still forces a preview theme, same as before. */
-    /* `bg` maps Mon→bg1.jpg … Sun→bg7.jpg, per the files in images/bg/ */
+    /* DAY THEMING */
     const DAY_CONFIG = {
         0: { cls: 'day-sun', badge: '☀ Sunday',    title: 'Staff Login', heading: 'Restful Sunday',  sub: 'Select your profile to continue', btnText: 'SIGN IN',    marquee: 'SUNDAY · REST WELL · SEE YOU MONDAY', bg: 'bg7.jpg' },
         1: { cls: 'day-mon', badge: '⚡ Monday',    title: 'Staff Login', heading: 'Welcome back',    sub: 'Select your profile to continue', btnText: 'AUTHENTICATE', marquee: 'MONDAY · NEW WEEK · NEW ENERGY', bg: 'bg1.jpg' },
@@ -494,8 +498,6 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     document.getElementById('welcome-sub').textContent = cfg.sub;
     document.getElementById('loginBtn').textContent = cfg.btnText;
 
-    /* Looping marquee text — same construction as staff_main.html:
-       one long duplicated string so the translateX(-50%) loop is seamless. */
     (function initMarquee() {
         const track = document.getElementById('marqueeTrack');
         if (!track) return;
@@ -504,38 +506,49 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         track.innerHTML = `<span>${repeated}</span><span>${repeated}</span>`;
     })();
 
-    /* Pause ambient animation while the tab is hidden */
     function syncAnimState() { document.body.classList.toggle('anim-paused', document.hidden); }
     document.addEventListener('visibilitychange', syncAnimState, { passive: true });
     syncAnimState();
 
-    /* ── FIREBASE ── */
-    const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    /* FIREBASE */
+    let database = null;
+    try {
+        if (typeof firebase !== 'undefined') {
+            const firebaseConfig = { databaseURL: "https://tdlid-dailyreport-default-rtdb.firebaseio.com" };
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        }
+    } catch (err) {
+        console.error("Firebase 초기화 중 에러:", err);
+    }
 
-    /* ── STAFF SELECTOR ── */
+    /* STAFF SELECTOR */
     let staffData = {};
     let selectedStaff = '';
     const selectedStaffEl = document.getElementById('selected-staff');
     const selectedTextEl = document.getElementById('selected-text');
     const staffDropdown = document.getElementById('staff-dropdown');
-    const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
+    const dropdownArrow = selectedStaffEl ? selectedStaffEl.querySelector('.dropdown-arrow') : null;
     const passwordInput = document.getElementById('password');
 
     function initStaffSelector() {
+        if (!database) {
+            if (selectedTextEl) selectedTextEl.textContent = 'Firebase Error';
+            return;
+        }
         database.ref('users').limitToFirst(50).once('value', (snap) => {
             staffData = snap.val() || {};
             if (!Object.keys(staffData).length) {
-                selectedTextEl.textContent = 'No staff available';
+                if (selectedTextEl) selectedTextEl.textContent = 'No staff available';
                 return;
             }
-            selectedTextEl.textContent = 'Select Identity';
+            if (selectedTextEl) selectedTextEl.textContent = 'Select Identity';
             renderStaffDropdown();
-        }).catch(() => { selectedTextEl.textContent = 'Error loading staff'; });
+        }).catch(() => { if (selectedTextEl) selectedTextEl.textContent = 'Error loading staff'; });
     }
 
     function renderStaffDropdown() {
+        if (!staffDropdown) return;
         const frag = document.createDocumentFragment();
         Object.keys(staffData).forEach(name => {
             const user = staffData[name];
@@ -569,42 +582,51 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
     function selectStaff(name, optEl) {
         selectedStaff = name;
-        selectedTextEl.textContent = name;
-        staffDropdown.querySelectorAll('.staff-option').forEach(o => o.classList.remove('selected'));
+        if (selectedTextEl) selectedTextEl.textContent = name;
+        if (staffDropdown) {
+            staffDropdown.querySelectorAll('.staff-option').forEach(o => o.classList.remove('selected'));
+        }
         if (optEl) optEl.classList.add('selected');
         closeDropdown();
-        passwordInput.focus();
+        if (passwordInput) passwordInput.focus();
     }
 
     function toggleDropdown() {
+        if (!staffDropdown) return;
         staffDropdown.classList.contains('active') ? closeDropdown() : openDropdown();
     }
     function openDropdown() {
-        staffDropdown.classList.add('active');
-        selectedStaffEl.classList.add('active');
-        dropdownArrow.classList.add('rotated');
+        if (staffDropdown) staffDropdown.classList.add('active');
+        if (selectedStaffEl) selectedStaffEl.classList.add('active');
+        if (dropdownArrow) dropdownArrow.classList.add('rotated');
     }
     function closeDropdown() {
-        staffDropdown.classList.remove('active');
-        selectedStaffEl.classList.remove('active');
-        dropdownArrow.classList.remove('rotated');
+        if (staffDropdown) staffDropdown.classList.remove('active');
+        if (selectedStaffEl) selectedStaffEl.classList.remove('active');
+        if (dropdownArrow) dropdownArrow.classList.remove('rotated');
     }
 
-    selectedStaffEl.addEventListener('click', toggleDropdown);
-    selectedStaffEl.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown(); }
-    });
+    if (selectedStaffEl) {
+        selectedStaffEl.addEventListener('click', toggleDropdown);
+        selectedStaffEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown(); }
+        });
+    }
     document.addEventListener('click', e => {
-        if (!document.getElementById('staff-selector-container').contains(e.target)) closeDropdown();
+        const container = document.getElementById('staff-selector-container');
+        if (container && !container.contains(e.target)) closeDropdown();
     });
-    passwordInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
-    });
+    if (passwordInput) {
+        passwordInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+        });
+    }
 
-    /* ── LOGIN ── */
+    /* LOGIN */
     window.handleLogin = function() {
+        if (!database) return alert("Database is not connected.");
         const name = selectedStaff;
-        const pw = passwordInput.value;
+        const pw = passwordInput ? passwordInput.value : '';
         if (!name || !pw) return alert("Please enter your credentials.");
 
         database.ref('users/' + name).once('value', snap => {
@@ -627,6 +649,8 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     function showGhostEffect(profileImg, name, role) {
         const overlay = document.getElementById('ghost-overlay');
         const img = document.getElementById('ghost-image');
+        if (!overlay || !img) return;
+
         let src;
         if (profileImg) {
             src = (profileImg.startsWith('images/') || profileImg.startsWith('http'))
@@ -641,10 +665,10 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         img.style.boxShadow = `0 0 60px ${bColor}88`;
 
         img.src = src;
-        overlay.classList.remove('hidden');
+        overlay.classList.add('active-popup');
 
         setTimeout(() => {
-            overlay.classList.add('hidden');
+            overlay.classList.remove('active-popup');
             const userRole = (role || '').toLowerCase();
             if (userRole === 'admin' || userRole === 'manager') {
                 location.href = "admin.html";
@@ -654,21 +678,23 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         }, 2500);
     }
 
-    /* ── TOGGLE PASSWORD ── */
+    /* TOGGLE PASSWORD */
     window.togglePassword = function() {
         const inp = document.getElementById('password');
         const icon = document.getElementById('eyeIcon');
+        if (!inp || !icon) return;
         if (inp.type === 'password') {
             inp.type = 'text';
             icon.innerHTML = `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>`;
         } else {
             inp.type = 'password';
-            icon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+            icon.innerHTML = `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943-9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
         }
     };
 
-    /* ── FORGOT PASSWORD ── */
+    /* FORGOT PASSWORD */
     window.findPassword = function() {
+        if (!database) return alert("Database connection error.");
         const name = selectedStaff;
         if (!name) return alert("Please select your name from the list first.");
         if (confirm(`Request password hint for '${name}'?`)) {
@@ -685,46 +711,158 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         }
     };
 
-    /* ── BIRTHDAY POPUP ── */
-    (function() {
-        const popup = document.getElementById('birthday-popup');
-        const timerEl = document.getElementById('timer-seconds');
-        let autoClose, countdown;
+    /* CONFETTI ENGINE */
+    function fireConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        if (!canvas) return;
+        
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || 300;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || 500;
 
-        window.closePopup = function() {
-            clearTimeout(autoClose);
-            clearInterval(countdown);
-            popup.classList.add('hidden');
-        };
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
-        const checkBirthdays = () => {
-            const n = new Date();
-            const todayMD = `${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-            database.ref('users').once('value', snap => {
-                const data = snap.val();
-                if (!data) return;
-                const winners = Object.keys(data).filter(nm => data[nm].birthday && data[nm].birthday.slice(5,10) === todayMD)
-                    .map(nm => ({ name: nm, date: data[nm].birthday }));
-                if (!winners.length) return;
+        const particles = [];
+        const colors = ['#ff2fc0', '#38bdf8', '#c8a84b', '#6fbf5f', '#f97316', '#ffffff'];
 
-                document.getElementById('birthday-list').innerHTML = winners.map(s => `
-                    <div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.05);border:1px solid var(--accent);border-radius:0.75rem;margin-bottom:0.5rem;">
-                        <div style="font-size:0.75rem;font-weight:700;">🎂 ${s.name}</div>
-                        <div style="font-size:0.7rem;opacity:0.6;">${s.date}</div>
-                    </div>`).join('');
-
-                popup.classList.remove('hidden');
-                let t = 10;
-                timerEl.textContent = t;
-                countdown = setInterval(() => { timerEl.textContent = --t; if (t <= 0) clearInterval(countdown); }, 1000);
-                autoClose = setTimeout(window.closePopup, 10000);
+        for (let i = 0; i < 180; i++) {
+            particles.push({
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                vx: (Math.random() - 0.5) * 24,
+                vy: (Math.random() - 0.7) * 26,
+                size: Math.random() * 10 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rSpeed: (Math.random() - 0.5) * 15,
+                opacity: 1
             });
-        };
+        }
 
-        setTimeout(checkBirthdays, 1000);
-    })();
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let alive = false;
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.35;
+                p.rotation += p.rSpeed;
+                p.opacity -= 0.008;
+
+                if (p.opacity > 0) {
+                    alive = true;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.globalAlpha = Math.max(0, p.opacity);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                }
+            });
+
+            if (alive) {
+                requestAnimationFrame(render);
+            }
+        }
+        render();
+    }
+
+    /* BIRTHDAY POPUP */
+    const popup = document.getElementById('birthday-popup');
+    const timerEl = document.getElementById('timer-seconds');
+    let autoClose, countdown;
+
+    window.closePopup = function() {
+        clearTimeout(autoClose);
+        clearInterval(countdown);
+        if (popup) popup.classList.remove('active-popup');
+    };
+
+    window.triggerPopup = function(winners) {
+        const listEl = document.getElementById('birthday-list');
+        if (listEl) {
+            listEl.innerHTML = winners.map(s => `
+                <div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.08);border:1px solid var(--accent, #ff2fc0);border-radius:0.75rem;margin-bottom:0.5rem;text-align:left;">
+                    <div style="font-size:0.85rem;font-weight:700;color:#fff;">
+                        🎂 ${s.name} ${s.isToday ? '' : '<span style="font-size:0.65rem;color:var(--accent);">(주말 생일)</span>'}
+                    </div>
+                    <div style="font-size:0.7rem;opacity:0.7;color:#fff;">${s.date}</div>
+                </div>`).join('');
+        }
+
+        if (popup) popup.classList.add('active-popup');
+        
+        setTimeout(fireConfetti, 50);
+
+        let t = 10;
+        if (timerEl) timerEl.textContent = t;
+        clearInterval(countdown);
+        clearTimeout(autoClose);
+        
+        countdown = setInterval(() => { 
+            t--;
+            if (timerEl) timerEl.textContent = t; 
+            if (t <= 0) clearInterval(countdown); 
+        }, 1000);
+        autoClose = setTimeout(window.closePopup, 10000);
+    };
+
+    window.testBirthday = function() {
+        window.triggerPopup([
+            { name: '홍길동 (테스트)', date: '2026-08-13', isToday: true }
+        ]);
+    };
+
+    const checkBirthdays = () => {
+        if (!database) return;
+        const n = new Date();
+        const dayOfWeek = n.getDay();
+
+        const getMMDD = (dateObj) => 
+            `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+        const targetDates = [getMMDD(n)];
+
+        if (dayOfWeek === 5) {
+            const sat = new Date(n); sat.setDate(n.getDate() + 1);
+            const sun = new Date(n); sun.setDate(n.getDate() + 2);
+            targetDates.push(getMMDD(sat), getMMDD(sun));
+        }
+
+        database.ref('users').once('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+
+            const winners = Object.keys(data)
+                .filter(nm => {
+                    if (!data[nm].birthday) return false;
+                    const bdayMD = data[nm].birthday.slice(5, 10);
+                    return targetDates.includes(bdayMD);
+                })
+                .map(nm => {
+                    const bdayMD = data[nm].birthday.slice(5, 10);
+                    return { 
+                        name: nm, 
+                        date: data[nm].birthday,
+                        isToday: bdayMD === getMMDD(n)
+                    };
+                });
+
+            if (winners.length > 0) {
+                window.triggerPopup(winners);
+            }
+        });
+    };
 
     initStaffSelector();
+    setTimeout(checkBirthdays, 1000);
+
+    /* 테스트 실행 (1초 뒤 자동 실행) */
+    setTimeout(() => {
+        window.testBirthday();
+    }, 1000);
 
 })();
 </script>
