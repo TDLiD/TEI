@@ -130,7 +130,7 @@ body.anim-paused .live-dot {
     z-index: 1; overflow: hidden; pointer-events: none;
     white-space: nowrap; mix-blend-mode: screen;
 }
-.marquee-track { display: inline-flex; animation: marqueeScroll var(--marquee-dur, 26s) linear infinite; will-change: transform; }
+.marquee-track { display: inline-flex; animation: marqueeScroll var(--marquee-dur, 52s) linear infinite; will-change: transform; }
 .marquee-track span {
     font-family: var(--font-heading, 'Inter', sans-serif);
     font-weight: 900; font-size: clamp(2rem, 11vw, 5.2rem);
@@ -337,14 +337,73 @@ body.anim-paused .live-dot {
 @keyframes ghostFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ghostPulse { 0% { opacity: 0; transform: scale(0.4) rotateY(-40deg); } 60% { opacity: 1; transform: scale(1.05) rotateY(10deg); } 100% { opacity: 1; transform: scale(1) rotateY(0deg); } }
 
-#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.82); backdrop-filter: blur(6px); }
+#birthday-popup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.82); backdrop-filter: blur(6px); overflow: hidden; }
 #birthday-popup.hidden { display: none !important; }
+
+/* Confetti particles — lightweight DOM+CSS burst, no external libs */
+#confetti-layer { position: fixed; inset: 0; z-index: 10001; pointer-events: none; overflow: hidden; }
+.confetti-piece {
+    position: absolute; top: -5vh; will-change: transform, opacity;
+    animation-name: confettiFall; animation-timing-function: cubic-bezier(0.36,0.05,0.5,0.95); animation-fill-mode: forwards;
+    border-radius: 2px;
+}
+@keyframes confettiFall {
+    0%   { transform: translate3d(0,0,0) rotate(0deg); opacity: 1; }
+    85%  { opacity: 1; }
+    100% { transform: translate3d(var(--drift, 0px), 110vh, 0) rotate(var(--spin, 540deg)); opacity: 0; }
+}
+
 .birthday-inner {
-    width: 90%; max-width: 320px; padding: clamp(1.5rem, 5vw, 2rem);
-    border-radius: 1.1rem; text-align: center;
+    width: 92%; max-width: 340px; padding: clamp(1.5rem, 5vw, 2rem);
+    border-radius: 1.25rem; text-align: center;
+    position: relative; z-index: 10002; overflow: hidden;
     background: linear-gradient(160deg, rgba(12,13,20,0.96), rgba(6,7,11,0.98));
     border: 1px solid var(--accent); color: var(--text);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px var(--accent-soft, rgba(255,255,255,0.1)) inset;
+    animation: birthdayPopIn 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes birthdayPopIn { from { opacity: 0; transform: scale(0.82) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.birthday-inner::before {
+    content: ''; position: absolute; inset: -40%;
+    background: radial-gradient(circle, var(--accent-soft, rgba(255,255,255,0.16)) 0%, transparent 65%);
+    opacity: 0.6; animation: birthdayGlowSpin 8s linear infinite; pointer-events: none; z-index: -1;
+}
+@keyframes birthdayGlowSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.bday-cake-icon { font-size: 3rem; margin-bottom: 0.5rem; display: inline-block; animation: cakeBounce 1.6s ease-in-out infinite; }
+@keyframes cakeBounce { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.08); } }
+
+.bday-section-title {
+    font-size: clamp(1.05rem, 3.6vw, 1.3rem); font-weight: 800; color: var(--accent);
+    margin: 0 0 0.6rem; font-family: var(--font-heading, 'Inter', sans-serif); letter-spacing: 0.01em;
+}
+.bday-msg { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin: -0.2rem 0 0.9rem; line-height: 1.5; }
+
+.bday-card {
+    padding: 0.75rem 0.9rem; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--accent); border-radius: 0.85rem; margin-bottom: 0.55rem;
+    text-align: left; display: flex; align-items: center; gap: 0.7rem;
+    box-shadow: 0 0 18px var(--accent-soft, rgba(255,255,255,0.12));
+}
+.bday-card .bday-avatar {
+    width: 2.3rem; height: 2.3rem; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #08090d; font-weight: 800; font-size: 0.95rem;
+}
+.bday-card .bday-info { flex: 1; }
+.bday-card .bday-name { font-size: 0.8rem; font-weight: 700; }
+.bday-card .bday-date { font-size: 0.68rem; opacity: 0.6; }
+
+.bday-divider { border: none; border-top: 1px dashed var(--accent-soft, rgba(255,255,255,0.2)); margin: 1rem 0 0.85rem; }
+.bday-upcoming-title {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,255,255,0.42); margin: 0 0 0.6rem; text-align: left;
+}
+.bday-card.upcoming { border-color: var(--accent-soft, rgba(255,255,255,0.25)); box-shadow: none; opacity: 0.85; }
+.bday-card.upcoming .bday-day-tag {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft, rgba(255,255,255,0.12)); padding: 0.18rem 0.45rem; border-radius: 0.35rem;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -445,10 +504,10 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
 <!-- Birthday Popup -->
 <div id="birthday-popup" class="hidden">
+    <div id="confetti-layer"></div>
     <div class="birthday-inner">
-        <div style="font-size:3rem;margin-bottom:0.75rem;">🎂</div>
-        <h2 style="font-size:1.35rem;font-weight:700;color:var(--accent);margin:0 0 0.75rem;">Happy Birthday!</h2>
-        <div id="birthday-list" style="margin-bottom:1rem;"></div>
+        <div id="bday-today-block"></div>
+        <div id="bday-upcoming-block"></div>
         <div style="font-size:0.65rem;letter-spacing:0.2em;opacity:0.5;margin-bottom:1rem;">
             CLOSING IN <span id="timer-seconds" style="font-weight:900;">10</span>s
         </div>
@@ -690,35 +749,130 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     (function() {
         const popup = document.getElementById('birthday-popup');
         const timerEl = document.getElementById('timer-seconds');
-        let autoClose, countdown;
+        const confettiLayer = document.getElementById('confetti-layer');
+        let autoClose, countdown, confettiTimers = [];
+
+        const CELEBRATE_MSGS = [
+            "Wishing you a day as amazing as you are! 🎉",
+            "Hope your year ahead is full of great wins! 🥳",
+            "Cheers to another trip around the sun! 🌟",
+            "May your day be sweet as cake! 🍰",
+            "Let's make today a great one — happy birthday! 🎈"
+        ];
+        const pickMsg = () => CELEBRATE_MSGS[Math.floor(Math.random() * CELEBRATE_MSGS.length)];
+
+        const CONFETTI_COLORS = ['#ff2fc0', '#38bdf8', '#f97316', '#6fbf5f', '#c8a84b', '#ffffff'];
+
+        function launchConfetti(durationMs) {
+            confettiLayer.innerHTML = '';
+            const count = 60;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                const size = 6 + Math.random() * 7;
+                const isCircle = Math.random() > 0.5;
+                piece.style.width = size + 'px';
+                piece.style.height = (isCircle ? size : size * 0.4) + 'px';
+                piece.style.borderRadius = isCircle ? '50%' : '2px';
+                piece.style.left = Math.random() * 100 + 'vw';
+                piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+                const fallDur = 2.6 + Math.random() * 1.8;
+                const delay = Math.random() * 0.6;
+                piece.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
+                piece.style.setProperty('--spin', (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 540) + 'deg');
+                piece.style.animationDuration = fallDur + 's';
+                piece.style.animationDelay = delay + 's';
+                confettiLayer.appendChild(piece);
+            }
+            const clearT = setTimeout(() => { confettiLayer.innerHTML = ''; }, (durationMs || 5000));
+            confettiTimers.push(clearT);
+        }
 
         window.closePopup = function() {
             clearTimeout(autoClose);
             clearInterval(countdown);
+            confettiTimers.forEach(clearTimeout);
+            confettiTimers = [];
+            confettiLayer.innerHTML = '';
             popup.classList.add('hidden');
         };
 
+        function renderTodayBlock(winners) {
+            const block = document.getElementById('bday-today-block');
+            if (!winners.length) { block.innerHTML = ''; return; }
+            block.innerHTML = `
+                <div class="bday-cake-icon">🎂</div>
+                <h2 class="bday-section-title">Happy Birthday!</h2>
+                <p class="bday-msg">${pickMsg()}</p>
+                ${winners.map(s => `
+                    <div class="bday-card">
+                        <div class="bday-avatar">${s.name.charAt(0).toUpperCase()}</div>
+                        <div class="bday-info">
+                            <div class="bday-name">${s.name}</div>
+                            <div class="bday-date">${s.date}</div>
+                        </div>
+                        <div style="font-size:1.2rem;">🎉</div>
+                    </div>`).join('')}
+            `;
+        }
+
+        function renderUpcomingBlock(winners) {
+            const block = document.getElementById('bday-upcoming-block');
+            if (!winners.length) { block.innerHTML = ''; return; }
+            block.innerHTML = `
+                <hr class="bday-divider">
+                <p class="bday-upcoming-title">🗓️ Coming up this weekend</p>
+                ${winners.map(s => `
+                    <div class="bday-card upcoming">
+                        <div class="bday-avatar">${s.name.charAt(0).toUpperCase()}</div>
+                        <div class="bday-info">
+                            <div class="bday-name">${s.name}</div>
+                            <div class="bday-date">${s.date}</div>
+                        </div>
+                        <div class="bday-day-tag">${s.day}</div>
+                    </div>`).join('')}
+            `;
+        }
+
         const checkBirthdays = () => {
             const n = new Date();
-            const todayMD = `${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+            const fmtMD = (d) => `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const todayMD = fmtMD(n);
+            const realDay = n.getDay(); // 0=Sun .. 5=Fri .. 6=Sat (actual calendar day, independent of ?day= preview)
+
             database.ref('users').once('value', snap => {
                 const data = snap.val();
                 if (!data) return;
-                const winners = Object.keys(data).filter(nm => data[nm].birthday && data[nm].birthday.slice(5,10) === todayMD)
-                    .map(nm => ({ name: nm, date: data[nm].birthday }));
-                if (!winners.length) return;
 
-                document.getElementById('birthday-list').innerHTML = winners.map(s => `
-                    <div style="padding:0.6rem 0.75rem;background:rgba(255,255,255,0.05);border:1px solid var(--accent);border-radius:0.75rem;margin-bottom:0.5rem;">
-                        <div style="font-size:0.75rem;font-weight:700;">🎂 ${s.name}</div>
-                        <div style="font-size:0.7rem;opacity:0.6;">${s.date}</div>
-                    </div>`).join('');
+                const todayWinners = Object.keys(data)
+                    .filter(nm => data[nm].birthday && data[nm].birthday.slice(5,10) === todayMD)
+                    .map(nm => ({ name: nm, date: data[nm].birthday }));
+
+                let upcomingWinners = [];
+                if (realDay === 5) { // Friday — look ahead to Saturday & Sunday
+                    const sat = new Date(n); sat.setDate(n.getDate() + 1);
+                    const sun = new Date(n); sun.setDate(n.getDate() + 2);
+                    const satMD = fmtMD(sat), sunMD = fmtMD(sun);
+                    upcomingWinners = Object.keys(data)
+                        .filter(nm => data[nm].birthday && (data[nm].birthday.slice(5,10) === satMD || data[nm].birthday.slice(5,10) === sunMD))
+                        .map(nm => ({ name: nm, date: data[nm].birthday, day: data[nm].birthday.slice(5,10) === satMD ? 'Saturday' : 'Sunday' }));
+                }
+
+                if (!todayWinners.length && !upcomingWinners.length) return;
+
+                renderTodayBlock(todayWinners);
+                renderUpcomingBlock(upcomingWinners);
 
                 popup.classList.remove('hidden');
-                let t = 10;
+
+                if (todayWinners.length) {
+                    launchConfetti(5000);
+                }
+
+                let t = todayWinners.length ? 15 : 10;
                 timerEl.textContent = t;
                 countdown = setInterval(() => { timerEl.textContent = --t; if (t <= 0) clearInterval(countdown); }, 1000);
-                autoClose = setTimeout(window.closePopup, 10000);
+                autoClose = setTimeout(window.closePopup, t * 1000);
             });
         };
 
