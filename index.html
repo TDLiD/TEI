@@ -816,23 +816,24 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
             `;
         }
 
-        function renderUpcomingBlock(winners) {
-            const block = document.getElementById('bday-upcoming-block');
-            if (!winners.length) { block.innerHTML = ''; return; }
-            block.innerHTML = `
-                <hr class="bday-divider">
-                <p class="bday-upcoming-title">🗓️ Coming up this weekend</p>
-                ${winners.map(s => `
-                    <div class="bday-card upcoming">
-                        <div class="bday-avatar">${s.name.charAt(0).toUpperCase()}</div>
-                        <div class="bday-info">
-                            <div class="bday-name">${s.name}</div>
-                            <div class="bday-date">${s.date}</div>
-                        </div>
-                        <div class="bday-day-tag">${s.day}</div>
-                    </div>`).join('')}
-            `;
-        }
+function renderUpcomingBlock(winners) {
+    const block = document.getElementById('bday-upcoming-block');
+    if (!winners.length) { block.innerHTML = ''; return; }
+    block.innerHTML = `
+        <hr class="bday-divider">
+        <p class="bday-upcoming-title">🗓️ Coming up this weekend</p>
+        <p class="bday-msg" style="margin-top:-0.3rem;">Happy birthday to YOU. Get your wishes ready — don't forget to celebrate! 🎊</p>
+        ${winners.map(s => `
+            <div class="bday-card upcoming">
+                <div class="bday-avatar">${s.name.charAt(0).toUpperCase()}</div>
+                <div class="bday-info">
+                    <div class="bday-name">${s.name}</div>
+                    <div class="bday-date">${s.date}</div>
+                </div>
+                <div class="bday-day-tag">${s.day}</div>
+            </div>`).join('')}
+    `;
+}
 
         const checkBirthdays = () => {
             const n = new Date();
@@ -865,9 +866,11 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
                 popup.classList.remove('hidden');
 
-                if (todayWinners.length) {
-                    launchConfetti(5000);
-                }
+if (todayWinners.length) {
+    launchConfetti(5000);
+} else if (upcomingWinners.length) {
+    launchConfetti(3500); // 주말 예고는 살짝 짧고 은은하게
+}
 
                 let t = todayWinners.length ? 15 : 10;
                 timerEl.textContent = t;
