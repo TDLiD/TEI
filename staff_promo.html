@@ -375,6 +375,15 @@
             display: flex;
             justify-content: flex-end;
         }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #5a6b8f;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
     </style>
 </head>
 <body>
@@ -399,119 +408,8 @@
         </div>
     </div>
 
-    <!-- 홍보자료 그리드 -->
-    <div class="promo-grid" id="promoGrid">
-        
-        <!-- 1. TEI Introduction 2026 (PDF + Image Preview) -->
-        <div class="promo-card" data-year="2026" data-month="08">
-            <span class="promo-badge">PDF</span>
-            <div class="promo-title">TEI Introduction 2026</div>
-            
-            <div class="card-body-content">
-                <div class="promo-info">
-                    <span>📅 Date: 2026-08-12</span>
-                    <span>💾 Size: 1.03 MB</span>
-                    <span>📂 Category: Brochure</span>
-                </div>
-                <!-- 우측 이미지 썸네일 (클릭 시 확대) -->
-                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/TEI_Intro.png', 'TEI Introduction Cover')">
-                    <img src="images/TEI/Brochure/TEI_Intro.png" alt="TEI Intro Thumbnail" onerror="this.src='https://via.placeholder.com/150/090d24/00FFF0?text=TEI'">
-                    <div class="thumb-overlay">🔍</div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn-action btn-preview" onclick="openPreview('images/TEI/Brochure/TEI_Introduction_2026.pdf', 'TEI Introduction 2026')">
-                    👁️ PREVIEW
-                </button>
-                <a href="images/TEI/Brochure/TEI_Introduction_2026.pdf" download="TEI_Introduction_2026.pdf" class="btn-action btn-download">
-                    ⚡ DOWNLOAD
-                </a>
-            </div>
-        </div>
-
-        <!-- 2. TEI Brochure Image 1 -->
-        <div class="promo-card" data-year="2026" data-month="08">
-            <span class="promo-badge">PNG</span>
-            <div class="promo-title">TEI Brochure Page 1</div>
-            
-            <div class="card-body-content">
-                <div class="promo-info">
-                    <span>📅 Date: 2026-08-12</span>
-                    <span>💾 Size: 1.98 MB</span>
-                    <span>📂 Category: Image</span>
-                </div>
-                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure1.png', 'Brochure Page 1')">
-                    <img src="images/TEI/Brochure/Brochure1.png" alt="Brochure1 Thumbnail">
-                    <div class="thumb-overlay">🔍</div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure1.png', 'Brochure Page 1')">
-                    🔍 ENLARGE
-                </button>
-                <a href="images/TEI/Brochure/Brochure1.png" download="Brochure1.png" class="btn-action btn-download">
-                    ⚡ DOWNLOAD
-                </a>
-            </div>
-        </div>
-
-        <!-- 3. TEI Brochure Image 2 -->
-        <div class="promo-card" data-year="2026" data-month="08">
-            <span class="promo-badge">PNG</span>
-            <div class="promo-title">TEI Brochure Page 2</div>
-            
-            <div class="card-body-content">
-                <div class="promo-info">
-                    <span>📅 Date: 2026-08-12</span>
-                    <span>💾 Size: 2.12 MB</span>
-                    <span>📂 Category: Image</span>
-                </div>
-                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure2.png', 'Brochure Page 2')">
-                    <img src="images/TEI/Brochure/Brochure2.png" alt="Brochure2 Thumbnail">
-                    <div class="thumb-overlay">🔍</div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure2.png', 'Brochure Page 2')">
-                    🔍 ENLARGE
-                </button>
-                <a href="images/TEI/Brochure/Brochure2.png" download="Brochure2.png" class="btn-action btn-download">
-                    ⚡ DOWNLOAD
-                </a>
-            </div>
-        </div>
-
-        <!-- 4. TEI Brochure Image 3 -->
-        <div class="promo-card" data-year="2026" data-month="08">
-            <span class="promo-badge">PNG</span>
-            <div class="promo-title">TEI Brochure Page 3</div>
-            
-            <div class="card-body-content">
-                <div class="promo-info">
-                    <span>📅 Date: 2026-08-12</span>
-                    <span>💾 Size: 2.21 MB</span>
-                    <span>📂 Category: Image</span>
-                </div>
-                <div class="promo-thumb-box" onclick="openImagePreview('images/TEI/Brochure/Brochure3.png', 'Brochure Page 3')">
-                    <img src="images/TEI/Brochure/Brochure3.png" alt="Brochure3 Thumbnail">
-                    <div class="thumb-overlay">🔍</div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn-action btn-preview" onclick="openImagePreview('images/TEI/Brochure/Brochure3.png', 'Brochure Page 3')">
-                    🔍 ENLARGE
-                </button>
-                <a href="images/TEI/Brochure/Brochure3.png" download="Brochure3.png" class="btn-action btn-download">
-                    ⚡ DOWNLOAD
-                </a>
-            </div>
-        </div>
-
-    </div>
+    <!-- 홍보자료 그리드 (스크립트로 수동 동적 생성) -->
+    <div class="promo-grid" id="promoGrid"></div>
 
     <!-- 미리보기 / 이미지 확대 공용 모달 팝업 -->
     <div class="modal-overlay" id="previewModal">
@@ -533,8 +431,27 @@
 
     <script>
     (function() {
+        let allBrochureItems = [];
         let currentYear = 'ALL';
         let currentMonth = 'ALL';
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function parseDateMeta(dateStr) {
+            const match = String(dateStr || '').match(/(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/);
+            if (!match) return { year: '2026', month: '08' };
+            const year = match[1];
+            const month = match[2].padStart(2, '0');
+            return { year, month };
+        }
 
         // PDF 미리보기 모달 열기
         window.openPreview = function(fileUrl, title) {
@@ -579,7 +496,7 @@
 
             if (modal && modalBody) {
                 modal.style.display = 'none';
-                modalBody.innerHTML = ''; // 리소스 해제
+                modalBody.innerHTML = '';
             }
         };
 
@@ -627,6 +544,100 @@
                 }
             });
         }
+
+        function renderBrochureCards(items) {
+            const grid = document.getElementById('promoGrid');
+            if (!grid) return;
+
+            if (!items || items.length === 0) {
+                grid.innerHTML = `<div class="empty-state">NO BROCHURE MATERIALS FOUND</div>`;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => {
+                const relativePath = item[0];
+                const rawTitle = item[1];
+                const rawDate = item[2];
+                const category = item[3];
+
+                const { year, month } = parseDateMeta(rawDate);
+                const fileName = relativePath.split('/').pop();
+                const ext = fileName.split('.').pop().toLowerCase();
+                const isPdf = ext === 'pdf';
+
+                const fullPath = `images/TEI/${relativePath}`;
+                
+                // PDF일 경우 미리보기 썸네일 이미지 처리
+                const thumbPath = isPdf ? `images/TEI/Brochure/TEI_Intro.png` : fullPath;
+                const safeTitle = escapeHtml(rawTitle);
+                const badgeText = ext.toUpperCase();
+
+                return `
+                <div class="promo-card" data-year="${year}" data-month="${month}">
+                    <span class="promo-badge">${badgeText}</span>
+                    <div class="promo-title">${safeTitle}</div>
+                    
+                    <div class="card-body-content">
+                        <div class="promo-info">
+                            <span>📅 Date: ${escapeHtml(rawDate)}</span>
+                            <span>📂 Category: ${escapeHtml(category)}</span>
+                        </div>
+                        <div class="promo-thumb-box" onclick="openImagePreview('${thumbPath}', '${safeTitle}')">
+                            <img src="${thumbPath}" alt="${safeTitle} Thumbnail" onerror="this.src='https://via.placeholder.com/150/090d24/00FFF0?text=TEI'">
+                            <div class="thumb-overlay">🔍</div>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        ${isPdf ? `
+                            <button class="btn-action btn-preview" onclick="openPreview('${fullPath}', '${safeTitle}')">
+                                👁️ PREVIEW
+                            </button>
+                        ` : `
+                            <button class="btn-action btn-preview" onclick="openImagePreview('${fullPath}', '${safeTitle}')">
+                                🔍 ENLARGE
+                            </button>
+                        `}
+                        <a href="${fullPath}" download="${fileName}" class="btn-action btn-download">
+                            ⚡ DOWNLOAD
+                        </a>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            applyFilters();
+        }
+
+        // photos.json 데이터 로드
+        function loadPromoData() {
+            fetch('images/TEI/photos.json')
+                .then(res => res.json())
+                .then(data => {
+                    // Brochure 카테고리이거나 경로에 Brochure/가 포함된 항목만 필터링
+                    allBrochureItems = data.filter(item => {
+                        const path = item[0] || '';
+                        const category = item[3] || '';
+                        return category === 'Brochure' || path.startsWith('Brochure/');
+                    });
+                    renderBrochureCards(allBrochureItems);
+                })
+                .catch(err => {
+                    console.error('Failed to load photos.json:', err);
+                    // 실패시 기본 하드코딩 항목 복구 처리
+                    const fallbackData = [
+                        ["Brochure/Brochure1.png", "TEI Brochure Page 1", "2026-08-12", "Brochure"],
+                        ["Brochure/Brochure2.png", "TEI Brochure Page 2", "2026-08-12", "Brochure"],
+                        ["Brochure/Brochure3.png", "TEI Brochure Page 3", "2026-08-12", "Brochure"],
+                        ["Brochure/Brochure4.png", "TEI Brochure Page 4", "2026-08-14", "Brochure"],
+                        ["Brochure/TEI_Intro.png", "TEI Brochure Page 5", "2026-08-12", "Brochure"],
+                        ["Brochure/TEI_Introduction_2026.pdf", "TEI Brochure Page 5", "2026-08-12", "Brochure"]
+                    ];
+                    renderBrochureCards(fallbackData);
+                });
+        }
+
+        loadPromoData();
     })();
     </script>
 </body>
