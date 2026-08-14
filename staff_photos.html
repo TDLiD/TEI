@@ -824,12 +824,18 @@
         <!-- 상단 EXIT 버튼 -->
         <button class="modal-close" onclick="closeModal()">✕ EXIT</button>
         
-        <div class="modal-image-wrapper">
-            <button class="modal-nav-btn modal-prev" onclick="previousPhoto()">◀</button>
-            <!-- 이미지 클릭 시 목록으로 복귀 (closeModal) -->
-            <img class="modal-image" id="modalImage" src="" alt="" onclick="closeModal()" title="클릭하면 닫힙니다" />
-            <button class="modal-nav-btn modal-next" onclick="nextPhoto()">▶</button>
-        </div>
+<!-- 기존 modal-image-wrapper 부분을 아래와 같이 수정 -->
+<div class="modal-image-wrapper">
+    <button class="modal-nav-btn modal-prev" onclick="previousPhoto()">◀</button>
+    
+    <!-- 이미지용 -->
+    <img class="modal-image" id="modalImage" src="" alt="" onclick="closeModal()" title="클릭하면 닫힙니다" />
+    <!-- PDF 미리보기용 iframe 추가 -->
+    <iframe id="modalPdf" style="display:none; width:100%; height:60vh; border:3px solid var(--neon-cyan); border-radius:12px;" src=""></iframe>
+
+    <button class="modal-nav-btn modal-next" onclick="nextPhoto()">▶</button>
+</div>
+
 
         <div class="modal-info">
             <div class="modal-title" id="modalTitle"></div>
@@ -936,24 +942,41 @@ window.openModal = function (index) {
     const photo = state.filteredPhotos[index];
     if (!photo) return;
 
-    // 이미지 및 텍스트 정보 설정
     const modalImg = document.getElementById('modalImage');
-    if (modalImg) {
-        modalImg.src = `images/TEI/${photo.filename}`;
-        modalImg.alt = photo.title || '';
+    const modalPdf = document.getElementById('modalPdf');
+    const isPdf = photo.filename.toLowerCase().endsWith('.pdf');
+    const fileUrl = `images/TEI/${photo.filename}`;
+
+    // PDF 여부에 따라 이미지 / iframe 스위칭
+    if (isPdf) {
+        if (modalImg) modalImg.style.display = 'none';
+        if (modalPdf) {
+            modalPdf.src = fileUrl;
+            modalPdf.style.display = 'block';
+        }
+    } else {
+        if (modalPdf) {
+            modalPdf.style.display = 'none';
+            modalPdf.src = '';
+        }
+        if (modalImg) {
+            modalImg.src = fileUrl;
+            modalImg.alt = photo.title || '';
+            modalImg.style.display = 'block';
+        }
     }
 
     document.getElementById('modalTitle').innerText = photo.title || '';
     document.getElementById('modalDate').innerText = `📅 ${photo.date || ''} · ${photo.dayLabel || ''}요일`;
     document.getElementById('modalCategory').innerText = `🏷️ ${(photo.category || '').toUpperCase()}`;
 
-    // 카운터 및 메인 메뉴 버튼 업데이트
+    // 카운터 및 메인 메뉴 버튼 (PDF 다운로드 링크도 함께 제공)
     document.getElementById('modalCounter').innerHTML = `
         <span style="margin-right: 15px;">${index + 1} / ${state.filteredPhotos.length}</span>
+        ${isPdf ? `<a href="${fileUrl}" download class="modal-home-btn" style="margin-right:10px; border-color:var(--neon-cyan); color:var(--neon-cyan);">📥 DOWNLOAD PDF</a>` : ''}
         <a href="staff.html" class="modal-home-btn" style="text-decoration: none;">🏠 MAIN MENU</a>
     `;
 
-    // 모달 활성화 및 배경 스크롤 방지
     const modal = document.getElementById('modal');
     if (modal) {
         modal.classList.add('active');
@@ -974,33 +997,40 @@ window.openModal = function (index) {
             if (state.currentIndex < state.filteredPhotos.length - 1) window.openModal(state.currentIndex + 1);
         };
 
-        function renderGallery() {
-            const gallery = document.getElementById('gallery');
-            if (!gallery) return;
+function renderGallery() {
+    const gallery = document.getElementById('gallery');
+    if (!gallery) return;
 
-            if (state.filteredPhotos.length === 0) {
-                gallery.innerHTML = `
-                    <div class="empty-state">
-                        <div class="loading-spinner"></div>
-                        <p class="empty-state-text">No photos found</p>
-                    </div>`;
-                return;
-            }
+    if (state.filteredPhotos.length === 0) {
+        gallery.innerHTML = `
+            <div class="empty-state">
+                <div class="loading-spinner"></div>
+                <p class="empty-state-text">No photos found</p>
+            </div>`;
+        return;
+    }
 
-            gallery.innerHTML = state.filteredPhotos.map((photo, idx) => {
-                const categoryEmoji = state.categoryIcons[photo.category] || '📷';
-                const safeTitle = escapeHtml(photo.title);
-                const safeDayLabel = escapeHtml(photo.dayLabel);
-                const safeFilename = escapeHtml(photo.filename);
-                return `
-                    <div class="photo-card day-${photo.dayIndex}" onclick="openModal(${idx})">
-                        <img class="photo-image" src="images/TEI/${safeFilename}" alt="${safeTitle}" loading="lazy" decoding="async" />
-                        <div class="photo-day">${safeDayLabel}</div>
-                        <div class="photo-overlay-text">${safeTitle}</div>
-                        <div class="photo-badge">${categoryEmoji}</div>
-                    </div>`;
-            }).join('');
-        }
+    gallery.innerHTML = state.filteredPhotos.map((photo, idx) => {
+        const categoryEmoji = state.categoryIcons[photo.category] || '📷';
+        const safeTitle = escapeHtml(photo.title);
+        const safeDayLabel = escapeHtml(photo.dayLabel);
+        const safeFilename = escapeHtml(photo.filename);
+        const isPdf = safeFilename.toLowerCase().endsWith('.pdf');
+
+        // PDF일 경우 썸네일 대신 아이콘/텍스트 안내 렌더링
+        const mediaHtml = isPdf 
+            ? `<div class="photo-image" style="display:flex; align-items:center; justify-content:center; background:#090d24; color:var(--neon-cyan); font-weight:bold; font-size:1.2rem;">📄 PDF DOCUMENT</div>`
+            : `<img class="photo-image" src="images/TEI/${safeFilename}" alt="${safeTitle}" loading="lazy" decoding="async" />`;
+
+        return `
+            <div class="photo-card day-${photo.dayIndex}" onclick="openModal(${idx})">
+                ${mediaHtml}
+                <div class="photo-day">${safeDayLabel}</div>
+                <div class="photo-overlay-text">${safeTitle}</div>
+                <div class="photo-badge">${isPdf ? '📄' : categoryEmoji}</div>
+            </div>`;
+    }).join('');
+}
 
         function loadPhotos() {
             fetch('images/TEI/photos.json')
