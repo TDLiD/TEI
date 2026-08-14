@@ -304,6 +304,7 @@
             box-shadow: 0 0 30px rgba(0, 255, 240, 0.4);
             overflow: hidden;
             animation: modalFadeIn 0.3s ease;
+            position: relative;
         }
 
         @keyframes modalFadeIn {
@@ -318,6 +319,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 5;
         }
 
         .modal-title {
@@ -366,14 +368,51 @@
             border: 1px solid var(--neon-cyan);
             box-shadow: 0 0 20px rgba(0, 255, 240, 0.3);
             border-radius: 8px;
+            user-select: none;
         }
+
+        /* ── Slide Nav Buttons for Image Lightbox ── */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(5, 8, 17, 0.7);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            z-index: 10;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: none; /* 스크립트로 이미지 시 활성화 */
+        }
+
+        .nav-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 240, 0.8);
+        }
+
+        .nav-btn.prev { left: 15px; }
+        .nav-btn.next { right: 15px; }
 
         .modal-footer {
             padding: 12px 20px;
             background: rgba(0, 0, 0, 0.4);
             border-top: 1px solid rgba(0, 255, 240, 0.2);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .modal-counter {
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
         }
 
         .empty-state {
@@ -420,8 +459,12 @@
             </div>
             <div class="modal-body" id="modalBody">
                 <iframe id="pdfFrame" src=""></iframe>
+                <!-- 이전 / 다음 좌우 슬라이드 버튼 -->
+                <button class="nav-btn prev" id="btnPrev" onclick="navigateImage(-1)">◀</button>
+                <button class="nav-btn next" id="btnNext" onclick="navigateImage(1)">▶</button>
             </div>
             <div class="modal-footer" id="modalFooter" style="display: none;">
+                <span class="modal-counter" id="modalCounter">1 / 1</span>
                 <a id="modalDownloadBtn" href="" download class="btn-action btn-download" style="max-width: 200px;">
                     ⚡ DOWNLOAD FILE
                 </a>
@@ -432,6 +475,8 @@
     <script>
     (function() {
         let allBrochureItems = [];
+        let currentImageItems = []; // 탐색 가능한 이미지들만 모은 리스트
+        let currentImageIndex = -1; // 현재 열린 이미지의 인덱스
         let currentYear = 'ALL';
         let currentMonth = 'ALL';
 
@@ -459,35 +504,124 @@
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
             const modalFooter = document.getElementById('modalFooter');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
 
             if (modal && modalBody && modalTitle) {
                 modalTitle.innerText = `👁️ PREVIEW: ${title}`;
                 modalBody.innerHTML = `<iframe src="${fileUrl}"></iframe>`;
-                if(modalFooter) modalFooter.style.display = 'none';
+                
+                if (btnPrev) btnPrev.style.display = 'none';
+                if (btnNext) btnNext.style.display = 'none';
+                if (modalFooter) modalFooter.style.display = 'none';
+                
                 modal.style.display = 'flex';
             }
         };
 
         // 이미지 확대(라이트박스) 모달 열기
         window.openImagePreview = function(imageUrl, title) {
+            updateCurrentImageList(); // 현재 화면에 보이는 이미지 목록 최신화
+
+            // 열린 이미지의 인덱스 찾기
+            currentImageIndex = currentImageItems.findIndex(item => item.url === imageUrl);
+            if (currentImageIndex === -1) {
+                currentImageIndex = 0; // 찾지 못한 경우 첫 이미지 지정
+            }
+
+            renderImageLightbox();
+        };
+
+        // 현재 화면 필터에 맞는 이미지들만 수집
+        function updateCurrentImageList() {
+            const cards = document.querySelectorAll('.promo-card');
+            currentImageItems = [];
+
+            cards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    const isPdf = card.getAttribute('data-is-pdf') === 'true';
+                    if (!isPdf) {
+                        currentImageItems.push({
+                            url: card.getAttribute('data-full-path'),
+                            title: card.getAttribute('data-title'),
+                            fileName: card.getAttribute('data-filename')
+                        });
+                    }
+                }
+            });
+        }
+
+        // 이미지 모달 내용 렌더링
+        function renderImageLightbox() {
+            if (currentImageItems.length === 0) return;
+
             const modal = document.getElementById('previewModal');
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
             const modalFooter = document.getElementById('modalFooter');
             const downloadBtn = document.getElementById('modalDownloadBtn');
+            const counter = document.getElementById('modalCounter');
+
+            const item = currentImageItems[currentImageIndex];
 
             if (modal && modalBody && modalTitle) {
-                modalTitle.innerText = `🔍 IMAGE ENLARGE: ${title}`;
-                modalBody.innerHTML = `<img src="${imageUrl}" alt="${title}">`;
+                modalTitle.innerText = `🔍 IMAGE ENLARGE: ${item.title}`;
                 
+                // 이미지 & 네비게이션 버튼 구조 생성
+                modalBody.innerHTML = `
+                    <button class="nav-btn prev" id="btnPrev" onclick="navigateImage(-1)">◀</button>
+                    <img src="${item.url}" alt="${item.title}">
+                    <button class="nav-btn next" id="btnNext" onclick="navigateImage(1)">▶</button>
+                `;
+
+                const btnPrev = document.getElementById('btnPrev');
+                const btnNext = document.getElementById('btnNext');
+
+                // 이미지가 2개 이상일 때만 넘김 버튼 노출
+                if (currentImageItems.length > 1) {
+                    if (btnPrev) btnPrev.style.display = 'block';
+                    if (btnNext) btnNext.style.display = 'block';
+                }
+
                 if (modalFooter && downloadBtn) {
-                    downloadBtn.href = imageUrl;
-                    downloadBtn.download = imageUrl.split('/').pop();
+                    downloadBtn.href = item.url;
+                    downloadBtn.download = item.fileName || item.url.split('/').pop();
+                    if (counter) counter.innerText = `${currentImageIndex + 1} / ${currentImageItems.length}`;
                     modalFooter.style.display = 'flex';
                 }
                 modal.style.display = 'flex';
             }
+        }
+
+        // 이전 / 다음 이미지 탐색 함수
+        window.navigateImage = function(direction) {
+            if (currentImageItems.length <= 1) return;
+
+            currentImageIndex += direction;
+
+            // 순환 처리 (첫 이미지 이전 -> 마지막, 마지막 이미지 다음 -> 첫 이미지)
+            if (currentImageIndex < 0) {
+                currentImageIndex = currentImageItems.length - 1;
+            } else if (currentImageIndex >= currentImageItems.length) {
+                currentImageIndex = 0;
+            }
+
+            renderImageLightbox();
         };
+
+        // 키보드 이벤트 (좌/우 화살표, ESC)
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('previewModal');
+            if (modal && modal.style.display === 'flex') {
+                if (e.key === 'ArrowLeft') {
+                    navigateImage(-1);
+                } else if (e.key === 'ArrowRight') {
+                    navigateImage(1);
+                } else if (e.key === 'Escape') {
+                    closePreview();
+                }
+            }
+        });
 
         // 모달 닫기
         window.closePreview = function() {
@@ -573,7 +707,13 @@
                 const badgeText = ext.toUpperCase();
 
                 return `
-                <div class="promo-card" data-year="${year}" data-month="${month}">
+                <div class="promo-card" 
+                     data-year="${year}" 
+                     data-month="${month}" 
+                     data-is-pdf="${isPdf}" 
+                     data-full-path="${fullPath}" 
+                     data-title="${safeTitle}"
+                     data-filename="${fileName}">
                     <span class="promo-badge">${badgeText}</span>
                     <div class="promo-title">${safeTitle}</div>
                     
