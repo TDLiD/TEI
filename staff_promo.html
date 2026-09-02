@@ -172,7 +172,6 @@
             line-height: 1.4;
         }
 
-        /* Layout with Thumbnail on Right */
         .card-body-content {
             display: flex;
             gap: 12px;
@@ -189,7 +188,6 @@
             gap: 5px;
         }
 
-        /* Small Image Thumbnail Style */
         .promo-thumb-box {
             width: 75px;
             height: 75px;
@@ -232,7 +230,6 @@
             opacity: 1;
         }
 
-        /* Action Buttons Container */
         .btn-group {
             display: flex;
             gap: 8px;
@@ -280,7 +277,7 @@
             box-shadow: 0 0 20px rgba(255, 0, 110, 0.7);
         }
 
-        /* ── Preview Modal ── */
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -360,7 +357,6 @@
             border: none;
         }
 
-        /* Image Preview Lightbox Specific */
         .modal-body img {
             max-width: 90%;
             max-height: 80vh;
@@ -371,7 +367,6 @@
             user-select: none;
         }
 
-        /* ── Slide Nav Buttons for Image Lightbox ── */
         .nav-btn {
             position: absolute;
             top: 50%;
@@ -387,7 +382,7 @@
             z-index: 10;
             transition: all 0.2s ease;
             user-select: none;
-            display: none; /* 스크립트로 이미지 시 활성화 */
+            display: none;
         }
 
         .nav-btn:hover {
@@ -432,7 +427,7 @@
         <p class="header-subtitle">Promotional Materials & Brochure Downloads</p>
     </div>
 
-    <!-- 필터 컨트롤 -->
+    <!-- 필터 컨트롤 (09월 필터 버튼 추가) -->
     <div class="filter-wrapper">
         <div class="filter-group" id="yearFilter">
             <button class="filter-btn active" onclick="filterYear('ALL')">ALL YEARS</button>
@@ -441,13 +436,14 @@
         </div>
         <div class="filter-group" id="monthFilter">
             <button class="filter-btn active" onclick="filterMonth('ALL')">ALL MONTHS</button>
+            <button class="filter-btn" onclick="filterMonth('09')">SEP (09)</button>
             <button class="filter-btn" onclick="filterMonth('08')">AUG (08)</button>
             <button class="filter-btn" onclick="filterMonth('07')">JUL (07)</button>
             <button class="filter-btn" onclick="filterMonth('06')">JUN (06)</button>
         </div>
     </div>
 
-    <!-- 홍보자료 그리드 (스크립트로 수동 동적 생성) -->
+    <!-- 홍보자료 그리드 -->
     <div class="promo-grid" id="promoGrid"></div>
 
     <!-- 미리보기 / 이미지 확대 공용 모달 팝업 -->
@@ -459,7 +455,6 @@
             </div>
             <div class="modal-body" id="modalBody">
                 <iframe id="pdfFrame" src=""></iframe>
-                <!-- 이전 / 다음 좌우 슬라이드 버튼 -->
                 <button class="nav-btn prev" id="btnPrev" onclick="navigateImage(-1)">◀</button>
                 <button class="nav-btn next" id="btnNext" onclick="navigateImage(1)">▶</button>
             </div>
@@ -475,8 +470,8 @@
     <script>
     (function() {
         let allBrochureItems = [];
-        let currentImageItems = []; // 탐색 가능한 이미지들만 모은 리스트
-        let currentImageIndex = -1; // 현재 열린 이미지의 인덱스
+        let currentImageItems = [];
+        let currentImageIndex = -1;
         let currentYear = 'ALL';
         let currentMonth = 'ALL';
 
@@ -521,18 +516,16 @@
 
         // 이미지 확대(라이트박스) 모달 열기
         window.openImagePreview = function(imageUrl, title) {
-            updateCurrentImageList(); // 현재 화면에 보이는 이미지 목록 최신화
+            updateCurrentImageList();
 
-            // 열린 이미지의 인덱스 찾기
             currentImageIndex = currentImageItems.findIndex(item => item.url === imageUrl);
             if (currentImageIndex === -1) {
-                currentImageIndex = 0; // 찾지 못한 경우 첫 이미지 지정
+                currentImageIndex = 0;
             }
 
             renderImageLightbox();
         };
 
-        // 현재 화면 필터에 맞는 이미지들만 수집
         function updateCurrentImageList() {
             const cards = document.querySelectorAll('.promo-card');
             currentImageItems = [];
@@ -551,7 +544,6 @@
             });
         }
 
-        // 이미지 모달 내용 렌더링
         function renderImageLightbox() {
             if (currentImageItems.length === 0) return;
 
@@ -567,7 +559,6 @@
             if (modal && modalBody && modalTitle) {
                 modalTitle.innerText = `🔍 IMAGE ENLARGE: ${item.title}`;
                 
-                // 이미지 & 네비게이션 버튼 구조 생성
                 modalBody.innerHTML = `
                     <button class="nav-btn prev" id="btnPrev" onclick="navigateImage(-1)">◀</button>
                     <img src="${item.url}" alt="${item.title}">
@@ -577,7 +568,6 @@
                 const btnPrev = document.getElementById('btnPrev');
                 const btnNext = document.getElementById('btnNext');
 
-                // 이미지가 2개 이상일 때만 넘김 버튼 노출
                 if (currentImageItems.length > 1) {
                     if (btnPrev) btnPrev.style.display = 'block';
                     if (btnNext) btnNext.style.display = 'block';
@@ -593,13 +583,11 @@
             }
         }
 
-        // 이전 / 다음 이미지 탐색 함수
         window.navigateImage = function(direction) {
             if (currentImageItems.length <= 1) return;
 
             currentImageIndex += direction;
 
-            // 순환 처리 (첫 이미지 이전 -> 마지막, 마지막 이미지 다음 -> 첫 이미지)
             if (currentImageIndex < 0) {
                 currentImageIndex = currentImageItems.length - 1;
             } else if (currentImageIndex >= currentImageItems.length) {
@@ -609,7 +597,6 @@
             renderImageLightbox();
         };
 
-        // 키보드 이벤트 (좌/우 화살표, ESC)
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('previewModal');
             if (modal && modal.style.display === 'flex') {
@@ -623,7 +610,6 @@
             }
         });
 
-        // 모달 닫기
         window.closePreview = function() {
             const modal = document.getElementById('previewModal');
             const modalBody = document.getElementById('modalBody');
@@ -634,14 +620,12 @@
             }
         };
 
-        // 년도 필터
         window.filterYear = function(year) {
             currentYear = year;
             updateFilterButtons('yearFilter', year);
             applyFilters();
         };
 
-        // 월별 필터
         window.filterMonth = function(month) {
             currentMonth = month;
             updateFilterButtons('monthFilter', month);
@@ -701,10 +685,14 @@
 
                 const fullPath = `images/TEI/${relativePath}`;
                 
-                // PDF일 경우 미리보기 썸네일 이미지 처리
                 const thumbPath = isPdf ? `images/TEI/Brochure/TEI_Intro.png` : fullPath;
                 const safeTitle = escapeHtml(rawTitle);
                 const badgeText = ext.toUpperCase();
+
+                // 썸네일 클릭 시 PDF/이미지 분기 처리
+                const thumbClickAction = isPdf 
+                    ? `openPreview('${fullPath}', '${safeTitle}')` 
+                    : `openImagePreview('${thumbPath}', '${safeTitle}')`;
 
                 return `
                 <div class="promo-card" 
@@ -722,9 +710,9 @@
                             <span>📅 Date: ${escapeHtml(rawDate)}</span>
                             <span>📂 Category: ${escapeHtml(category)}</span>
                         </div>
-                        <div class="promo-thumb-box" onclick="openImagePreview('${thumbPath}', '${safeTitle}')">
+                        <div class="promo-thumb-box" onclick="${thumbClickAction}">
                             <img src="${thumbPath}" alt="${safeTitle} Thumbnail" onerror="this.src='https://via.placeholder.com/150/090d24/00FFF0?text=TEI'">
-                            <div class="thumb-overlay">🔍</div>
+                            <div class="thumb-overlay">${isPdf ? '👁️' : '🔍'}</div>
                         </div>
                     </div>
                     
@@ -749,12 +737,10 @@
             applyFilters();
         }
 
-        // photos.json 데이터 로드
         function loadPromoData() {
             fetch('images/TEI/photos.json')
                 .then(res => res.json())
                 .then(data => {
-                    // Brochure 카테고리이거나 경로에 Brochure/가 포함된 항목만 필터링
                     allBrochureItems = data.filter(item => {
                         const path = item[0] || '';
                         const category = item[3] || '';
@@ -764,14 +750,18 @@
                 })
                 .catch(err => {
                     console.error('Failed to load photos.json:', err);
-                    // 실패시 기본 하드코딩 항목 복구 처리
                     const fallbackData = [
                         ["Brochure/Brochure1.png", "TEI Brochure Page 1", "2026-08-12", "Brochure"],
                         ["Brochure/Brochure2.png", "TEI Brochure Page 2", "2026-08-12", "Brochure"],
                         ["Brochure/Brochure3.png", "TEI Brochure Page 3", "2026-08-12", "Brochure"],
                         ["Brochure/Brochure4.png", "TEI Brochure Page 4", "2026-08-14", "Brochure"],
-                        ["Brochure/TEI_Intro.png", "TEI Brochure Page 5", "2026-08-12", "Brochure"],
-                        ["Brochure/TEI_Introduction_2026.pdf", "TEI Brochure Page 5", "2026-08-12", "Brochure"]
+                        ["Brochure/Brochure5.png", "TEI Brochure Page 5", "2026-09-02", "Brochure"],
+                        ["Brochure/Brochure6.png", "TEI Brochure Page 6", "2026-09-02", "Brochure"],
+                        ["Brochure/Brochure7.png", "TEI Brochure Page 7", "2026-09-02", "Brochure"],
+                        ["Brochure/Brochure8.png", "TEI Brochure Page 8", "2026-09-02", "Brochure"],
+                        ["Brochure/Brochure9.png", "TEI Brochure Page 9", "2026-09-02", "Brochure"],
+                        ["Brochure/TEI_Intro.png", "TEI Brochure Page 10", "2026-08-12", "Brochure"],
+                        ["Brochure/TEI_Introduction_2026.pdf", "TEI Brochure Document", "2026-08-12", "Brochure"]
                     ];
                     renderBrochureCards(fallbackData);
                 });
