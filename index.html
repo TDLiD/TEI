@@ -428,6 +428,40 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 @media (max-width: 600px) {
     .birthday-inner { max-width: 95vw; }
 }
+
+/* ── AUDIO CONTROL BUTTON ── */
+.audio-control-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    background: rgba(10, 11, 17, 0.8);
+    border: 1px solid var(--accent, #6366f1);
+    color: var(--accent, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+.audio-control-btn:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.1);
+}
+.audio-control-btn:active {
+    transform: scale(0.95);
+}
+.audio-control-btn svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: currentColor;
+}
+
 </style>
 </head>
 
@@ -501,6 +535,19 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     </div>
 
 </div><!-- /page-wrapper -->
+
+<audio id="bgmAudio" loop preload="auto">
+    <source src="music/Chopin_Nocturne_No_20.mp3" type="audio/mpeg">
+</audio>
+
+<button id="bgmToggleBtn" class="audio-control-btn" onclick="toggleBGM()" title="Toggle Background Music">
+    <svg id="bgmIconPlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+        <path d="M160,32V224a8,8,0,0,1-12.91,6.31L86.25,184H40a16,16,0,0,1-16-16V88A16,16,0,0,1,40,72H86.25l60.84-46.31A8,8,0,0,1,160,32Zm32,64a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104A8,8,0,0,0,192,96Zm32-16a8,8,0,0,0-8,8v80a8,8,0,0,0,16,0V88A8,8,0,0,0,224,80Z"/>
+    </svg>
+    <svg id="bgmIconMute" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+        <path d="M213.66,101.66,189.31,128l24.35,26.34a8,8,0,1,1-11.66,10.98L177.65,139,153.3,165.32a8,8,0,0,1-11.66-10.98L165.99,128,141.64,101.66a8,8,0,0,1,11.66-10.98L177.65,117l24.35-26.32a8,8,0,0,1,11.66,10.98ZM128,32V224a8,8,0,0,1-12.91,6.31L54.25,184H24a16,16,0,0,1-16-16V88A16,16,0,0,1,24,72H54.25l60.84-46.31A8,8,0,0,1,128,32Z"/>
+    </svg>
+</button>
 
 <!-- Birthday Popup -->
 <div id="birthday-popup" class="hidden">
@@ -883,6 +930,49 @@ if (todayWinners.length) {
     })();
 
     initStaffSelector();
+
+/* ── BGM AUTOMATIC PLAY & TOGGLE ── */
+    const bgm = document.getElementById('bgmAudio');
+    const iconPlay = document.getElementById('bgmIconPlay');
+    const iconMute = document.getElementById('bgmIconMute');
+
+    function updateBGMUI(isPlaying) {
+        if (isPlaying) {
+            iconPlay.classList.remove('hidden');
+            iconMute.classList.add('hidden');
+        } else {
+            iconPlay.classList.add('hidden');
+            iconMute.classList.remove('hidden');
+        }
+    }
+
+    window.toggleBGM = function() {
+        if (bgm.paused) {
+            bgm.play().then(() => updateBGMUI(true)).catch(() => {});
+        } else {
+            bgm.pause();
+            updateBGMUI(false);
+        }
+    };
+
+    // 자동 재생 시도 및 차단 시 첫 클릭으로 재생 전환
+    const startBGM = () => {
+        bgm.play().then(() => {
+            updateBGMUI(true);
+        }).catch(() => {
+            updateBGMUI(false);
+            // 브라우저 정책으로 자동 재생이 차단된 경우 사용자 첫 클릭 시 재생
+            const enableAudioOnInteraction = () => {
+                bgm.play().then(() => updateBGMUI(true)).catch(() => {});
+                document.removeEventListener('click', enableAudioOnInteraction);
+                document.removeEventListener('keydown', enableAudioOnInteraction);
+            };
+            document.addEventListener('click', enableAudioOnInteraction);
+            document.addEventListener('keydown', enableAudioOnInteraction);
+        });
+    };
+
+    startBGM();
 
 })();
 </script>
