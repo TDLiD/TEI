@@ -932,47 +932,62 @@ if (todayWinners.length) {
     initStaffSelector();
 
 /* ── BGM AUTOMATIC PLAY & TOGGLE ── */
-    const bgm = document.getElementById('bgmAudio');
-    const iconPlay = document.getElementById('bgmIconPlay');
-    const iconMute = document.getElementById('bgmIconMute');
+const bgm = document.getElementById('bgmAudio');
+const iconPlay = document.getElementById('bgmIconPlay');
+const iconMute = document.getElementById('bgmIconMute');
 
-    function updateBGMUI(isPlaying) {
-        if (isPlaying) {
-            iconPlay.classList.remove('hidden');
-            iconMute.classList.add('hidden');
-        } else {
-            iconPlay.classList.add('hidden');
-            iconMute.classList.remove('hidden');
-        }
+function updateBGMUI(isPlaying) {
+    if (isPlaying) {
+        iconPlay.classList.remove('hidden');
+        iconMute.classList.add('hidden');
+    } else {
+        iconPlay.classList.add('hidden');
+        iconMute.classList.remove('hidden');
     }
+}
 
-    window.toggleBGM = function() {
-        if (bgm.paused) {
-            bgm.play().then(() => updateBGMUI(true)).catch(() => {});
-        } else {
-            bgm.pause();
-            updateBGMUI(false);
-        }
-    };
+window.toggleBGM = function() {
+    if (bgm.paused) {
+        bgm.play().then(() => updateBGMUI(true)).catch(() => {});
+    } else {
+        bgm.pause();
+        updateBGMUI(false);
+    }
+};
 
-    // 자동 재생 시도 및 차단 시 첫 클릭으로 재생 전환
-    const startBGM = () => {
-        bgm.play().then(() => {
+// GitHub Pages 및 최신 브라우저 대응 자동 재생 로직
+const startBGM = () => {
+    // 1. 먼저 오디오 재생을 시도
+    const playPromise = bgm.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
             updateBGMUI(true);
         }).catch(() => {
+            // 2. 브라우저 정책으로 자동 재생이 블록된 경우
             updateBGMUI(false);
-            // 브라우저 정책으로 자동 재생이 차단된 경우 사용자 첫 클릭 시 재생
+
+            // 사용자가 화면의 아무 곳이나 클릭하거나 키를 누르면 오디오 재생 시작
             const enableAudioOnInteraction = () => {
-                bgm.play().then(() => updateBGMUI(true)).catch(() => {});
+                bgm.play().then(() => {
+                    updateBGMUI(true);
+                }).catch(() => {});
+
+                // 이벤트를 한 번만 실행하고 제거
                 document.removeEventListener('click', enableAudioOnInteraction);
                 document.removeEventListener('keydown', enableAudioOnInteraction);
+                document.removeEventListener('touchstart', enableAudioOnInteraction);
             };
+
             document.addEventListener('click', enableAudioOnInteraction);
             document.addEventListener('keydown', enableAudioOnInteraction);
+            document.addEventListener('touchstart', enableAudioOnInteraction);
         });
-    };
+    }
+};
 
-    startBGM();
+// 페이지 로드 후 실행
+window.addEventListener('DOMContentLoaded', startBGM);
 
 })();
 </script>
