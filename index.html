@@ -429,37 +429,98 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     .birthday-inner { max-width: 95vw; }
 }
 
-/* ── AUDIO CONTROL BUTTON ── */
-.audio-control-btn {
+/* ── PLAYLIST CONTROL UI ── */
+.playlist-container {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
     z-index: 9999;
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 50%;
-    background: rgba(10, 11, 17, 0.8);
-    border: 1px solid var(--accent, #6366f1);
-    color: var(--accent, #6366f1);
+    font-family: var(--font-ui, 'Pretendard', sans-serif);
+}
+
+.playlist-header {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: rgba(10, 11, 17, 0.85);
+    border: 1px solid var(--accent, #6366f1);
+    color: var(--text, #fff);
+    border-radius: 2rem;
     cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+    max-width: 260px;
 }
-.audio-control-btn:hover {
-    transform: scale(1.08);
+
+.playlist-header:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
 }
-.audio-control-btn:active {
-    transform: scale(0.95);
+
+.current-track-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
 }
-.audio-control-btn svg {
-    width: 1.2rem;
-    height: 1.2rem;
-    fill: currentColor;
+
+.playlist-arrow {
+    font-size: 0.65rem;
+    color: var(--accent);
+    transition: transform 0.25s ease;
+}
+
+.playlist-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.6rem);
+    right: 0;
+    width: 240px;
+    background: rgba(8, 9, 15, 0.95);
+    border: 1px solid var(--accent, #6366f1);
+    border-radius: 0.85rem;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    overflow: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.playlist-dropdown.hidden {
+    display: none;
+}
+
+.playlist-items {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.playlist-item {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.playlist-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.playlist-item.active {
+    background: var(--accent-soft, rgba(99, 102, 241, 0.2));
+    color: var(--accent, #6366f1);
+    font-weight: 700;
 }
 
 </style>
@@ -536,18 +597,20 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
 </div><!-- /page-wrapper -->
 
-<audio id="bgmAudio" loop preload="auto">
-    <source src="music/Chopin_Nocturne_No_20.mp3" type="audio/mpeg">
-</audio>
+<!-- 플레이리스트 오디오 엘리먼트 -->
+<audio id="bgmAudio" preload="auto"></audio>
 
-<button id="bgmToggleBtn" class="audio-control-btn" onclick="toggleBGM()" title="Toggle Background Music">
-    <svg id="bgmIconPlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-        <path d="M160,32V224a8,8,0,0,1-12.91,6.31L86.25,184H40a16,16,0,0,1-16-16V88A16,16,0,0,1,40,72H86.25l60.84-46.31A8,8,0,0,1,160,32Zm32,64a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104A8,8,0,0,0,192,96Zm32-16a8,8,0,0,0-8,8v80a8,8,0,0,0,16,0V88A8,8,0,0,0,224,80Z"/>
-    </svg>
-    <svg id="bgmIconMute" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-        <path d="M213.66,101.66,189.31,128l24.35,26.34a8,8,0,1,1-11.66,10.98L177.65,139,153.3,165.32a8,8,0,0,1-11.66-10.98L165.99,128,141.64,101.66a8,8,0,0,1,11.66-10.98L177.65,117l24.35-26.32a8,8,0,0,1,11.66,10.98ZM128,32V224a8,8,0,0,1-12.91,6.31L54.25,184H24a16,16,0,0,1-16-16V88A16,16,0,0,1,24,72H54.25l60.84-46.31A8,8,0,0,1,128,32Z"/>
-    </svg>
-</button>
+<!-- 플레이리스트 컨테이너 (우측 하단) -->
+<div id="playlistContainer" class="playlist-container">
+    <button id="playlistHeader" class="playlist-header" onclick="togglePlaylistMenu()">
+        <span class="music-icon">🎵</span>
+        <span id="currentTrackTitle" class="current-track-title">Loading...</span>
+        <span id="playlistArrow" class="playlist-arrow">▲</span>
+    </button>
+    <div id="playlistDropdown" class="playlist-dropdown hidden">
+        <ul id="playlistItems" class="playlist-items"></ul>
+    </div>
+</div>
 
 <!-- Birthday Popup -->
 <div id="birthday-popup" class="hidden">
@@ -931,63 +994,92 @@ if (todayWinners.length) {
 
     initStaffSelector();
 
-/* ── BGM AUTOMATIC PLAY & TOGGLE ── */
-const bgm = document.getElementById('bgmAudio');
-const iconPlay = document.getElementById('bgmIconPlay');
-const iconMute = document.getElementById('bgmIconMute');
+/* ── MULTI-TRACK BGM PLAYLIST AUTOMATIC PLAY & CONTROLLER ── */
+const playlist = [
+    { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" },
+    { title: "Chopin - Nocturne Op. 9 No. 2", src: "music/Nocturne_Op_9_No_2.mp3" },
+    { title: "Chopin - Nocturne C minor Op. 48 No. 1", src: "music/C_minor_Op_48_No_1.mp3" },
+    { title: "Chopin - Waltz", src: "music/Chopin.mp3" },
+    { title: "J.S. Bach - Siciliano BWV 1031", src: "music/Siciliano_BWV_1031.mp3" }
+];
 
-function updateBGMUI(isPlaying) {
-    if (isPlaying) {
-        iconPlay.classList.remove('hidden');
-        iconMute.classList.add('hidden');
-    } else {
-        iconPlay.classList.add('hidden');
-        iconMute.classList.remove('hidden');
-    }
+let currentTrackIndex = 0;
+const bgm = document.getElementById('bgmAudio');
+const currentTrackTitleEl = document.getElementById('currentTrackTitle');
+const playlistDropdown = document.getElementById('playlistDropdown');
+const playlistItemsEl = document.getElementById('playlistItems');
+const playlistArrow = document.getElementById('playlistArrow');
+
+// 플레이리스트 UI 생성 및 업데이트
+function renderPlaylistUI() {
+    playlistItemsEl.innerHTML = '';
+    playlist.forEach((track, idx) => {
+        const li = document.createElement('li');
+        li.className = `playlist-item ${idx === currentTrackIndex ? 'active' : ''}`;
+        li.innerHTML = `<span>${idx + 1}. ${track.title}</span>${idx === currentTrackIndex ? '<span>▶</span>' : ''}`;
+        li.onclick = (e) => {
+            e.stopPropagation();
+            playTrack(idx);
+        };
+        playlistItemsEl.appendChild(li);
+    });
 }
 
-window.toggleBGM = function() {
-    if (bgm.paused) {
-        bgm.play().then(() => updateBGMUI(true)).catch(() => {});
-    } else {
-        bgm.pause();
-        updateBGMUI(false);
-    }
+// 트랙 재생 함수
+function playTrack(index) {
+    currentTrackIndex = index;
+    const track = playlist[currentTrackIndex];
+    bgm.src = track.src;
+    currentTrackTitleEl.textContent = track.title;
+    renderPlaylistUI();
+
+    bgm.play().catch(() => {
+        currentTrackTitleEl.textContent = "Click anywhere to play";
+    });
+}
+
+// 곡이 끝나면 다음 곡으로 연속 자동 재생
+bgm.addEventListener('ended', () => {
+    currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+    playTrack(currentTrackIndex);
+});
+
+// 플레이리스트 드롭다운 토글
+window.togglePlaylistMenu = function() {
+    const isHidden = playlistDropdown.classList.toggle('hidden');
+    playlistArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
 };
 
-// GitHub Pages 및 최신 브라우저 대응 자동 재생 로직
-const startBGM = () => {
-    // 1. 먼저 오디오 재생을 시도
-    const playPromise = bgm.play();
-
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            updateBGMUI(true);
-        }).catch(() => {
-            // 2. 브라우저 정책으로 자동 재생이 블록된 경우
-            updateBGMUI(false);
-
-            // 사용자가 화면의 아무 곳이나 클릭하거나 키를 누르면 오디오 재생 시작
-            const enableAudioOnInteraction = () => {
-                bgm.play().then(() => {
-                    updateBGMUI(true);
-                }).catch(() => {});
-
-                // 이벤트를 한 번만 실행하고 제거
-                document.removeEventListener('click', enableAudioOnInteraction);
-                document.removeEventListener('keydown', enableAudioOnInteraction);
-                document.removeEventListener('touchstart', enableAudioOnInteraction);
-            };
-
-            document.addEventListener('click', enableAudioOnInteraction);
-            document.addEventListener('keydown', enableAudioOnInteraction);
-            document.addEventListener('touchstart', enableAudioOnInteraction);
-        });
+// 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', (e) => {
+    if (!document.getElementById('playlistContainer').contains(e.target)) {
+        playlistDropdown.classList.add('hidden');
+        playlistArrow.style.transform = 'rotate(0deg)';
     }
+});
+
+// GitHub Pages/브라우저 자동재생 대응 초기화
+const initBGM = () => {
+    renderPlaylistUI();
+    playTrack(0);
+
+    const enableAudioOnInteraction = () => {
+        if (bgm.paused) {
+            bgm.play().then(() => {
+                currentTrackTitleEl.textContent = playlist[currentTrackIndex].title;
+            }).catch(() => {});
+        }
+        document.removeEventListener('click', enableAudioOnInteraction);
+        document.removeEventListener('keydown', enableAudioOnInteraction);
+        document.removeEventListener('touchstart', enableAudioOnInteraction);
+    };
+
+    document.addEventListener('click', enableAudioOnInteraction);
+    document.addEventListener('keydown', enableAudioOnInteraction);
+    document.addEventListener('touchstart', enableAudioOnInteraction);
 };
 
-// 페이지 로드 후 실행
-window.addEventListener('DOMContentLoaded', startBGM);
+window.addEventListener('DOMContentLoaded', initBGM);
 
 })();
 </script>
