@@ -429,8 +429,8 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     .birthday-inner { max-width: 95vw; }
 }
 
-/* ── PLAYLIST CONTROL UI ── */
-.playlist-container {
+/* ── ADVANCED MUSIC PLAYER UI ── */
+.player-container {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
@@ -438,47 +438,96 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     font-family: var(--font-ui, 'Pretendard', sans-serif);
 }
 
-.playlist-header {
+.player-bar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    background: rgba(10, 11, 17, 0.85);
+    gap: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    background: rgba(10, 11, 17, 0.88);
     border: 1px solid var(--accent, #6366f1);
-    color: var(--text, #fff);
     border-radius: 2rem;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    transition: all 0.2s ease;
-    max-width: 260px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
-.playlist-header:hover {
+.track-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: var(--text, #fff);
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: 1rem;
+    transition: background 0.2s ease;
+}
+
+.track-info-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
 }
 
 .current-track-title {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 160px;
+    max-width: 140px;
 }
 
 .playlist-arrow {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--accent);
     transition: transform 0.25s ease;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 0.5rem;
+}
+
+.ctrl-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ctrl-btn svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+}
+
+.ctrl-btn:hover {
+    color: var(--accent, #6366f1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ctrl-btn.main-ctrl {
+    color: var(--accent, #6366f1);
+}
+
+.ctrl-btn.main-ctrl:hover {
+    transform: scale(1.1);
 }
 
 .playlist-dropdown {
     position: absolute;
     bottom: calc(100% + 0.6rem);
     right: 0;
-    width: 240px;
+    width: 270px;
     background: rgba(8, 9, 15, 0.95);
     border: 1px solid var(--accent, #6366f1);
     border-radius: 0.85rem;
@@ -492,17 +541,26 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     display: none;
 }
 
+.playlist-header-title {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    padding: 0.6rem 0.85rem 0.3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .playlist-items {
     list-style: none;
     margin: 0;
-    padding: 0.4rem;
-    max-height: 200px;
+    padding: 0.3rem;
+    max-height: 180px;
     overflow-y: auto;
 }
 
 .playlist-item {
-    padding: 0.55rem 0.75rem;
-    font-size: 0.72rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.7);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -600,15 +658,36 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 <!-- 플레이리스트 오디오 엘리먼트 -->
 <audio id="bgmAudio" preload="auto"></audio>
 
-<!-- 플레이리스트 컨테이너 (우측 하단) -->
-<div id="playlistContainer" class="playlist-container">
-    <button id="playlistHeader" class="playlist-header" onclick="togglePlaylistMenu()">
-        <span class="music-icon">🎵</span>
-        <span id="currentTrackTitle" class="current-track-title">Loading...</span>
-        <span id="playlistArrow" class="playlist-arrow">▲</span>
-    </button>
+<!-- 뮤직 플레이어 컨테이너 (우측 하단) -->
+<div id="playerContainer" class="player-container">
+    <!-- 플레이리스트 드롭다운 메뉴 -->
     <div id="playlistDropdown" class="playlist-dropdown hidden">
+        <div class="playlist-header-title">PLAYLIST</div>
         <ul id="playlistItems" class="playlist-items"></ul>
+    </div>
+
+    <!-- 플레이어 바 (컨트롤러 & 정보) -->
+    <div class="player-bar">
+        <!-- 곡 정보 & 리스트 토글 버튼 -->
+        <button class="track-info-btn" onclick="togglePlaylistMenu()" title="Show Playlist">
+            <span class="music-icon">🎵</span>
+            <span id="currentTrackTitle" class="current-track-title">Loading...</span>
+            <span id="playlistArrow" class="playlist-arrow">▲</span>
+        </button>
+
+        <!-- 재생 컨트롤 버튼 (이전 / 재생·일시정지 / 다음) -->
+        <div class="player-controls">
+            <button class="ctrl-btn" onclick="prevTrack()" title="Previous Track">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn main-ctrl" onclick="togglePlayPause()" title="Play/Pause">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" onclick="nextTrack()" title="Next Track">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -994,7 +1073,7 @@ if (todayWinners.length) {
 
     initStaffSelector();
 
-/* ── MULTI-TRACK BGM PLAYLIST AUTOMATIC PLAY & CONTROLLER ── */
+/* ── ADVANCED MUSIC PLAYER CONTROL LOGIC ── */
 const playlist = [
     { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" },
     { title: "Chopin - Nocturne Op. 9 No. 2", src: "music/Nocturne_Op_9_No_2.mp3" },
@@ -1010,13 +1089,27 @@ const playlistDropdown = document.getElementById('playlistDropdown');
 const playlistItemsEl = document.getElementById('playlistItems');
 const playlistArrow = document.getElementById('playlistArrow');
 
-// 플레이리스트 UI 생성 및 업데이트
+const playIcon = document.getElementById('playIcon');
+const pauseIcon = document.getElementById('pauseIcon');
+
+// 재생 / 일시정지 아이콘 상태 업데이트
+function updatePlayerUI(isPlaying) {
+    if (isPlaying) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+    } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+    }
+}
+
+// 플레이리스트 드롭다운 UI 렌더링
 function renderPlaylistUI() {
     playlistItemsEl.innerHTML = '';
     playlist.forEach((track, idx) => {
         const li = document.createElement('li');
         li.className = `playlist-item ${idx === currentTrackIndex ? 'active' : ''}`;
-        li.innerHTML = `<span>${idx + 1}. ${track.title}</span>${idx === currentTrackIndex ? '<span>▶</span>' : ''}`;
+        li.innerHTML = `<span>${idx + 1}. ${track.title}</span>${idx === currentTrackIndex ? '<span>♬</span>' : ''}`;
         li.onclick = (e) => {
             e.stopPropagation();
             playTrack(idx);
@@ -1025,7 +1118,7 @@ function renderPlaylistUI() {
     });
 }
 
-// 트랙 재생 함수
+// 지정한 인덱스의 곡 재생
 function playTrack(index) {
     currentTrackIndex = index;
     const track = playlist[currentTrackIndex];
@@ -1033,15 +1126,39 @@ function playTrack(index) {
     currentTrackTitleEl.textContent = track.title;
     renderPlaylistUI();
 
-    bgm.play().catch(() => {
-        currentTrackTitleEl.textContent = "Click anywhere to play";
+    bgm.play().then(() => {
+        updatePlayerUI(true);
+    }).catch(() => {
+        updatePlayerUI(false);
+        currentTrackTitleEl.textContent = "Click to play";
     });
 }
 
-// 곡이 끝나면 다음 곡으로 연속 자동 재생
-bgm.addEventListener('ended', () => {
+// 재생 / 일시정지 토글
+window.togglePlayPause = function() {
+    if (bgm.paused) {
+        bgm.play().then(() => updatePlayerUI(true)).catch(() => {});
+    } else {
+        bgm.pause();
+        updatePlayerUI(false);
+    }
+};
+
+// 이전 곡 재생
+window.prevTrack = function() {
+    currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+    playTrack(currentTrackIndex);
+};
+
+// 다음 곡 재생
+window.nextTrack = function() {
     currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
     playTrack(currentTrackIndex);
+};
+
+// 곡이 끝나면 자동으로 다음 곡 연속 재생
+bgm.addEventListener('ended', () => {
+    nextTrack();
 });
 
 // 플레이리스트 드롭다운 토글
@@ -1050,22 +1167,23 @@ window.togglePlaylistMenu = function() {
     playlistArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
 };
 
-// 외부 클릭 시 드롭다운 닫기
+// 플레이어 외부 영역 클릭 시 리스트 드롭다운 닫기
 document.addEventListener('click', (e) => {
-    if (!document.getElementById('playlistContainer').contains(e.target)) {
+    if (!document.getElementById('playerContainer').contains(e.target)) {
         playlistDropdown.classList.add('hidden');
         playlistArrow.style.transform = 'rotate(0deg)';
     }
 });
 
-// GitHub Pages/브라우저 자동재생 대응 초기화
-const initBGM = () => {
+// 초기화 및 자동재생 브라우저 정책 대응
+const initPlayer = () => {
     renderPlaylistUI();
     playTrack(0);
 
     const enableAudioOnInteraction = () => {
         if (bgm.paused) {
             bgm.play().then(() => {
+                updatePlayerUI(true);
                 currentTrackTitleEl.textContent = playlist[currentTrackIndex].title;
             }).catch(() => {});
         }
@@ -1079,7 +1197,7 @@ const initBGM = () => {
     document.addEventListener('touchstart', enableAudioOnInteraction);
 };
 
-window.addEventListener('DOMContentLoaded', initBGM);
+window.addEventListener('DOMContentLoaded', initPlayer);
 
 })();
 </script>
