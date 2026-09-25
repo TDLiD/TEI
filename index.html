@@ -81,6 +81,30 @@ body {
     isolation: isolate;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   AURORA MESH — soft, slow-drifting colour blobs behind everything.
+   Only `transform` is animated (GPU/compositor layer), so this costs
+   nothing on the main thread even while the marquee + card intro run.
+═══════════════════════════════════════════════════════════════ */
+#aurora-layer { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.aurora-blob {
+    position: absolute;
+    width: min(60vw, 640px); height: min(60vw, 640px);
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.5;
+    mix-blend-mode: screen;
+    will-change: transform;
+    background: radial-gradient(circle at 50% 50%, var(--accent, #6366f1) 0%, transparent 70%);
+}
+.aurora-blob.a1 { top: -18%; left: -12%; animation: auroraDrift1 26s ease-in-out infinite; }
+.aurora-blob.a2 { bottom: -22%; right: -14%; animation: auroraDrift2 32s ease-in-out infinite; opacity: 0.35; }
+.aurora-blob.a3 { top: 38%; left: 58%; width: min(42vw, 420px); height: min(42vw, 420px); animation: auroraDrift3 22s ease-in-out infinite; opacity: 0.28; }
+@keyframes auroraDrift1 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(6vw,4vh,0) scale(1.12); } }
+@keyframes auroraDrift2 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-5vw,-5vh,0) scale(1.15); } }
+@keyframes auroraDrift3 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-4vw,3vh,0) scale(0.9); } }
+body.anim-paused .aurora-blob { animation-play-state: paused !important; }
+
 @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
@@ -165,22 +189,35 @@ body.anim-paused .live-dot {
 @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
 
 .logo-img {
-    width: clamp(3rem, 9vw, 4rem); height: clamp(3rem, 9vw, 4rem);
-    object-fit: contain; border-radius: 1rem; display: block; margin: 0 auto clamp(0.85rem, 3vw, 1.15rem);
-    border: 1px solid rgba(255,255,255,0.14);
+    width: clamp(3.1rem, 9vw, 4.2rem); height: clamp(3.1rem, 9vw, 4.2rem);
+    object-fit: contain; border-radius: 1.1rem; display: block; margin: 0 auto clamp(0.9rem, 3vw, 1.2rem);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.03), 0 0 32px -6px var(--accent, #6366f1), 0 8px 24px rgba(0,0,0,0.4);
+    animation: logoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes logoGlowPulse {
+    0%,100% { box-shadow: 0 0 0 4px rgba(255,255,255,0.03), 0 0 26px -8px var(--accent, #6366f1), 0 8px 24px rgba(0,0,0,0.4); }
+    50%     { box-shadow: 0 0 0 6px rgba(255,255,255,0.05), 0 0 44px -6px var(--accent, #6366f1), 0 8px 24px rgba(0,0,0,0.4); }
 }
 .day-badge {
     font-size: clamp(0.56rem, 2vw, 0.66rem); font-weight: 700; letter-spacing: 0.24em;
     text-transform: uppercase; color: var(--accent, #6366f1);
     font-family: var(--font-heading, 'Inter', sans-serif);
-    display: inline-block; margin-bottom: clamp(0.6rem, 2.4vw, 0.9rem);
+    display: inline-flex; align-items: center; gap: 0.4em;
+    padding: 0.4em 1em; margin-bottom: clamp(0.7rem, 2.6vw, 1rem);
+    border-radius: 999px;
+    background: var(--accent-soft, rgba(255,255,255,0.08));
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 45%, transparent);
 }
 .page-title {
     font-family: var(--font-heading, 'Inter', sans-serif);
     font-weight: 900; letter-spacing: -0.01em; line-height: 1.06;
-    font-size: clamp(1.9rem, 8vw, 2.9rem);
-    color: #fdfdfd; text-transform: uppercase;
+    font-size: clamp(2rem, 8vw, 3.1rem);
+    text-transform: uppercase;
     margin: 0 0 0.5rem;
+    background: linear-gradient(120deg, #ffffff 30%, var(--accent, #6366f1) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 18px rgba(0,0,0,0.35));
 }
 .page-subtitle {
     font-size: clamp(0.58rem, 2.1vw, 0.68rem); font-weight: 700;
@@ -197,17 +234,49 @@ body.anim-paused .live-dot {
 ═══════════════════════════════════════════════════════════════ */
 .login-card {
     width: 100%;
-    border-radius: 1.1rem;
-    padding: clamp(1.6rem, 5.5vw, 2.35rem);
+    border-radius: 1.5rem;
+    padding: clamp(1.8rem, 5.5vw, 2.6rem);
     position: relative;
-    background: linear-gradient(160deg, rgba(10,11,17,0.74) 0%, rgba(5,6,10,0.84) 100%);
-    border: 1px solid var(--accent-soft, rgba(255,255,255,0.14));
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    background: linear-gradient(160deg, rgba(16,17,26,0.78) 0%, rgba(6,7,12,0.9) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    box-shadow:
+        0 35px 90px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.03) inset,
+        0 1px 0 rgba(255,255,255,0.08) inset,
+        0 0 60px -20px var(--accent, #6366f1);
     animation: cardUp 0.7s 0.08s cubic-bezier(0.22,1,0.36,1) both;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+html.is-desktop .login-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 45px 100px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.04) inset,
+        0 1px 0 rgba(255,255,255,0.1) inset,
+        0 0 90px -18px var(--accent, #6366f1);
 }
 @keyframes cardUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Slim animated gradient ring traced around the card border */
+.login-card::before {
+    content: '';
+    position: absolute; inset: -1px; z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from 0deg, transparent 0%, var(--accent, #6366f1) 18%, transparent 38%, transparent 60%, var(--accent, #6366f1) 78%, transparent 96%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.55;
+    animation: ringSpin 7s linear infinite;
+    will-change: transform;
+}
+@keyframes ringSpin { to { transform: rotate(360deg); } }
+body.anim-paused .login-card::before { animation-play-state: paused !important; }
 
 .welcome-heading {
     font-family: var(--font-heading, 'Inter', sans-serif);
@@ -225,33 +294,38 @@ body.anim-paused .live-dot {
     color: rgba(255,255,255,0.42);
 }
 
-/* underline-style fields — quiet, editorial, no filled boxes */
+/* glass-pill fields — soft filled surface with a glow ring on focus */
 .input-field, #selected-staff {
     width: 100%;
-    padding: clamp(0.7rem, 2.4vw, 0.85rem) 0.15rem;
+    padding: clamp(0.8rem, 2.4vw, 0.95rem) clamp(0.9rem, 2.6vw, 1.1rem);
     font-size: 16px; /* prevent iOS zoom */
-    background: transparent;
-    border: none;
-    border-bottom: 1.5px solid rgba(255,255,255,0.16);
-    border-radius: 0;
+    background: rgba(255,255,255,0.045);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 0.85rem;
     outline: none;
     color: var(--text);
-    transition: border-color 0.25s ease;
+    transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
     display: block;
 }
-.input-field::placeholder { color: rgba(255,255,255,0.28); }
-.input-field:focus, #selected-staff:hover, #selected-staff.active { border-color: var(--accent) !important; }
+.input-field::placeholder { color: rgba(255,255,255,0.32); }
+.input-field:focus, #selected-staff:hover, #selected-staff.active {
+    border-color: var(--accent) !important;
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 4px var(--accent-soft, rgba(99,102,241,0.18));
+}
 .input-field:focus-visible, #selected-staff:focus-visible, .login-btn:focus-visible, .eye-btn:focus-visible, .forgot-btn:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px;
 }
 
 .password-wrap { position: relative; }
+.password-wrap .input-field { padding-right: 2.6rem; }
 .eye-btn {
-    position: absolute; right: 0; bottom: 0.75rem;
+    position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%);
     background: none; border: none; cursor: pointer; padding: 0.25rem; line-height: 1;
-    color: rgba(255,255,255,0.4); transition: color 0.2s;
+    color: rgba(255,255,255,0.4); transition: color 0.2s, transform 0.2s;
 }
 .eye-btn:hover { color: var(--accent); }
+.eye-btn:active { transform: translateY(-50%) scale(0.9); }
 
 .forgot-row { display: flex; justify-content: flex-end; margin-top: 0.6rem; }
 .forgot-btn {
@@ -266,51 +340,69 @@ body.anim-paused .live-dot {
    menu-link hover language on staff_main.html (colour + letter-spacing) */
 .login-btn {
     width: 100%;
-    padding: clamp(0.9rem, 2.6vw, 1.05rem) 2rem;
+    padding: clamp(0.95rem, 2.6vw, 1.1rem) 2rem;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
     font-family: var(--font-heading, 'Inter', sans-serif);
     font-size: clamp(0.72rem, 2.3vw, 0.85rem);
     font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase;
-    border-radius: 0.6rem;
-    background: transparent;
+    border-radius: 0.85rem;
+    background: var(--accent, #6366f1);
+    background: linear-gradient(135deg, var(--accent, #6366f1) 0%, color-mix(in srgb, var(--accent, #6366f1) 65%, #ffffff 12%) 100%);
     border: 1.5px solid var(--accent, #6366f1);
-    color: var(--accent, #6366f1);
-    transition: background 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease;
-    margin-top: clamp(0.8rem, 2.6vw, 1.1rem);
+    color: #08090d;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), letter-spacing 0.3s ease, box-shadow 0.3s ease;
+    margin-top: clamp(0.9rem, 2.6vw, 1.2rem);
+    box-shadow: 0 12px 30px -10px var(--accent, #6366f1);
 }
-.login-btn:hover { background: var(--accent, #6366f1); color: #08090d; letter-spacing: 0.26em; }
-.login-btn:active { transform: scale(0.98); }
+.login-btn::after {
+    content: '';
+    position: absolute; top: 0; left: -60%; height: 100%; width: 40%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: skewX(-20deg);
+    transition: transform 0.6s ease;
+}
+html.is-desktop .login-btn:hover::after { transform: translateX(260%) skewX(-20deg); }
+html.is-desktop .login-btn:hover { letter-spacing: 0.26em; transform: translateY(-2px); box-shadow: 0 18px 40px -10px var(--accent, #6366f1); }
+.login-btn:active { transform: scale(0.97); }
 
 /* Staff selector dropdown */
 #staff-selector-container { position: relative; }
 #selected-staff { cursor: pointer; display: flex; align-items: center; justify-content: space-between; min-height: 2.6rem; }
 #staff-dropdown {
-    position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0;
+    position: absolute; top: calc(100% + 0.6rem); left: 0; right: 0;
     max-height: 0; overflow-y: auto; overflow-x: hidden;
-    border-radius: 0.85rem;
-    background: rgba(8,9,15,0.97);
+    border-radius: 1rem;
+    background: rgba(10,11,18,0.97);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-    transition: max-height 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 0 1px var(--accent-soft, rgba(255,255,255,0.06)) inset;
+    transform: translateY(-6px) scale(0.98);
+    transition: max-height 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
     opacity: 0; pointer-events: none; z-index: 10000;
 }
+#staff-dropdown.active { transform: translateY(0) scale(1); }
 #staff-dropdown.active { max-height: 240px; opacity: 1; pointer-events: auto; padding: 0.5rem; }
 #staff-dropdown::-webkit-scrollbar { width: 5px; }
 #staff-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
 #staff-dropdown::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 .staff-option {
-    padding: 0.8rem 0.85rem; cursor: pointer; border-radius: 0.6rem;
-    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.2rem;
-    transition: background-color 0.15s ease;
+    padding: 0.8rem 0.85rem; cursor: pointer; border-radius: 0.75rem;
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;
+    transition: background-color 0.15s ease, transform 0.15s ease;
 }
-.staff-option:hover { background: rgba(255,255,255,0.06); }
-.staff-option.selected { background: rgba(255,255,255,0.08); border-left: 2px solid var(--accent); }
+.staff-option:hover { background: rgba(255,255,255,0.07); transform: translateX(2px); }
+.staff-option.selected { background: var(--accent-soft, rgba(255,255,255,0.08)); border-left: 2px solid var(--accent); }
 .staff-avatar {
-    width: 2.1rem; height: 2.1rem; border-radius: 50%;
+    width: 2.2rem; height: 2.2rem; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
-    background: var(--accent); color: #08090d;
+    font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+    background: linear-gradient(145deg, var(--accent, #6366f1), color-mix(in srgb, var(--accent, #6366f1) 60%, #000 25%));
+    color: #08090d;
+    box-shadow: 0 4px 12px -4px var(--accent, #6366f1);
 }
 .staff-name { flex: 1; font-weight: 600; font-size: 0.88rem; color: var(--text); }
 .staff-role-badge { font-size: 0.62rem; padding: 0.22rem 0.5rem; border-radius: 0.4rem; font-weight: 700; background: var(--accent-soft, rgba(255,255,255,0.1)); color: var(--accent); border: 1px solid var(--accent-soft, rgba(255,255,255,0.2)); }
@@ -354,12 +446,13 @@ body.anim-paused .live-dot {
 }
 
 .birthday-inner {
-    width: 92%; max-width: 340px; padding: clamp(1.5rem, 5vw, 2rem);
-    border-radius: 1.25rem; text-align: center;
+    width: 92%; max-width: 340px; padding: clamp(1.6rem, 5vw, 2.1rem);
+    border-radius: 1.5rem; text-align: center;
     position: relative; z-index: 10002; overflow: hidden;
-    background: linear-gradient(160deg, rgba(12,13,20,0.96), rgba(6,7,11,0.98));
+    background: linear-gradient(160deg, rgba(14,15,22,0.97), rgba(6,7,11,0.99));
+    backdrop-filter: blur(20px);
     border: 1px solid var(--accent); color: var(--text);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px var(--accent-soft, rgba(255,255,255,0.1)) inset;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.65), 0 0 0 1px var(--accent-soft, rgba(255,255,255,0.1)) inset, 0 0 70px -20px var(--accent);
     animation: birthdayPopIn 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 @keyframes birthdayPopIn { from { opacity: 0; transform: scale(0.82) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -443,12 +536,15 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0.85rem;
-    background: rgba(10, 11, 17, 0.88);
-    border: 1px solid var(--accent, #6366f1);
+    background: rgba(12, 13, 20, 0.82);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
     border-radius: 2rem;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px -10px var(--accent, #6366f1);
+    transition: box-shadow 0.3s ease;
 }
+.player-bar:hover { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65), 0 0 32px -8px var(--accent, #6366f1); }
 
 .track-info-btn {
     display: flex;
@@ -517,22 +613,25 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
 
 .ctrl-btn.main-ctrl {
     color: var(--accent, #6366f1);
+    background: var(--accent-soft, rgba(99,102,241,0.16));
 }
 
 .ctrl-btn.main-ctrl:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
+    box-shadow: 0 0 16px -4px var(--accent, #6366f1);
 }
 
 .playlist-dropdown {
     position: absolute;
-    bottom: calc(100% + 0.6rem);
+    bottom: calc(100% + 0.7rem);
     right: 0;
     width: 270px;
-    background: rgba(8, 9, 15, 0.95);
-    border: 1px solid var(--accent, #6366f1);
-    border-radius: 0.85rem;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    background: rgba(10, 11, 17, 0.92);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+    border-radius: 1rem;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.7), 0 0 30px -14px var(--accent, #6366f1);
     overflow: hidden;
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
@@ -592,6 +691,13 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
     <div id="bg-wash"></div>
     <div id="bg-shade"></div>
     <div id="bg-grain"></div>
+</div>
+
+<!-- Aurora mesh — ambient colour depth behind the marquee/card -->
+<div id="aurora-layer" aria-hidden="true">
+    <div class="aurora-blob a1"></div>
+    <div class="aurora-blob a2"></div>
+    <div class="aurora-blob a3"></div>
 </div>
 
 <!-- Signature scrolling marquee, behind the login card -->
@@ -1075,11 +1181,7 @@ if (todayWinners.length) {
 
 /* ── ADVANCED MUSIC PLAYER CONTROL LOGIC ── */
 const playlist = [
-    { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" },
-    { title: "Chopin - Nocturne Op. 9 No. 2", src: "music/Nocturne_Op_9_No_2.mp3" },
-    { title: "Chopin - Nocturne C minor Op. 48 No. 1", src: "music/C_minor_Op_48_No_1.mp3" },
-    { title: "Chopin - Waltz", src: "music/Chopin.mp3" },
-    { title: "J.S. Bach - Siciliano BWV 1031", src: "music/Siciliano_BWV_1031.mp3" }
+    { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" }
 ];
 
 let currentTrackIndex = 0;

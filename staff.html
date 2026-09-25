@@ -584,6 +584,177 @@
         }
 
         /* =====================================================
+           DASHBOARD HOVER MENU — only "Dashboard" shows by default;
+           hovering (or focusing) it reveals the rest below it, and
+           it auto-collapses once the cursor leaves the group.
+        ===================================================== */
+.dash-menu-group { position: relative; display: flex; flex-direction: column; }
+.dash-submenu {
+    display: flex;
+    flex-direction: column;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, transform 0.3s ease;
+}
+        .dash-menu-group:hover .dash-submenu,
+        .dash-menu-group:focus-within .dash-submenu,
+        .dash-menu-group.force-expand .dash-submenu {
+            max-height: 900px;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .dash-trigger { position: relative; }
+/* 수정 후 */
+.dash-trigger::after {
+    content: '▾';
+    position: absolute; right: 1.1rem; top: 50%;
+    font-size: 0.6rem; color: var(--da3); opacity: 0.65;
+    transition: transform 0.3s ease;
+    animation: dashChevronHint 1.6s ease-in-out infinite;
+}
+@keyframes dashChevronHint {
+    0%, 100% { transform: translateY(-50%); }
+    50%      { transform: translateY(-25%); }
+}
+/* 수정 후 */
+.dash-menu-group:hover .dash-trigger::after,
+.dash-menu-group:focus-within .dash-trigger::after,
+.dash-menu-group.force-expand .dash-trigger::after { transform: translateY(-50%) rotate(180deg); animation: none; }
+
+/* 추가 */
+.dash-more-badge {
+    margin-left: auto;
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    background: var(--dg);
+    color: var(--da3);
+    border: 1px solid var(--db);
+    animation: moreBadgePulse 2.2s ease-in-out infinite;
+    white-space: nowrap;
+}
+@keyframes moreBadgePulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.07); }
+}
+.dash-menu-group:hover .dash-more-badge,
+.dash-menu-group:focus-within .dash-more-badge,
+.dash-menu-group.force-expand .dash-more-badge { opacity: 0; }
+
+        /* =====================================================
+           SIDEBAR MUSIC PLAYER — compact bar under "Dashboard"
+           while the menu is collapsed, tiny strip at the foot of
+           the menu once it's fully expanded.
+        ===================================================== */
+        .sidebar-player {
+            display: flex; align-items: center; gap: 0.6rem;
+            border-radius: 1.1rem;
+            border: 1px solid var(--db);
+            background: var(--dg2);
+        }
+        .sidebar-player--full { margin-top: 0.5rem; padding: 0.65rem 0.8rem; }
+        .sidebar-player--mini { margin-top: 0.75rem; padding: 0.45rem 0.7rem; opacity: 0.85; }
+        .dash-menu-group:hover .sidebar-player--full,
+        .dash-menu-group:focus-within .sidebar-player--full,
+        .dash-menu-group.force-expand .sidebar-player--full { display: none; }
+        .sidebar-player .sp-info { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0; }
+        .sidebar-player .sp-title {
+            font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--da3);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sp-mini-title {
+            font-size: 0.58rem; font-weight: 700; color: var(--da3); flex: 1; min-width: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sp-ctrl {
+            background: transparent; border: none; color: rgba(255,255,255,0.6);
+            width: 1.7rem; height: 1.7rem; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sp-ctrl svg { width: 0.9rem; height: 0.9rem; fill: currentColor; }
+        .sp-ctrl:hover { color: var(--da); background: rgba(255,255,255,0.08); }
+        .sp-ctrl.sp-main { color: var(--da); }
+        .sp-mini-btn {
+            background: var(--dg); border: 1px solid var(--db); color: var(--da);
+            width: 1.6rem; height: 1.6rem; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sp-mini-btn svg { width: 0.75rem; height: 0.75rem; fill: currentColor; }
+        .sp-mini-btn:hover { box-shadow: 0 0 10px -2px var(--da); }
+
+        /* small "now playing" equalizer bars, shared across all player UIs */
+        .sp-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex-shrink: 0; }
+        .sp-eq i { display: block; width: 2px; background: var(--da); border-radius: 1px; height: 3px; transition: height 0.2s ease; }
+        .sp-eq.is-playing i { animation: eqBounce 0.9s ease-in-out infinite; }
+        .sp-eq.is-playing i:nth-child(2) { animation-delay: 0.15s; }
+        .sp-eq.is-playing i:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes eqBounce { 0%,100% { height: 3px; } 50% { height: 11px; } }
+
+        /* =====================================================
+           FLOATING MUSIC PLAYER — bottom-right, ported from index.html
+        ===================================================== */
+        .player-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 2500; }
+        .player-bar {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.55rem 0.9rem;
+            background: var(--dc, rgba(10,11,17,0.9));
+            border: 1px solid var(--da);
+            border-radius: 2rem;
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 24px -10px var(--da);
+        }
+        .track-info-btn {
+            display: flex; align-items: center; gap: 0.45rem;
+            background: transparent; border: none; color: #fff; cursor: pointer;
+            padding: 0.2rem 0.4rem; border-radius: 1rem; transition: background 0.2s ease;
+        }
+        .track-info-btn:hover { background: rgba(255,255,255,0.08); }
+        .current-track-title { font-size: 0.72rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+        .playlist-arrow { font-size: 0.6rem; color: var(--da); transition: transform 0.25s ease; }
+        .player-controls { display: flex; align-items: center; gap: 0.25rem; border-left: 1px solid var(--db); padding-left: 0.5rem; }
+        .ctrl-btn {
+            background: transparent; border: none; color: rgba(255,255,255,0.75);
+            width: 1.8rem; height: 1.8rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .ctrl-btn svg { width: 1rem; height: 1rem; fill: currentColor; }
+        .ctrl-btn:hover { color: var(--da); background: rgba(255,255,255,0.08); }
+        .ctrl-btn.main-ctrl { color: var(--da); background: var(--dg2); }
+        .ctrl-btn.main-ctrl:hover { transform: scale(1.1); box-shadow: 0 0 14px -4px var(--da); }
+        .playlist-dropdown {
+            position: absolute; bottom: calc(100% + 0.6rem); right: 0; width: 270px;
+            background: var(--dc, rgba(8,9,15,0.95));
+            border: 1px solid var(--da);
+            border-radius: 1rem;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+            overflow: hidden;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .playlist-dropdown.hidden { display: none; }
+        .playlist-header-title { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.15em; color: var(--da); padding: 0.6rem 0.85rem 0.3rem; border-bottom: 1px solid var(--db); }
+        .playlist-items { list-style: none; margin: 0; padding: 0.3rem; max-height: 180px; overflow-y: auto; }
+        .playlist-item {
+            padding: 0.5rem 0.7rem; font-size: 0.7rem; color: rgba(255,255,255,0.7);
+            border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .playlist-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .playlist-item.active { background: var(--dg); color: var(--da); font-weight: 700; }
+        @media (max-width: 1023px) { .player-container { bottom: 6.5rem; right: 1rem; } }
+
+        /* =====================================================
            MOBILE HEADER & NAV
         ===================================================== */
         #mobileHeader {
@@ -976,21 +1147,60 @@
 
             <!-- Nav -->
             <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
-                <button onclick="switchTab('dash')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>🏠</span> Dashboard</button>
-                <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
-                <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
-                <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
-                <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
-                <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
-                <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
-<button onclick="switchTab('promo')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📢</span> TEI Promo</button>
 
-                <div class="aside-divider mt-3"></div>
+                <!-- Only "Dashboard" is visible at rest; hovering (or focusing) this
+                     group slides the rest of the menu open beneath it, and it folds
+                     back up on its own once the cursor moves away. -->
+                <div class="dash-menu-group" id="dashMenuGroup">
+<button onclick="switchTab('dash')" class="pc-tab-btn btn-3d dash-trigger flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl">
+    <span>🏠</span> Dashboard
+    <span class="dash-more-badge" title="Work Report, Calendar 등 메뉴 더보기">+7 MENU</span>
+</button>
+                    <!-- compact player — shown only while the menu is collapsed -->
+                    <div class="sidebar-player sidebar-player--full" id="sidebarPlayerFull">
+                        <button class="sp-ctrl" onclick="prevTrack()" title="Previous Track">
+                            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        </button>
+                        <div class="sp-info">
+                            <span class="js-track-title sp-title">Loading...</span>
+                            <span class="sp-eq"><i></i><i></i><i></i></span>
+                        </div>
+                        <button class="sp-ctrl sp-main" onclick="togglePlayPause()" title="Play/Pause">
+                            <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <button class="sp-ctrl" onclick="nextTrack()" title="Next Track">
+                            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        </button>
+                    </div>
 
-                <button onclick="location.href='staff_main.html';"
-                        class="main-menu-btn w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest font-black rounded-2xl transition-all">
-                    <span>⬅️</span> Main Menu
-                </button>
+                    <div class="dash-submenu" id="dashSubmenu">
+                        <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
+                        <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
+                        <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
+                        <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
+                        <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
+                        <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
+                        <button onclick="switchTab('promo')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📢</span> TEI Promo</button>
+
+                        <div class="aside-divider mt-3"></div>
+
+                        <button onclick="location.href='staff_main.html';"
+                                class="main-menu-btn w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest font-black rounded-2xl transition-all">
+                            <span>⬅️</span> Main Menu
+                        </button>
+
+                        <!-- tiny player — shown only while the full menu is expanded -->
+                        <div class="sidebar-player sidebar-player--mini" id="sidebarPlayerMini">
+                            <button class="sp-mini-btn" onclick="togglePlayPause()" title="Play/Pause">
+                                <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </button>
+                            <span class="js-track-title sp-mini-title">Loading...</span>
+                            <span class="sp-eq"><i></i><i></i><i></i></span>
+                        </div>
+                    </div>
+                </div>
             </nav>
 
             <!-- External -->
@@ -1053,6 +1263,38 @@
                     class="w-10 h-10 flex items-center justify-center text-slate-400 text-3xl rounded-full transition-all">&times;</button>
         </div>
         <div id="modalBody" class="p-8 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
+    </div>
+</div>
+
+<!-- =====================================================
+     BACKGROUND MUSIC — auto-playing floating player
+     (ported from index.html's bottom-right widget)
+===================================================== -->
+<audio id="bgmAudio" preload="auto"></audio>
+
+<div id="playerContainer" class="player-container">
+    <div id="playlistDropdown" class="playlist-dropdown hidden">
+        <div class="playlist-header-title">PLAYLIST</div>
+        <ul id="playlistItems" class="playlist-items"></ul>
+    </div>
+    <div class="player-bar">
+        <button class="track-info-btn" onclick="togglePlaylistMenu()" title="Show Playlist">
+            <span class="sp-eq"><i></i><i></i><i></i></span>
+            <span class="js-track-title current-track-title">Loading...</span>
+            <span id="playlistArrow" class="playlist-arrow">▲</span>
+        </button>
+        <div class="player-controls">
+            <button class="ctrl-btn" onclick="prevTrack()" title="Previous Track">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn main-ctrl" onclick="togglePlayPause()" title="Play/Pause">
+                <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" onclick="nextTrack()" title="Next Track">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -1650,6 +1892,133 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { switchTab('dash'); }
     }, 200);
 });
+
+/* ── Dashboard hover menu (touch fallback + click-away collapse) ── */
+(function initDashHoverMenu() {
+    const group = document.getElementById('dashMenuGroup');
+    if (!group) return;
+    const trigger = group.querySelector('.dash-trigger');
+
+    /* Mouse/trackpad users get the pure-CSS :hover behaviour already.
+       This just adds a tap-to-open fallback for touch screens, since
+       there's no hover state to trigger the reveal there. */
+    if (trigger) {
+        trigger.addEventListener('touchend', (e) => {
+            if (!group.classList.contains('force-expand')) {
+                e.preventDefault();
+                group.classList.add('force-expand');
+            }
+        }, { passive: false });
+    }
+
+    /* Tapping/clicking anywhere outside the group folds it back up. */
+    document.addEventListener('click', (e) => {
+        if (!group.contains(e.target)) group.classList.remove('force-expand');
+    });
+
+    /* Picking any menu item also folds the group back up right away. */
+    group.querySelectorAll('.dash-submenu .pc-tab-btn, .dash-submenu .main-menu-btn').forEach((btn) => {
+        btn.addEventListener('click', () => group.classList.remove('force-expand'));
+    });
+})();
+
+/* ── Background music player (auto-play, floating + sidebar mini UIs) ── */
+(function initBgmPlayer() {
+    const bgm = document.getElementById('bgmAudio');
+    if (!bgm) return;
+
+    const playlist = [
+        { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" },
+        { title: "Chopin - Nocturne Op. 9 No. 2", src: "music/Nocturne_Op_9_No_2.mp3" },
+        { title: "Chopin - Nocturne C minor Op. 48 No. 1", src: "music/C_minor_Op_48_No_1.mp3" },
+        { title: "Chopin - Waltz", src: "music/Chopin.mp3" },
+        { title: "J.S. Bach - Siciliano BWV 1031", src: "music/Siciliano_BWV_1031.mp3" }
+    ];
+    let currentTrackIndex = 0;
+
+    const playlistDropdown = document.getElementById('playlistDropdown');
+    const playlistItemsEl  = document.getElementById('playlistItems');
+    const playlistArrow    = document.getElementById('playlistArrow');
+
+    /* Every play/pause icon, "now playing" equalizer, and track-title
+       label on the page (floating bar + sidebar full + sidebar mini)
+       shares these two sync helpers, so all three stay in lockstep
+       no matter which one the user actually clicked. */
+    function syncPlayIcons(isPlaying) {
+        document.querySelectorAll('.js-play-icon').forEach(el => el.classList.toggle('hidden', isPlaying));
+        document.querySelectorAll('.js-pause-icon').forEach(el => el.classList.toggle('hidden', !isPlaying));
+        document.querySelectorAll('.sp-eq').forEach(el => el.classList.toggle('is-playing', isPlaying));
+    }
+    function syncTrackTitle(title) {
+        document.querySelectorAll('.js-track-title').forEach(el => { el.textContent = title; });
+    }
+
+    function renderPlaylistUI() {
+        if (!playlistItemsEl) return;
+        playlistItemsEl.innerHTML = '';
+        playlist.forEach((track, idx) => {
+            const li = document.createElement('li');
+            li.className = `playlist-item ${idx === currentTrackIndex ? 'active' : ''}`;
+            li.innerHTML = `<span>${idx + 1}. ${track.title}</span>${idx === currentTrackIndex ? '<span>♬</span>' : ''}`;
+            li.onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+            playlistItemsEl.appendChild(li);
+        });
+    }
+
+    function playTrack(index) {
+        currentTrackIndex = index;
+        const track = playlist[currentTrackIndex];
+        bgm.src = track.src;
+        syncTrackTitle(track.title);
+        renderPlaylistUI();
+        bgm.play().catch(() => { syncTrackTitle('Click to play'); });
+    }
+
+    window.togglePlayPause = function() {
+        if (bgm.paused) { bgm.play().catch(() => {}); }
+        else { bgm.pause(); }
+    };
+    window.prevTrack = function() {
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        playTrack(currentTrackIndex);
+    };
+    window.nextTrack = function() {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        playTrack(currentTrackIndex);
+    };
+    bgm.addEventListener('ended', () => window.nextTrack());
+    bgm.addEventListener('play',  () => syncPlayIcons(true));
+    bgm.addEventListener('pause', () => syncPlayIcons(false));
+
+    window.togglePlaylistMenu = function() {
+        if (!playlistDropdown) return;
+        const isHidden = playlistDropdown.classList.toggle('hidden');
+        if (playlistArrow) playlistArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+    document.addEventListener('click', (e) => {
+        const container = document.getElementById('playerContainer');
+        if (container && !container.contains(e.target)) {
+            if (playlistDropdown) playlistDropdown.classList.add('hidden');
+            if (playlistArrow) playlistArrow.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    function initPlayer() {
+        renderPlaylistUI();
+        playTrack(0);
+
+        const enableAudioOnInteraction = () => {
+            if (bgm.paused) { bgm.play().catch(() => {}); }
+            document.removeEventListener('click', enableAudioOnInteraction);
+            document.removeEventListener('keydown', enableAudioOnInteraction);
+            document.removeEventListener('touchstart', enableAudioOnInteraction);
+        };
+        document.addEventListener('click', enableAudioOnInteraction);
+        document.addEventListener('keydown', enableAudioOnInteraction);
+        document.addEventListener('touchstart', enableAudioOnInteraction);
+    }
+    document.addEventListener('DOMContentLoaded', initPlayer);
+})();
 </script>
 </body>
 </html>
