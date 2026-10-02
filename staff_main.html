@@ -390,6 +390,175 @@ body {
   .popup-image { max-height: 40vh; }
   .popup-close-top { width: 30px; height: 30px; font-size: 15px; }
 }
+
+/* ── ADVANCED MUSIC PLAYER UI ── */
+.player-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    font-family: var(--font-ui, 'Pretendard', sans-serif);
+}
+
+.player-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    background: rgba(12, 13, 20, 0.82);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+    border-radius: 2rem;
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px -10px var(--accent, #6366f1);
+    transition: box-shadow 0.3s ease;
+}
+.player-bar:hover { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65), 0 0 32px -8px var(--accent, #6366f1); }
+
+.track-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: var(--text, #fff);
+    cursor: pointer;
+
+    padding: 0.2rem 0.4rem;
+    border-radius: 1rem;
+    transition: background 0.2s ease;
+}
+
+.track-info-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.current-track-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+.playlist-arrow {
+    font-size: 0.6rem;
+    color: var(--accent);
+    transition: transform 0.25s ease;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 0.5rem;
+}
+
+
+.ctrl-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ctrl-btn svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+}
+
+.ctrl-btn:hover {
+    color: var(--accent, #6366f1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ctrl-btn.main-ctrl {
+    color: var(--accent, #6366f1);
+    background: var(--accent-soft, rgba(99,102,241,0.16));
+}
+
+.ctrl-btn.main-ctrl:hover {
+    transform: scale(1.12);
+
+    box-shadow: 0 0 16px -4px var(--accent, #6366f1);
+}
+
+.playlist-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.7rem);
+    right: 0;
+    width: 270px;
+    background: rgba(10, 11, 17, 0.92);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+    border-radius: 1rem;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.7), 0 0 30px -14px var(--accent, #6366f1);
+    overflow: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.playlist-dropdown.hidden {
+    display: none;
+}
+
+.playlist-header-title {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    padding: 0.6rem 0.85rem 0.3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.playlist-items {
+
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.playlist-item {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.playlist-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.playlist-item.active {
+    background: var(--accent-soft, rgba(99, 102, 241, 0.2));
+    color: var(--accent, #6366f1);
+    font-weight: 700;
+}
+
+/* staff_main.html엔 Tailwind의 .hidden 유틸리티가 없어서 범용 클래스도 추가 필요 */
+.hidden {
+
+    display: none !important;
+}
+
 </style>
 </head>
 
@@ -463,6 +632,43 @@ body {
     <button class="popup-close-bottom" onclick="closePopup()">Close</button>
   </div>
 </div>
+
+
+<!-- 플레이리스트 오디오 엘리먼트 -->
+<audio id="bgmAudio" preload="auto"></audio>
+
+<!-- 뮤직 플레이어 컨테이너 (우측 하단) -->
+<div id="playerContainer" class="player-container">
+    <!-- 플레이리스트 드롭다운 메뉴 -->
+    <div id="playlistDropdown" class="playlist-dropdown hidden">
+        <div class="playlist-header-title">PLAYLIST</div>
+        <ul id="playlistItems" class="playlist-items"></ul>
+    </div>
+
+    <!-- 플레이어 바 (컨트롤러 & 정보) -->
+    <div class="player-bar">
+        <button class="track-info-btn" onclick="togglePlaylistMenu()" title="Show Playlist">
+            <span class="music-icon">🎵</span>
+            <span id="currentTrackTitle" class="current-track-title">Loading...</span>
+            <span id="playlistArrow" class="playlist-arrow">▲</span>
+        </button>
+
+        <div class="player-controls">
+            <button class="ctrl-btn" onclick="prevTrack()" title="Previous Track">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn main-ctrl" onclick="togglePlayPause()" title="Play/Pause">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" onclick="nextTrack()" title="Next Track">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+</div>
+
 
 <script>
 /* ══════════════════════════════════════════════════════════
@@ -702,6 +908,116 @@ document.addEventListener('DOMContentLoaded', () => {
 window.navigateTo = navigateTo;
 window.handleLogout = handleLogout;
 window.closePopup = closePopup;
+
+/* ══════════════════════════════════════════════════════════
+   ADVANCED MUSIC PLAYER (index.html과 동일 기능, 변수 충돌 방지를 위해 IIFE로 격리)
+══════════════════════════════════════════════════════════ */
+(function() {
+    'use strict';
+
+    const playlist = [
+        { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" }
+    ];
+
+    let currentTrackIndex = 0;
+    const bgm = document.getElementById('bgmAudio');
+    const currentTrackTitleEl = document.getElementById('currentTrackTitle');
+    const playlistDropdown = document.getElementById('playlistDropdown');
+    const playlistItemsEl = document.getElementById('playlistItems');
+    const playlistArrow = document.getElementById('playlistArrow');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+
+    function updatePlayerUI(isPlaying) {
+        if (isPlaying) {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        } else {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+    }
+
+    function renderPlaylistUI() {
+        playlistItemsEl.innerHTML = '';
+        playlist.forEach((track, idx) => {
+            const li = document.createElement('li');
+            li.className = `playlist-item ${idx === currentTrackIndex ? 'active' : ''}`;
+            li.innerHTML = `<span>${idx + 1}. ${track.title}</span>${idx === currentTrackIndex ? '<span>♬</span>' : ''}`;
+            li.onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+            playlistItemsEl.appendChild(li);
+        });
+    }
+
+    function playTrack(index) {
+        currentTrackIndex = index;
+        const track = playlist[currentTrackIndex];
+        bgm.src = track.src;
+        currentTrackTitleEl.textContent = track.title;
+        renderPlaylistUI();
+        bgm.play().then(() => updatePlayerUI(true)).catch(() => {
+            updatePlayerUI(false);
+            currentTrackTitleEl.textContent = "Click to play";
+        });
+    }
+
+    window.togglePlayPause = function() {
+        if (bgm.paused) {
+            bgm.play().then(() => updatePlayerUI(true)).catch(() => {});
+        } else {
+            bgm.pause();
+            updatePlayerUI(false);
+        }
+    };
+
+    window.prevTrack = function() {
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        playTrack(currentTrackIndex);
+    };
+
+    window.nextTrack = function() {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        playTrack(currentTrackIndex);
+    };
+
+    bgm.addEventListener('ended', () => nextTrack());
+
+    window.togglePlaylistMenu = function() {
+        const isHidden = playlistDropdown.classList.toggle('hidden');
+        playlistArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('playerContainer').contains(e.target)) {
+            playlistDropdown.classList.add('hidden');
+            playlistArrow.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    const initPlayer = () => {
+        renderPlaylistUI();
+        playTrack(0);
+
+        const enableAudioOnInteraction = () => {
+            if (bgm.paused) {
+                bgm.play().then(() => {
+                    updatePlayerUI(true);
+                    currentTrackTitleEl.textContent = playlist[currentTrackIndex].title;
+                }).catch(() => {});
+            }
+            document.removeEventListener('click', enableAudioOnInteraction);
+            document.removeEventListener('keydown', enableAudioOnInteraction);
+            document.removeEventListener('touchstart', enableAudioOnInteraction);
+        };
+
+        document.addEventListener('click', enableAudioOnInteraction);
+        document.addEventListener('keydown', enableAudioOnInteraction);
+        document.addEventListener('touchstart', enableAudioOnInteraction);
+    };
+
+    window.addEventListener('DOMContentLoaded', initPlayer);
+})();
 </script>
+
 </body>
 </html>
