@@ -1045,7 +1045,11 @@ html.is-mobile #birthday-close-btn {
             bgm.src = playlist[idx].src;
             titleEl.textContent = playlist[idx].title;
             renderList();
-            bgm.play().then(() => setIcons(true)).catch(() => { setIcons(false); titleEl.textContent = 'Tap to play'; });
+            bgm.play().then(() => setIcons(true)).catch(err => {
+                setIcons(false);
+                titleEl.textContent = (err.name === 'NotAllowedError') ? 'Tap to play' : 'Audio error';
+                console.warn('[bgm]', err.name, err.message);
+            });
         }
 
         window.togglePlayPause = () => {
@@ -1070,12 +1074,22 @@ html.is-mobile #birthday-close-btn {
         playTrack(0);
 
 
-        /* 모바일 자동재생 정책: 첫 터치/클릭 때 재생 시작 (iOS는 touchstart가 아닌 touchend/click만 인정) */
-        const unlock = () => {
-            if (bgm.paused) bgm.play().then(() => { setIcons(true); titleEl.textContent = playlist[idx].title; }).catch(() => {});
-            ['click', 'keydown', 'touchend'].forEach(ev => document.removeEventListener(ev, unlock));
-        };
-        ['click', 'keydown', 'touchend'].forEach(ev => document.addEventListener(ev, unlock));
+        /* 모바일 자동재생 정책: 사용자 동작(탭)이 들어올 때까지 재시도, 재생 성공 후에만 리스너 제거 */
+        const UNLOCK_EVENTS = ['pointerup', 'click', 'keydown', 'touchend'];
+        const cleanupUnlock = () => UNLOCK_EVENTS.forEach(ev => document.removeEventListener(ev, unlock));
+        function unlock() {
+            if (!bgm.paused) { cleanupUnlock(); return; }
+            bgm.play().then(() => {
+                setIcons(true);
+                titleEl.textContent = playlist[idx].title;
+                cleanupUnlock();
+            }).catch(err => console.warn('[bgm]', err.name, err.message));   // 실패하면 다음 탭에서 다시 시도
+        }
+        UNLOCK_EVENTS.forEach(ev => document.addEventListener(ev, unlock, { passive: true }));
+
+        /* 파일 문제 구분용 표시 (경로 오류·404 등) */
+        bgm.addEventListener('error', () => { titleEl.textContent = 'Audio file error'; console.warn('[bgm] load error:', bgm.src); });
+
     })();
 
     function initStaffSelector() {
