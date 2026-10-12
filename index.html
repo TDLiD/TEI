@@ -1179,10 +1179,22 @@ if (todayWinners.length) {
 
     initStaffSelector();
 
-/* ── ADVANCED MUSIC PLAYER CONTROL LOGIC ── */
-const playlist = [
-    { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" }
+/* 요일별 곡 목록 — days: 0=일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토 */
+const ALL_TRACKS = [
+    { title: "Monday - My Heart Will Go On",     src: "music/monday_My_Heart_Will_Go_On.mp3",   days: [1] },
+    { title: "Tuesday - Stay with me",           src: "music/tuesday_Stay_with_me.mp3",         days: [2] },
+    { title: "Wednesday - Farinelli",            src: "music/wednedsay_Farinelli.mp3",          days: [3] },
+    { title: "Thursday - Marriage of Figaro",    src: "music/thursday_Marriage_of_Figaro.mp3",  days: [4] },
+    { title: "Chopin - Nocturne No. 20",         src: "music/Chopin_Nocturne_No_20.mp3",        days: [5, 6, 0] }
 ];
+
+/* 오늘 요일 (인도네시아 시간 기준, 다른 페이지와 동일). 테스트: index.html?day=3 */
+const _dayParam = new URLSearchParams(location.search).get('day');
+const todayDow = (_dayParam !== null && /^[0-6]$/.test(_dayParam))
+    ? Number(_dayParam)
+    : new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })).getDay();
+
+const playlist = ALL_TRACKS.filter(t => t.days.includes(todayDow));
 
 let currentTrackIndex = 0;
 const bgm = document.getElementById('bgmAudio');

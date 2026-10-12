@@ -915,9 +915,16 @@ window.closePopup = closePopup;
 (function() {
     'use strict';
 
-    const playlist = [
-        { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" }
+    /* 요일별 곡 목록 — days: 0=일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토
+       오늘 요일은 이 페이지의 todayIdx(배경·테마와 동일, ?day=N 테스트 지원)를 사용 */
+    const ALL_TRACKS = [
+        { title: "Monday - My Heart Will Go On",    src: "music/monday_My_Heart_Will_Go_On.mp3",  days: [1] },
+        { title: "Tuesday - Stay with me",          src: "music/tuesday_Stay_with_me.mp3",        days: [2] },
+        { title: "Wednesday - Farinelli",           src: "music/wednedsay_Farinelli.mp3",         days: [3] },
+        { title: "Thursday - Marriage of Figaro",   src: "music/thursday_Marriage_of_Figaro.mp3", days: [4] },
+        { title: "Chopin - Nocturne No. 20",        src: "music/Chopin_Nocturne_No_20.mp3",       days: [5, 6, 0] }
     ];
+    const playlist = ALL_TRACKS.filter(t => t.days.includes(todayIdx));
 
     let currentTrackIndex = 0;
     const bgm = document.getElementById('bgmAudio');

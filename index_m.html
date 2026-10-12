@@ -750,6 +750,77 @@ html.is-mobile #birthday-close-btn {
         color: rgba(255,255,255,0.4);
     }
 }
+/* ── MUSIC PLAYER (mobile, bottom-center) ── */
+.player-container {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: max(0.8rem, env(safe-area-inset-bottom));
+    z-index: 9000;                       /* ghost-overlay(9999)·birthday(10000) 아래 */
+    width: max-content;
+    max-width: 94vw;
+    font-family: var(--font-ui, 'Pretendard', sans-serif);
+}
+.player-container .hidden { display: none !important; }
+
+.player-bar {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.4rem 0.7rem;
+    background: rgba(12, 13, 20, 0.82);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+    border-radius: 2rem;
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 24px -10px var(--accent, #6366f1);
+}
+.track-info-btn {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: transparent; border: none; color: var(--text, #fff);
+    cursor: pointer; padding: 0.3rem 0.4rem; border-radius: 1rem; min-height: 40px;
+}
+.current-track-title {
+    font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 38vw;
+}
+
+.playlist-arrow { font-size: 0.6rem; color: var(--accent); transition: transform 0.25s ease; }
+.player-controls {
+    display: flex; align-items: center; gap: 0.2rem;
+    border-left: 1px solid rgba(255,255,255,0.15); padding-left: 0.5rem;
+}
+.ctrl-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.75);
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;       /* 터치 영역 확보 */
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.ctrl-btn svg { width: 1.1rem; height: 1.1rem; fill: currentColor; }
+.ctrl-btn.main-ctrl { color: var(--accent, #6366f1); background: var(--accent-soft, rgba(99,102,241,0.16)); }
+
+.playlist-dropdown {
+    position: absolute; bottom: calc(100% + 0.7rem);
+    left: 50%; transform: translateX(-50%);
+    width: min(280px, 88vw);
+    background: rgba(10,11,17,0.94);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 55%, transparent);
+    border-radius: 1rem;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.7);
+    overflow: hidden;
+}
+.playlist-header-title {
+    font-size: 0.62rem; font-weight: 800; letter-spacing: 0.15em; color: var(--accent);
+    padding: 0.6rem 0.85rem 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.playlist-items { list-style: none; margin: 0; padding: 0.3rem; max-height: 180px; overflow-y: auto; }
+.playlist-item {
+    padding: 0.7rem; font-size: 0.74rem; color: rgba(255,255,255,0.75);
+
+    border-radius: 0.5rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.playlist-item.active { background: var(--accent-soft, rgba(99,102,241,0.2)); color: var(--accent); font-weight: 700; }
+
 </style>
 </head>
 
@@ -845,6 +916,34 @@ html.is-mobile #birthday-close-btn {
     <img id="ghost-image" src="" alt="Profile">
 </div>
 
+<!-- Music player -->
+<audio id="bgmAudio" preload="auto" playsinline></audio>
+<div id="playerContainer" class="player-container">
+    <div id="playlistDropdown" class="playlist-dropdown hidden">
+        <div class="playlist-header-title">PLAYLIST</div>
+        <ul id="playlistItems" class="playlist-items"></ul>
+    </div>
+    <div class="player-bar">
+        <button type="button" class="track-info-btn" onclick="togglePlaylistMenu()" title="Show Playlist">
+            <span>🎵</span>
+            <span id="currentTrackTitle" class="current-track-title">Loading...</span>
+            <span id="playlistArrow" class="playlist-arrow">▲</span>
+        </button>
+        <div class="player-controls">
+            <button type="button" class="ctrl-btn" onclick="prevTrack()" title="Previous">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button type="button" class="ctrl-btn main-ctrl" onclick="togglePlayPause()" title="Play/Pause">
+                <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button type="button" class="ctrl-btn" onclick="nextTrack()" title="Next">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function() {
     'use strict';
@@ -904,6 +1003,80 @@ html.is-mobile #birthday-close-btn {
     const staffDropdown = document.getElementById('staff-dropdown');
     const dropdownArrow = selectedStaffEl.querySelector('.dropdown-arrow');
     const passwordInput = document.getElementById('password');
+
+    /* ── MUSIC PLAYER — 요일별 곡 (days: 0=일 … 6=토) ──
+       요일은 이 페이지의 테마와 같은 값(forcedDay ?? now.getDay())을 사용 → ?day=N 테스트도 동일 적용 */
+    (function initMusicPlayer() {
+        const ALL_TRACKS = [
+            { title: "Monday - My Heart Will Go On",  src: "music/monday_My_Heart_Will_Go_On.mp3",  days: [1] },
+            { title: "Tuesday - Stay with me",        src: "music/tuesday_Stay_with_me.mp3",        days: [2] },
+            { title: "Wednesday - Farinelli",         src: "music/wednedsay_Farinelli.mp3",         days: [3] },
+            { title: "Thursday - Marriage of Figaro", src: "music/thursday_Marriage_of_Figaro.mp3", days: [4] },
+            { title: "Chopin - Nocturne No. 20",      src: "music/Chopin_Nocturne_No_20.mp3",       days: [5, 6, 0] }
+        ];
+        const musicDay = forcedDay !== null ? forcedDay : now.getDay();
+        const playlist = ALL_TRACKS.filter(t => t.days.includes(musicDay));
+        if (!playlist.length) { const pc = document.getElementById('playerContainer'); if (pc) pc.style.display = 'none'; return; }
+
+        let idx = 0;
+        const bgm = document.getElementById('bgmAudio');
+        const titleEl = document.getElementById('currentTrackTitle');
+        const dropdown = document.getElementById('playlistDropdown');
+        const listEl = document.getElementById('playlistItems');
+        const arrow = document.getElementById('playlistArrow');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+
+        const setIcons = (on) => { playIcon.classList.toggle('hidden', on); pauseIcon.classList.toggle('hidden', !on); };
+
+        function renderList() {
+            listEl.innerHTML = '';
+            playlist.forEach((t, i) => {
+                const li = document.createElement('li');
+                li.className = 'playlist-item' + (i === idx ? ' active' : '');
+                li.innerHTML = `<span>${i + 1}. ${t.title}</span>${i === idx ? '<span>♬</span>' : ''}`;
+                li.onclick = (e) => { e.stopPropagation(); playTrack(i); };
+
+                listEl.appendChild(li);
+            });
+        }
+        function playTrack(i) {
+            idx = i;
+            bgm.src = playlist[idx].src;
+            titleEl.textContent = playlist[idx].title;
+            renderList();
+            bgm.play().then(() => setIcons(true)).catch(() => { setIcons(false); titleEl.textContent = 'Tap to play'; });
+        }
+
+        window.togglePlayPause = () => {
+            if (bgm.paused) bgm.play().then(() => setIcons(true)).catch(() => {});
+            else { bgm.pause(); setIcons(false); }
+        };
+        window.prevTrack = () => playTrack((idx - 1 + playlist.length) % playlist.length);
+        window.nextTrack = () => playTrack((idx + 1) % playlist.length);
+        window.togglePlaylistMenu = () => {
+            const hidden = dropdown.classList.toggle('hidden');
+            arrow.style.transform = hidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        };
+
+        bgm.addEventListener('ended', () => window.nextTrack());
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('playerContainer').contains(e.target)) {
+                dropdown.classList.add('hidden'); arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        renderList();
+        playTrack(0);
+
+
+        /* 모바일 자동재생 정책: 첫 터치/클릭 때 재생 시작 (iOS는 touchstart가 아닌 touchend/click만 인정) */
+        const unlock = () => {
+            if (bgm.paused) bgm.play().then(() => { setIcons(true); titleEl.textContent = playlist[idx].title; }).catch(() => {});
+            ['click', 'keydown', 'touchend'].forEach(ev => document.removeEventListener(ev, unlock));
+        };
+        ['click', 'keydown', 'touchend'].forEach(ev => document.addEventListener(ev, unlock));
+    })();
 
     function initStaffSelector() {
         database.ref('users').limitToFirst(50).once('value', (snap) => {

@@ -1927,13 +1927,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgm = document.getElementById('bgmAudio');
     if (!bgm) return;
 
-    const playlist = [
-        { title: "Chopin - Nocturne No. 20", src: "music/Chopin_Nocturne_No_20.mp3" },
-        { title: "Chopin - Nocturne Op. 9 No. 2", src: "music/Nocturne_Op_9_No_2.mp3" },
-        { title: "Chopin - Nocturne C minor Op. 48 No. 1", src: "music/C_minor_Op_48_No_1.mp3" },
-        { title: "Chopin - Waltz", src: "music/Chopin.mp3" },
-        { title: "J.S. Bach - Siciliano BWV 1031", src: "music/Siciliano_BWV_1031.mp3" }
+    /* 요일별 곡 목록 — days: 0=일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토 */
+    const ALL_TRACKS = [
+        { title: "Monday - My Heart Will Go On",    src: "music/monday_My_Heart_Will_Go_On.mp3",  days: [1] },
+        { title: "Tuesday - Stay with me",          src: "music/tuesday_Stay_with_me.mp3",        days: [2] },
+        { title: "Wednesday - Farinelli",           src: "music/wednedsay_Farinelli.mp3",         days: [3] },
+        { title: "Thursday - Marriage of Figaro",   src: "music/thursday_Marriage_of_Figaro.mp3", days: [4] },
+        { title: "Chopin - Nocturne No. 20",        src: "music/Chopin_Nocturne_No_20.mp3",       days: [5, 6, 0] }
     ];
+
+    /* 오늘 요일 (인도네시아 시간 기준, index.html과 동일). 테스트: staff.html?day=3 */
+    const _dp = new URLSearchParams(location.search).get('day');
+    const todayDow = (_dp !== null && /^[0-6]$/.test(_dp))
+        ? Number(_dp)
+        : new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })).getDay();
+
+    const playlist = ALL_TRACKS.filter(t => t.days.includes(todayDow));
+
+
     let currentTrackIndex = 0;
 
     const playlistDropdown = document.getElementById('playlistDropdown');
