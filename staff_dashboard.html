@@ -1434,7 +1434,7 @@ function getJakartaDate() {
     const currentHour = now.getHours();
 
     // 16시 이전인 경우에만 동작 (원하시는 시각 기준)
-    if (currentHour < 16) {
+    if (currentHour < 12) {
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const d = String(now.getDate()).padStart(2, '0');
