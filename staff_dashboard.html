@@ -347,6 +347,145 @@
   .sm-dashboard-wrap[data-device="mobile"] .dock-nav .sm-all-nav-btn{height:34px;width:100%}
   .sm-dashboard-wrap[data-device="mobile"] .sm-btn{min-height:58px}
 }
+
+/* ══════════════════════════════════════════════════════════
+   3D CHECK-IN PROMPT MODAL STYLES
+══════════════════════════════════════════════════════════ */
+.checkin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 16, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  perspective: 1000px;
+}
+
+.checkin-modal-card {
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+  background: linear-gradient(135deg, var(--t-surface2), var(--t-surface));
+  border: 1px solid var(--t-border2);
+  border-radius: 24px;
+  padding: 2rem 1.8rem;
+  text-align: center;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(59, 130, 246, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transform-style: preserve-3d;
+  animation: modal3DIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.checkin-modal-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 2px;
+  background: var(--t-accent-gradient);
+  border-radius: 2px;
+}
+
+.checkin-icon-box {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.25rem;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--t-accent) 25%, transparent), var(--t-surface3));
+  border: 1px solid color-mix(in srgb, var(--t-accent) 50%, transparent);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateZ(20px);
+}
+
+.checkin-modal-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+  transform: translateZ(15px);
+}
+
+.checkin-modal-msg {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--t-muted);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+  word-break: keep-all;
+  transform: translateZ(10px);
+}
+
+.checkin-modal-msg b {
+  color: var(--t-accent2);
+  font-weight: 800;
+}
+
+.checkin-modal-btns {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 10px;
+  transform: translateZ(25px);
+}
+
+.checkin-btn-cancel {
+  background: var(--t-surface3);
+  color: var(--t-muted);
+  border: 1px solid var(--t-border2);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.checkin-btn-cancel:hover {
+  background: color-mix(in srgb, var(--t-surface3) 80%, white);
+  color: var(--t-text);
+}
+
+.checkin-btn-confirm {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.2s;
+}
+
+.checkin-btn-confirm:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+@keyframes modal3DIn {
+  from {
+    opacity: 0;
+    transform: rotateX(-20deg) scale(0.85) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1) translateY(0);
+  }
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -1286,6 +1425,73 @@ function getJakartaDate() {
       .catch(e=>alert("Error: "+e.message));
     }
   };
+
+/* ── 16시 이전 3D 출석 체크 확인 팝업 ── */
+  function autoCheckInPrompt() {
+    if (!user) return;
+
+    const now = getJakartaDate();
+    const currentHour = now.getHours();
+
+    // 16시 이전인 경우에만 동작 (원하시는 시각 기준)
+    if (currentHour < 12) {
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const todayKey = `${y}-${m}-${d}`;
+
+      // DB에서 오늘 출석(attend) 여부 조회
+      db.ref(`attendance/${todayKey}/${user}/attend`).once('value', snap => {
+        // 출석 기록이 존재하지 않는 경우에만 3D 팝업 띄우기
+        if (!snap.val()) {
+          setTimeout(show3DCheckInModal, 500);
+        }
+      });
+    }
+  }
+
+  // 3D 팝업 생성 및 표시 함수
+  function show3DCheckInModal() {
+    if (document.getElementById('autoCheckInModal')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'autoCheckInModal';
+    overlay.className = 'checkin-modal-overlay';
+
+    overlay.innerHTML = `
+      <div class="checkin-modal-card">
+        <div class="checkin-icon-box">☀️</div>
+        <h3 class="checkin-modal-title">Have a nice day!</h3>
+        <p class="checkin-modal-msg">
+          Have a great day today and please <b>CHECK IN</b> for attendance.
+        </p>
+        <div class="checkin-modal-btns">
+          <button class="checkin-btn-cancel" onclick="closeCheckInModal()">Cancel</button>
+          <button class="checkin-btn-confirm" onclick="confirmCheckInAction()">Check In Now</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  // [Cancel] 클릭 시
+  window.closeCheckInModal = function() {
+    const modal = document.getElementById('autoCheckInModal');
+    if (modal) modal.remove();
+  };
+
+  // [Check In Now] 클릭 시
+  window.confirmCheckInAction = function() {
+    closeCheckInModal();
+    if (typeof handleAttendance === 'function') {
+      handleAttendance('attend');
+    }
+  };
+
+  // 페이지 로딩 후 1초 뒤 자동 실행
+  setTimeout(autoCheckInPrompt, 1000);
+
 
   /* ── Missing Records ── */
   async function checkMissingRecords() {

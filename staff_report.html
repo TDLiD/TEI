@@ -1189,7 +1189,7 @@
   };
   window.hideReportPopup = function() { const p=document.getElementById('reportHoverPopup'); if(p) p.style.display='none'; };
 
-  /* ── Copy from picker ── */
+/* ── Copy from picker ── */
   window.openCopyFromPicker = function() {
     if (!document.getElementById('hiddenCopyInput')) {
       const input=document.createElement('input'); input.id='hiddenCopyInput'; input.style.display='none'; document.body.appendChild(input);
@@ -1203,7 +1203,13 @@
             const todoEl=document.getElementById('editTodo'), summaryEl=document.getElementById('editSummary');
             if(todoEl) todoEl.value=data.todo||"";
             if(summaryEl) summaryEl.value=data.summary||data.content||"";
-            window.saveToTemp(); alert("Data copied successfully.");
+            window.saveToTemp(); 
+            
+            // [수정된 부분] 고정 min-height 해제 및 높이 자동 조절 + 글자 수 갱신
+            if(todoEl) { todoEl.style.minHeight = 'auto'; window.updateCharCount('editTodo','todoCount'); if(window.autoResize) window.autoResize(todoEl); }
+            if(summaryEl) { summaryEl.style.minHeight = 'auto'; window.updateCharCount('editSummary','summaryCount'); if(window.autoResize) window.autoResize(summaryEl); }
+            
+            alert("Data copied successfully.");
           } else alert("No report found for the selected date.");
         });
       }
@@ -1211,7 +1217,7 @@
     window.copyPicker.open();
   };
 
-  /* ── Copy from recent (yesterday-7d) ── */
+/* ── Copy from recent (yesterday-7d) ── */
   window.copyFromRecent = async() => {
     const today=new Date(selectedDateStr); let foundData=null;
     for (let i=1;i<=7;i++) {
@@ -1226,7 +1232,13 @@
       if (todoField&&summaryField) {
         todoField.value=foundData.todo; summaryField.value=foundData.summary;
         window.updateCharCount('editTodo','todoCount'); window.updateCharCount('editSummary','summaryCount');
-        if(window.autoResize){window.autoResize(todoField);window.autoResize(summaryField);}
+        
+        // [수정된 부분] 고정 min-height 해제 후 내용 길이에 맞게 높이 자동 조절
+        [todoField, summaryField].forEach(el => {
+          el.style.minHeight = 'auto';
+          if(window.autoResize) window.autoResize(el);
+        });
+        
         alert(`Successfully copied data from ${foundData.date}.`);
       }
     } else alert("No report found within the last 7 days.");
