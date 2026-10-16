@@ -180,16 +180,6 @@
         body.day-5 .brand-title { font-weight: 900; letter-spacing: 0.04em; font-style: italic; }
         body.day-0 .brand-title, body.day-6 .brand-title { font-weight: 400; letter-spacing: 0.15em; font-style: normal; }
 
-        /* ── WED special active tab ── */
-        body.day-3 .tab-active {
-            background: repeating-linear-gradient(
-                45deg, var(--dg), var(--dg) 3px, transparent 3px, transparent 8px
-            ) !important;
-        }
-        /* ── THU glow-enhanced tab ── */
-        body.day-4 .tab-active {
-            box-shadow: 0 0 20px var(--dg), inset 0 0 10px var(--dg2) !important;
-        }
 
         /* =====================================================
            SIDEBAR 3D DECORATIONS — per day
@@ -266,16 +256,6 @@
             overflow: hidden;
         }
 
-        /* ── Hover-zone strip: invisible, always present on left edge ── */
-        #sidebarHoverZone {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: 18px;
-            z-index: 1100;
-            cursor: pointer;
-            display: none; /* shown only on desktop via JS */
-        }
-
         /* ── Toggle button (peek tab) shown when collapsed on desktop ── */
         #sidebarToggleTab {
             position: fixed;
@@ -337,7 +317,6 @@
             min-width: 0;
             transition: all 0.45s cubic-bezier(0.4,0,0.2,1);
         }
-
         /* =====================================================
            GLOBAL BASE
         ===================================================== */
@@ -428,58 +407,6 @@
             0%   { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
-        /* sidebar nav scroll */
-        aside .hidden.lg\:flex { min-height: 0; }
-        aside .hidden.lg\:flex > nav.flex {
-            overflow-y: auto;
-            overflow-x: hidden;
-            min-height: 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--da) transparent;
-            padding-bottom: 0.5rem;
-        }
-        aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar { width: 2px; }
-        aside .hidden.lg\:flex > nav.flex::-webkit-scrollbar-thumb { background: var(--da); border-radius: 99px; }
-
-        /* =====================================================
-           BRAND
-        ===================================================== */
-        .brand-title {
-            text-shadow: 0 0 20px var(--dg), 0 2px 4px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-        .brand-accent { color: var(--da); }
-
-        /* =====================================================
-           PROFILE
-        ===================================================== */
-        .nav-profile-img {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--da);
-            object-fit: cover;
-            box-shadow: 0 0 0 3px var(--dg), 0 0 18px var(--dg), 0 4px 12px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-        .nav-profile-img:hover {
-            box-shadow: 0 0 0 4px var(--da), 0 0 28px var(--dg), 0 4px 16px rgba(0,0,0,0.6);
-            transform: scale(1.04);
-        }
-        @media (min-width: 1024px) {
-            .nav-profile-img { width: 90px !important; height: 90px !important; }
-        }
-
-        .edit-badge {
-            position: absolute; bottom: 5px; right: 5px;
-            background: var(--da);
-            width: 22px; height: 22px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid #000;
-            box-shadow: 0 0 10px var(--dg), 0 2px 6px rgba(0,0,0,0.5);
-        }
-
         /* =====================================================
            DAY BADGE
         ===================================================== */
@@ -517,187 +444,6 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
         }
         #weatherTemp, #mobileWeatherTemp { color: var(--da3) !important; }
-
-        /* =====================================================
-           NAV BUTTONS
-        ===================================================== */
-        .btn-3d {
-            transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .btn-3d:active { transform: translateY(2px) scale(0.97); }
-
-        .pc-tab-btn {
-            position: relative; overflow: hidden;
-            border: 1px solid transparent !important;
-            transition: all 0.2s ease;
-        }
-        .pc-tab-btn::before {
-            content: '';
-            position: absolute; left: 0; top: 0; bottom: 0;
-            width: 3px;
-            background: var(--da);
-            border-radius: 0 2px 2px 0;
-            transform: scaleY(0);
-            transition: transform 0.2s ease;
-        }
-        body.day-1 .pc-tab-btn.tab-active::after {
-            content: '';
-            position: absolute; right: 0; top: 0; bottom: 0;
-            width: 1px;
-            background: var(--db);
-        }
-
-        .tab-active {
-            background: var(--dg) !important;
-            color: var(--da3) !important;
-            font-weight: 900 !important;
-            border-color: var(--db) !important;
-            box-shadow: 0 4px 12px var(--dg2), inset 0 1px 0 rgba(255,255,255,0.05) !important;
-            text-shadow: 0 0 8px var(--dg);
-        }
-        .tab-active::before { transform: scaleY(1); }
-        .mobile-tab-active {
-            color: var(--da) !important;
-            font-weight: 900;
-            text-shadow: 0 0 8px var(--dg);
-        }
-
-        .main-menu-btn {
-            color: var(--da3) !important;
-            background: var(--dg2) !important;
-            border: 1px solid var(--db) !important;
-        }
-        .main-menu-btn:hover { background: var(--dg) !important; }
-        .tdlid-link {
-            color: var(--da3) !important;
-            border: 1px solid var(--db);
-            transition: all 0.2s;
-        }
-        .tdlid-link:hover { background: var(--dg2); }
-        .online-dot { background: var(--da) !important; box-shadow: 0 0 5px var(--da); }
-        .online-text { color: var(--da3) !important; }
-        .aside-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--db), transparent);
-            margin: 1rem 0;
-        }
-
-        /* =====================================================
-           DASHBOARD HOVER MENU — only "Dashboard" shows by default;
-           hovering (or focusing) it reveals the rest below it, and
-           it auto-collapses once the cursor leaves the group.
-        ===================================================== */
-.dash-menu-group { position: relative; display: flex; flex-direction: column; }
-.dash-submenu {
-    display: flex;
-    flex-direction: column;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
-    transform: translateY(-4px);
-    transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, transform 0.3s ease;
-}
-        .dash-menu-group:hover .dash-submenu,
-        .dash-menu-group:focus-within .dash-submenu,
-        .dash-menu-group.force-expand .dash-submenu {
-            max-height: 900px;
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
-        }
-        .dash-trigger { position: relative; }
-/* 수정 후 */
-.dash-trigger::after {
-    content: '▾';
-    position: absolute; right: 1.1rem; top: 50%;
-    font-size: 0.6rem; color: var(--da3); opacity: 0.65;
-    transition: transform 0.3s ease;
-    animation: dashChevronHint 1.6s ease-in-out infinite;
-}
-@keyframes dashChevronHint {
-    0%, 100% { transform: translateY(-50%); }
-    50%      { transform: translateY(-25%); }
-}
-/* 수정 후 */
-.dash-menu-group:hover .dash-trigger::after,
-.dash-menu-group:focus-within .dash-trigger::after,
-.dash-menu-group.force-expand .dash-trigger::after { transform: translateY(-50%) rotate(180deg); animation: none; }
-
-/* 추가 */
-.dash-more-badge {
-    margin-left: auto;
-    font-size: 0.52rem;
-    font-weight: 900;
-    letter-spacing: 0.04em;
-    padding: 0.18rem 0.5rem;
-    border-radius: 999px;
-    background: var(--dg);
-    color: var(--da3);
-    border: 1px solid var(--db);
-    animation: moreBadgePulse 2.2s ease-in-out infinite;
-    white-space: nowrap;
-}
-@keyframes moreBadgePulse {
-    0%, 100% { opacity: 0.7; transform: scale(1); }
-    50%      { opacity: 1;   transform: scale(1.07); }
-}
-.dash-menu-group:hover .dash-more-badge,
-.dash-menu-group:focus-within .dash-more-badge,
-.dash-menu-group.force-expand .dash-more-badge { opacity: 0; }
-
-        /* =====================================================
-           SIDEBAR MUSIC PLAYER — compact bar under "Dashboard"
-           while the menu is collapsed, tiny strip at the foot of
-           the menu once it's fully expanded.
-        ===================================================== */
-        .sidebar-player {
-            display: flex; align-items: center; gap: 0.6rem;
-            border-radius: 1.1rem;
-            border: 1px solid var(--db);
-            background: var(--dg2);
-        }
-        .sidebar-player--full { margin-top: 0.5rem; padding: 0.65rem 0.8rem; }
-        .sidebar-player--mini { margin-top: 0.75rem; padding: 0.45rem 0.7rem; opacity: 0.85; }
-        .dash-menu-group:hover .sidebar-player--full,
-        .dash-menu-group:focus-within .sidebar-player--full,
-        .dash-menu-group.force-expand .sidebar-player--full { display: none; }
-        .sidebar-player .sp-info { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0; }
-        .sidebar-player .sp-title {
-            font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--da3);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .sp-mini-title {
-            font-size: 0.58rem; font-weight: 700; color: var(--da3); flex: 1; min-width: 0;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .sp-ctrl {
-            background: transparent; border: none; color: rgba(255,255,255,0.6);
-            width: 1.7rem; height: 1.7rem; border-radius: 50%; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .sp-ctrl svg { width: 0.9rem; height: 0.9rem; fill: currentColor; }
-        .sp-ctrl:hover { color: var(--da); background: rgba(255,255,255,0.08); }
-        .sp-ctrl.sp-main { color: var(--da); }
-        .sp-mini-btn {
-            background: var(--dg); border: 1px solid var(--db); color: var(--da);
-            width: 1.6rem; height: 1.6rem; border-radius: 50%; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .sp-mini-btn svg { width: 0.75rem; height: 0.75rem; fill: currentColor; }
-        .sp-mini-btn:hover { box-shadow: 0 0 10px -2px var(--da); }
-
-        /* small "now playing" equalizer bars, shared across all player UIs */
-        .sp-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex-shrink: 0; }
-        .sp-eq i { display: block; width: 2px; background: var(--da); border-radius: 1px; height: 3px; transition: height 0.2s ease; }
-        .sp-eq.is-playing i { animation: eqBounce 0.9s ease-in-out infinite; }
-        .sp-eq.is-playing i:nth-child(2) { animation-delay: 0.15s; }
-        .sp-eq.is-playing i:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes eqBounce { 0%,100% { height: 3px; } 50% { height: 11px; } }
-
         /* =====================================================
            FLOATING MUSIC PLAYER — bottom-right, ported from index.html
         ===================================================== */
@@ -988,6 +734,403 @@
             0%   { transform: scale(0); opacity: 0.35; }
             100% { transform: scale(1); opacity: 0; }
         }
+
+        /* =====================================================================
+           ★★★ 3D UPGRADE LAYER ★★★
+           Everything below is scoped to the sidebar / dock / floating player,
+           so the tab pages loaded into #contentFrame are not affected.
+        ===================================================================== */
+        :root { --sb-ease: cubic-bezier(.22,1,.36,1); }
+
+        /* ── Stage: slow ambient parallax on the background orbs ── */
+        .day-orb   { translate: calc(var(--pxo,0) * 1px) calc(var(--pyo,0) * 1px); transition: translate .5s ease-out; }
+        .day-orb-2 { translate: calc(var(--pxo,0) * -1px) calc(var(--pyo,0) * -1px); transition: translate .5s ease-out; }
+
+        /* ── Sidebar surface ── */
+        aside {
+            box-shadow:
+                6px 0 40px rgba(0,0,0,.65),
+                inset -1px 0 0 var(--db),
+                inset 0 0 90px var(--dg2);
+        }
+        aside > .sidebar-inner { position: relative; }
+
+        /* perspective grid "floor" at the foot of the sidebar */
+        .sb-floor { display: none; }
+        @media (min-width: 1024px) {
+            .sb-floor {
+                display: block; position: absolute; left: -25%; right: -25%; bottom: -6px; height: 190px;
+                background:
+                    linear-gradient(var(--db) 1px, transparent 1px) 0 0 / 100% 24px,
+                    linear-gradient(90deg, var(--db) 1px, transparent 1px) 0 0 / 30px 100%;
+                transform: perspective(260px) rotateX(64deg);
+                transform-origin: 50% 100%;
+                -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 90%);
+                mask-image: linear-gradient(to top, #000 10%, transparent 90%);
+                opacity: .55; pointer-events: none; z-index: 0;
+                animation: floorGlide 6s linear infinite;
+            }
+        }
+        @keyframes floorGlide { from { background-position: 0 0, 0 0; } to { background-position: 0 24px, 0 0; } }
+
+        /* ── Desktop scroll container (replaces the old fixed layout) ── */
+        .sb-desktop { display: none; }
+        @media (min-width: 1024px) { .sb-desktop { display: flex; } }
+        .sb-scroll {
+            position: relative; z-index: 1; flex-direction: column; gap: 1rem;
+            height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden;
+            padding: 1.35rem 1.15rem 1.6rem;
+            scrollbar-width: thin; scrollbar-color: var(--da) transparent;
+        }
+        /* children keep their natural height; the column scrolls instead of squashing them */
+        .sb-scroll > * { flex-shrink: 0; }
+        body.day-3 aside .deco-corner-tr { top: 8px; right: 10px; }
+        .sb-scroll::-webkit-scrollbar { width: 3px; }
+        .sb-scroll::-webkit-scrollbar-thumb { background: var(--da); border-radius: 99px; }
+
+        /* staggered 3D entrance (plays once; items always end visible) */
+        @keyframes sbRise {
+            from { opacity: 0; transform: perspective(800px) translateY(22px) rotateX(-28deg) scale(.96); }
+            to   { opacity: 1; transform: perspective(800px) translateY(0) rotateX(0deg) scale(1); }
+        }
+        .sb-in { animation: sbRise .75s var(--sb-ease) backwards; animation-delay: calc(var(--i, 0) * 70ms + 120ms); }
+
+        /* ── Brand (extruded 3D lettering) ── */
+        .brand-title { transition: all .3s ease; }
+        .brand-3d {
+            text-shadow:
+                0 1px 0 rgba(0,0,0,.55), 0 2px 0 rgba(0,0,0,.5), 0 3px 0 rgba(0,0,0,.45),
+                0 4px 0 rgba(0,0,0,.4), 0 9px 14px rgba(0,0,0,.6), 0 0 26px var(--dg);
+        }
+        .brand-accent { color: var(--da); text-shadow: 0 1px 0 var(--da2), 0 2px 0 var(--da2), 0 3px 0 rgba(0,0,0,.5), 0 0 22px var(--da); }
+        .sb-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+        .sb-brand { display: flex; align-items: center; gap: .65rem; min-width: 0; flex-wrap: wrap; }
+
+        /* ── Shared "glass slab" card ── */
+        .sb-card {
+            position: relative; border-radius: 1.25rem; border: 1px solid var(--db);
+            background:
+                linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.015) 45%, rgba(0,0,0,.18)),
+                var(--dc);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.1), inset 0 -12px 24px rgba(0,0,0,.28),
+                0 2px 0 rgba(0,0,0,.55), 0 14px 26px -12px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.4);
+        }
+
+        /* ── Tilt helper (driven by JS: --rx / --ry / --mx / --my) ── */
+        .sb-tilt {
+            transform: perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+            transform-style: preserve-3d;
+            transition: transform .22s var(--sb-ease), box-shadow .25s ease;
+        }
+
+        /* ── Profile card ── */
+        .sb-profile { display: grid; grid-template-columns: auto 1fr; gap: .85rem 1rem; align-items: center; padding: 1rem; }
+        .sb-profile-info { min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
+        .sb-username {
+            font-size: .82rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--da3);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 12px var(--dg);
+        }
+        .sb-online { font-size: 9px; font-weight: 900; display: flex; align-items: center; gap: .3rem; }
+        .sb-bday-btn {
+            grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: .4rem;
+            padding: .45rem .8rem; border-radius: .85rem; font-size: 9px; font-weight: 800; letter-spacing: .16em;
+            text-transform: uppercase; color: var(--da3); cursor: pointer;
+            background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.2)), var(--dg2);
+            border: 1px solid var(--db);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 3px 0 rgba(0,0,0,.55), 0 8px 12px -6px rgba(0,0,0,.8);
+            transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+        }
+        .sb-bday-btn:hover { background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.12)), var(--dg); }
+        .sb-bday-btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(0,0,0,.55); }
+
+        /* spinning conic ring + floating shadow around the avatar */
+        .avatar-3d { position: relative; padding: 5px; border-radius: 50%; flex-shrink: 0; }
+        .avatar-3d::before {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--da), transparent 28%, var(--da3) 52%, transparent 76%, var(--da));
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+                    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            animation: ringSpin 6s linear infinite;
+        }
+        .avatar-3d::after {
+            content: ''; position: absolute; left: 14%; right: 14%; bottom: -13px; height: 12px; border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(0,0,0,.75), transparent 70%); filter: blur(3px); z-index: -1;
+            animation: avatarShadow 4s ease-in-out infinite alternate;
+        }
+        @keyframes ringSpin { to { transform: rotate(360deg); } }
+        @keyframes avatarShadow { from { transform: scaleX(1); opacity: .9; } to { transform: scaleX(.82); opacity: .6; } }
+        .nav-profile-img {
+            display: block; width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: none;
+            box-shadow: 0 6px 14px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.1);
+            transition: transform .3s ease;
+        }
+        @media (min-width: 1024px) { .nav-profile-img { width: 76px !important; height: 76px !important; } }
+        .avatar-3d:hover .nav-profile-img { transform: scale(1.04) translateZ(10px); }
+        .edit-badge {
+            position: absolute; bottom: 4px; right: 4px; background: var(--da); width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #000;
+            box-shadow: 0 0 10px var(--dg), 0 3px 0 rgba(0,0,0,.5); z-index: 2;
+        }
+        #mobileProfileImg { box-shadow: 0 0 0 2px var(--dg), 0 4px 10px rgba(0,0,0,.6); }
+
+        /* weather chip as a small bevelled pill */
+        #jakartaWeather, #mobileWeatherChip {
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.3)), rgba(0,0,0,.35);
+            border: 1px solid var(--db);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 2px 0 rgba(0,0,0,.5);
+        }
+
+        /* ── Menu (always visible) ── */
+        .sb-nav { display: flex; flex-direction: column; gap: .55rem; }
+        .sb-section-label { font-size: .55rem; font-weight: 900; letter-spacing: .3em; color: #475569; text-transform: uppercase; margin: .1rem 0 .05rem .4rem; }
+        .aside-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--db), transparent); margin: .35rem 0; }
+
+        .btn-3d { transition: all .2s; border: 1px solid rgba(255,255,255,.05); }
+        .btn-3d:active { transform: translateY(2px) scale(.97); }
+
+        .nav-key {
+            --ty: 0px; --tz: 0px;
+            position: relative; display: flex; align-items: center; gap: .8rem; width: 100%;
+            padding: .6rem .8rem .6rem .65rem; border-radius: 1.05rem;
+            font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; text-align: left;
+            color: #94a3b8; cursor: pointer;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.02) 55%, rgba(0,0,0,.2)),
+                rgba(8,12,22,.72);
+            border: 1px solid rgba(255,255,255,.07);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.4),
+                0 4px 0 rgba(0,0,0,.6), 0 12px 18px -8px rgba(0,0,0,.8);
+            transform: perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--ty)) translateZ(var(--tz));
+            transform-style: preserve-3d;
+            transition: transform .2s var(--sb-ease), box-shadow .25s ease, color .2s ease, background .25s ease, border-color .25s ease;
+        }
+        /* pointer-following glare */
+        .nav-key::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+            background: radial-gradient(170px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.17), transparent 62%);
+            transition: opacity .25s ease;
+        }
+        .nav-key:hover::before { opacity: 1; }
+        .nav-key:hover {
+            --ty: -2px; --tz: 12px; color: #fff; border-color: var(--db);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.16), inset 0 -2px 0 rgba(0,0,0,.4),
+                0 6px 0 rgba(0,0,0,.6), 0 18px 28px -10px var(--da);
+        }
+        .nav-key:active {
+            --ty: 3px; --tz: 0px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(0,0,0,.4), 0 1px 0 rgba(0,0,0,.6), 0 4px 8px -4px rgba(0,0,0,.8);
+        }
+        .nav-key:focus-visible, .sp-ctrl:focus-visible, .ctrl-btn:focus-visible, .sb-collapse-btn:focus-visible, .dock-item:focus-visible {
+            outline: 2px solid var(--da3); outline-offset: 2px;
+        }
+        .nk-rail {
+            position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px; border-radius: 0 3px 3px 0;
+            background: var(--da); box-shadow: 0 0 10px var(--da); transform: scaleY(0); transition: transform .25s ease;
+        }
+        .nk-icon {
+            position: relative; flex: 0 0 auto; width: 2.25rem; height: 2.25rem; display: grid; place-items: center;
+            font-size: 1.05rem; border-radius: .8rem;
+            background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.02)), rgba(0,0,0,.35);
+            border: 1px solid rgba(255,255,255,.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.55), 0 6px 10px -3px rgba(0,0,0,.7);
+            transform: translateZ(16px);
+            transition: transform .25s var(--sb-ease), background .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+        .nk-icon > span { filter: drop-shadow(0 2px 2px rgba(0,0,0,.55)); line-height: 1; }
+        .nk-text { flex: 1; min-width: 0; white-space: nowrap; transform: translateZ(8px); }
+        .nk-chev { font-size: 1rem; line-height: 1; color: var(--da3); opacity: .35; transition: transform .25s ease, opacity .25s ease; }
+        .nav-key:hover .nk-icon { transform: translateZ(26px) scale(1.08) rotate(-5deg); }
+        .nav-key:hover .nk-chev { transform: translateX(3px); opacity: .9; }
+
+        /* active tab = raised accent key with coloured edge */
+        .tab-active { font-weight: 900; text-shadow: 0 0 8px var(--dg); }
+        .nav-key.tab-active {
+            color: var(--da3); border-color: var(--da);
+            background:
+                var(--tab-stripe, linear-gradient(transparent, transparent)),
+                linear-gradient(135deg, var(--dg) 0%, var(--dg2) 100%),
+                linear-gradient(180deg, rgba(255,255,255,.1), rgba(0,0,0,.2)),
+                rgba(8,12,22,.9);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 22px var(--dg), var(--tab-glow, 0 0 0 transparent),
+                0 4px 0 var(--da2), 0 14px 24px -8px var(--da);
+        }
+        .nav-key.tab-active .nk-rail { transform: scaleY(1); }
+        .nav-key.tab-active .nk-chev { opacity: 1; }
+        .nav-key.tab-active .nk-icon {
+            background: linear-gradient(145deg, var(--da3), var(--da2)); border-color: var(--da3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 3px 0 rgba(0,0,0,.5), 0 0 18px var(--dg), 0 8px 14px -4px var(--da);
+        }
+        .nav-key.tab-active::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.2) 50%, transparent 65%) 200% 0 / 250% 100% no-repeat;
+            animation: keySheen 4.5s ease-in-out infinite;
+        }
+        @keyframes keySheen { 0%, 55% { background-position: 200% 0; } 100% { background-position: -100% 0; } }
+        body.day-3 { --tab-stripe: repeating-linear-gradient(45deg, var(--dg), var(--dg) 3px, transparent 3px, transparent 8px); }
+        body.day-4 { --tab-glow: 0 0 20px var(--dg); }
+
+        /* primary key: "Main Menu" */
+        .main-menu-btn { color: var(--da3); }
+        .nav-key--primary {
+            background: linear-gradient(180deg, rgba(255,255,255,.13), rgba(0,0,0,.14)), var(--dg);
+            border-color: var(--db); color: var(--da3); font-weight: 900;
+        }
+        .nav-key--primary .nk-icon { background: linear-gradient(145deg, var(--da3), var(--da2)); border-color: var(--da3); }
+
+        .tdlid-link { color: var(--da3); border: 1px solid var(--db); transition: all .2s; }
+        .tdlid-link:hover { background: var(--dg2); }
+        .online-dot { background: var(--da) !important; box-shadow: 0 0 5px var(--da); }
+        .online-text { color: var(--da3) !important; }
+
+        /* collapse button (manual — the menu never hides on its own) */
+        .sb-collapse-btn {
+            flex: 0 0 auto; width: 1.9rem; height: 1.9rem; border-radius: .65rem; display: grid; place-items: center;
+            font-size: 1.1rem; line-height: 1; font-weight: 900; color: var(--da3); cursor: pointer;
+            background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(0,0,0,.25)), rgba(8,12,22,.8);
+            border: 1px solid var(--db);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 3px 0 rgba(0,0,0,.6), 0 6px 10px -4px rgba(0,0,0,.8);
+            transition: transform .15s ease, box-shadow .2s ease, color .2s ease;
+        }
+        .sb-collapse-btn:hover { color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 3px 0 rgba(0,0,0,.6), 0 8px 16px -4px var(--da); }
+        .sb-collapse-btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(0,0,0,.6); }
+        #sidebarToggleTab {
+            background: linear-gradient(180deg, var(--da), var(--da2));
+            box-shadow: 4px 0 18px var(--dg), 0 0 0 1px var(--db), inset 0 1px 0 rgba(255,255,255,.3);
+        }
+
+        /* ── Music card in the sidebar ── */
+        .sb-player { display: flex; flex-direction: column; gap: .65rem; padding: .85rem .9rem .9rem; }
+        .sp-row { display: flex; align-items: center; gap: .75rem; }
+        .vinyl {
+            position: relative; flex: 0 0 auto; width: 2.9rem; height: 2.9rem; border-radius: 50%;
+            background: conic-gradient(from 30deg, #1a1f2b, #2d3647 12%, #11141b 25%, #252d3c 40%, #0d1016 55%, #2d3647 70%, #11141b 85%, #1a1f2b);
+            box-shadow: 0 0 0 2px rgba(0,0,0,.6), 0 7px 12px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.08);
+            animation: vinylSpin 3.2s linear infinite; animation-play-state: paused;
+        }
+        .vinyl::before { content: ''; position: absolute; inset: 0; margin: auto; width: 36%; height: 36%; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, var(--da3), var(--da2)); box-shadow: 0 0 10px var(--dg); }
+        .vinyl::after { content: ''; position: absolute; inset: 0; margin: auto; width: 8%; height: 8%; border-radius: 50%; background: #05070b; }
+        body.bgm-playing .vinyl { animation-play-state: running; }
+        @keyframes vinylSpin { to { transform: rotate(360deg); } }
+        .sb-player .sp-info { display: flex; flex-direction: column; gap: .3rem; flex: 1; min-width: 0; }
+        .sidebar-player .sp-title, .sp-title {
+            font-size: .66rem; font-weight: 800; letter-spacing: .04em; color: var(--da3);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sp-progress { height: 5px; border-radius: 99px; background: rgba(255,255,255,.08); box-shadow: inset 0 1px 2px rgba(0,0,0,.7); cursor: pointer; overflow: hidden; }
+        .sp-progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--da2), var(--da3)); box-shadow: 0 0 8px var(--da); transition: width .3s linear; }
+        .sp-controls { display: flex; align-items: center; justify-content: center; gap: .7rem; }
+        .sp-ctrl {
+            width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #cbd5e1;
+            background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(0,0,0,.25)), rgba(8,12,22,.8);
+            border: 1px solid rgba(255,255,255,.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 3px 0 rgba(0,0,0,.6), 0 7px 10px -3px rgba(0,0,0,.7);
+            transition: transform .15s ease, box-shadow .2s ease, color .2s ease;
+        }
+        .sp-ctrl svg { width: .9rem; height: .9rem; fill: currentColor; }
+        .sp-ctrl:hover { color: var(--da3); }
+        .sp-ctrl:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(0,0,0,.6); }
+        .sp-ctrl.sp-main {
+            width: 2.6rem; height: 2.6rem; color: #fff; border-color: var(--da3);
+            background: linear-gradient(145deg, var(--da3), var(--da2));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 4px 0 rgba(0,0,0,.55), 0 10px 18px -4px var(--da);
+        }
+        .sp-ctrl.sp-main svg { width: 1.05rem; height: 1.05rem; }
+
+        /* equalizer bars (shared by every player UI) */
+        .sp-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex-shrink: 0; }
+        .sp-eq i { display: block; width: 2px; background: var(--da); border-radius: 1px; height: 3px; transition: height .2s ease; }
+        .sp-eq.is-playing i { animation: eqBounce .9s ease-in-out infinite; }
+        .sp-eq.is-playing i:nth-child(2) { animation-delay: .15s; }
+        .sp-eq.is-playing i:nth-child(3) { animation-delay: .3s; }
+        @keyframes eqBounce { 0%,100% { height: 3px; } 50% { height: 11px; } }
+
+        /* ── Floating player (bottom-right): glossy 3D pill ── */
+        .player-bar {
+            background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.01) 50%, rgba(0,0,0,.2)), var(--dc, rgba(10,11,17,.9));
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.14), inset 0 -2px 0 rgba(0,0,0,.35),
+                0 4px 0 rgba(0,0,0,.6), 0 16px 32px rgba(0,0,0,.6), 0 0 26px -8px var(--da);
+        }
+        .ctrl-btn {
+            background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.2));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 0 rgba(0,0,0,.55);
+        }
+        .ctrl-btn:active { transform: translateY(2px); box-shadow: none; }
+        .ctrl-btn.main-ctrl {
+            width: 2.1rem; height: 2.1rem; color: #fff; background: linear-gradient(145deg, var(--da3), var(--da2));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 3px 0 rgba(0,0,0,.55), 0 8px 14px -4px var(--da);
+        }
+        .playlist-dropdown { box-shadow: 0 16px 36px rgba(0,0,0,.75), 0 0 24px -8px var(--da); }
+
+        /* ── Logout + timer foot ── */
+        .sb-foot { display: flex; flex-direction: column; gap: .6rem; }
+        .sb-logout {
+            display: flex; align-items: center; justify-content: center; gap: .4rem; padding: .65rem 1rem;
+            font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+            color: #fb7185; border-radius: 1rem;
+            background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.2)), rgba(225,29,72,.12);
+            border: 1px solid rgba(244,63,94,.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 3px 0 rgba(0,0,0,.6), 0 10px 16px -8px rgba(0,0,0,.8);
+            transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+        }
+        .sb-logout:hover { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(0,0,0,.15)), rgba(225,29,72,.22); }
+        .sb-logout:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 0 rgba(0,0,0,.6); }
+        .timer-wrapper {
+            background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.25)), rgba(0,0,0,.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 0 rgba(0,0,0,.5);
+        }
+        #onlineUsersPanel { box-shadow: 0 0 0 1px var(--db), 0 2px 0 rgba(0,0,0,.55), 0 14px 24px -12px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 22px var(--dg2); margin-bottom: 0; }
+        .tdlid-link { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.2)), rgba(255,255,255,.02);
+            border-radius: 1rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 3px 0 rgba(0,0,0,.55), 0 10px 16px -8px rgba(0,0,0,.8); }
+        .tdlid-link:active { transform: translateY(2px); }
+
+        /* ── Mobile header polish ── */
+        #mobileHeader { box-shadow: 0 6px 22px rgba(0,0,0,.6), 0 0 30px var(--dg2), inset 0 -1px 0 var(--db), inset 0 1px 0 rgba(255,255,255,.05); }
+
+        /* ── Mobile bottom dock: 3D bubbles, active one floats up ── */
+        .mobile-bottom-nav { align-items: flex-end !important; gap: 1px; padding-left: .35rem !important; padding-right: .35rem !important;
+            box-shadow: 0 -4px 24px rgba(0,0,0,.6), 0 14px 30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08) !important; }
+        .dock-item {
+            flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .22rem; color: #64748b;
+            transition: transform .3s var(--sb-ease), color .2s ease; text-decoration: none;
+        }
+        .dock-ico {
+            width: 1.95rem; height: 1.95rem; display: grid; place-items: center; font-size: 1.02rem; line-height: 1; border-radius: .75rem;
+            background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.02)), rgba(0,0,0,.35);
+            border: 1px solid rgba(255,255,255,.07);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 3px 0 rgba(0,0,0,.55), 0 6px 8px -3px rgba(0,0,0,.7);
+            transition: transform .2s var(--sb-ease), background .25s ease, box-shadow .25s ease;
+        }
+        .dock-lbl { font-size: 7.5px; font-weight: 800; line-height: 1.05; text-align: center; letter-spacing: .02em; max-width: 100%; }
+        .dock-item:active .dock-ico { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(0,0,0,.55); }
+        .dock-item.mobile-tab-active { transform: translateY(-7px); }
+        .dock-item.mobile-tab-active .dock-ico {
+            background: linear-gradient(145deg, var(--da3), var(--da2)); border-color: var(--da3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 3px 0 rgba(0,0,0,.5), 0 10px 16px -4px var(--da);
+        }
+        .mobile-tab-active { color: var(--da) !important; font-weight: 900; text-shadow: 0 0 8px var(--dg); }
+        @media (max-width: 359px) { .dock-ico { width: 1.6rem; height: 1.6rem; font-size: .88rem; } }
+
+        /* ── Modal: 3D pop-in ── */
+        #profileCustomModal > div { animation: modalPop .5s var(--sb-ease) both; transform-origin: 50% 60%; }
+        @keyframes modalPop { from { opacity: 0; transform: perspective(900px) rotateX(14deg) translateY(24px) scale(.95); } to { opacity: 1; transform: none; } }
+
+        /* ── Mobile: header container must be full width (inner wrapper used a fixed 20rem) ── */
+        @media (max-width: 1023px) {
+            aside > .sidebar-inner { width: 100%; min-width: 0; }
+        }
+
+        /* ── Respect reduced-motion preferences ── */
+        @media (prefers-reduced-motion: reduce) {
+            .sb-in, .avatar-3d::before, .avatar-3d::after, .vinyl, .sb-floor, .nav-key.tab-active::after { animation: none !important; }
+            .sb-tilt, .nav-key { transition: none; }
+        }
     </style>
 </head>
 
@@ -998,7 +1141,6 @@
 <div class="day-orb-2" style="background:radial-gradient(circle, var(--dg2) 0%, transparent 70%);"></div>
 
 <!-- ── Sidebar collapse helpers ── -->
-<div id="sidebarHoverZone"></div>
 <div id="sidebarEdgeLine"></div>
 <div id="sidebarToggleTab">
     <span class="tab-chevron">▶</span>
@@ -1019,6 +1161,7 @@
         </div>
         <div class="deco-corner lg:block hidden"></div>
         <div class="deco-corner-tr lg:block hidden"></div>
+        <div class="sb-floor" aria-hidden="true"></div>
 
         <!-- MOBILE HEADER -->
         <div id="mobileHeader" class="lg:hidden flex items-center justify-between w-full h-[65px] px-5 border-b border-white/5">
@@ -1073,54 +1216,106 @@
         </div>
 
         <!-- DESKTOP SIDEBAR -->
-        <div class="hidden lg:flex p-8 flex-col h-full min-h-0 overflow-hidden" style="position:relative;z-index:1;">
+        <div class="sb-desktop sb-scroll" id="sbScroll">
 
-            <!-- Brand + Day Badge -->
-            <div class="flex flex-col gap-4 mb-8">
-                <div class="flex items-center justify-between">
-                    <h1 class="brand-title text-2xl text-white">Daily <span class="brand-accent">System</span></h1>
+            <!-- Brand + Day badge + manual collapse -->
+            <div class="sb-head sb-in" style="--i:0">
+                <div class="sb-brand">
+                    <h1 class="brand-title brand-3d text-2xl text-white">Daily <span class="brand-accent">System</span></h1>
                     <div class="day-badge" id="desktopDayBadge">
                         <span class="day-dot"></span>
                         <span id="desktopDayLabel">MON</span>
                     </div>
                 </div>
+                <button type="button" id="sidebarCollapseBtn" class="sb-collapse-btn" title="Hide menu" aria-label="Hide menu">‹</button>
+            </div>
 
-                <!-- Profile Row -->
-                <div class="flex items-center gap-4 mt-3">
-                    <div id="navEmojiContainer"
-                         class="cursor-pointer relative group inline-block btn-3d"
-                         onclick="openProfileImagePicker()"></div>
-                    <div class="flex flex-col">
-                        <div id="jakartaWeather" class="flex items-center gap-2 mb-1.5 px-2.5 py-1 rounded-lg border w-fit">
-                            <span id="weatherIcon" class="text-sm">⏳</span>
-                            <span id="weatherTemp" class="text-[11px] font-black">--°C</span>
-                            <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
-                        </div>
-
-                        <button onclick="showAllStaffBirthdays()"
-                                class="mt-2 ml-1 text-[9px] font-bold transition-colors uppercase tracking-widest flex items-center gap-1"
-                                style="color:var(--da3)">
-                            <img src="images/gif/staff.gif" alt="birthday" class="w-7 h-7 object-contain"> Staff Birthdays
-                        </button>
-
-                        <div id="birthdayAlert" class="hidden flex flex-col mb-3 ml-1 mt-2">
-                            <span class="text-[10px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
-                            <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
-                        </div>
-
-                        <p id="desktopUser" class="text-[11px] font-black uppercase tracking-widest mt-1" style="color:var(--da3)"></p>
-                        <span class="text-[9px] font-black flex items-center gap-1 mt-0.5 online-text">
-                            <span class="w-1.5 h-1.5 rounded-full animate-pulse online-dot"></span> ONLINE
-                        </span>
+            <!-- Profile card -->
+            <section class="sb-card sb-profile sb-tilt sb-in" data-tilt="3" style="--i:1">
+                <div id="navEmojiContainer"
+                     class="avatar-3d cursor-pointer relative group inline-block btn-3d"
+                     onclick="openProfileImagePicker()"></div>
+                <div class="sb-profile-info">
+                    <p id="desktopUser" class="sb-username"></p>
+                    <span class="sb-online online-text">
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse online-dot"></span> ONLINE
+                    </span>
+                    <div id="jakartaWeather" class="flex items-center gap-2 px-2.5 py-1 rounded-lg border w-fit">
+                        <span id="weatherIcon" class="text-sm">⏳</span>
+                        <span id="weatherTemp" class="text-[11px] font-black">--°C</span>
+                        <span class="text-[9px] text-slate-500 font-bold tracking-widest uppercase">JKT</span>
+                    </div>
+                    <div id="birthdayAlert" class="hidden flex flex-col">
+                        <span class="text-[10px] font-black birthday-active flex items-center gap-1">🎂 HAPPY BIRTHDAY!</span>
+                        <span id="birthdayNames" class="text-[9px] font-bold text-white uppercase tracking-widest mt-0.5"></span>
                     </div>
                 </div>
-
-                <button onclick="logout()"
-                        class="btn-3d text-[10px] font-black bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 px-4 py-2 rounded-xl border border-rose-500/20 transition uppercase mt-2">
-                    🖐️ Logout 🔓
+                <button type="button" onclick="showAllStaffBirthdays()" class="sb-bday-btn">
+                    <img src="images/gif/staff.gif" alt="birthday" class="w-6 h-6 object-contain"> Staff Birthdays
                 </button>
+            </section>
 
-                <!-- Timer -->
+            <!-- Menu — every tab is always visible -->
+            <nav class="sb-nav" id="sbNav" aria-label="Main menu">
+                <p class="sb-section-label sb-in" style="--i:2">Menu</p>
+
+                <button onclick="switchTab('dash')"      class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:3"><span class="nk-rail"></span><span class="nk-icon"><span>🏠</span></span><span class="nk-text">Dashboard</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:4"><span class="nk-rail"></span><span class="nk-icon"><span>📝</span></span><span class="nk-text">Work Report</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:5"><span class="nk-rail"></span><span class="nk-icon"><span>📅</span></span><span class="nk-text">Calendar</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:6"><span class="nk-rail"></span><span class="nk-icon"><span>✈️</span></span><span class="nk-text">Vacation</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:7"><span class="nk-rail"></span><span class="nk-icon"><span>📈</span></span><span class="nk-text">Statistics</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:8"><span class="nk-rail"></span><span class="nk-icon"><span>⚙️</span></span><span class="nk-text">Settings</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:9"><span class="nk-rail"></span><span class="nk-icon"><span>📸</span></span><span class="nk-text">Staff Photos</span><span class="nk-chev">›</span></button>
+                <button onclick="switchTab('promo')"     class="pc-tab-btn btn-3d nav-key sb-tilt sb-in" data-tilt="5" style="--i:10"><span class="nk-rail"></span><span class="nk-icon"><span>📢</span></span><span class="nk-text">TEI Promo</span><span class="nk-chev">›</span></button>
+
+                <div class="aside-divider sb-in" style="--i:11"></div>
+
+                <button onclick="location.href='staff_main.html';"
+                        class="main-menu-btn nav-key nav-key--primary btn-3d sb-tilt sb-in" data-tilt="5" style="--i:12">
+                    <span class="nk-icon"><span>⬅️</span></span><span class="nk-text">Main Menu</span>
+                </button>
+            </nav>
+
+            <!-- Music card (synced with the floating player) -->
+            <section class="sb-card sb-player sidebar-player sb-in" id="sidebarPlayer" style="--i:13">
+                <div class="sp-row">
+                    <div class="vinyl" aria-hidden="true"></div>
+                    <div class="sp-info">
+                        <span class="js-track-title sp-title">Loading...</span>
+                        <span class="sp-eq"><i></i><i></i><i></i></span>
+                    </div>
+                </div>
+                <div class="sp-progress js-progress" title="Seek"><i class="js-progress-fill"></i></div>
+                <div class="sp-controls">
+                    <button class="sp-ctrl" onclick="prevTrack()" title="Previous Track" aria-label="Previous Track">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    <button class="sp-ctrl sp-main" onclick="togglePlayPause()" title="Play/Pause" aria-label="Play/Pause">
+                        <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    <button class="sp-ctrl" onclick="nextTrack()" title="Next Track" aria-label="Next Track">
+                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Online Staff Panel -->
+            <div id="onlineUsersPanel" class="sb-in" style="--i:14">
+                <div class="online-panel-header">
+                    <div class="online-panel-title">
+                        <span class="online-live-dot"></span>
+                        <span>CONNECTED NOW</span>
+                    </div>
+                    <span class="online-count-badge" id="onlineCountBadge">0</span>
+                </div>
+                <div id="onlineUsersList">
+                    <div class="online-empty">SCANNING...</div>
+                </div>
+            </div>
+
+            <!-- Timer + Logout -->
+            <div class="sb-foot sb-in" style="--i:15">
                 <div class="timer-wrapper">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--da);flex-shrink:0">
@@ -1129,85 +1324,14 @@
                     <span>Auto logout:</span>
                     <span id="logout-timer">10:00</span>
                 </div>
-
-                <!-- Online Staff Panel -->
-                <div id="onlineUsersPanel">
-                    <div class="online-panel-header">
-                        <div class="online-panel-title">
-                            <span class="online-live-dot"></span>
-                            <span>CONNECTED NOW</span>
-                        </div>
-                        <span class="online-count-badge" id="onlineCountBadge">0</span>
-                    </div>
-                    <div id="onlineUsersList">
-                        <div class="online-empty">SCANNING...</div>
-                    </div>
-                </div>
+                <button type="button" onclick="logout()" class="sb-logout btn-3d">🖐️ Logout 🔓</button>
             </div>
 
-            <!-- Nav -->
-            <nav class="flex flex-col gap-1.5 flex-grow min-h-0 overflow-y-auto">
-
-                <!-- Only "Dashboard" is visible at rest; hovering (or focusing) this
-                     group slides the rest of the menu open beneath it, and it folds
-                     back up on its own once the cursor moves away. -->
-                <div class="dash-menu-group" id="dashMenuGroup">
-<button onclick="switchTab('dash')" class="pc-tab-btn btn-3d dash-trigger flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl">
-    <span>🏠</span> Dashboard
-    <span class="dash-more-badge" title="Work Report, Calendar 등 메뉴 더보기">+7 MENU</span>
-</button>
-                    <!-- compact player — shown only while the menu is collapsed -->
-                    <div class="sidebar-player sidebar-player--full" id="sidebarPlayerFull">
-                        <button class="sp-ctrl" onclick="prevTrack()" title="Previous Track">
-                            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                        </button>
-                        <div class="sp-info">
-                            <span class="js-track-title sp-title">Loading...</span>
-                            <span class="sp-eq"><i></i><i></i><i></i></span>
-                        </div>
-                        <button class="sp-ctrl sp-main" onclick="togglePlayPause()" title="Play/Pause">
-                            <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        </button>
-                        <button class="sp-ctrl" onclick="nextTrack()" title="Next Track">
-                            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="dash-submenu" id="dashSubmenu">
-                        <button onclick="switchTab('work')"      class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📝</span> Work Report</button>
-                        <button onclick="switchTab('schedule')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📅</span> Calendar</button>
-                        <button onclick="switchTab('vacation')"  class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>✈️</span> Vacation</button>
-                        <button onclick="switchTab('statistic')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📈</span> Statistics</button>
-                        <button onclick="switchTab('setting')"   class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>⚙️</span> Settings</button>
-                        <button onclick="switchTab('photos')"    class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📸</span> Staff Photos</button>
-                        <button onclick="switchTab('promo')" class="pc-tab-btn btn-3d flex items-center gap-4 px-5 py-3.5 text-xs uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-2xl"><span>📢</span> TEI Promo</button>
-
-                        <div class="aside-divider mt-3"></div>
-
-                        <button onclick="location.href='staff_main.html';"
-                                class="main-menu-btn w-full btn-3d flex items-center gap-4 px-5 py-4 text-xs uppercase tracking-widest font-black rounded-2xl transition-all">
-                            <span>⬅️</span> Main Menu
-                        </button>
-
-                        <!-- tiny player — shown only while the full menu is expanded -->
-                        <div class="sidebar-player sidebar-player--mini" id="sidebarPlayerMini">
-                            <button class="sp-mini-btn" onclick="togglePlayPause()" title="Play/Pause">
-                                <svg class="js-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                <svg class="js-pause-icon hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                            </button>
-                            <span class="js-track-title sp-mini-title">Loading...</span>
-                            <span class="sp-eq"><i></i><i></i><i></i></span>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
             <!-- External -->
-            <div class="pt-5" style="border-top:1px solid var(--db)">
+            <div class="pt-4 sb-in" style="border-top:1px solid var(--db);--i:16">
                 <p class="text-[9px] text-slate-600 font-black tracking-[0.2em] uppercase mb-3 ml-2">External Portal</p>
                 <a href="https://tdlid.github.io" target="_blank"
-                   class="tdlid-link btn-3d flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors bg-white/3 rounded-2xl">
+                   class="tdlid-link btn-3d flex items-center gap-3 px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors">
                     <span>🌐</span> TDLiD Homepage
                 </a>
             </div>
@@ -1227,31 +1351,27 @@
 </main>
 
 <!-- =====================================================
-     MOBILE BOTTOM NAV
+     MOBILE BOTTOM NAV (3D dock)
 ===================================================== -->
 <nav class="mobile-bottom-nav lg:hidden fixed bottom-5 left-5 right-5 glass-panel rounded-[2rem] px-2 py-3 z-[2000] flex justify-around items-center border shadow-2xl">
-    <button onclick="location.href='staff_main.html';"
-            class="flex flex-col items-center gap-1.5 group transition-transform active:scale-90"
-            style="color:var(--da3)">
-        <span class="text-xl">⬅️</span>
-        <span class="text-[8px] font-black uppercase tracking-tighter">Menu</span>
+    <button onclick="location.href='staff_main.html';" class="dock-item" style="color:var(--da3)">
+        <span class="dock-ico">⬅️</span><span class="dock-lbl font-black uppercase">Menu</span>
     </button>
 
-    <div class="w-[1px] h-8 mx-1" style="background:var(--db)"></div>
+    <div class="w-[1px] h-8 mx-0.5 self-center" style="background:var(--db)"></div>
 
-    <button onclick="switchTab('dash')"      class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">🏠</span><span class="text-[8px] font-bold">HOME</span></button>
-    <button onclick="switchTab('work')"      class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📝</span><span class="text-[8px] font-bold">WORK</span></button>
-    <button onclick="switchTab('schedule')"  class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📅</span><span class="text-[8px] font-bold">CAL</span></button>
-    <button onclick="switchTab('vacation')"  class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">🏖️</span><span class="text-[8px] font-bold">VAC</span></button>
-    <button onclick="switchTab('statistic')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📈</span><span class="text-[8px] font-bold">STAT</span></button>
-    <button onclick="switchTab('setting')"   class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">⚙️</span><span class="text-[8px] font-bold">SET</span></button>
-    <button onclick="switchTab('photos')"    class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📸</span><span class="text-[8px] font-bold">PHOTO</span></button>
-<button onclick="switchTab('promo')" class="mobile-tab-btn flex flex-col items-center gap-1 transition-all text-slate-500"><span class="text-xl">📢</span><span class="text-[8px] font-bold">TEI PROMO</span></button>
-    <a href="https://tdlid.github.io" target="_blank" class="flex flex-col items-center gap-1 transition-all text-slate-500">
-        <span class="text-xl">🌐</span><span class="text-[8px] font-bold">HOME</span>
+    <button onclick="switchTab('dash')"      class="mobile-tab-btn dock-item"><span class="dock-ico">🏠</span><span class="dock-lbl">HOME</span></button>
+    <button onclick="switchTab('work')"      class="mobile-tab-btn dock-item"><span class="dock-ico">📝</span><span class="dock-lbl">WORK</span></button>
+    <button onclick="switchTab('schedule')"  class="mobile-tab-btn dock-item"><span class="dock-ico">📅</span><span class="dock-lbl">CAL</span></button>
+    <button onclick="switchTab('vacation')"  class="mobile-tab-btn dock-item"><span class="dock-ico">🏖️</span><span class="dock-lbl">VAC</span></button>
+    <button onclick="switchTab('statistic')" class="mobile-tab-btn dock-item"><span class="dock-ico">📈</span><span class="dock-lbl">STAT</span></button>
+    <button onclick="switchTab('setting')"   class="mobile-tab-btn dock-item"><span class="dock-ico">⚙️</span><span class="dock-lbl">SET</span></button>
+    <button onclick="switchTab('photos')"    class="mobile-tab-btn dock-item"><span class="dock-ico">📸</span><span class="dock-lbl">PHOTO</span></button>
+    <button onclick="switchTab('promo')"     class="mobile-tab-btn dock-item"><span class="dock-ico">📢</span><span class="dock-lbl">TEI PROMO</span></button>
+    <a href="https://tdlid.github.io" target="_blank" class="dock-item">
+        <span class="dock-ico">🌐</span><span class="dock-lbl font-bold">HOME</span>
     </a>
 </nav>
-
 <!-- =====================================================
      PROFILE MODAL
 ===================================================== -->
@@ -1277,7 +1397,7 @@
         <div class="playlist-header-title">PLAYLIST</div>
         <ul id="playlistItems" class="playlist-items"></ul>
     </div>
-    <div class="player-bar">
+    <div class="player-bar sb-tilt" data-tilt="4">
         <button class="track-info-btn" onclick="togglePlaylistMenu()" title="Show Playlist">
             <span class="sp-eq"><i></i><i></i><i></i></span>
             <span class="js-track-title current-track-title">Loading...</span>
@@ -1297,7 +1417,6 @@
         </div>
     </div>
 </div>
-
 <!-- =====================================================
      SCRIPTS
 ===================================================== -->
@@ -1382,7 +1501,7 @@ const PROFILE_IMAGES = [
     'image-06.webp','image-07.jfif','image-08.jpg','image-09.jfif','image-10.jpg',
     'image-11.jfif','image-12.jpg','image-13.jfif','image-14.jpg','image-15.jfif',
     'image-16.jpg','image-17.jfif','image-18.jpg','image-19.jfif','image-20.jpg',
-    'image-21.jfif','image-22.jpg','image-23.jfif','Yuda.png','Alex_1.png'
+    'image-21.jfif','image-22.jpg','image-23.jfif','Yuda.png'
 ];
 
 /* ── Modal ── */
@@ -1506,17 +1625,17 @@ checkTodayBirthdays();
 fetchJakartaWeather();
 
 /* =====================================================
-   ★ SIDEBAR COLLAPSE LOGIC ★
-   Desktop only: click on main → sidebar slides left.
-   Hover over left edge → sidebar slides back.
+   ★ SIDEBAR (manual collapse only) ★
+   The menu is ALWAYS shown. It no longer hides by itself:
+   it folds away only when you press the ‹ button, and the
+   edge tab (or the button) brings it back.
 ===================================================== */
 (function initSidebarCollapse() {
     const aside       = document.getElementById('mainAside');
-    const hoverZone   = document.getElementById('sidebarHoverZone');
     const toggleTab   = document.getElementById('sidebarToggleTab');
     const edgeLine    = document.getElementById('sidebarEdgeLine');
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
     let   collapsed   = false;
-    let   hoverTimer  = null;
 
     function isDesktop() { return window.innerWidth >= 1024; }
 
@@ -1524,10 +1643,8 @@ fetchJakartaWeather();
         if (!isDesktop() || collapsed) return;
         collapsed = true;
         aside.classList.add('sidebar-collapsed');
-        hoverZone.style.display = 'block';
         toggleTab.style.display = 'flex';
         edgeLine.classList.add('visible');
-        /* small delay for visibility */
         requestAnimationFrame(() => toggleTab.classList.add('visible'));
     }
 
@@ -1535,7 +1652,6 @@ fetchJakartaWeather();
         if (!isDesktop() || !collapsed) return;
         collapsed = false;
         aside.classList.remove('sidebar-collapsed');
-        hoverZone.style.display = 'none';
         toggleTab.classList.remove('visible');
         edgeLine.classList.remove('visible');
         setTimeout(() => {
@@ -1543,37 +1659,11 @@ fetchJakartaWeather();
         }, 300);
     }
 
-    /* Click on main content → collapse */
-    const mainEl = document.querySelector('main');
-    if (mainEl) {
-        mainEl.addEventListener('click', (e) => {
-            if (!isDesktop()) return;
-            /* only collapse, don't block the click */
-            collapseSidebar();
-        });
-    }
-
-    /* Hover on left-edge zone → expand */
-    hoverZone.addEventListener('mouseenter', () => {
-        clearTimeout(hoverTimer);
-        hoverTimer = setTimeout(expandSidebar, 80);
-    });
-    hoverZone.addEventListener('mouseleave', () => clearTimeout(hoverTimer));
-
-    /* Toggle tab click → expand */
-    toggleTab.addEventListener('click', expandSidebar);
-
-    /* Hover on aside itself → keep expanded / re-expand */
-    aside.addEventListener('mouseenter', () => {
-        if (!isDesktop()) return;
-        clearTimeout(hoverTimer);
-        expandSidebar();
-    });
-
-    /* Don't collapse when moving from main back to aside */
-    aside.addEventListener('mouseleave', () => { /* intentionally empty */ });
+    if (collapseBtn) collapseBtn.addEventListener('click', collapseSidebar);
+    if (toggleTab)   toggleTab.addEventListener('click', expandSidebar);
 
     /* Click ripple effect on main area */
+    const mainEl = document.querySelector('main');
     if (mainEl) {
         mainEl.addEventListener('click', (e) => {
             if (!isDesktop()) return;
@@ -1590,13 +1680,14 @@ fetchJakartaWeather();
     window.addEventListener('resize', () => {
         if (!isDesktop()) {
             aside.classList.remove('sidebar-collapsed');
-            hoverZone.style.display = 'none';
             toggleTab.style.display = 'none';
+            toggleTab.classList.remove('visible');
             edgeLine.classList.remove('visible');
             collapsed = false;
         }
     });
 })();
+
 
 /* ── Tab switcher ── */
 window.switchTab = function(t) {
@@ -1621,6 +1712,13 @@ window.switchTab = function(t) {
         if (pB[i]) pB[i].classList.add('tab-active');
         if (mB[i]) mB[i].classList.add('mobile-tab-active');
     }
+    pB.forEach(b => b.removeAttribute('aria-current'));
+    mB.forEach(b => b.removeAttribute('aria-current'));
+    if (i !== undefined) {
+        if (pB[i]) pB[i].setAttribute('aria-current', 'page');
+        if (mB[i]) mB[i].setAttribute('aria-current', 'page');
+    }
+    document.body.dataset.activeTab = activeTab;
     loadHTML(tabMapping[activeTab]);
 };
 
@@ -1893,33 +1991,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
 });
 
-/* ── Dashboard hover menu (touch fallback + click-away collapse) ── */
-(function initDashHoverMenu() {
-    const group = document.getElementById('dashMenuGroup');
-    if (!group) return;
-    const trigger = group.querySelector('.dash-trigger');
 
-    /* Mouse/trackpad users get the pure-CSS :hover behaviour already.
-       This just adds a tap-to-open fallback for touch screens, since
-       there's no hover state to trigger the reveal there. */
-    if (trigger) {
-        trigger.addEventListener('touchend', (e) => {
-            if (!group.classList.contains('force-expand')) {
-                e.preventDefault();
-                group.classList.add('force-expand');
-            }
-        }, { passive: false });
+/* ── 3D interaction layer ──
+   Pointer tilt + glare on the sidebar keys/cards and a soft parallax on the
+   background orbs. Desktop (hover + fine pointer) only, and skipped entirely
+   when the OS asks for reduced motion. Touch devices keep the press effects
+   that are pure CSS. */
+(function init3DInteractions() {
+    const fine = window.matchMedia('(hover:hover) and (pointer:fine)');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!fine.matches || calm.matches) return;
+
+    let cur = null, pt = null, raf = 0, par = null, parRaf = 0;
+    const VARS = ['--rx', '--ry', '--mx', '--my'];
+    const reset = (el) => { if (el) VARS.forEach(v => el.style.removeProperty(v)); };
+
+    function paintTilt() {
+        raf = 0;
+        if (!cur || !pt) return;
+        const r = cur.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const px = Math.min(1, Math.max(0, (pt.x - r.left) / r.width));
+        const py = Math.min(1, Math.max(0, (pt.y - r.top)  / r.height));
+        const m  = parseFloat(cur.dataset.tilt) || 6;
+        cur.style.setProperty('--ry', ((px - 0.5) *  2 * m).toFixed(2) + 'deg');
+        cur.style.setProperty('--rx', ((0.5 - py) *  2 * m).toFixed(2) + 'deg');
+        cur.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        cur.style.setProperty('--my', (py * 100).toFixed(1) + '%');
     }
 
-    /* Tapping/clicking anywhere outside the group folds it back up. */
-    document.addEventListener('click', (e) => {
-        if (!group.contains(e.target)) group.classList.remove('force-expand');
-    });
+    function paintParallax() {
+        parRaf = 0;
+        if (!par) return;
+        document.body.style.setProperty('--pxo', ((par.x / window.innerWidth  - 0.5) * 36).toFixed(1));
+        document.body.style.setProperty('--pyo', ((par.y / window.innerHeight - 0.5) * 36).toFixed(1));
+    }
 
-    /* Picking any menu item also folds the group back up right away. */
-    group.querySelectorAll('.dash-submenu .pc-tab-btn, .dash-submenu .main-menu-btn').forEach((btn) => {
-        btn.addEventListener('click', () => group.classList.remove('force-expand'));
-    });
+    document.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') return;
+        const el = e.target && e.target.closest ? e.target.closest('.sb-tilt') : null;
+        if (el !== cur) { reset(cur); cur = el; }
+        if (cur) { pt = { x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(paintTilt); }
+        par = { x: e.clientX, y: e.clientY };
+        if (!parRaf) parRaf = requestAnimationFrame(paintParallax);
+    }, { passive: true });
+
+    document.documentElement.addEventListener('mouseleave', () => { reset(cur); cur = null; });
 })();
 
 /* ── Background music player (auto-play, floating + sidebar mini UIs) ── */
@@ -1959,6 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.js-play-icon').forEach(el => el.classList.toggle('hidden', isPlaying));
         document.querySelectorAll('.js-pause-icon').forEach(el => el.classList.toggle('hidden', !isPlaying));
         document.querySelectorAll('.sp-eq').forEach(el => el.classList.toggle('is-playing', isPlaying));
+        document.body.classList.toggle('bgm-playing', isPlaying);   /* spins the vinyl */
     }
     function syncTrackTitle(title) {
         document.querySelectorAll('.js-track-title').forEach(el => { el.textContent = title; });
@@ -1981,6 +2099,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const track = playlist[currentTrackIndex];
         bgm.src = track.src;
         syncTrackTitle(track.title);
+        document.querySelectorAll('.js-progress-fill').forEach(el => { el.style.width = '0%'; });
         renderPlaylistUI();
         bgm.play().catch(() => { syncTrackTitle('Click to play'); });
     }
@@ -1998,7 +2117,23 @@ document.addEventListener('DOMContentLoaded', () => {
         playTrack(currentTrackIndex);
     };
     bgm.addEventListener('ended', () => window.nextTrack());
-    bgm.addEventListener('play',  () => syncPlayIcons(true));
+    bgm.addEventListener('play',  () => {
+        syncPlayIcons(true);
+        /* autoplay may have been blocked earlier ("Click to play"): restore the real title once playback starts */
+        const t = playlist[currentTrackIndex];
+        if (t) syncTrackTitle(t.title);
+    });
+    /* progress bar (sidebar card): fills while playing, click to seek */
+    bgm.addEventListener('timeupdate', () => {
+        if (!bgm.duration) return;
+        const pct = (bgm.currentTime / bgm.duration) * 100;
+        document.querySelectorAll('.js-progress-fill').forEach(el => { el.style.width = pct + '%'; });
+    });
+    document.querySelectorAll('.js-progress').forEach(bar => bar.addEventListener('click', (e) => {
+        if (!bgm.duration) return;
+        const r = bar.getBoundingClientRect();
+        bgm.currentTime = bgm.duration * Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    }));
     bgm.addEventListener('pause', () => syncPlayIcons(false));
 
     window.togglePlaylistMenu = function() {
