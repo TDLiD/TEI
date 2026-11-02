@@ -587,10 +587,6 @@ body {
 }
 /* 아주 넓은 화면: 영상이 작게 보이지 않도록 가운데 정렬 유지 옵션은 두지 않고 기존 규칙 유지 */
 
-/* 모션 최소화 설정 사용자: 재생하지 않고 포스터(기존 이미지)만 표시 */
-@media (prefers-reduced-motion: reduce) {
-  #bg-video { display: none; }
-}
 </style>
 </head>
 
@@ -1083,34 +1079,38 @@ window.closePopup = closePopup;
   
   /* 일부 모바일 브라우저는 속성이 아닌 프로퍼티 설정이 필요 */
   vid.muted = true; vid.defaultMuted = true; vid.loop = true;
+  vid.setAttribute('muted', '');
   vid.playsInline = true; vid.setAttribute('playsinline', ''); vid.setAttribute('webkit-playsinline', '');
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  vid.preload = 'auto';
+  vid.load();   /* src를 JS로 지정했으므로 모바일에서 확실히 로드 */
 
   function showVideo() { wrap.classList.add('video-on'); }
   function showImage() { wrap.classList.remove('video-on'); }
 
   function tryPlay() {
-    if (reduceMotion) return;
     const p = vid.play();
-    if (p && typeof p.then === 'function') {
-      p.then(showVideo).catch(() => { /* 자동재생 차단 → 사용자 상호작용 시 재시도 */ });
-    }
+    if (p && typeof p.then === 'function') p.then(showVideo).catch(() => {});
   }
 
   vid.addEventListener('playing', showVideo);
+  vid.addEventListener('timeupdate', () => { if (vid.currentTime > 0 && !vid.paused) showVideo(); });
   vid.addEventListener('error', showImage);
-  vid.addEventListener('stalled', () => { if (vid.readyState < 2) showImage(); });
+  /* 'stalled' 핸들러는 모바일에서 재생 중인 영상을 숨기므로 삭제 */
 
-  if (vid.readyState >= 2) tryPlay(); else vid.addEventListener('loadeddata', tryPlay, { once: true });
   tryPlay();
+  vid.addEventListener('loadeddata', tryPlay);
+  vid.addEventListener('canplay', tryPlay);
 
-  /* 자동재생이 막힌 환경(저전력 모드 등): 첫 사용자 입력에서 재생 */
+  /* 자동재생이 막힌 환경(iOS 저전력 모드 등): 실제 재생에 성공할 때까지 터치/클릭마다 재시도 */
+  const _evs = ['touchend', 'click', 'keydown', 'pointerup'];
   const resume = () => {
-    if (vid.paused) tryPlay();
-    ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => document.removeEventListener(ev, resume));
+    const done = () => { showVideo(); _evs.forEach(ev => document.removeEventListener(ev, resume)); };
+    if (!vid.paused) { done(); return; }
+    const p = vid.play();
+    if (p && typeof p.then === 'function') p.then(done).catch(() => {});
   };
-  ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => document.addEventListener(ev, resume, { passive: true }));
+
+  _evs.forEach(ev => document.addEventListener(ev, resume, { passive: true }));
 
   /* 탭 전환 / 화면 꺼짐 후 복귀 시 재생 재개, 숨겨진 동안은 일시정지(배터리 절약) */
   document.addEventListener('visibilitychange', () => {
