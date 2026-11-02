@@ -559,6 +559,38 @@ body {
     display: none !important;
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   BACKGROUND VIDEO — 요일과 관계없이 항상 images/bg/bg.mp4 재생
+   (기존 #bg-photo 와 동일한 배치 규칙: 원본 비율 유지 · 좌측 중앙 정렬)
+══════════════════════════════════════════════════════════ */
+#bg-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;            /* 기존 배경 이미지와 동일: 원본 비율 유지 */
+  object-position: left center;   /* 기존 배경 이미지와 동일: 좌측 중앙 */
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  background: transparent;
+  /* GPU 합성으로 재생 부드럽게 */
+  transform: translateZ(0);
+  will-change: opacity;
+}
+/* 영상이 실제로 재생되기 시작하면 표시, 기존 이미지는 숨김(실패 시 이미지가 그대로 폴백) */
+#bg-photo-wrap.video-on #bg-video { opacity: 1; }
+#bg-photo-wrap.video-on #bg-photo { opacity: 0; transition: opacity 0.6s ease; }
+
+/* 모바일 · 세로 화면: 화면을 꽉 채우도록 cover (영상 중앙 기준) */
+@media (max-width: 720px), (orientation: portrait) {
+  #bg-video { object-fit: cover; object-position: center center; }
+}
+/* 아주 넓은 화면: 영상이 작게 보이지 않도록 가운데 정렬 유지 옵션은 두지 않고 기존 규칙 유지 */
+
+/* 모션 최소화 설정 사용자: 재생하지 않고 포스터(기존 이미지)만 표시 */
+@media (prefers-reduced-motion: reduce) {
+  #bg-video { display: none; }
+}
 </style>
 </head>
 
@@ -567,6 +599,11 @@ body {
 <!-- Background photograph (이미지 경로는 JS에서 요일별로 지정) -->
 <div id="bg-photo-wrap" aria-hidden="true">
   <img id="bg-photo" src="" alt="">
+  <!-- 항상 표시되는 배경 영상 (자동재생 정책을 위해 muted + playsinline) -->
+  <video id="bg-video" muted loop autoplay playsinline webkit-playsinline preload="auto"
+         disablepictureinpicture disableremoteplayback controlslist="nodownload noremoteplayback"
+         tabindex="-1" aria-hidden="true">
+  </video>
   <div id="bg-shade"></div>
   <div id="bg-grain"></div>
 </div>
@@ -1025,6 +1062,64 @@ window.closePopup = closePopup;
     window.addEventListener('DOMContentLoaded', initPlayer);
 })();
 </script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   BACKGROUND VIDEO — images/bg/bg.mp4 (요일 무관, 항상 재생)
+   · 기존 요일별 이미지(cfg.bg)는 영상 로딩 전 포스터 / 재생 실패 시 폴백으로 유지
+   · 모바일 자동재생 정책: muted + playsinline, 필요 시 첫 터치/클릭에서 재시도
+══════════════════════════════════════════════════════════ */
+(function initBgVideo() {
+  const wrap = document.getElementById('bg-photo-wrap');
+  const vid  = document.getElementById('bg-video');
+  if (!wrap || !vid) return;
+
+  /* 요일별 이미지를 포스터로 사용 (영상 로딩 중에도 기존 화면 유지) */
+  try { if (typeof cfg !== 'undefined' && cfg.bg) vid.poster = cfg.bg; } catch (e) {}
+
+  /* 요일별 배경 영상 (0=일 … 6=토) — 월:bg1, 화:bg2, 수:bg3, 목:bg5, 금~일:bg2 */
+  const BG_VIDEO_BY_DAY = { 0: 'bg2', 1: 'bg1', 2: 'bg2', 3: 'bg3', 4: 'bg5', 5: 'bg2', 6: 'bg2' };
+  const _vidDay = (typeof todayIdx !== 'undefined') ? todayIdx : new Date().getDay();
+  vid.src = 'images/bg/' + (BG_VIDEO_BY_DAY[_vidDay] || 'bg2') + '.mp4';
+  
+  /* 일부 모바일 브라우저는 속성이 아닌 프로퍼티 설정이 필요 */
+  vid.muted = true; vid.defaultMuted = true; vid.loop = true;
+  vid.playsInline = true; vid.setAttribute('playsinline', ''); vid.setAttribute('webkit-playsinline', '');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function showVideo() { wrap.classList.add('video-on'); }
+  function showImage() { wrap.classList.remove('video-on'); }
+
+  function tryPlay() {
+    if (reduceMotion) return;
+    const p = vid.play();
+    if (p && typeof p.then === 'function') {
+      p.then(showVideo).catch(() => { /* 자동재생 차단 → 사용자 상호작용 시 재시도 */ });
+    }
+  }
+
+  vid.addEventListener('playing', showVideo);
+  vid.addEventListener('error', showImage);
+  vid.addEventListener('stalled', () => { if (vid.readyState < 2) showImage(); });
+
+  if (vid.readyState >= 2) tryPlay(); else vid.addEventListener('loadeddata', tryPlay, { once: true });
+  tryPlay();
+
+  /* 자동재생이 막힌 환경(저전력 모드 등): 첫 사용자 입력에서 재생 */
+  const resume = () => {
+    if (vid.paused) tryPlay();
+    ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => document.removeEventListener(ev, resume));
+  };
+  ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => document.addEventListener(ev, resume, { passive: true }));
+
+  /* 탭 전환 / 화면 꺼짐 후 복귀 시 재생 재개, 숨겨진 동안은 일시정지(배터리 절약) */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) vid.pause(); else tryPlay();
+  });
+  window.addEventListener('pageshow', (e) => { if (e.persisted) tryPlay(); });
+})();
+</script>
+
 
 </body>
 </html>
