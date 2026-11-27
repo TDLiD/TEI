@@ -1022,22 +1022,47 @@ html.is-desktop .login-card { padding: clamp(2rem, 3vw, 2.6rem); }
         }
     };
 
-    /* ── FORGOT PASSWORD ── */
+    /* ── FORGOT PASSWORD (PhoneNo 본인 확인 후 힌트) ── */
+    const HINT_MAX_TRIES = 3;          // 전화번호 오입력 허용 횟수 (페이지 새로고침 시 초기화)
+    let hintTries = 0;
+
+    /* 비교용 전화번호 정규화: 숫자만 남기고, 국가번호 62·맨 앞 0 제거
+       → "0812-3456", "+62 812 3456", 8123456 (숫자형) 모두 같은 값으로 비교 */
+    const normPhone = v => {
+        let d = String(v ?? '').replace(/\D/g, '');
+        if (d.startsWith('62')) d = d.slice(2);
+        return d.replace(/^0+/, '');
+    };
+
     window.findPassword = function() {
         const name = selectedStaff;
         if (!name) return alert("Please select your name from the list first.");
-        if (confirm(`Request password hint for '${name}'?`)) {
-            database.ref('users/' + name).once('value', snap => {
-                const ud = snap.val();
-                if (ud && ud.password) {
-                    const pw = ud.password;
-                    const hint = pw.length > 2 ? pw.substring(0, 2) + '*'.repeat(pw.length - 2) : pw;
-                    alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
-                } else {
-                    alert("Data not found.");
-                }
-            });
-        }
+        if (!confirm(`Request password hint for '${name}'?`)) return;
+        if (hintTries >= HINT_MAX_TRIES) return alert("Too many attempts.\nPlease contact your manager.");
+
+        database.ref('users/' + name).once('value').then(snap => {
+            const ud = snap.val();
+            if (!ud || !ud.password) return alert("Data not found.");
+
+            if (!normPhone(ud.PhoneNo)) {
+                return alert("No phone number is registered for this account.\nPlease contact your manager.");
+            }
+
+            const input = prompt(`[Identity Check]\n\nEnter the phone number registered for '${name}'.`);
+            if (input === null) return;                       // 취소
+
+            if (normPhone(input) !== normPhone(ud.PhoneNo)) {
+                hintTries++;
+                const left = HINT_MAX_TRIES - hintTries;
+                return alert(left > 0
+                    ? `Phone number does not match.\n${left} attempt(s) left.`
+                    : "Phone number does not match.\nPlease contact your manager.");
+            }
+
+            hintTries = 0;
+            const hint = String(ud.password).substring(0, 2) + '*'.repeat(10);   // 길이와 무관하게 별표 10개
+            alert(`[Security Hint]\n\nPassword starts with: ${hint}\n\nContact manager for full recovery.`);
+        }).catch(() => alert("Could not check your account. Please try again."));
     };
 
     /* ── BIRTHDAY POPUP ── */
